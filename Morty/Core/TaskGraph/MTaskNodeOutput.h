@@ -23,25 +23,25 @@ class MORTY_API MTaskNodeOutput : public MTypeClass
 public:
     MTaskNodeOutput();
 
-    size_t                              GetIndex() const { return m_unIndex; }
-    MString                             GetStringID() const;
+    [[nodiscard]] size_t                              GetIndex() const { return m_unIndex; }
+    [[nodiscard]] MString                             GetStringID() const;
 
-    MTaskNode*                          GetTaskNode() const { return pGraphNode; }
+    [[nodiscard]] MTaskNode*                          GetTaskNode() const { return pGraphNode; }
 
-    const std::vector<MTaskNodeInput*>& GetLinkedInputs() const { return vLinkedInput; }
+    [[nodiscard]] const std::vector<MTaskNodeInput*>& GetLinkedInputs() const { return vLinkedInput; }
 
-    void                                LinkTo(MTaskNodeInput* pInput);
-    void                                UnLink(MTaskNodeInput* pInput);
+    void                                              LinkTo(MTaskNodeInput* pInput);
+    void                                              UnLink(MTaskNodeInput* pInput);
 
 
-    void                                SetName(const MString& strName) { m_strName = strName; }
-    const MString&                      GetName() const { return m_strName; }
+    void                                              SetName(const MStringId& strName) { m_strName = strName; }
+    [[nodiscard]] const MStringId&                    GetName() const { return m_strName; }
 
 private:
     friend class MTaskNode;
 
     size_t                       m_unIndex;
-    MString                      m_strName;
+    MStringId                    m_strName;
 
     MTaskNode*                   pGraphNode;
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Flatbuffer/Vector_generated.h"
 #include "Math/Matrix.h"
+#include "Flatbuffer/Vector_generated.h"
 
 namespace morty
 {
@@ -161,7 +161,10 @@ class MORTY_API Vector3i
 public:
     Vector3i(int x, int y, int z);
 
-    Vector3i operator*(const int& value) const;
+    Vector3i             operator*(const int& value) const;
+
+    const fbs::Vector3i* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+    void                 Deserialize(const void* pBufferPointer);
 
 public:
     union
@@ -177,7 +180,7 @@ public:
     static Vector3i One;
 };
 
-Vector3         operator*(const float& value, const Vector3& vector);
+Vector3 operator*(const float& value, const Vector3& vector);
 
 
 class MORTY_API Vector4

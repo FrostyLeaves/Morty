@@ -124,15 +124,15 @@ public:
 
     void BindStorageParam(const std::shared_ptr<MShaderStorageParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    std::shared_ptr<MTexture> GetDefaultTexture(MShaderTextureParam* pParam);
+    MTexturePtr GetDefaultTexture(MShaderTextureParam* pParam);
 
 private:
-    std::map<MPipelineKey, std::shared_ptr<MPipeline>>                             m_pipelineTable;
+    std::map<MPipelineKey, std::shared_ptr<MPipeline>>               m_pipelineTable;
 
-    MVulkanDevice*                                                                 m_device;
+    MVulkanDevice*                                                   m_device;
 
 
-    std::map<std::pair<MESamplerFormat, METextureType>, std::shared_ptr<MTexture>> m_defaultTexture;
+    std::map<std::pair<MESamplerFormat, METextureType>, MTexturePtr> m_defaultTexture;
 };
 
 }// namespace morty

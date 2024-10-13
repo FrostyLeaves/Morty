@@ -43,7 +43,7 @@ MShaderTextureParam::MShaderTextureParam()
 #endif
 }
 
-void MShaderTextureParam::SetTexture(std::shared_ptr<MTexture> pTexture)
+void MShaderTextureParam::SetTexture(MTexturePtr pTexture)
 {
     if (this->pTexture != pTexture)
     {

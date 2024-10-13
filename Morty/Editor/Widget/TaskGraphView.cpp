@@ -32,14 +32,8 @@ int GetDepthTable(MTaskGraph* pTaskGraph, std::map<MTaskNode*, int>& output)
         {
             MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
 
-            if (output.find(pPrevNode) == output.end())
-            {
-                output[pPrevNode] = output[pNode] + 1;
-            }
-            else if (output[pPrevNode] < output[pNode] + 1)
-            {
-                output[pPrevNode] = output[pNode] + 1;
-            }
+            if (output.find(pPrevNode) == output.end()) { output[pPrevNode] = output[pNode] + 1; }
+            else if (output[pPrevNode] < output[pNode] + 1) { output[pPrevNode] = output[pNode] + 1; }
 
             vNodes.push_back(pPrevNode);
 
@@ -88,28 +82,21 @@ void TaskGraphView::Render()
             for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
             {
                 auto pNodeInput = pNode->GetInput(nIdx);
-                ImNodes::BeginInputAttribute(
-                        static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeInput))
-                );
+                ImNodes::BeginInputAttribute(static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeInput)));
                 ImGui::Text("%s", pNodeInput->GetName().c_str());
                 ImNodes::EndInputAttribute();
             }
 
 #if MORTY_DEBUG
             //Context
-            ImGui::Text(
-                    "avg time: %f",
-                    (static_cast<float>(pNode->m_debugTime) / 1000.0f)
-            );
+            ImGui::Text("avg time: %f", (static_cast<float>(pNode->m_debugTime) / 1000.0f));
 #endif
             //output
             for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
             {
                 auto pNodeOutput = pNode->GetOutput(nIdx);
-                ImNodes::BeginOutputAttribute(
-                        static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeOutput))
-                );
-                ImGui::Text("%s", pNodeOutput->GetName().c_str());
+                ImNodes::BeginOutputAttribute(static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeOutput)));
+                ImGui::Text("%s", pNodeOutput->GetName().ToString().c_str());
                 ImNodes::EndOutputAttribute();
             }
         }
@@ -125,9 +112,8 @@ void TaskGraphView::Render()
             auto pOutput = pInput->GetLinkedOutput();
             if (!pOutput) { continue; }
 
-            const int inputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pInput));
-            const int outputId =
-                    static_cast<int>(reinterpret_cast<std::intptr_t>(pOutput));
+            const int inputId  = static_cast<int>(reinterpret_cast<std::intptr_t>(pInput));
+            const int outputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pOutput));
 
             ImNodes::Link(inputId + outputId, outputId, inputId);
         }
@@ -137,10 +123,7 @@ void TaskGraphView::Render()
     ImNodes::EndNodeEditor();
 }
 
-void TaskGraphView::Initialize(MainEditor* pMainEditor)
-{
-    BaseWidget::Initialize(pMainEditor);
-}
+void TaskGraphView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
 
 void TaskGraphView::Release() {}
 

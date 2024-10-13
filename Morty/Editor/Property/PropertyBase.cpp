@@ -15,10 +15,9 @@
 using namespace morty;
 
 unsigned int                    PropertyBase::m_unItemIDPool = 0;
-std::map<MString, unsigned int> PropertyBase::m_itemID =
-        std::map<MString, unsigned int>();
+std::map<MString, unsigned int> PropertyBase::m_itemID       = std::map<MString, unsigned int>();
 
-bool PropertyBase::ShowNodeBegin(const MString& strNodeName)
+bool                            PropertyBase::ShowNodeBegin(const MString& strNodeName)
 {
     if (ShowNodeBeginWithEx(strNodeName))
     {
@@ -33,12 +32,7 @@ bool PropertyBase::ShowNodeBeginWithEx(const MString& strNodeName)
 {
     ImGui::PushID(GetID(strNodeName));
     ImGui::AlignTextToFramePadding();
-    if (ImGui::TreeNodeEx(
-                "Object",
-                ImGuiTreeNodeFlags_DefaultOpen,
-                "%s",
-                strNodeName.c_str()
-        ))
+    if (ImGui::TreeNodeEx("Object", ImGuiTreeNodeFlags_DefaultOpen, "%s", strNodeName.c_str()))
     {
         ImGui::NextColumn();
         ImGui::AlignTextToFramePadding();
@@ -52,10 +46,7 @@ bool PropertyBase::ShowNodeBeginWithEx(const MString& strNodeName)
     return false;
 }
 
-void PropertyBase::ShowNodeExBegin(const MString& strExID)
-{
-    ImGui::PushID(GetID(strExID));
-}
+void PropertyBase::ShowNodeExBegin(const MString& strExID) { ImGui::PushID(GetID(strExID)); }
 
 void PropertyBase::ShowNodeExEnd()
 {
@@ -75,8 +66,7 @@ void PropertyBase::ShowValueBegin(const MString& strValueName)
     ImGui::AlignTextToFramePadding();
     ImGui::TreeNodeEx(
             strValueName.c_str(),
-            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
-                    ImGuiTreeNodeFlags_Bullet
+            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet
     );
     ImGui::NextColumn();
     ImGui::SetNextItemWidth(-1);
@@ -102,12 +92,7 @@ bool PropertyBase::Editbool(int& value)
     return false;
 }
 
-bool PropertyBase::Editfloat(
-        float&       value,
-        const float& fSpeed,
-        const float& fMin,
-        const float& fMax
-)
+bool PropertyBase::Editfloat(float& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
     if (value == -0.0f) value = 0.0f;
     return ImGui::DragFloat("", &value, fSpeed, fMin, fMax);
@@ -125,12 +110,7 @@ bool PropertyBase::EditVector2(
     return ImGui::DragFloat2("", value.m, fSpeed, fMin, fMax);
 }
 
-bool PropertyBase::EditVector3(
-        Vector3&     value,
-        const float& fSpeed,
-        const float& fMin,
-        const float& fMax
-)
+bool PropertyBase::EditVector3(Vector3& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
     return EditVector3(value.m, fSpeed, fMin, fMax);
 }
@@ -148,22 +128,12 @@ bool PropertyBase::EditVector3(
     return ImGui::DragFloat3("", pValue, fSpeed, fMin, fMax);
 }
 
-bool PropertyBase::EditVector4(
-        Vector4&     value,
-        const float& fSpeed,
-        const float& fMin,
-        const float& fMax
-)
+bool PropertyBase::EditVector4(Vector4& value, const float& fSpeed, const float& fMin, const float& fMax)
 {
     return EditVector4(value.m, fSpeed, fMin, fMax);
 }
 
-bool PropertyBase::EditVector4(
-        float*       pValue,
-        const float& fSpeed,
-        const float& fMin,
-        const float& fMax
-)
+bool PropertyBase::EditVector4(float* pValue, const float& fSpeed, const float& fMin, const float& fMax)
 {
     if (pValue[0] == -0.0f) pValue[0] = 0.0f;
     if (pValue[1] == -0.0f) pValue[1] = 0.0f;
@@ -193,10 +163,7 @@ bool PropertyBase::EditMTransform(MTransform& trans)
     ShowValueEnd();
 
     ShowValueBegin("Rotate");
-    Vector3 rotate = GetTemporaryValue<Vector3>(
-            "Transform_Rotate",
-            trans.GetRotation().GetEulerAngle()
-    );
+    Vector3 rotate = GetTemporaryValue<Vector3>("Transform_Rotate", trans.GetRotation().GetEulerAngle());
 
     if (EditVector3(rotate, 1.0f, -360.0f, 360.0f))
     {
@@ -297,8 +264,7 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
                 for (auto& iter: sut.GetMember())
                 {
                     bModified |= EditMVariant(
-                            iter.first.ToString().empty() ? MStringUtil::ToString(nCount)
-                                                          : iter.first.ToString(),
+                            iter.first.ToString().empty() ? MStringUtil::ToString(nCount) : iter.first.ToString(),
                             sut.GetVariant<MVariant>(iter.first)
                     );
                     nCount++;
@@ -353,9 +319,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
                 ShowNodeExEnd();
 
-                for (auto iter = shaderMacro.m_macroParams.begin();
-                     iter != shaderMacro.m_macroParams.end();
-                     ++iter)
+                for (auto iter = shaderMacro.m_macroParams.begin(); iter != shaderMacro.m_macroParams.end(); ++iter)
                 {
                     auto& pair = *iter;
 
@@ -373,28 +337,20 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
 
                 ShowNodeEnd();
 
-                if (bModify)
-                {
-                    pMaterial->GetMaterialTemplate()->SetShaderMacro(shaderMacro);
-                }
+                if (bModify) { pMaterial->GetMaterialTemplate()->SetShaderMacro(shaderMacro); }
             }
         }
 
         {
             ShowValueBegin("Shader");
-            if (ImGui::Button(
-                        "Reload Shader",
-                        ImVec2(ImGui::GetContentRegionAvail().x, 0)
-                ))
+            if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
             {
-                MString strResPathVS = pResource->GetShaderProgram()
-                                               ->GetShaderResource(MEShaderType::EVertex)
-                                               ->GetResourcePath();
+                MString strResPathVS =
+                        pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex)->GetResourcePath();
                 pResource->GetResourceSystem()->Reload(strResPathVS);
 
-                MString strResPathPS = pResource->GetShaderProgram()
-                                               ->GetShaderResource(MEShaderType::EPixel)
-                                               ->GetResourcePath();
+                MString strResPathPS =
+                        pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EPixel)->GetResourcePath();
                 pResource->GetResourceSystem()->Reload(strResPathPS);
             }
             ShowValueEnd();
@@ -415,8 +371,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
             size_t nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
             if (EditEnum({"Default", "Transparent"}, nMaterialType))
             {
-                pMaterial->GetMaterialTemplate()->SetMaterialType((MEMaterialType
-                ) nMaterialType);
+                pMaterial->GetMaterialTemplate()->SetMaterialType((MEMaterialType) nMaterialType);
             }
             ShowValueEnd();
         }
@@ -435,13 +390,12 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
                     MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
 
                     ShowValueBegin(param->strName.ToString());
-                    std::shared_ptr<MTextureResource> pResource =
-                            param->GetTextureResource();
+                    std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
 
                     if (auto pPreviewTexture = param->GetTexture())
                     {
                         const ImGuiStyle& style = ImGui::GetStyle();
-                        float fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
+                        float             fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
                         ShowTexture(pPreviewTexture, Vector2(fSize, fSize));
                         if (ImGui::IsItemHovered())
                         {
@@ -459,9 +413,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
                             pResource,
                             [&param, &pMaterial](const MString& strNewFilePath) {
                                 std::shared_ptr<MResource> pNewResource =
-                                        pMaterial->GetResourceSystem()->LoadResource(
-                                                strNewFilePath
-                                        );
+                                        pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
 
                                 pMaterial->SetTexture(param->strName, pNewResource);
                             }
@@ -477,9 +429,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
     return bModified;
 }
 
-bool PropertyBase::EditShaderProperty(
-        const std::shared_ptr<MShaderPropertyBlock>& pProperty
-)
+bool PropertyBase::EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty)
 {
     bool bModified = false;
     for (const auto& param: pProperty->m_params)
@@ -516,10 +466,7 @@ void PropertyBase::EditMResource(
     }
     else { strButtonLabel = strResourcePathName = "null"; }
 
-    bool bButtonDown = ImGui::Button(
-            strButtonLabel.c_str(),
-            ImVec2(ImGui::GetContentRegionAvail().x, 0)
-    );
+    bool bButtonDown = ImGui::Button(strButtonLabel.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0));
     if (ImGui::IsItemHovered() && !strResourcePathName.empty())
     {
         ImGui::SetTooltip("%s", strResourcePathName.c_str());
@@ -536,8 +483,7 @@ void PropertyBase::EditMResource(
                     strButtonLabel
             );
         else
-            ImGuiFileDialog::Instance()
-                    ->OpenModal(strDlgID, strResourceType, strSuffix.c_str(), ".");
+            ImGuiFileDialog::Instance()->OpenModal(strDlgID, strResourceType, strSuffix.c_str(), ".");
     }
 
     if (ImGuiFileDialog::Instance()->Display(strDlgID))
@@ -581,10 +527,7 @@ void PropertyBase::EditSaveMResource(
 
         ImGui::SameLine();
 
-        MString btn_name = fmt::format(
-                "Save##_{}",
-                reinterpret_cast<uint32_t>(ImGui::GetID(pResource.get()))
-        );
+        MString btn_name = fmt::format("Save##_{}", reinterpret_cast<uint32_t>(ImGui::GetID(pResource.get())));
 
         if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
         {
@@ -608,9 +551,8 @@ void PropertyBase::EditSaveMResource(
         {
             if (ImGuiFileDialog::Instance()->IsOk() == true)
             {
-                std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-                auto        pResourceSystem =
-                        pResource->GetEngine()->FindSystem<MResourceSystem>();
+                std::string filePathName    = ImGuiFileDialog::Instance()->GetFilePathName();
+                auto        pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
                 pResourceSystem->MoveTo(pResource, filePathName);
                 pResourceSystem->SaveResource(pResource);
             }
@@ -620,17 +562,14 @@ void PropertyBase::EditSaveMResource(
     else { ImGui::Text("null"); }
 }
 
-void PropertyBase::ShowTexture(std::shared_ptr<MTexture> pTexture, const Vector2& v2Size)
+void PropertyBase::ShowTexture(MTexturePtr pTexture, const Vector2& v2Size)
 {
-    if (pTexture)
-    {
-        ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v2Size.x, v2Size.y));
-    }
+    if (pTexture) { ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v2Size.x, v2Size.y)); }
 }
 
-bool PropertyBase::EditMColor(MColor& value) { return ImGui::ColorEdit4("", value.m); }
+bool         PropertyBase::EditMColor(MColor& value) { return ImGui::ColorEdit4("", value.m); }
 
-bool PropertyBase::EditMString(MString& value) { return ImGui::InputText("", &value); }
+bool         PropertyBase::EditMString(MString& value) { return ImGui::InputText("", &value); }
 
 unsigned int PropertyBase::GetID(const MString& strItemName)
 {

@@ -22,7 +22,7 @@ void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> 
         {
             if (std::shared_ptr<MTextureResource> pTexResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
             {
-                if (std::shared_ptr<MTexture> pTexture = pTexResource->GetTextureTemplate())
+                if (MTexturePtr pTexture = pTexResource->GetTextureTemplate())
                 {
                     if (pTexture->GetTextureType() != pParam->eType) { break; }
                 }

@@ -56,9 +56,11 @@ SortIncludes: CaseSensitive
 IncludeCategories:
   - Regex: '.*Global\.h\"'
     Priority: 1
+  - Regex: '.*_generated\.h\"'
+    Priority: 3
   - Regex: '.*'
     Priority: 2
-    SortPriority: 0
+
 SortUsingDeclarations: LexicographicNumeric
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false

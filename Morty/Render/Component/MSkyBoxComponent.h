@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Component/MComponent.h"
 
 #include "Resource/MResource.h"
@@ -39,11 +39,11 @@ public:
 
     std::shared_ptr<MResource> GetDiffuseEnvResource();
 
-    std::shared_ptr<MTexture>  GetDiffuseTexture();
+    MTexturePtr                GetDiffuseTexture();
 
     std::shared_ptr<MResource> GetSpecularEnvResource();
 
-    std::shared_ptr<MTexture>  GetSpecularTexture();
+    MTexturePtr                GetSpecularTexture();
 
 
 private:

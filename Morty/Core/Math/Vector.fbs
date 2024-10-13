@@ -13,6 +13,13 @@ struct Vector3
     z:float;
 }
 
+struct Vector3i
+{
+    x: int;
+    y: int;
+    z: int;
+}
+
 struct Vector4
 {
     x:float;

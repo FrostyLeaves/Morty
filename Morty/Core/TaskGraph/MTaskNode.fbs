@@ -1,0 +1,15 @@
+namespace morty.fbs;
+
+table MTaskNode
+{
+    node_id: uint;
+    node_type: string;
+
+    //Each node records from which other node it is connected to, and the index of this array is the input to which this node is connected
+    link_node_id: [uint];
+    link_output_id: [uint];
+}
+
+root_type MTaskNode;
+
+file_identifier "MFBS";

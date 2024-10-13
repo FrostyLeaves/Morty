@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
+#include "imgui.h"
 
 namespace morty
 {
@@ -18,35 +19,37 @@ public:
 
     virtual ~BaseWidget() {}
 
-    virtual void   Render() = 0;
+    virtual void             Render() = 0;
 
-    virtual void   Initialize(MainEditor* pMainEditor);
+    virtual void             Initialize(MainEditor* pMainEditor);
 
-    virtual void   Release() = 0;
+    virtual void             Release() = 0;
 
-    virtual void   SaveConfig(IniConfig* pConfig);
+    virtual void             SaveConfig(IniConfig* pConfig);
 
-    virtual void   LoadConfig(IniConfig* pConfig);
+    virtual void             LoadConfig(IniConfig* pConfig);
 
-    virtual void   Input(MInputEvent* pEvent) { MORTY_UNUSED(pEvent); }
+    virtual void             Input(MInputEvent* pEvent) { MORTY_UNUSED(pEvent); }
 
-    MEngine*       GetEngine() const;
+    virtual ImGuiWindowFlags GetWindowFlags() { return ImGuiWindowFlags_NoCollapse; }
 
-    MScene*        GetScene() const;
+    MEngine*                 GetEngine() const;
 
-    MViewport*     GetViewport() const;
+    MScene*                  GetScene() const;
 
-    MainEditor*    GetMainEditor() const { return m_mainEditor; }
+    MViewport*               GetViewport() const;
 
-    morty::MString GetName() const { return m_strViewName; }
+    MainEditor*              GetMainEditor() const { return m_mainEditor; }
 
-    bool           GetVisible() const { return m_visiable; }
+    morty::MString           GetName() const { return m_strViewName; }
 
-    void           SetVisible(bool bVisible) { m_visiable = bVisible; }
+    bool                     GetVisible() const { return m_visiable; }
 
-    bool           GetRenderInHidden() const { return m_renderInHidden; }
+    void                     SetVisible(bool bVisible) { m_visiable = bVisible; }
 
-    void           AddWidget(BaseWidget* pWidget);
+    bool                     GetRenderInHidden() const { return m_renderInHidden; }
+
+    void                     AddWidget(BaseWidget* pWidget);
 
 protected:
     MainEditor*              m_mainEditor     = nullptr;

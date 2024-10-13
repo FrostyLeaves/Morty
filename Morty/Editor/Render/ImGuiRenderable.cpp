@@ -46,12 +46,8 @@ void ImGuiRenderable::UpdateMesh()
         for (int n = 0; n < draw_data->CmdListsCount; n++)
         {
             const ImDrawList* cmd_list = draw_data->CmdLists[n];
-            memcpy(vtx_dst,
-                   cmd_list->VtxBuffer.Data,
-                   cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-            memcpy(idx_dst,
-                   cmd_list->IdxBuffer.Data,
-                   cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+            memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+            memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
             vtx_dst += cmd_list->VtxBuffer.Size;
             idx_dst += cmd_list->IdxBuffer.Size;
         }
@@ -76,8 +72,7 @@ void ImGuiRenderable::InitializeFont()
     int              width = 0, height = 0;// width height
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    std::shared_ptr<MTextureResource> pFontTexture =
-            pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
+    std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
     pFontTexture->Load(MTextureResourceUtil::LoadFromMemory(
             "ImGUI_Font",
             MSpan<MByte>(pixels, width * height * 4),
@@ -89,11 +84,7 @@ void ImGuiRenderable::InitializeFont()
     m_FontTexture.SetResource(pFontTexture);
 
     // Store our identifier
-    io.Fonts->TexID = {
-            pFontTexture->GetTextureTemplate(),
-            intptr_t(pFontTexture->GetTextureTemplate().get()),
-            0
-    };
+    io.Fonts->TexID = {pFontTexture->GetTextureTemplate(), intptr_t(pFontTexture->GetTextureTemplate().get()), 0};
 }
 
 void ImGuiRenderable::Release()
@@ -169,12 +160,9 @@ void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
 
     for (const ImTextureID& texid: tTextures)
     {
-        if (std::shared_ptr<MTexture> pTexture = texid.pTexture)
+        if (MTexturePtr pTexture = texid.pTexture)
         {
-            pCommand->AddRenderToTextureBarrier(
-                    {pTexture.get()},
-                    METextureBarrierStage::EPixelShaderSample
-            );
+            pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
         }
     }
 }
@@ -197,8 +185,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
     translate.y = -1.0f - draw_data->DisplayPos.y * scale.y;
 
 
-    if (const std::shared_ptr<MShaderConstantParam>& pParam =
-                m_material->GetMaterialPropertyBlock()->m_params[0])
+    if (const std::shared_ptr<MShaderConstantParam>& pParam = m_material->GetMaterialPropertyBlock()->m_params[0])
     {
         MVariantStruct& imguiUniform = pParam->var.GetValue<MVariantStruct>();
         {
@@ -211,10 +198,8 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
     pCommand->SetUseMaterial(m_material);
 
     // Will project scissor/clipping rectangles into framebuffer space
-    ImVec2 clip_off = draw_data->DisplayPos;// (0,0) unless using multi-viewports
-    ImVec2 clip_scale =
-            draw_data
-                    ->FramebufferScale;// (1,1) unless using retina display which are often (2,2)
+    ImVec2       clip_off   = draw_data->DisplayPos;      // (0,0) unless using multi-viewports
+    ImVec2       clip_scale = draw_data->FramebufferScale;// (1,1) unless using retina display which are often (2,2)
 
     // Render command lists
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
@@ -230,8 +215,8 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
 
             if (using_texture != pcmd->TextureId)
             {
-                using_texture                      = pcmd->TextureId;
-                std::shared_ptr<MTexture> pTexture = using_texture.pTexture;
+                using_texture        = pcmd->TextureId;
+                MTexturePtr pTexture = using_texture.pTexture;
                 if (auto dest = GetTexturPropertyBlock(using_texture))
                 {
                     dest->nDestroyCount = 0;
@@ -247,19 +232,15 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
             clip_rect.z = (pcmd->ClipRect.z - clip_off.x) * clip_scale.x;
             clip_rect.w = (pcmd->ClipRect.w - clip_off.y) * clip_scale.y;
 
-            if (clip_rect.x < fb_width && clip_rect.y < fb_height &&
-                clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
+            if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
             {
                 // Negative offsets are illegal for vkCmdSetScissor
                 if (clip_rect.x < 0.0f) clip_rect.x = 0.0f;
                 if (clip_rect.y < 0.0f) clip_rect.y = 0.0f;
 
-                pCommand->SetScissor(MScissorInfo(
-                        clip_rect.x,
-                        clip_rect.y,
-                        clip_rect.z - clip_rect.x,
-                        clip_rect.w - clip_rect.y
-                ));
+                pCommand->SetScissor(
+                        MScissorInfo(clip_rect.x, clip_rect.y, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y)
+                );
 
                 pCommand->DrawMesh(
                         &m_Mesh,
@@ -274,8 +255,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
     }
 }
 
-ImGuiRenderable::MImGuiTextureDest*
-ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
+ImGuiRenderable::MImGuiTextureDest* ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
 {
     auto findResult = m_imGuiDrawTexture.find(key);
 
@@ -283,15 +263,12 @@ ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
     {
         MImGuiTextureDest* pDest = new MImGuiTextureDest();
 
-        pDest->pTexture      = key.pTexture;
-        pDest->nDestroyCount = 0;
-        pDest->pPropertyBlock =
-                MMaterialTemplate::CreateMeshPropertyBlock(m_material->GetShaderProgram()
-                );
+        pDest->pTexture       = key.pTexture;
+        pDest->nDestroyCount  = 0;
+        pDest->pPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(m_material->GetShaderProgram());
 
 
-        MVariantStruct& imguiUniform =
-                pDest->pPropertyBlock->m_params[0]->var.GetValue<MVariantStruct>();
+        MVariantStruct& imguiUniform = pDest->pPropertyBlock->m_params[0]->var.GetValue<MVariantStruct>();
         {
             int     nImageType         = 0;
             int     nSingleChannelFlag = 0;
@@ -307,10 +284,8 @@ ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
                     break;
 
                 case METextureFormat::UInt_R8:
-                    nImageType = 2;
-                    f2ImageSize =
-                            Vector2(key.pTexture->GetSize2D().x,
-                                    key.pTexture->GetSize2D().y);
+                    nImageType  = 2;
+                    f2ImageSize = Vector2(key.pTexture->GetSize2D().x, key.pTexture->GetSize2D().y);
                     break;
 
                 default: nImageType = 0; break;
@@ -322,32 +297,15 @@ ImGuiRenderable::GetTexturPropertyBlock(ImGuiTexture key)
                 nImageIndex = static_cast<int>(key.nArrayIdx);
             }
 
-            if (imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_TYPE) !=
-                        nImageType ||
-                imguiUniform.GetVariant<int>(
-                        MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG
-                ) != nSingleChannelFlag ||
-                imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_INDEX) !=
-                        nImageIndex ||
-                imguiUniform.GetVariant<Vector2>(MShaderPropertyName::IMGUI_IMAGE_SIZE) !=
-                        f2ImageSize)
+            if (imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_TYPE) != nImageType ||
+                imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG) != nSingleChannelFlag ||
+                imguiUniform.GetVariant<int>(MShaderPropertyName::IMGUI_IMAGE_INDEX) != nImageIndex ||
+                imguiUniform.GetVariant<Vector2>(MShaderPropertyName::IMGUI_IMAGE_SIZE) != f2ImageSize)
             {
-                imguiUniform.SetVariant(
-                        MShaderPropertyName::IMGUI_IMAGE_TYPE,
-                        nImageType
-                );
-                imguiUniform.SetVariant(
-                        MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG,
-                        nSingleChannelFlag
-                );
-                imguiUniform.SetVariant(
-                        MShaderPropertyName::IMGUI_IMAGE_INDEX,
-                        nImageIndex
-                );
-                imguiUniform.SetVariant(
-                        MShaderPropertyName::IMGUI_IMAGE_SIZE,
-                        f2ImageSize
-                );
+                imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_TYPE, nImageType);
+                imguiUniform.SetVariant(MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG, nSingleChannelFlag);
+                imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_INDEX, nImageIndex);
+                imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_SIZE, f2ImageSize);
                 pDest->pPropertyBlock->m_params[0]->SetDirty();
             }
 

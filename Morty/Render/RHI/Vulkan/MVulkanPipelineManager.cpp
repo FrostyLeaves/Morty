@@ -499,10 +499,8 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
         return VK_NULL_HANDLE;
     }
 
-    std::vector<VkDynamicState> dynamicStates = {
-            VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_SCISSOR,
-            VK_DYNAMIC_STATE_LINE_WIDTH};
+    std::vector<VkDynamicState> dynamicStates =
+            {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_LINE_WIDTH};
 
     //variable rate shading
     if (m_device->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
@@ -823,7 +821,7 @@ void MVulkanPipelineManager::BindTextureParam(
         VkWriteDescriptorSet&                      descriptorWrite
 )
 {
-    std::shared_ptr<MTexture> pTexture = pParam->GetTexture();
+    MTexturePtr pTexture = pParam->GetTexture();
 
     if (!pTexture || pTexture->GetTextureRHI<MTextureRHIVulkan>()->vkImageView == VK_NULL_HANDLE)
     {
@@ -893,7 +891,7 @@ void MVulkanPipelineManager::BindStorageParam(
     descriptorWrite.pTexelBufferView = nullptr;// Optional
 }
 
-std::shared_ptr<MTexture> MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pParam)
+MTexturePtr MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pParam)
 {
     const auto findResult = m_defaultTexture.find({pParam->eFormat, pParam->eType});
     if (findResult != m_defaultTexture.end()) { return findResult->second; }

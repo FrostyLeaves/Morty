@@ -26,7 +26,7 @@
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderCommand.h"
-#include "RenderProgram/MDeferredRenderProgram.h"
+#include "Render/MDeferredRenderProgram.h"
 #include "Scene/MScene.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
@@ -34,21 +34,20 @@
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/MaterialView.h"
-#include "Widget/MessageWidget.h"
 #include "Widget/ModelConvertView.h"
 #include "Widget/NodeTreeView.h"
 #include "Widget/PropertyView.h"
+#include "Widget/RenderGraphView.h"
 #include "Widget/RenderSettingView.h"
 #include "Widget/ResourceView.h"
 #include "Widget/TaskGraphView.h"
 
 using namespace morty;
 
-MString MainEditor::m_renderProgramName = MDeferredRenderProgram::GetClassTypeName();
-MString MainEditor::m_editorConfigFilePath =
-        MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
+MString MainEditor::m_renderProgramName    = MDeferredRenderProgram::GetClassTypeName();
+MString MainEditor::m_editorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
 
-bool MainEditor::Initialize(MEngine* pEngine)
+bool    MainEditor::Initialize(MEngine* pEngine)
 {
     m_engine = pEngine;
 
@@ -63,20 +62,14 @@ bool MainEditor::Initialize(MEngine* pEngine)
     m_childView.push_back(new MaterialView());
     m_childView.push_back(new ResourceView());
     m_childView.push_back(new ModelConvertView());
-    m_childView.push_back(new MessageWidget());
     m_childView.push_back(new MainView());
 
     auto pTaskGraphView = new TaskGraphView("Task Graph");
     pTaskGraphView->SetTaskGraph(GetEngine()->GetMainGraph());
     m_childView.push_back(pTaskGraphView);
 
-
-    m_renderGraphView = new TaskGraphView("Render Graph");
+    m_renderGraphView = new RenderGraphView("Render Graph");
     m_childView.push_back(m_renderGraphView);
-
-    m_renderSettingView = new RenderSettingView();
-    m_childView.push_back(m_renderSettingView);
-
 
     for (BaseWidget* pChild: m_childView)
     {
@@ -122,35 +115,28 @@ void       MainEditor::SetScene(MScene* pScene)
         m_sceneTexture = nullptr;
     }
 
-    m_sceneTexture = CreateSceneViewer(m_scene);
+    m_sceneTexture = CreateSceneViewer("MainScene", m_scene);
 
-    m_renderGraphView->SetTaskGraph(m_sceneTexture->GetRenderProgram()->GetRenderGraph());
-    m_renderSettingView->SetRenderGraph(m_sceneTexture->GetRenderProgram()
-                                                ->GetRenderGraph()
-                                                ->DynamicCast<MRenderGraph>()
-                                                ->GetRenderGraphSetting());
+    m_renderGraphView->SetRenderProgram(m_sceneTexture->GetRenderProgram());
 }
 
-void MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
+void                         MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
 
-void MainEditor::OnInput(MInputEvent* pEvent)
+void                         MainEditor::OnInput(MInputEvent* pEvent) { m_sceneTexture->GetViewport()->Input(pEvent); }
+
+void                         MainEditor::OnTick(float fDelta) { m_scene->Tick(fDelta); }
+
+std::shared_ptr<SceneViewer> MainEditor::CreateSceneViewer(const MString& viewName, MScene* pScene)
 {
-    m_sceneTexture->GetViewport()->Input(pEvent);
+    std::shared_ptr<SceneViewer> pSceneViewer = std::make_shared<SceneViewer>();
+    pSceneViewer->Initialize(viewName, pScene, MainEditor::GetRenderProgramName());
+    m_sceneViewer.insert(pSceneViewer);
+
+    pSceneViewer->GetRenderTask()->ConnectTo(GetRenderTask());
+    return pSceneViewer;
 }
 
-void                          MainEditor::OnTick(float fDelta) { m_scene->Tick(fDelta); }
-
-std::shared_ptr<SceneTexture> MainEditor::CreateSceneViewer(MScene* pScene)
-{
-    std::shared_ptr<SceneTexture> pSceneTexture = std::make_shared<SceneTexture>();
-    pSceneTexture->Initialize(pScene, MainEditor::GetRenderProgramName());
-    m_sceneViewer.insert(pSceneTexture);
-
-    pSceneTexture->GetRenderTask()->ConnectTo(GetRenderTask());
-    return pSceneTexture;
-}
-
-void MainEditor::DestroySceneViewer(std::shared_ptr<SceneTexture> pViewer)
+void MainEditor::DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer)
 {
     pViewer->Release();
     m_sceneViewer.erase(pViewer);
@@ -163,16 +149,13 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
     {
         pSceneViewer->UpdateTexture(pRenderCommand);
 
-        if (std::shared_ptr<MTexture> pRenderTexture = pSceneViewer->GetTexture())
+        if (MTexturePtr pRenderTexture = pSceneViewer->GetTexture())
         {
             vRenderTextures.push_back(pRenderTexture.get());
         }
     }
 
-    pRenderCommand->AddRenderToTextureBarrier(
-            vRenderTextures,
-            METextureBarrierStage::EPixelShaderSample
-    );
+    pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MainEditor::ShowMenu()
@@ -183,16 +166,14 @@ void MainEditor::ShowMenu()
         {
             if (ImGui::MenuItem("Open", ""))
             {
-                ImGuiFileDialog::Instance()
-                        ->OpenModal("OpenFile", "Open", "entity\0\0", ".");
+                ImGuiFileDialog::Instance()->OpenModal("OpenFile", "Open", "entity\0\0", ".");
             }
 
             if (ImGui::MenuItem("Save", "")) {}
 
             if (ImGui::MenuItem("Save as", ""))
             {
-                ImGuiFileDialog::Instance()
-                        ->OpenModal("Save As", "Open", "entity\0\0", "new");
+                ImGuiFileDialog::Instance()->OpenModal("Save As", "Open", "entity\0\0", "new");
             }
 
 
@@ -234,10 +215,7 @@ void MainEditor::ShowMenu()
                 oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
                 auto str = oss.str();
 
-                if (m_sceneTexture)
-                {
-                    m_sceneTexture->Snapshot("./Snipshot-" + str + ".png");
-                }
+                if (m_sceneTexture) { m_sceneTexture->Snapshot("./Snipshot-" + str + ".png"); }
             }
 
             ImGui::EndMenu();
@@ -253,12 +231,11 @@ void MainEditor::ShowShadowMapView()
 
     if (ImGui::Begin("DebugView", &m_showDebugView))
     {
-        std::vector<std::shared_ptr<MTexture>> vTexture =
-                m_sceneTexture->GetAllOutputTexture();
+        MTextureArray vTexture = m_sceneTexture->GetAllOutputTexture();
         if (!vTexture.empty())
         {
             size_t nImageSize = 0;
-            for (std::shared_ptr<MTexture> pTexture: vTexture)
+            for (MTexturePtr pTexture: vTexture)
             {
                 if (pTexture) { nImageSize += pTexture->GetSize().z; }
             }
@@ -271,21 +248,13 @@ void MainEditor::ShowShadowMapView()
             ImGui::Columns(static_cast<int>(nRowCount));
             for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
             {
-                for (size_t nLayerIdx = 0;
-                     nLayerIdx < static_cast<size_t>(vTexture[nTexIdx]->GetSize().z);
-                     ++nLayerIdx)
+                for (size_t nLayerIdx = 0; nLayerIdx < static_cast<size_t>(vTexture[nTexIdx]->GetSize().z); ++nLayerIdx)
                 {
                     ImGui::Image(
-                            {vTexture[nTexIdx],
-                             intptr_t(vTexture[nTexIdx].get()),
-                             nLayerIdx},
+                            {vTexture[nTexIdx], intptr_t(vTexture[nTexIdx].get()), nLayerIdx},
                             ImVec2(v2Size.x, v2Size.y)
                     );
-                    ImGui::Text(
-                            "%s (%d)",
-                            vTexture[nTexIdx]->GetName().c_str(),
-                            static_cast<int>(nLayerIdx)
-                    );
+                    ImGui::Text("%s (%d)", vTexture[nTexIdx]->GetName().c_str(), static_cast<int>(nLayerIdx));
 
                     ImGui::NextColumn();
                 }
@@ -303,14 +272,7 @@ void MainEditor::ShowView(BaseWidget* pView)
 
     if (bVisible)
     {
-        if (ImGui::Begin(
-                    pView->GetName().c_str(),
-                    &bVisible,
-                    ImGuiWindowFlags_NoCollapse
-            ))
-        {
-            pView->Render();
-        }
+        if (ImGui::Begin(pView->GetName().c_str(), &bVisible, pView->GetWindowFlags())) { pView->Render(); }
 
         pView->SetVisible(bVisible);
         ImGui::End();
@@ -324,8 +286,7 @@ void MainEditor::ShowDialog()
     {
         if (ImGuiFileDialog::Instance()->IsOk() == true)
         {
-            std::map<std::string, std::string>&& files =
-                    ImGuiFileDialog::Instance()->GetSelection();
+            std::map<std::string, std::string>&& files = ImGuiFileDialog::Instance()->GetSelection();
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -335,9 +296,8 @@ void MainEditor::ShowDialog()
     {
         if (ImGuiFileDialog::Instance()->IsOk() == true)
         {
-            std::string strFilePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string strCurrentFileName =
-                    ImGuiFileDialog::Instance()->GetCurrentFileName();
+            std::string strFilePathName    = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string strCurrentFileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -349,22 +309,16 @@ Vector4 MainEditor::GetCurrentWidgetSize() const
 {
     ImGuiStyle& style = ImGui::GetStyle();
 
-    ImVec2      v2RenderViewPos = ImGui::GetWindowPos();
-    ImVec2 v2RenderViewSize = ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+    ImVec2      v2RenderViewPos  = ImGui::GetWindowPos();
+    ImVec2      v2RenderViewSize = ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
     v2RenderViewPos.x += style.WindowPadding.x;
     v2RenderViewPos.y += ImGui::GetItemRectSize().y;
 
     v2RenderViewSize.x -= style.WindowPadding.x * 2.0f;
-    v2RenderViewSize.y -=
-            (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
+    v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
 
-    return Vector4(
-            v2RenderViewPos.x,
-            v2RenderViewPos.y,
-            v2RenderViewSize.x,
-            v2RenderViewSize.y
-    );
+    return Vector4(v2RenderViewPos.x, v2RenderViewPos.y, v2RenderViewSize.x, v2RenderViewSize.y);
 }
 
 void MainEditor::OnRender(MIRenderCommand* pRenderCommand)

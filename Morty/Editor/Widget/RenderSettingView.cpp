@@ -3,7 +3,7 @@
 #include "imgui.h"
 
 #include "Object/MObject.h"
-#include "RenderProgram/RenderGraph/MRenderGraphSetting.h"
+#include "Render/RenderGraph/MRenderGraphSetting.h"
 #include "Utility/MFunction.h"
 
 using namespace morty;
@@ -26,12 +26,8 @@ void RenderSettingView::SetRenderGraph(std::shared_ptr<MRenderGraphSetting> pSet
         UNION_ORDER_PUSH_BACK_VECTOR<MStringId>(
                 m_orderedNames,
                 name,
-                [](const MStringId& a, const MStringId& b) {
-                    return a.ToString() < b.ToString();
-                },
-                [](const MStringId& a, const MStringId& b) {
-                    return a.ToString() == b.ToString();
-                }
+                [](const MStringId& a, const MStringId& b) { return a.ToString() < b.ToString(); },
+                [](const MStringId& a, const MStringId& b) { return a.ToString() == b.ToString(); }
         );
     }
 }
@@ -47,10 +43,7 @@ void RenderSettingView::Render()
     for (const auto& name: m_orderedNames)
     {
         MVariant variant = m_settings->GetPropertyVariant(name);
-        if (m_property.EditMVariant(name.ToString(), variant))
-        {
-            m_settings->MarkDirty(name);
-        }
+        if (m_property.EditMVariant(name.ToString(), variant)) { m_settings->MarkDirty(name); }
     }
 
     ImGui::Columns(1);
@@ -58,9 +51,6 @@ void RenderSettingView::Render()
     ImGui::PopStyleVar();
 }
 
-void RenderSettingView::Initialize(MainEditor* pMainEditor)
-{
-    BaseWidget::Initialize(pMainEditor);
-}
+void RenderSettingView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
 
 void RenderSettingView::Release() {}

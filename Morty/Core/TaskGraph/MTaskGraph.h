@@ -27,28 +27,23 @@ class MORTY_API MTaskGraph : public MTypeClass
 
 public:
     MTaskGraph();
+    ~MTaskGraph() override;
 
-    virtual ~MTaskGraph();
+    template<typename TYPE> TYPE*                AddNode(const MStringId& strNodeName);
 
-    template<typename TYPE> TYPE*  AddNode(const MStringId& strNodeName);
+    void                                         DestroyNode(MTaskNode* pTaskNode);
 
-    void                           DestroyNode(MTaskNode* pTaskNode);
+    bool                                         Compile();
 
-    bool                           Compile();
+    void                                         Run(ITaskGraphWalker* pWalker);
 
-    void                           RequireCompile() { m_requireCompile = true; }
+    void                                         RequireCompile() { m_requireCompile = true; }
+    [[nodiscard]] bool                           NeedCompile() const { return m_requireCompile; }
 
-    bool                           NeedCompile() const { return m_requireCompile; }
-
-    void                           Run(ITaskGraphWalker* pWalker);
-
-    const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
-
-    const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }
-
-    std::vector<MTaskNode*>        GetOrderedNodes();
-
-    std::vector<MTaskNode*>        GetAllNodes();
+    [[nodiscard]] const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
+    [[nodiscard]] const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }
+    std::vector<MTaskNode*>                      GetOrderedNodes();
+    std::vector<MTaskNode*>                      GetAllNodes();
 
 protected:
     bool                    AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);

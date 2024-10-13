@@ -112,10 +112,7 @@ Vector3 Vector3::operator*(const Matrix4& mat4) const
     );
 }
 
-Vector3 Vector3::operator*(const float& value) const
-{
-    return Vector3(x * value, y * value, z * value);
-}
+Vector3        Vector3::operator*(const float& value) const { return Vector3(x * value, y * value, z * value); }
 
 const Vector3& Vector3::operator/=(const float& value)
 {
@@ -137,11 +134,7 @@ const Vector3& Vector3::operator-=(const Vector3& value)
 
 Vector3 Vector3::CrossProduct(const Vector3& value) const
 {
-    return Vector3(
-            y * value.z - z * value.y,
-            z * value.x - x * value.z,
-            x * value.y - y * value.x
-    );
+    return Vector3(y * value.z - z * value.y, z * value.x - x * value.z, x * value.y - y * value.x);
 }
 
 Vector3 Vector3::Projection(const Vector3& value) const
@@ -175,31 +168,22 @@ const Vector3 Vector3::Down    = Vector3(0.0f, -1.0f, 0.0f);
 const Vector3 Vector3::Forward = Vector3(0.0f, 0.0f, 1.0f);
 const Vector3 Vector3::Backward(0.0f, 0.0f, -1.0f);
 
-float         Vector3::operator*(const Vector3& value) const
-{
-    return x * value.x + y * value.y + z * value.z;
-}
+float         Vector3::operator*(const Vector3& value) const { return x * value.x + y * value.y + z * value.z; }
 
-Vector3 Vector3::operator-(void) const { return Vector3(-x, -y, -z); }
+Vector3       Vector3::operator-(void) const { return Vector3(-x, -y, -z); }
 
-Vector3 Vector3::operator/(const float& value) const
+Vector3       Vector3::operator/(const float& value) const
 {
     MORTY_ASSERT(value != 0.0f);
 
     return operator*(1.0f / value);
 }
 
-Vector3 Vector3::operator+(const Vector3& value) const
-{
-    return Vector3(x + value.x, y + value.y, z + value.z);
-}
+Vector3 Vector3::operator+(const Vector3& value) const { return Vector3(x + value.x, y + value.y, z + value.z); }
 
 Vector3 Vector3::operator-(const Vector3& value) const { return *this + (-value); }
 
-bool    Vector3::operator==(const Vector3& value) const
-{
-    return x == value.x && y == value.y && z == value.z;
-}
+bool    Vector3::operator==(const Vector3& value) const { return x == value.x && y == value.y && z == value.z; }
 
 Vector3 operator*(const float& value, const Vector3& vector) { return vector * value; }
 
@@ -226,10 +210,7 @@ Vector4::Vector4(const Vector3& vec3, const float& _w)
 
 Vector4 Vector4::operator-(void) const { return Vector4(-x, -y, -z, -w); }
 
-Vector4 Vector4::operator*(const float& value) const
-{
-    return Vector4(x * value, y * value, z * value, w * value);
-}
+Vector4 Vector4::operator*(const float& value) const { return Vector4(x * value, y * value, z * value, w * value); }
 
 Vector4 Vector4::operator*(const Matrix4& mat4) const
 {
@@ -312,10 +293,7 @@ void  Vector2::Normalize()
     else { (*this) /= length; }
 }
 
-float Vector2::CrossProduct(const Vector2& value) const
-{
-    return x * value.y - y * value.x;
-}
+float         Vector2::CrossProduct(const Vector2& value) const { return x * value.y - y * value.x; }
 
 const Vector2 Vector2::Zero = Vector2(0.0f, 0.0f);
 
@@ -333,12 +311,9 @@ Vector3 Vector2::operator=(const Vector3& value)
     return value;
 }
 
-float Vector2::operator*(const Vector2& value) const { return x * value.x + y * value.y; }
+float          Vector2::operator*(const Vector2& value) const { return x * value.x + y * value.y; }
 
-Vector2 Vector2::operator/(const float& value) const
-{
-    return Vector2(x / value, y / value);
-}
+Vector2        Vector2::operator/(const float& value) const { return Vector2(x / value, y / value); }
 
 const Vector2& Vector2::operator/=(const float& value)
 {
@@ -352,30 +327,15 @@ const Vector2& Vector2::operator*=(const float& value)
     return *this;
 }
 
-bool Vector2::operator==(const Vector2& value) const
-{
-    return x == value.x && y == value.y;
-}
+bool                Vector2::operator==(const Vector2& value) const { return x == value.x && y == value.y; }
 
-bool Vector2::operator!=(const Vector2& value) const
-{
-    return x != value.x || y != value.y;
-}
+bool                Vector2::operator!=(const Vector2& value) const { return x != value.x || y != value.y; }
 
-Vector2 Vector2::operator*(const float& value) const
-{
-    return Vector2(x * value, y * value);
-}
+Vector2             Vector2::operator*(const float& value) const { return Vector2(x * value, y * value); }
 
-Vector2 Vector2::operator+(const Vector2& value) const
-{
-    return Vector2(x + value.x, y + value.y);
-}
+Vector2             Vector2::operator+(const Vector2& value) const { return Vector2(x + value.x, y + value.y); }
 
-Vector2 Vector2::operator-(const Vector2& value) const
-{
-    return Vector2(x - value.x, y - value.y);
-}
+Vector2             Vector2::operator-(const Vector2& value) const { return Vector2(x - value.x, y - value.y); }
 
 Vector2             Vector2::operator-(void) const { return Vector2(-x, -y); }
 
@@ -386,10 +346,7 @@ const fbs::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
     return reinterpret_cast<const fbs::Vector2*>(this);
 }
 
-void Vector2::Deserialize(const void* pBufferPointer)
-{
-    memcpy(this, pBufferPointer, sizeof(Vector2));
-}
+void                Vector2::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Vector2)); }
 
 const fbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
@@ -410,10 +367,7 @@ const fbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
     return reinterpret_cast<const fbs::Vector4*>(this);
 }
 
-void Vector4::Deserialize(const void* pBufferPointer)
-{
-    memcpy(this, pBufferPointer, sizeof(Vector4));
-}
+void Vector4::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Vector4)); }
 
 Vector2i::Vector2i(int x, int y)
     : x(x)
@@ -437,10 +391,7 @@ Vector2i::Vector2i(float x, float y)
 
 bool Vector2i::operator!=(const Vector2i& other) const { return !operator==(other); }
 
-bool Vector2i::operator==(const Vector2i& other) const
-{
-    return x == other.x && y == other.y;
-}
+bool Vector2i::operator==(const Vector2i& other) const { return x == other.x && y == other.y; }
 
 Vector3i::Vector3i(int x, int y, int z)
     : x(x)
@@ -448,7 +399,13 @@ Vector3i::Vector3i(int x, int y, int z)
     , z(z)
 {}
 
-Vector3i Vector3i::operator*(const int& value) const
+Vector3i             Vector3i::operator*(const int& value) const { return Vector3i(x * value, y * value, z * value); }
+
+const fbs::Vector3i* Vector3i::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-    return Vector3i(x * value, y * value, z * value);
+    MORTY_UNUSED(fbb);
+
+    return reinterpret_cast<const fbs::Vector3i*>(this);
 }
+
+void Vector3i::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Vector3i)); }

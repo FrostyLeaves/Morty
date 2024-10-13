@@ -1,4 +1,13 @@
+include "Math/Vector.fbs";
 namespace morty.fbs;
+
+enum METextureType: byte
+{
+    ETexture2D      = 0,
+    ETextureCube    = 1,
+    ETexture2DArray = 2,
+    ETexture3D      = 3,
+}
 
 enum METextureFormat:byte
 {
@@ -34,6 +43,11 @@ enum METextureFormat:byte
 
     SNorm_RGBA8_BC4,
     SNorm_RGBA8_BC5,
+
+    SRGB_R8,
+    SRGB_R8G8,
+    SRGB_R8G8B8,
+    SRGB_R8G8B8A8,
 }
 
 enum MEMipmapDataType: byte
@@ -41,6 +55,18 @@ enum MEMipmapDataType: byte
     Disable = 0,
     Generate,
     Load,
+}
+
+table MTextureDesc
+{
+    name: string;
+    size: Vector3i;
+    layer: uint32;
+    texture_type: METextureType;
+    format: METextureFormat;
+    mipmap_type: MEMipmapDataType;
+    read_usage: uint32;
+    write_usage: uint32;
 }
 
 file_identifier "MFBS";

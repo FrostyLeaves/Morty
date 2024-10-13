@@ -1,0 +1,13 @@
+include "Render/RenderGraph/MRenderTaskNode.fbs";
+namespace morty.fbs;
+
+table MRenderGraph
+{
+    node_array: [MRenderTaskNode];
+
+    render_target: [MRenderGraphTargetDesc];
+}
+
+root_type MRenderGraph;
+
+file_identifier "MFBS";

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Main/BaseWidget.h"
-#include "Render/SceneTexture.h"
+#include "Render/SceneViewer.h"
 
 #include "Property/PropertyBase.h"
 #include "Resource/MResource.h"
@@ -10,6 +10,7 @@ namespace morty
 {
 
 class GuizmoWidget;
+class MessageWidget;
 class MScene;
 class MEntity;
 class MEngine;
@@ -29,7 +30,8 @@ public:
     void Render() override;
 
 private:
-    GuizmoWidget* m_guizmoWidget = nullptr;
+    GuizmoWidget*  m_guizmoWidget  = nullptr;
+    MessageWidget* m_messageWidget = nullptr;
 };
 
 }// namespace morty

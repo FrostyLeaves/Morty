@@ -142,6 +142,10 @@ VkFormat MVulkanDevice::GetFormat(const METextureFormat& layout) const
             {METextureFormat::UNorm_RGBA8, VK_FORMAT_R8G8B8A8_UNORM},
             {METextureFormat::UNorm_RGBA8_BC7, VK_FORMAT_BC7_UNORM_BLOCK},
             {METextureFormat::UInt_R8, VK_FORMAT_R8_UINT},
+            {METextureFormat::SRGB_R8, VK_FORMAT_R8_SRGB},
+            {METextureFormat::SRGB_R8G8, VK_FORMAT_R8G8_SRGB},
+            {METextureFormat::SRGB_R8G8B8, VK_FORMAT_R8G8B8_SRGB},
+            {METextureFormat::SRGB_R8G8B8A8, VK_FORMAT_R8G8B8A8_SRGB},
             {METextureFormat::Float_R16, VK_FORMAT_R16_SFLOAT},
             {METextureFormat::Float_RG16, VK_FORMAT_R16G16_SFLOAT},
             {METextureFormat::Float_RGB16, VK_FORMAT_R16G16B16_SFLOAT},
@@ -941,7 +945,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
         vAttachmentDesc.push_back(attachment);
     }
 
-    if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
+    if (MTexturePtr pDepthTexture = pRenderPass->GetDepthTexture())
     {
         auto attachment = CreateAttachmentDescriptionFromTexture(pRenderPass->m_renderTarget.depthTarget);
         vAttachmentDesc.push_back(attachment);
@@ -1188,8 +1192,8 @@ std::tuple<VkImageView, Vector2i> MVulkanDevice::CreateFrameBufferViewFromRender
     {
         if (renderTarget.m_vkImageView == VK_NULL_HANDLE)
         {
-            std::shared_ptr<MTexture> pTexture = renderTarget.pTexture;
-            renderTarget.m_vkImageView         = CreateImageView(
+            MTexturePtr pTexture       = renderTarget.pTexture;
+            renderTarget.m_vkImageView = CreateImageView(
                     textureRHI->vkTextureImage,
                     textureRHI->vkTextureFormat,
                     GetAspectFlags(pTexture->GetWriteUsage()),

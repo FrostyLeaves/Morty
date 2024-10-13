@@ -15,7 +15,7 @@
 #include "Main/MainEditor.h"
 #include "Material/MMaterial.h"
 #include "Object/MObject.h"
-#include "RenderProgram/MIRenderProgram.h"
+#include "Render/MIRenderProgram.h"
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMeshResourceUtil.h"
 #include "Resource/MSkeletonResource.h"
@@ -25,6 +25,8 @@
 #include "System/MResourceSystem.h"
 #include "System/MSceneSystem.h"
 #include "Utility/SelectionEntityManager.h"
+#include "Widget/MessageWidget.h"
+#include "Widget/RenderGraphView.h"
 
 using namespace morty;
 
@@ -39,7 +41,6 @@ void MainView::Render()
 {
     Vector4 v4RenderViewSize = GetMainEditor()->GetCurrentWidgetSize();
 
-    auto    pTexture = GetMainEditor()->GetSceneTexture()->GetTexture();
 
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -56,12 +57,15 @@ void MainView::Render()
             Vector4(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight()
             );
 
-    ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
-
+    if (auto pTexture = GetMainEditor()->GetRenderGraphView()->GetFinalOutput())
+    {
+        ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
+    }
 
     ImGuizmo::SetRect(v4RenderViewSize.x, v4RenderViewSize.y, v4RenderViewSize.z, v4RenderViewSize.w);
     ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
     m_guizmoWidget->Render();
+    m_messageWidget->Render();
 
     ImGui::End();
     ImGui::PopStyleVar(2);
@@ -79,11 +83,17 @@ void MainView::Initialize(MainEditor* pMainEditor)
     m_guizmoWidget = new GuizmoWidget();
     m_guizmoWidget->Initialize(GetMainEditor());
     AddWidget(m_guizmoWidget);
+
+    m_messageWidget = new MessageWidget();
+    m_messageWidget->Initialize(GetMainEditor());
+    AddWidget(m_messageWidget);
 }
 
 void MainView::Release()
 {
     m_guizmoWidget->Release();
-    delete m_guizmoWidget;
-    m_guizmoWidget = nullptr;
+    MORTY_SAFE_DELETE(m_guizmoWidget);
+
+    m_messageWidget->Release();
+    MORTY_SAFE_DELETE(m_messageWidget);
 }

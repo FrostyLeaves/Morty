@@ -52,7 +52,7 @@ public:
 protected:
     struct MImGuiTextureDest {
         int                                   nDestroyCount;
-        std::shared_ptr<MTexture>             pTexture;
+        MTexturePtr                           pTexture;
         std::shared_ptr<MShaderPropertyBlock> pPropertyBlock;
     };
 

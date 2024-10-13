@@ -14,43 +14,42 @@
 namespace morty
 {
 
-#define M_TYPE_DECL(Class)                                                               \
-public:                                                                                  \
-    static const MType* GetClassType();                                                  \
-    static MString      GetClassTypeName() { return Class::GetClassType()->m_strName; }  \
+#define M_TYPE_DECL(Class)                                                                                             \
+public:                                                                                                                \
+    static const MType* GetClassType();                                                                                \
+    static MString      GetClassTypeName() { return Class::GetClassType()->m_strName; }                                \
     const MType*        GetType() const override { return Class::GetClassType(); };
 
 
-#define M_TYPE_IMPLEMENT(CurrClass, BaseClass)                                           \
-    typedef BaseClass Super;                                                             \
-    typedef CurrClass Class;                                                             \
-    const MType*      Class::GetClassType()                                              \
-    {                                                                                    \
-        static const MType type(#CurrClass, BaseClass::GetClassType());                  \
-        return &type;                                                                    \
+#define M_TYPE_IMPLEMENT(CurrClass, BaseClass)                                                                         \
+    typedef BaseClass Super;                                                                                           \
+    typedef CurrClass Class;                                                                                           \
+    const MType*      Class::GetClassType()                                                                            \
+    {                                                                                                                  \
+        static const MType type(#CurrClass, BaseClass::GetClassType());                                                \
+        return &type;                                                                                                  \
     }
 
 
-#define M_TYPE_CREATE_DECL(Class)                                                        \
-public:                                                                                  \
-    static MTypeClass*         New() { return static_cast<MTypeClass*>(new Class()); }   \
+#define M_TYPE_CREATE_DECL(Class)                                                                                      \
+public:                                                                                                                \
+    static MTypeClass*         New() { return static_cast<MTypeClass*>(new Class()); }                                 \
     static MTypeCreator<Class> s_##Class##Creator;
 
 
-#define M_TYPE_CREATE_IMPLEMENT(Class)                                                   \
-    MTypeCreator<Class> Class::s_##Class##Creator = MTypeCreator<Class>();
+#define M_TYPE_CREATE_IMPLEMENT(Class)              MTypeCreator<Class> Class::s_##Class##Creator = MTypeCreator<Class>();
 
 #define MORTY_INTERFACE(Class)                      M_TYPE_DECL(Class)
 
 #define MORTY_INTERFACE_IMPLEMENT(Class, BaseClass) M_TYPE_IMPLEMENT(Class, BaseClass)
 
 
-#define MORTY_CLASS(Class)                                                               \
-    M_TYPE_DECL(Class)                                                                   \
+#define MORTY_CLASS(Class)                                                                                             \
+    M_TYPE_DECL(Class)                                                                                                 \
     M_TYPE_CREATE_DECL(Class)
 
-#define MORTY_CLASS_IMPLEMENT(Class, BaseClass)                                          \
-    M_TYPE_IMPLEMENT(Class, BaseClass)                                                   \
+#define MORTY_CLASS_IMPLEMENT(Class, BaseClass)                                                                        \
+    M_TYPE_IMPLEMENT(Class, BaseClass)                                                                                 \
     M_TYPE_CREATE_IMPLEMENT(Class)
 
 
@@ -90,16 +89,16 @@ struct MDynamicTypeInfo {
 class MORTY_API MTypeClass
 {
 public:
-    MTypeClass(){};
+    MTypeClass() {};
 
     virtual ~MTypeClass() {}
 
 
-    MString             GetTypeName() { return GetType()->m_strName; }
+    MString                       GetTypeName() { return GetType()->m_strName; }
 
-    static const MType* GetClassType();
+    static const MType*           GetClassType();
 
-    static MString GetClassTypeName() { return MTypeClass::GetClassType()->m_strName; }
+    static MString                GetClassTypeName() { return MTypeClass::GetClassType()->m_strName; }
 
     virtual const MType*          GetType() const { return MTypeClass::GetClassType(); };
 
@@ -110,15 +109,13 @@ public:
         if (CheckNull(this)) return nullptr;
         const MType* pTypeIdent  = GetType();
         const MType* pClassIdent = T::GetClassType();
-        for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
-            pTypeIdent = pTypeIdent->m_baseType;
+        for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i) pTypeIdent = pTypeIdent->m_baseType;
 
         if (pTypeIdent == pClassIdent) return (T*) (this);
         return nullptr;
     }
 
-    template<class Target, class Source>
-    static std::shared_ptr<Target> DynamicCast(std::shared_ptr<Source> pointer)
+    template<class Target, class Source> static std::shared_ptr<Target> DynamicCast(std::shared_ptr<Source> pointer)
     {
         if (nullptr == pointer) return nullptr;
         if (Target* ptr = (pointer.get())->template DynamicCast<Target>())
@@ -133,8 +130,7 @@ public:
     {
         const MType* pTypeIdent  = T1::GetClassType();
         const MType* pClassIdent = T2::GetClassType();
-        for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i)
-            pTypeIdent = pTypeIdent->m_baseType;
+        for (int i = pTypeIdent->m_unDeep - pClassIdent->m_unDeep; i > 0; --i) pTypeIdent = pTypeIdent->m_baseType;
 
         return pTypeIdent == pClassIdent;
     }
@@ -168,9 +164,6 @@ public:
     static std::map<MString, MDynamicTypeInfo>&      GetNameTable();
 };
 
-template<typename T> MTypeCreator<T>::MTypeCreator()
-{
-    MTypeClass::RegisterTypedClass<T>();
-}
+template<typename T> MTypeCreator<T>::MTypeCreator() { MTypeClass::RegisterTypedClass<T>(); }
 
 }// namespace morty

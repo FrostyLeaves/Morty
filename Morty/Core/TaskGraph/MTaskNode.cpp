@@ -33,14 +33,14 @@ void MTaskNode::AppendOutput(MTaskNodeOutput* pOutput)
     m_output.push_back(pOutput);
 }
 
-MTaskNodeInput* MTaskNode::GetInput(const size_t& nInputIdx)
+MTaskNodeInput* MTaskNode::GetInput(const size_t& nInputIdx) const
 {
     if (nInputIdx < m_input.size()) return m_input[nInputIdx];
 
     return nullptr;
 }
 
-MTaskNodeOutput* MTaskNode::GetOutput(const size_t& nOutputIdx)
+MTaskNodeOutput* MTaskNode::GetOutput(const size_t& nOutputIdx) const
 {
     if (nOutputIdx < m_output.size()) return m_output[nOutputIdx];
 

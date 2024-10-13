@@ -22,7 +22,7 @@
 
 #include "Resource/MSkeletonResource.h"
 
-#include "RenderProgram/MIRenderProgram.h"
+#include "Render/MIRenderProgram.h"
 
 #include "Main/MainEditor.h"
 #include "Resource/MMeshResourceUtil.h"
@@ -40,7 +40,7 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 {
     if (m_material == pMaterial) return;
 
-    MSceneSystem* pSceneSystem = GetEngine()->FindSystem<MSceneSystem>();
+    auto* pSceneSystem = GetEngine()->FindSystem<MSceneSystem>();
 
     m_material = pMaterial;
 
@@ -49,15 +49,12 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
         pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
     }
-    else if (m_material->GetShaderMacro()
-                     .GetMacro(MRenderGlobal::SHADER_SKELETON_ENABLE)
-                     .empty())
+    else if (m_material->GetShaderMacro().GetMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
     {
         pSceneSystem->SetVisible(m_staticSphereMeshNode, true);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
 
-        if (MRenderMeshComponent* pMeshComponent =
-                    m_staticSphereMeshNode->GetComponent<MRenderMeshComponent>())
+        if (auto* pMeshComponent = m_staticSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
             pMeshComponent->SetMaterial(pMaterial);
         }
@@ -67,8 +64,7 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
         pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, true);
 
-        if (MRenderMeshComponent* pMeshComponent =
-                    m_skeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
+        if (auto* pMeshComponent = m_skeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
             pMeshComponent->SetMaterial(pMaterial);
         }
@@ -79,8 +75,7 @@ void MaterialView::Render()
 {
     if (MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity())
     {
-        if (MRenderMeshComponent* pMeshComponent =
-                    pEntity->GetComponent<MRenderMeshComponent>())
+        if (auto* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
         {
             SetMaterial(pMeshComponent->GetMaterialResource());
         }
@@ -88,14 +83,11 @@ void MaterialView::Render()
 
     if (m_material)
     {
-        if (std::shared_ptr<MTexture> pTexture = m_sceneTexture->GetTexture())
+        if (MTexturePtr pTexture = m_sceneTexture->GetTexture())
         {
             float fImageSize = ImGui::GetContentRegionAvail().x;
             ImGui::SameLine(fImageSize * 0.25f);
-            ImGui::Image(
-                    {pTexture, intptr_t(pTexture.get()), 0},
-                    ImVec2(fImageSize * 0.5f, fImageSize * 0.5f)
-            );
+            ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(fImageSize * 0.5f, fImageSize * 0.5f));
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
@@ -117,19 +109,18 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 {
     BaseWidget::Initialize(pMainEditor);
 
-    MSceneSystem*    pSceneSystem    = GetEngine()->FindSystem<MSceneSystem>();
-    MObjectSystem*   pObjectSystem   = GetEngine()->FindSystem<MObjectSystem>();
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto* pSceneSystem    = GetEngine()->FindSystem<MSceneSystem>();
+    auto* pObjectSystem   = GetEngine()->FindSystem<MObjectSystem>();
+    auto* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     m_scene = pObjectSystem->CreateObject<MScene>();
 
-    m_sceneTexture = GetMainEditor()->CreateSceneViewer(m_scene);
+    m_sceneTexture = GetMainEditor()->CreateSceneViewer("EditorMaterial", m_scene);
     m_sceneTexture->SetRect(Vector2i(0, 0), Vector2i(512, 512));
 
     if (MEntity* pCameraNode = m_sceneTexture->GetViewport()->GetCamera())
     {
-        if (MSceneComponent* pCameraSceneComponent =
-                    pCameraNode->GetComponent<MSceneComponent>())
+        if (auto* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>())
         {
             pCameraSceneComponent->SetPosition(Vector3(0, 0, -5));
             pCameraSceneComponent->SetRotation(UnitQuaternion);
@@ -138,11 +129,9 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
     m_staticSphereMeshNode = m_scene->CreateEntity();
 
-    if (MRenderMeshComponent* pMeshComponent =
-                m_staticSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
+    if (auto* pMeshComponent = m_staticSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
     {
-        std::shared_ptr<MMeshResource> pMeshResource =
-                pResourceSystem->CreateResource<MMeshResource>();
+        std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere());
         pMeshComponent->Load(pMeshResource);
     }
@@ -151,19 +140,15 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
     m_skeletonSphereMeshNode = m_scene->CreateEntity();
 
-    if (MModelComponent* pModelComponent =
-                m_skeletonSphereMeshNode->RegisterComponent<MModelComponent>())
+    if (auto* pModelComponent = m_skeletonSphereMeshNode->RegisterComponent<MModelComponent>())
     {
-        std::shared_ptr<MSkeletonResource> pSkeleton =
-                pResourceSystem->CreateResource<MSkeletonResource>();
+        std::shared_ptr<MSkeletonResource> pSkeleton = pResourceSystem->CreateResource<MSkeletonResource>();
         pModelComponent->SetSkeletonResource(pSkeleton);
     }
 
-    if (MRenderMeshComponent* pMeshComponent =
-                m_skeletonSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
+    if (auto* pMeshComponent = m_skeletonSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
     {
-        std::shared_ptr<MMeshResource> pMeshResource =
-                pResourceSystem->CreateResource<MMeshResource>();
+        std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere(MEMeshVertexType::Skeleton));
         pMeshComponent->Load(pMeshResource);
     }
@@ -174,16 +159,14 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
     MEntity* pDirLight = m_scene->CreateEntity();
     pDirLight->SetName("DirLight");
 
-    if (MSceneComponent* pDirLightSceneComponent =
-                pDirLight->RegisterComponent<MSceneComponent>())
+    if (auto* pDirLightSceneComponent = pDirLight->RegisterComponent<MSceneComponent>())
     {
         Quaternion quat;
         quat.SetEulerAngle(Vector3(-45, 45, 0));
         pDirLightSceneComponent->SetRotation(Quaternion(quat));
     }
 
-    if (MDirectionalLightComponent* pDirLightComponent =
-                pDirLight->RegisterComponent<MDirectionalLightComponent>())
+    if (auto* pDirLightComponent = pDirLight->RegisterComponent<MDirectionalLightComponent>())
     {
         pDirLightComponent->SetLightIntensity(10.0f);
     }
@@ -204,7 +187,4 @@ void MaterialView::Release()
     m_sceneTexture = nullptr;
 }
 
-void MaterialView::Input(MInputEvent* pEvent)
-{
-    m_sceneTexture->GetViewport()->Input(pEvent);
-}
+void MaterialView::Input(MInputEvent* pEvent) { m_sceneTexture->GetViewport()->Input(pEvent); }

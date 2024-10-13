@@ -269,7 +269,7 @@ MTextureResourceParam::MTextureResourceParam(const MShaderTextureParam& param)
     , m_TextureRef()
 {}
 
-void MTextureResourceParam::SetTexture(std::shared_ptr<MTexture> pTexture)
+void MTextureResourceParam::SetTexture(MTexturePtr pTexture)
 {
     m_TextureRef.SetResource(nullptr);
 
@@ -290,7 +290,7 @@ void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& 
     SetDirty();
 }
 
-std::shared_ptr<MTexture> MTextureResourceParam::GetTexture()
+MTexturePtr MTextureResourceParam::GetTexture()
 {
     if (auto pTextureResource = m_TextureRef.GetResource<MTextureResource>())
     {
