@@ -7,7 +7,7 @@
 #include "Mesh/MMeshManager.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"
 
 using namespace morty;

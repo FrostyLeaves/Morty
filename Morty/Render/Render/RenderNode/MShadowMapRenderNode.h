@@ -9,11 +9,11 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 
 namespace morty
 {

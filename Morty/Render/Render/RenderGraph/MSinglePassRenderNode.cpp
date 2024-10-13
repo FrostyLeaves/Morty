@@ -1,4 +1,4 @@
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
 #include "Component/MCameraComponent.h"
@@ -7,7 +7,6 @@
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "MRenderCommon.h"
-#include "MVRSTextureRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
 #include "Mesh/MVertex.h"
@@ -39,12 +38,9 @@ void ISinglePassRenderNode::Release()
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-std::vector<std::shared_ptr<MTexture>> ISinglePassRenderNode::GetBackTextures() const
-{
-    return m_renderPass.GetBackTextures();
-}
+MTextureArray ISinglePassRenderNode::GetBackTextures() const { return m_renderPass.GetBackTextures(); }
 
-std::shared_ptr<MTexture> ISinglePassRenderNode::GetDepthTexture() const { return m_renderPass.GetDepthTexture(); }
+MTexturePtr   ISinglePassRenderNode::GetDepthTexture() const { return m_renderPass.GetDepthTexture(); }
 
 std::shared_ptr<IGetTextureAdapter> ISinglePassRenderNode::CreateOutput() const
 {
@@ -84,7 +80,7 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTargetWithVRS()
 {
     auto group = AutoBindTarget();
 
-    auto pVRSTexture  = GetRenderTargetManager()->FindRenderTexture(MVRSTextureRenderNode::VRS_TEXTURE);
+    auto pVRSTexture  = GetRenderTargetManager()->FindRenderTexture(MRenderGraphName::VRS_TEXTURE);
     group.shadingRate = {pVRSTexture, {false, MColor::Black_T}};
 
     return group;

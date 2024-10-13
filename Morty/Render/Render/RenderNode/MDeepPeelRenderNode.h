@@ -13,10 +13,10 @@
 
 #include "Mesh/MMesh.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 
-#include "RenderProgram/MFrameShaderPropertyBlock.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/MFrameShaderPropertyBlock.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Math/Vector.h"
 #include "Scene/MEntity.h"
 #include "System/MResourceSystem.h"
@@ -10,9 +10,9 @@
 #include "Variant/MVariant.h"
 
 #include <any>
+#include <cstdint>
 #include <functional>
 #include <map>
-#include <stdint.h>
 
 namespace morty
 {
@@ -28,7 +28,7 @@ class PropertyBase
 public:
     PropertyBase() {}
 
-    virtual ~PropertyBase(){};
+    virtual ~PropertyBase() {};
 
     virtual void EditEntity(MEntity* pObject) { MORTY_UNUSED(pObject); };
 
@@ -90,7 +90,7 @@ public:
             std::shared_ptr<MResource>  pResource
     );
 
-    void                         ShowTexture(std::shared_ptr<MTexture> pTexture, const Vector2& v2Size);
+    void                         ShowTexture(MTexturePtr pTexture, const Vector2& v2Size);
 
     //auto call ShowValue/ShowNode
     bool                         EditMVariant(const MString& strVariantName, MVariant& value);

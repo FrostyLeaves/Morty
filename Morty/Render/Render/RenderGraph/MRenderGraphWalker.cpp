@@ -3,8 +3,8 @@
 #include "MRenderGraph.h"
 #include "MRenderGraphSetting.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 #include "TaskGraph/MTaskGraph.h"
 
 using namespace morty;

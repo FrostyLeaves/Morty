@@ -25,9 +25,9 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MFrameShaderPropertyBlock.h"
-#include "RenderProgram/MeshRender/MIndirectIndexRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MFrameShaderPropertyBlock.h"
+#include "Render/MeshRender/MIndirectIndexRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Utility/MBounds.h"
 #include "VXGI/MVoxelMapUtil.h"
 #include "Variant/MVariant.h"
@@ -37,8 +37,8 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MVoxelDebugRenderNode, ISinglePassRenderNode)
 
 
-const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Voxel Debug Back Buffer Output");
-const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Voxel Debug Depth Buffer Output");
+const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Voxel Debug Back");
+const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Voxel Debug Depth");
 
 
 void            MVoxelDebugRenderNode::Initialize(MEngine* pEngine)

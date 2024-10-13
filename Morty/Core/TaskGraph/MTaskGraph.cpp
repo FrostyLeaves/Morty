@@ -54,6 +54,7 @@ void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
     pTaskNode->DisconnectAll();
 
     m_taskNode.erase(pTaskNode);
+
     RequireCompile();
 
     delete pTaskNode;
@@ -123,9 +124,7 @@ void MTaskGraph::Run(ITaskGraphWalker* pWalker)
 std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
 {
     std::vector<MTaskNode*> vNodes(m_taskNode.size());
-    std::transform(m_taskNode.begin(), m_taskNode.end(), vNodes.begin(), [](auto node) {
-        return node;
-    });
+    std::transform(m_taskNode.begin(), m_taskNode.end(), vNodes.begin(), [](auto node) { return node; });
     std::sort(vNodes.begin(), vNodes.end(), [](MTaskNode* a, MTaskNode* b) {
         return a->m_priorityLevel > b->m_priorityLevel;
     });
@@ -136,9 +135,7 @@ std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
 std::vector<MTaskNode*> MTaskGraph::GetAllNodes()
 {
     std::vector<MTaskNode*> vNodes(m_taskNode.size());
-    std::transform(m_taskNode.begin(), m_taskNode.end(), vNodes.begin(), [](auto node) {
-        return node;
-    });
+    std::transform(m_taskNode.begin(), m_taskNode.end(), vNodes.begin(), [](auto node) { return node; });
 
     return vNodes;
 }

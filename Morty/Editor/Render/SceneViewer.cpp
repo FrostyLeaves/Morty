@@ -2,32 +2,31 @@
 
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Engine/MEngine.h"
-#include "RHI/MRenderCommand.h"
-#include "Scene/MEntity.h"
-#include "Scene/MScene.h"
-#include "TaskGraph/MTaskGraph.h"
-
-#include "System/MEntitySystem.h"
-#include "System/MObjectSystem.h"
-#include "System/MResourceSystem.h"
-
+#include "Batch/MMeshInstanceManager.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MMoveControllerComponent.h"
 #include "Component/MSceneComponent.h"
-
-#include "RenderProgram/MIRenderProgram.h"
-
-#include "Batch/MMeshInstanceManager.h"
+#include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
 #include "Manager/MAnimationManager.h"
+#include "RHI/MRenderCommand.h"
+#include "Render/MIRenderProgram.h"
+#include "Render/RenderGraph/MRenderGraph.h"
+#include "Scene/MEntity.h"
+#include "Scene/MScene.h"
 #include "Shadow/MShadowMeshManager.h"
+#include "System/MEntitySystem.h"
+#include "System/MObjectSystem.h"
+#include "System/MResourceSystem.h"
+#include "TaskGraph/MTaskGraph.h"
 #include "stb_image_write.h"
 
 using namespace morty;
 
-void SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MString& strRenderProgram)
+MString SceneViewer::m_defaultRenderGraphPath = MString(MORTY_RESOURCE_PATH) + "/Pipeline/default_render_graph.mrg";
+
+void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MString& strRenderProgram)
 {
     m_scene = pScene;
 
@@ -56,6 +55,9 @@ void SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MStr
     m_renderProgram               = pRenderProgramObject->template DynamicCast<MIRenderProgram>();
     m_renderProgram->SetViewport(m_renderViewport);
 
+    std::vector<MByte> renderGraphBuffer;
+    MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
+    m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)
@@ -100,14 +102,11 @@ void SceneViewer::SetRect(Vector2i pos, Vector2i size)
     m_renderViewport->SetSize(size);
 }
 
-std::shared_ptr<MTexture>              SceneViewer::GetTexture() { return m_renderProgram->GetOutputTexture(); }
+MTexturePtr   SceneViewer::GetTexture() { return m_renderProgram->GetOutputTexture(); }
 
-std::vector<std::shared_ptr<MTexture>> SceneViewer::GetAllOutputTexture()
-{
-    return m_renderProgram->GetOutputTextures();
-}
+MTextureArray SceneViewer::GetAllOutputTexture() { return m_renderProgram->GetOutputTextures(); }
 
-void SceneViewer::Snapshot(const MString& strSnapshotPath)
+void          SceneViewer::Snapshot(const MString& strSnapshotPath)
 {
     m_snapshotPath = strSnapshotPath;
     m_snapshot     = true;

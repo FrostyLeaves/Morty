@@ -30,9 +30,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVRSTextureRenderNode, MRenderTaskNode)
 
-const MStringId MVRSTextureRenderNode::VRS_TEXTURE = MStringId("VRS Screen Texture");
 
-void            MVRSTextureRenderNode::Initialize(MEngine* pEngine)
+void MVRSTextureRenderNode::Initialize(MEngine* pEngine)
 {
     m_engine = pEngine;
 
@@ -120,6 +119,6 @@ std::vector<MRenderTaskInputDesc> MVRSTextureRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MVRSTextureRenderNode::InitOutputDesc()
 {
     return {
-            {VRS_TEXTURE, {false, MColor::Black_T}},
+            {MRenderGraphName::VRS_TEXTURE, {false, MColor::Black_T}},
     };
 }

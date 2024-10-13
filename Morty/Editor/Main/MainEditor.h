@@ -9,10 +9,8 @@
 namespace morty
 {
 
-class TaskGraphView;
 class MainView;
 class GuizmoWidget;
-class MNode;
 class MScene;
 class MViewport;
 class ImGuiRenderable;
@@ -21,10 +19,13 @@ class NodeTreeView;
 class PropertyView;
 class MaterialView;
 class ResourceView;
+class TaskGraphView;
 class ModelConvertView;
+class RenderGraphView;
 class MessageWidget;
 class MInputEvent;
 class MTaskNode;
+
 class MainEditor : public RenderViewContent
 {
 public:
@@ -32,37 +33,38 @@ public:
 
     virtual ~MainEditor() = default;
 
-    bool                         Initialize(MEngine* pEngine);
+    bool                                       Initialize(MEngine* pEngine);
 
-    void                         Release();
+    void                                       Release();
 
-    MEngine*                     GetEngine() const { return m_engine; }
+    [[nodiscard]] MEngine*                     GetEngine() const { return m_engine; }
 
-    void                         SetScene(MScene* pScene);
+    void                                       SetScene(MScene* pScene);
 
-    MScene*                      GetScene() const { return m_scene; }
+    [[nodiscard]] MScene*                      GetScene() const { return m_scene; }
 
-    MViewport*                   GetViewport() const;
+    [[nodiscard]] MViewport*                   GetViewport() const;
 
-    std::shared_ptr<SceneViewer> GetSceneTexture() const { return m_sceneTexture; }
+    [[nodiscard]] std::shared_ptr<SceneViewer> GetSceneTexture() const { return m_sceneTexture; }
+    [[nodiscard]] RenderGraphView*             GetRenderGraphView() const { return m_renderGraphView; }
 
-    void                         OnResize(morty::Vector2 size) override;
+    void                                       OnResize(morty::Vector2 size) override;
 
-    void                         OnRender(MIRenderCommand* pRenderCommand) override;
+    void                                       OnRender(MIRenderCommand* pRenderCommand) override;
 
-    void                         OnInput(MInputEvent* pEvent) override;
+    void                                       OnInput(MInputEvent* pEvent) override;
 
-    void                         OnTick(float fDelta) override;
+    void                                       OnTick(float fDelta) override;
 
-    static morty::MString        GetRenderProgramName() { return m_renderProgramName; }
+    static morty::MString                      GetRenderProgramName() { return m_renderProgramName; }
 
-    MTaskNode*                   GetRenderTask() override { return m_renderTask; }
+    MTaskNode*                                 GetRenderTask() override { return m_renderTask; }
 
-    std::shared_ptr<SceneViewer> CreateSceneViewer(const MString& viewName, MScene* pScene);
+    std::shared_ptr<SceneViewer>               CreateSceneViewer(const MString& viewName, MScene* pScene);
 
-    void                         DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer);
+    void                                       DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer);
 
-    morty::Vector4               GetCurrentWidgetSize() const;
+    [[nodiscard]] morty::Vector4               GetCurrentWidgetSize() const;
 
 protected:
     void UpdateSceneViewer(MIRenderCommand* pRenderCommand);
@@ -86,10 +88,9 @@ private:
 
     Vector4                                m_renderViewSize = Vector4(0, 0, 32, 32);
 
-    TaskGraphView*                         m_renderGraphView   = nullptr;
-    RenderSettingView*                     m_renderSettingView = nullptr;
-    std::shared_ptr<SceneViewer>           m_sceneTexture      = nullptr;
-    MTaskNode*                             m_renderTask        = nullptr;
+    RenderGraphView*                       m_renderGraphView = nullptr;
+    std::shared_ptr<SceneViewer>           m_sceneTexture    = nullptr;
+    MTaskNode*                             m_renderTask      = nullptr;
 
     IniConfig                              m_IniConfig;
 

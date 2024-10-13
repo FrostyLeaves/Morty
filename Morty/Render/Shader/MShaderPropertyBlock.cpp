@@ -84,7 +84,7 @@ std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(cons
     return nullptr;
 }
 
-bool MShaderPropertyBlock::SetTexture(const MStringId& strName, std::shared_ptr<MTexture> pTexture)
+bool MShaderPropertyBlock::SetTexture(const MStringId& strName, MTexturePtr pTexture)
 {
     for (std::shared_ptr<MShaderTextureParam>& pParam: m_textures)
     {

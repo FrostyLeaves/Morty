@@ -95,7 +95,7 @@ void MEnvironmentMapRenderNode::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
 
     if (std::shared_ptr<MTextureResource> pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>())
     {
-        if (std::shared_ptr<MTexture> pTexture = pDiffuseTexture->GetTextureTemplate())
+        if (MTexturePtr pTexture = pDiffuseTexture->GetTextureTemplate())
         {
             pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
         }
@@ -108,8 +108,7 @@ void MEnvironmentMapRenderNode::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 {
     std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 
-    std::shared_ptr<MTexture>  pSpecularTexture =
-            m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
+    MTexturePtr pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>()->GetTextureTemplate();
 
 
     for (uint32_t nIdx = 0; nIdx < m_specularRenderPass.size(); ++nIdx)
@@ -135,7 +134,7 @@ void MEnvironmentMapRenderNode::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
 
     if (std::shared_ptr<MTextureResource> pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>())
     {
-        if (std::shared_ptr<MTexture> pTexture = pSpecularTexture->GetTextureTemplate())
+        if (MTexturePtr pTexture = pSpecularTexture->GetTextureTemplate())
         {
             pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
         }

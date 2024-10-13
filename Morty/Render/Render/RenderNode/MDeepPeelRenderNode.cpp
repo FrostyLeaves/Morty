@@ -18,16 +18,16 @@
 
 #include "Utility/MGlobal.h"
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MTextureResourceUtil.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeepPeelRenderNode, ISinglePassRenderNode)
 
-const MStringId MDeepPeelRenderNode::FrontTextureOutput = MStringId("Deep Peel Front Buffer Output");
-const MStringId MDeepPeelRenderNode::BackTextureOutput  = MStringId("Deep Peel Back Buffer Output");
+const MStringId MDeepPeelRenderNode::FrontTextureOutput = MStringId("Deep Peel Front");
+const MStringId MDeepPeelRenderNode::BackTextureOutput  = MStringId("Deep Peel Back");
 const MStringId MDeepPeelRenderNode::DepthOutput[4]     = {
         MStringId("Deep Peel Front Depth Output 0"),
         MStringId("Deep Peel Back Depth Output 0"),

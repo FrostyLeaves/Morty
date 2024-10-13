@@ -9,8 +9,8 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MTexture_generated.h"
 #include "Resource/MResource.h"
+#include "MTexture_generated.h"
 
 #include "Basic/MTexture.h"
 #include "Resource/MResourceLoader.h"
@@ -60,7 +60,7 @@ public:
 
     virtual ~MTextureResource();
 
-    std::shared_ptr<MTexture> GetTextureTemplate() { return m_texture; }
+    MTexturePtr GetTextureTemplate() { return m_texture; }
 
 public:
     METextureFormat GetFormat() const;
@@ -90,7 +90,7 @@ public:
 
 protected:
     bool                           m_readable     = false;
-    std::shared_ptr<MTexture>      m_texture      = nullptr;
+    MTexturePtr                    m_texture      = nullptr;
     std::unique_ptr<MResourceData> m_resourceData = nullptr;
 };
 

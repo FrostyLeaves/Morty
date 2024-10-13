@@ -258,7 +258,8 @@ bool MRenderView::InitializeSwapchain()
             VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
             VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
             VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
-            VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR};
+            VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
+    };
 
     VkCompositeAlphaFlagBitsKHR vkCompositeAlphaFlag = VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR;
 
@@ -383,8 +384,8 @@ bool MRenderView::BindRenderPass()
         pTexture->GenerateBuffer(m_device);
         m_renderTarget[i].renderPass.AddBackTexture(pTexture, {true, MColor::Black_T});
 
-        std::shared_ptr<MTexture> pDepthTexture =
-                MTexture::CreateTexture(MTexture::CreateDepthBuffer().InitName("Editor Depth View").InitSize(size));
+        MTexturePtr pDepthTexture =
+                MTexture::CreateTexture(MTexture::CreateDepthBuffer("Editor Depth View").InitSize(size));
 
         pDepthTexture->GenerateBuffer(m_device);
         m_renderTarget[i].renderPass.SetDepthTexture(pDepthTexture, {true, MColor::White});
@@ -414,7 +415,7 @@ void MRenderView::DestroyRenderPass()
 
         rendertarget.renderPass.m_renderTarget.backTargets.clear();
 
-        if (std::shared_ptr<MTexture> pDepthTexture = rendertarget.renderPass.GetDepthTexture())
+        if (MTexturePtr pDepthTexture = rendertarget.renderPass.GetDepthTexture())
         {
             pDepthTexture->DestroyBuffer(m_device);
             rendertarget.renderPass.SetDepthTexture(nullptr, {});

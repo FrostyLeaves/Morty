@@ -61,13 +61,13 @@ public:
 struct MORTY_API MRenderTarget {
     MRenderTarget() = default;
 
-    MRenderTarget(const std::shared_ptr<MTexture> pTexture, const MPassTargetDescription& desc)
+    MRenderTarget(const MTexturePtr pTexture, const MPassTargetDescription& desc)
         : pTexture(pTexture)
         , desc(desc)
     {}
 
-    std::shared_ptr<MTexture> pTexture = nullptr;
-    MPassTargetDescription    desc;
+    MTexturePtr            pTexture = nullptr;
+    MPassTargetDescription desc;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkImageView m_vkImageView = VK_NULL_HANDLE;
@@ -100,44 +100,44 @@ public:
     Vector2i GetFrameBufferSize() const;
 
 public:
-    void SetDepthTestEnable(bool bEnable) { m_depthTestEnable = bEnable; }
+    void                  SetDepthTestEnable(bool bEnable) { m_depthTestEnable = bEnable; }
 
-    void SetDepthWriteEnable(bool bEnable) { m_depthWriteEnable = bEnable; }
+    void                  SetDepthWriteEnable(bool bEnable) { m_depthWriteEnable = bEnable; }
 
-    void SetDepthCompareType(MDepthCompareType eType) { m_depthCompareOp = eType; }
+    void                  SetDepthCompareType(MDepthCompareType eType) { m_depthCompareOp = eType; }
 
-    void SetStencilTestEnable(bool bEnable) { m_stencilTestEnable = bEnable; }
+    void                  SetStencilTestEnable(bool bEnable) { m_stencilTestEnable = bEnable; }
 
-    void AddBackTexture(const MRenderTarget& backTexture);
+    void                  AddBackTexture(const MRenderTarget& backTexture);
 
-    void SetDepthTexture(const MRenderTarget& backTexture);
+    void                  SetDepthTexture(const MRenderTarget& backTexture);
 
-    void AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc);
+    void                  AddBackTexture(MTexturePtr pBackTexture, const MPassTargetDescription& desc);
 
-    void SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc);
+    void                  SetDepthTexture(MTexturePtr pDepthTexture, const MPassTargetDescription& desc);
 
-    void SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture);
+    void                  SetShadingRateTexture(MTexturePtr& pTexture);
 
-    void SetRenderTarget(const MRenderTargetGroup& renderTarget);
+    void                  SetRenderTarget(const MRenderTargetGroup& renderTarget);
 
-    std::shared_ptr<MTexture>              GetBackTexture(size_t nIdx) const;
+    MTexturePtr           GetBackTexture(size_t nIdx) const;
 
-    std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
+    MTextureArray         GetBackTextures() const;
 
-    std::shared_ptr<MTexture>              GetDepthTexture() const;
+    MTexturePtr           GetDepthTexture() const;
 
-    std::shared_ptr<MTexture>              GetShadingRateTexture() const;
+    MTexturePtr           GetShadingRateTexture() const;
 
     /* Multi Viewport.
         *
         * @param unNum: size of viewport.
         *
         */
-    void                                   SetViewportNum(const uint32_t& unNum) { m_unViewNum = unNum; }
+    void                  SetViewportNum(const uint32_t& unNum) { m_unViewNum = unNum; }
 
-    uint32_t                               GetViewportNum() const { return m_unViewNum; }
+    uint32_t              GetViewportNum() const { return m_unViewNum; }
 
-    std::vector<MSubpass>                  m_subpass;
+    std::vector<MSubpass> m_subpass;
 
 public:
     uint32_t           m_unViewNum = 1;

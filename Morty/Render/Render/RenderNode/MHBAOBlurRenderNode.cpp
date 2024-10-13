@@ -4,11 +4,11 @@
 #include "MToneMappingRenderNode.h"
 #include "Scene/MScene.h"
 
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 
 using namespace morty;
 
-MStringId                         MHBAOBlurRenderNodeV::BlurOutput = MStringId("Hbao Blur Output V");
+MStringId                         MHBAOBlurRenderNodeV::BlurOutput = MStringId("Hbao Blur V");
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeV::InitInputDesc()
 {
@@ -20,7 +20,7 @@ std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeV::InitOutputDesc()
     return {{MHBAOBlurRenderNodeV::BlurOutput, {true, MColor::Black_T, 0}}};
 }
 
-MStringId                         MHBAOBlurRenderNodeH::BlurOutput = MStringId("Hbao Blur Output H");
+MStringId                         MHBAOBlurRenderNodeH::BlurOutput = MStringId("Hbao Blur H");
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeH::InitInputDesc()
 {

@@ -90,8 +90,8 @@ struct MRenderInfo {
     MCameraFrustum                                                                cameraFrustum;
 
     /************************** environment **************************/
-    std::shared_ptr<MTexture>                                                     pEnvDiffuseTexture  = nullptr;
-    std::shared_ptr<MTexture>                                                     pEnvSpecularTexture = nullptr;
+    MTexturePtr                                                                   pEnvDiffuseTexture  = nullptr;
+    MTexturePtr                                                                   pEnvSpecularTexture = nullptr;
 
     /************************** light **************************/
     MDirectionLightData                                                           directionLight;

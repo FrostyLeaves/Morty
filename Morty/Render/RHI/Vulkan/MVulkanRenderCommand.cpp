@@ -29,7 +29,8 @@ void MVulkanRenderCommand::SetScissor(const MScissorInfo& scissor)
 
     VkRect2D scissorRect = {
             VkOffset2D{int32_t(scissor.x), int32_t(scissor.y)},
-            VkExtent2D{uint32_t(width), uint32_t(height)}};
+            VkExtent2D{uint32_t(width), uint32_t(height)}
+    };
 
     vkCmdSetScissor(m_vkCommandBuffer, 0, 1, &scissorRect);
 }
@@ -74,7 +75,7 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
 
     SetTextureLayout(vTextures, vLayouts);
 
-    if (std::shared_ptr<MTexture> pDepthTexture = pRenderPass->GetDepthTexture())
+    if (MTexturePtr pDepthTexture = pRenderPass->GetDepthTexture())
     {
         SetTextureLayout({pDepthTexture.get()}, {m_device->m_physicalDevice->m_vkDepthImageLayout});
     }
@@ -96,7 +97,7 @@ void MVulkanRenderCommand::BeginRenderPass(MRenderPass* pRenderPass)
         vClearValues[i].color = {{color.r, color.g, color.b, color.a}};
     }
 
-    if (std::shared_ptr<MTexture> pTexture = pRenderPass->GetDepthTexture())
+    if (MTexturePtr pTexture = pRenderPass->GetDepthTexture())
     {
         vClearValues.push_back({});
         vClearValues.back().depthStencil = {1.0f, 0};
@@ -816,7 +817,8 @@ void MVulkanRenderCommand::SetShadingRate(Vector2i i2ShadingSize, std::array<MES
     const VkExtent2D vkShadingSize = {static_cast<uint32_t>(i2ShadingSize.x), static_cast<uint32_t>(i2ShadingSize.y)};
     const VkFragmentShadingRateCombinerOpKHR vkCombinerOp[2] = {
             m_device->GetShadingRateCombinerOp(combineOp[0]),
-            m_device->GetShadingRateCombinerOp(combineOp[1])};
+            m_device->GetShadingRateCombinerOp(combineOp[1])
+    };
 
     m_device->GetPhysicalDevice()->vkCmdSetFragmentShadingRateKHR(m_vkCommandBuffer, &vkShadingSize, vkCombinerOp);
 }

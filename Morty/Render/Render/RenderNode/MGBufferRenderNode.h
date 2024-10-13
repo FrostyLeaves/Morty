@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {

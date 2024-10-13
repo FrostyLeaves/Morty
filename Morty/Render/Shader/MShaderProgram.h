@@ -26,9 +26,9 @@ public:
 
     MTextureResourceParam(const MShaderTextureParam& param);
 
-    void                                 SetTexture(std::shared_ptr<MTexture> pTexture) override;
+    void                                 SetTexture(MTexturePtr pTexture) override;
 
-    std::shared_ptr<MTexture>            GetTexture() override;
+    MTexturePtr                          GetTexture() override;
 
     std::shared_ptr<MShaderTextureParam> Clone() const override;
 

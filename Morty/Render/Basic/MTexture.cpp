@@ -67,19 +67,19 @@ uint32_t MTexture::GetImageMemorySize(const METextureFormat& layout)
     return 0;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateTexture(const MTextureDesc& desc)
+MTexturePtr MTexture::CreateTexture(const MTextureDesc& desc)
 {
-    std::shared_ptr<MTexture> pTexture = std::make_shared<MTexture>();
-    pTexture->m_desc                   = desc;
-    pTexture->m_desc.nLayer            = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
+    MTexturePtr pTexture    = std::make_shared<MTexture>();
+    pTexture->m_desc        = desc;
+    pTexture->m_desc.nLayer = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
 
     return pTexture;
 }
 
-MTextureDesc MTexture::CreateDepthBuffer()
+MTextureDesc MTexture::CreateDepthBuffer(const MString& name)
 {
     MTextureDesc texture = {
-            .strName         = "Depth Buffer Texture",
+            .strName         = name,
             .eTextureType    = METextureType::ETexture2D,
             .eFormat         = METextureFormat::Depth,
             .eMipmapDataType = MEMipmapDataType::Disable,
@@ -90,10 +90,10 @@ MTextureDesc MTexture::CreateDepthBuffer()
     return texture;
 }
 
-MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nArraySize)
+MTextureDesc MTexture::CreateShadowMapArray(const MString& name, const int& nSize, const uint32_t& nArraySize)
 {
     MTextureDesc texture = {
-            .strName         = "Shadow Map Texture Array",
+            .strName         = name,
             .n3Size          = Vector3i(nSize, nSize, 1),
             .nLayer          = nArraySize,
             .eTextureType    = METextureType::ETexture2DArray,
@@ -106,10 +106,11 @@ MTextureDesc MTexture::CreateShadowMapArray(const int& nSize, const uint32_t& nA
     return texture;
 }
 
-MTextureDesc MTexture::CreateRenderTarget(METextureFormat eFormat /*= METextureFormat::UNorm_RGBA8*/)
+MTextureDesc
+MTexture::CreateRenderTarget(const MString& name, METextureFormat eFormat /*= METextureFormat::UNorm_RGBA8*/)
 {
     MTextureDesc texture = {
-            .strName         = "Render Target Texture",
+            .strName         = name,
             .n3Size          = Vector3i(1, 1, 1),
             .eTextureType    = METextureType::ETexture2D,
             .eFormat         = eFormat,
@@ -121,10 +122,10 @@ MTextureDesc MTexture::CreateRenderTarget(METextureFormat eFormat /*= METextureF
     return texture;
 }
 
-MTextureDesc MTexture::CreateRenderTargetGBuffer()
+MTextureDesc MTexture::CreateRenderTargetGBuffer(const MString& name)
 {
     MTextureDesc texture = {
-            .strName         = "GBuffer Texture",
+            .strName         = name,
             .n3Size          = Vector3i(1, 1, 1),
             .eTextureType    = METextureType::ETexture2D,
             .eFormat         = METextureFormat::Float_RGBA16,
@@ -136,9 +137,9 @@ MTextureDesc MTexture::CreateRenderTargetGBuffer()
     return texture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
+MTexturePtr MTexture::CreateRenderTargetFloat32()
 {
-    std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
+    MTexturePtr pTexture = MTexture::CreateTexture({
             .strName         = "Render Target Float32 Texture",
             .eFormat         = METextureFormat::Float_R32,
             .eMipmapDataType = MEMipmapDataType::Disable,
@@ -152,25 +153,58 @@ std::shared_ptr<MTexture> MTexture::CreateRenderTargetFloat32()
 MTextureDesc MTexture::CreateShadingRate()
 {
     MTextureDesc texture = {
-        .strName         = "Shading Rate Texture",
-        .n3Size          = Vector3i(1, 1, 1),
-        .eTextureType    = METextureType::ETexture2D,
-        .eFormat         = METextureFormat::UInt_R8,
-        .eMipmapDataType = MEMipmapDataType::Disable,
+            .strName         = "Shading Rate Texture",
+            .n3Size          = Vector3i(1, 1, 1),
+            .eTextureType    = METextureType::ETexture2D,
+            .eFormat         = METextureFormat::UInt_R8,
+            .eMipmapDataType = MEMipmapDataType::Disable,
 #if MORTY_DEBUG
-        .nReadUsage = (METextureReadUsageBit::EShadingRateMask | METextureReadUsageBit::EPixelSampler),
+            .nReadUsage = (METextureReadUsageBit::EShadingRateMask | METextureReadUsageBit::EPixelSampler),
 #else
-        .nReadUsage = METextureReadUsageBit::EShadingRateMask,
+            .nReadUsage = METextureReadUsageBit::EShadingRateMask,
 #endif
-        .nWriteUsage = METextureWriteUsageBit::EStorageWrite,
+            .nWriteUsage = METextureWriteUsageBit::EStorageWrite,
     };
 
     return texture;
 }
 
-std::shared_ptr<MTexture> MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
+MTextureDesc MTexture::CreateTextureFbs(const morty::fbs::MTextureDesc& fbDesc)
 {
-    std::shared_ptr<MTexture> pTexture = MTexture::CreateTexture({
+    return {
+            .strName         = fbDesc.name()->str(),
+            .n3Size          = Vector3i(fbDesc.size()->x(), fbDesc.size()->y(), fbDesc.size()->z()),
+            .nLayer          = fbDesc.layer(),
+            .eTextureType    = fbDesc.texture_type(),
+            .eFormat         = fbDesc.format(),
+            .eMipmapDataType = fbDesc.mipmap_type(),
+            .nReadUsage      = fbDesc.read_usage(),
+            .nWriteUsage     = fbDesc.write_usage(),
+    };
+}
+
+flatbuffers::Offset<void> MTexture::SerializeFbs(const MTextureDesc& desc, flatbuffers::FlatBufferBuilder& builder)
+{
+    auto                     fbName = builder.CreateString(desc.strName);
+    auto                     fbSize = desc.n3Size.Serialize(builder);
+
+    fbs::MTextureDescBuilder textureBuilder(builder);
+
+    textureBuilder.add_name(fbName);
+    textureBuilder.add_size(fbSize);
+    textureBuilder.add_texture_type(desc.eTextureType);
+    textureBuilder.add_format(desc.eFormat);
+    textureBuilder.add_layer(desc.nLayer);
+    textureBuilder.add_mipmap_type(desc.eMipmapDataType);
+    textureBuilder.add_read_usage(desc.nReadUsage);
+    textureBuilder.add_write_usage(desc.nWriteUsage);
+
+    return textureBuilder.Finish().Union();
+}
+
+MTexturePtr MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
+{
+    MTexturePtr pTexture = MTexture::CreateTexture({
             .strName         = "VXGI Texture",
             .n3Size          = n3Size,
             .eTextureType    = METextureType::ETexture3D,

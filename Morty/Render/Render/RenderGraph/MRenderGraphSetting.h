@@ -14,9 +14,9 @@
 #include "RHI/MRenderPass.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/MeshRender/MIndirectIndexRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "Render/MRenderInfo.h"
+#include "Render/MeshRender/MIndirectIndexRenderable.h"
+#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MStringId.h"
 

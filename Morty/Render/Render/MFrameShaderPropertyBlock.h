@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "MRenderInfo.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 #include "Shader/MShaderParam.h"
 #include "Shader/MShaderPropertyBlock.h"
 
@@ -22,7 +22,6 @@ class MORTY_API MFramePropertyDecorator : public IShaderPropertyUpdateDecorator
 {
 public:
     void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
-
     void Update(const MRenderInfo& info) override;
 
     std::shared_ptr<MShaderConstantParam> m_frameParam = nullptr;
@@ -32,7 +31,6 @@ class MORTY_API MLightPropertyDecorator : public IShaderPropertyUpdateDecorator
 {
 public:
     void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
-
     void Update(const MRenderInfo& info) override;
 
     std::shared_ptr<MShaderConstantParam> m_lightParam              = nullptr;
@@ -44,7 +42,6 @@ class MORTY_API MAnimationPropertyDecorator : public IShaderPropertyUpdateDecora
 {
 public:
     void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override;
-
     void Update(const MRenderInfo& info) override;
 
     std::shared_ptr<MShaderStorageParam> m_animationBonesParam  = nullptr;
@@ -54,28 +51,23 @@ public:
 class MORTY_API MFrameShaderPropertyBlock : public IPropertyBlockAdapter
 {
 public:
-    MFrameShaderPropertyBlock() = default;
-
+    MFrameShaderPropertyBlock()           = default;
     ~MFrameShaderPropertyBlock() override = default;
 
 public:
-    virtual void                          Initialize(MEngine* pEngine);
+    virtual void                                        Initialize(MEngine* pEngine);
 
-    virtual void                          Release(MEngine* pEngine);
+    virtual void                                        Release(MEngine* pEngine);
 
-    virtual std::shared_ptr<MMaterial>    LoadMaterial(MEngine* pEngine) const;
+    virtual std::shared_ptr<MMaterial>                  LoadMaterial(MEngine* pEngine) const;
+    virtual void                                        BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
+    [[nodiscard]] std::shared_ptr<MMaterial>            GetMaterial() const { return m_material; }
+    [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override;
 
-    virtual void                          BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
 
-    std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override;
-
-    std::shared_ptr<MMaterial>            GetMaterial() const { return m_material; }
-
-    void                                  UpdateShaderSharedParams(MRenderInfo& info);
-
+    void                                                UpdateShaderSharedParams(MRenderInfo& info);
     void RegisterPropertyDecorator(const std::shared_ptr<IShaderPropertyUpdateDecorator>& pDecorator);
-
-    void SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture);
+    void SetBrdfMapTexture(MTexturePtr pTexture);
 
 public:
     /*u_texBrdfLUT*/
@@ -84,7 +76,6 @@ public:
 protected:
     std::shared_ptr<MMaterial>                                   m_material            = nullptr;
     std::shared_ptr<MShaderPropertyBlock>                        m_shaderPropertyBlock = nullptr;
-
     std::vector<std::shared_ptr<IShaderPropertyUpdateDecorator>> m_propertyUpdateDecorator;
 };
 

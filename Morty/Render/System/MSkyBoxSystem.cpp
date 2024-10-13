@@ -8,7 +8,7 @@
 #include "System/MRenderSystem.h"
 
 #include "Component/MSkyBoxComponent.h"
-#include "RenderProgram/RenderNode/MEnvironmentMapRenderNode.h"
+#include "Render/RenderNode/MEnvironmentMapRenderNode.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 

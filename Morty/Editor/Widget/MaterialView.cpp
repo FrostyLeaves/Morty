@@ -22,7 +22,7 @@
 
 #include "Resource/MSkeletonResource.h"
 
-#include "RenderProgram/MIRenderProgram.h"
+#include "Render/MIRenderProgram.h"
 
 #include "Main/MainEditor.h"
 #include "Resource/MMeshResourceUtil.h"
@@ -83,7 +83,7 @@ void MaterialView::Render()
 
     if (m_material)
     {
-        if (std::shared_ptr<MTexture> pTexture = m_sceneTexture->GetTexture())
+        if (MTexturePtr pTexture = m_sceneTexture->GetTexture())
         {
             float fImageSize = ImGui::GetContentRegionAvail().x;
             ImGui::SameLine(fImageSize * 0.25f);

@@ -12,8 +12,8 @@
 #include "Basic/MCameraFrustum.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
 
 namespace morty
 {
@@ -25,16 +25,16 @@ class MORTY_API ISinglePassRenderNode : public MRenderTaskNode
     using BarrierTextureTable = std::unordered_map<METextureBarrierStage, std::vector<MTexture*>>;
 
 public:
-    void                                                 Initialize(MEngine* pEngine) override;
-    void                                                 Release() override;
-    void                                                 Resize(Vector2i size) override;
+    void                                              Initialize(MEngine* pEngine) override;
+    void                                              Release() override;
+    void                                              Resize(Vector2i size) override;
 
-    void                                                 SetRenderTarget(const MRenderTargetGroup& renderTarget);
+    void                                              SetRenderTarget(const MRenderTargetGroup& renderTarget);
 
-    [[nodiscard]] MEngine*                               GetEngine() const { return m_engine; }
-    [[nodiscard]] std::vector<std::shared_ptr<MTexture>> GetBackTextures() const;
-    [[nodiscard]] std::shared_ptr<MTexture>              GetDepthTexture() const;
-    [[nodiscard]] std::shared_ptr<IGetTextureAdapter>    CreateOutput() const;
+    [[nodiscard]] MEngine*                            GetEngine() const { return m_engine; }
+    [[nodiscard]] MTextureArray                       GetBackTextures() const;
+    [[nodiscard]] MTexturePtr                         GetDepthTexture() const;
+    [[nodiscard]] std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
 
 protected:
     MRenderTargetGroup  AutoBindTarget();

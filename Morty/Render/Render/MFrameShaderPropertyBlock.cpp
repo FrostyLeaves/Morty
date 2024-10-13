@@ -102,7 +102,7 @@ void MFrameShaderPropertyBlock::RegisterPropertyDecorator(
     if (m_shaderPropertyBlock) { pDecorator->BindMaterial(m_shaderPropertyBlock); }
 }
 
-void MFrameShaderPropertyBlock::SetBrdfMapTexture(std::shared_ptr<MTexture> pTexture)
+void MFrameShaderPropertyBlock::SetBrdfMapTexture(MTexturePtr pTexture)
 {
     if (m_brdfMapTextureParam && m_brdfMapTextureParam->GetTexture() != pTexture)
     {

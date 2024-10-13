@@ -9,29 +9,19 @@
 #pragma once
 
 #include "Utility/MRenderGlobal.h"
-#include "Flatbuffer/MTexture_generated.h"
 #include "Math/Vector.h"
 #include "RHI/Abstract/MTextureRHI.h"
+#include "Flatbuffer/MTexture_generated.h"
 
 namespace morty
 {
 
 class MIDevice;
-enum METextureType
-{
-    ETexture2D      = 1,
-    ETextureCube    = 2,
-    ETexture2DArray = 3,
-    ETexture3D      = 4,
-};
-
-using METextureFormat = morty::fbs::METextureFormat;
-
-using MEMipmapDataType = morty::fbs::MEMipmapDataType;
-
+using METextureType       = morty::fbs::METextureType;
+using METextureFormat     = morty::fbs::METextureFormat;
+using MEMipmapDataType    = morty::fbs::MEMipmapDataType;
 using METextureWriteUsage = uint32_t;
-
-using METextureReadUsage = uint32_t;
+using METextureReadUsage  = uint32_t;
 
 class METextureWriteUsageBit
 {
@@ -84,59 +74,62 @@ public:
     virtual ~MTexture();
 
 public:
-    [[nodiscard]] MString          GetName() const { return m_desc.strName; }
+    [[nodiscard]] MString             GetName() const { return m_desc.strName; }
 
-    [[nodiscard]] Vector3i         GetSize() const { return m_desc.n3Size; }
+    [[nodiscard]] Vector3i            GetSize() const { return m_desc.n3Size; }
 
-    [[nodiscard]] Vector2i         GetSize2D() const { return {m_desc.n3Size.x, m_desc.n3Size.y}; }
+    [[nodiscard]] Vector2i            GetSize2D() const { return {m_desc.n3Size.x, m_desc.n3Size.y}; }
 
-    [[nodiscard]] uint32_t         GetLayer() const { return m_desc.nLayer; }
+    [[nodiscard]] uint32_t            GetLayer() const { return m_desc.nLayer; }
 
-    [[nodiscard]] METextureFormat  GetFormat() const { return m_desc.eFormat; }
+    [[nodiscard]] METextureFormat     GetFormat() const { return m_desc.eFormat; }
 
-    [[nodiscard]] uint32_t         GetWriteUsage() const { return m_desc.nWriteUsage; }
+    [[nodiscard]] uint32_t            GetWriteUsage() const { return m_desc.nWriteUsage; }
 
-    [[nodiscard]] uint32_t         GetReadUsage() const { return m_desc.nReadUsage; }
+    [[nodiscard]] uint32_t            GetReadUsage() const { return m_desc.nReadUsage; }
 
-    [[nodiscard]] METextureType    GetTextureType() const { return m_desc.eTextureType; }
+    [[nodiscard]] METextureType       GetTextureType() const { return m_desc.eTextureType; }
 
-    [[nodiscard]] MEMipmapDataType GetMipmapDataType() const { return m_mipmapType; }
+    [[nodiscard]] MEMipmapDataType    GetMipmapDataType() const { return m_mipmapType; }
 
-    [[nodiscard]] uint32_t         GetMipmapLevel() const { return m_mipmapLevel; }
+    [[nodiscard]] uint32_t            GetMipmapLevel() const { return m_mipmapLevel; }
 
-    Vector2                        GetMipmapSize(const uint32_t& nMipmapLevel);
+    Vector2                           GetMipmapSize(const uint32_t& nMipmapLevel);
 
-    template<typename T> T*        GetTextureRHI() const { return static_cast<T*>(m_textureRHI.get()); }
+    [[nodiscard]] const MTextureDesc& GetTextureDesc() const { return m_desc; }
 
-    void                           SetTextureRHI(std::unique_ptr<MTextureRHI>&& pRHITexture);
+    template<typename T> T*           GetTextureRHI() const { return static_cast<T*>(m_textureRHI.get()); }
 
-public:
-    void GenerateBuffer(MIDevice* pDevice);
+    void                              SetTextureRHI(std::unique_ptr<MTextureRHI>&& pRHITexture);
 
-    void GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer);
+    void                              GenerateBuffer(MIDevice* pDevice);
 
-    void DestroyBuffer(MIDevice* pDevice);
+    void                              GenerateBuffer(MIDevice* pDevice, const std::vector<std::vector<MByte>>& buffer);
 
-    void Resize(MIDevice* pDevice, const Vector2i& n2Size);
+    void                              DestroyBuffer(MIDevice* pDevice);
 
-    void Resize(MIDevice* pDevice, const Vector3i& n3Size);
+    void                              Resize(MIDevice* pDevice, const Vector2i& n2Size);
 
-public:
-    static std::shared_ptr<MTexture> CreateTexture(const MTextureDesc& desc);
+    void                              Resize(MIDevice* pDevice, const Vector3i& n3Size);
 
-    static MTextureDesc              CreateDepthBuffer();
+    static MTexturePtr                CreateTexture(const MTextureDesc& desc);
 
-    static MTextureDesc              CreateShadowMapArray(const int& nSize, const uint32_t& nArraySize);
+    static MTextureDesc               CreateDepthBuffer(const MString& name);
 
-    static MTextureDesc              CreateRenderTarget(METextureFormat eLayout = METextureFormat::UNorm_RGBA8);
+    static MTextureDesc CreateShadowMapArray(const MString& name, const int& nSize, const uint32_t& nArraySize);
 
-    static MTextureDesc              CreateRenderTargetGBuffer();
+    static MTextureDesc CreateRenderTarget(const MString& name, METextureFormat eLayout = METextureFormat::UNorm_RGBA8);
 
-    static std::shared_ptr<MTexture> CreateRenderTargetFloat32();
+    static MTextureDesc CreateRenderTargetGBuffer(const MString& name);
+
+    static MTextureDesc CreateTextureFbs(const morty::fbs::MTextureDesc& fbDesc);
+    static flatbuffers::Offset<void> SerializeFbs(const MTextureDesc& desc, flatbuffers::FlatBufferBuilder& builder);
+
+    static MTexturePtr               CreateRenderTargetFloat32();
 
     static MTextureDesc              CreateShadingRate();
 
-    static std::shared_ptr<MTexture> CreateVXGIMap(Vector3i n3Size);
+    static MTexturePtr               CreateVXGIMap(Vector3i n3Size);
 
     static uint32_t                  GetImageMemorySize(const METextureFormat& layout);
 

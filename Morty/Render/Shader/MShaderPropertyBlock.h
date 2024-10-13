@@ -44,7 +44,7 @@ public:
 
     template<typename TYPE> bool          SetValue(const MStringId& strName, const TYPE& value);
 
-    bool                                  SetTexture(const MStringId& strName, std::shared_ptr<MTexture> pTexture);
+    bool                                  SetTexture(const MStringId& strName, MTexturePtr pTexture);
 
     bool                                  HasValue(const uint32_t& unBinding, const uint32_t& unSet);
 

@@ -24,9 +24,9 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
-#include "RenderProgram/MeshRender/MSkyBoxRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
+#include "Render/MeshRender/MSkyBoxRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/MBounds.h"
 
@@ -34,8 +34,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MForwardRenderNode, ISinglePassRenderNode)
 
-const MStringId MForwardRenderNode::BackBufferOutput  = MStringId("Forward Back Buffer Output");
-const MStringId MForwardRenderNode::DepthBufferOutput = MStringId("Forward Depth Buffer Output");
+const MStringId MForwardRenderNode::BackBufferOutput  = MStringId("Forward Back");
+const MStringId MForwardRenderNode::DepthBufferOutput = MStringId("Forward Depth");
 
 
 void            MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)

@@ -11,8 +11,8 @@
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {

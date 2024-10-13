@@ -10,8 +10,8 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
 namespace morty

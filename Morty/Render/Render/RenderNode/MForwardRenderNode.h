@@ -10,10 +10,10 @@
 
 #include "Utility/MGlobal.h"
 #include "MDeferredLightingRenderNode.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {

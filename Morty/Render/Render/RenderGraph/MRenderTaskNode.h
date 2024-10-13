@@ -13,11 +13,12 @@
 #include "MRenderTaskNodeOutput.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
+#include "Flatbuffer/MRenderTaskNode_generated.h"
 
 namespace morty
 {
@@ -28,41 +29,36 @@ class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
 class MRenderTaskNodeOutput;
+
+using MEResizePolicy = morty::fbs::ResizePolicy;
+using MESharedPolicy = morty::fbs::SharedPolicy;
+
 class MORTY_API MRenderTaskTarget
 {
 public:
-    enum class ResizePolicy
-    {
-        Fixed = 0,
-        Scale = 1,
-    };
+    MRenderTaskTarget*      InitName(const MStringId& name);
+    MRenderTaskTarget*      InitResizePolicy(MEResizePolicy ePolicy, float fScale = 1.0f, size_t nTexelSize = 1);
+    MRenderTaskTarget*      InitSharedPolicy(MESharedPolicy ePolicy);
+    MRenderTaskTarget*      InitTextureDesc(const MTextureDesc& desc);
 
-    enum class SharedPolicy
-    {
-        Shared    = 0,
-        Exclusive = 1,
-    };
+    void                    SetTexture(const MTexturePtr& pTexture);
 
-    MRenderTaskTarget* InitResizePolicy(ResizePolicy ePolicy, float fScale = 1.0f, size_t nTexelSize = 1);
-    MRenderTaskTarget* InitSharedPolicy(SharedPolicy ePolicy);
-    MRenderTaskTarget* InitTextureDesc(const MTextureDesc& desc);
-
-    void               SetTexture(const std::shared_ptr<MTexture>& pTexture);
-
-    [[nodiscard]] const std::shared_ptr<MTexture>& GetTexture() const { return m_texture; }
-    [[nodiscard]] SharedPolicy                     GetSharedPolicy() const { return m_sharedPolicy; }
-    [[nodiscard]] ResizePolicy                     GetResizePolicy() const { return m_resizePolicy; }
-    [[nodiscard]] MTextureDesc                     GetTextureDesc() const { return m_textureDesc; }
-    [[nodiscard]] float                            GetScale() const { return m_scale; }
-    [[nodiscard]] size_t                           GetTexelSize() const { return m_texelSize; }
+    [[nodiscard]] MStringId GetName() const { return m_name; }
+    [[nodiscard]] const MTexturePtr& GetTexture() const { return m_texture; }
+    [[nodiscard]] MESharedPolicy     GetSharedPolicy() const { return m_sharedPolicy; }
+    [[nodiscard]] MEResizePolicy     GetResizePolicy() const { return m_resizePolicy; }
+    [[nodiscard]] MTextureDesc       GetTextureDesc() const { return m_textureDesc; }
+    [[nodiscard]] float              GetScale() const { return m_scale; }
+    [[nodiscard]] size_t             GetTexelSize() const { return m_texelSize; }
 
 private:
-    std::shared_ptr<MTexture> m_texture      = nullptr;
-    MTextureDesc              m_textureDesc  = {};
-    SharedPolicy              m_sharedPolicy = SharedPolicy::Shared;
-    ResizePolicy              m_resizePolicy = ResizePolicy::Scale;
-    float                     m_scale        = 1.0f;
-    size_t                    m_texelSize    = 1;
+    MStringId      m_name;
+    MTexturePtr    m_texture      = nullptr;
+    MTextureDesc   m_textureDesc  = {};
+    MESharedPolicy m_sharedPolicy = MESharedPolicy::Shared;
+    MEResizePolicy m_resizePolicy = MEResizePolicy::Scale;
+    float          m_scale        = 1.0f;
+    size_t         m_texelSize    = 1;
 };
 
 struct MRenderTaskInputDesc {
@@ -97,13 +93,10 @@ public:
 
     [[nodiscard]] MRenderGraph*                             GetRenderGraph() const;
     [[nodiscard]] MRenderTargetManager*                     GetRenderTargetManager() const;
-
-    std::shared_ptr<MTexture>                               GetInputTexture(const size_t& nIdx);
-    std::shared_ptr<MTexture>                               GetOutputTexture(const size_t& nIdx);
-    std::shared_ptr<MTexture>                               GetInputTexture(const MStringId& nIdx);
-    std::shared_ptr<MTexture>                               GetOutputTexture(const MStringId& nIdx);
-
-
+    MTexturePtr                                             GetInputTexture(const size_t& nIdx);
+    MTexturePtr                                             GetOutputTexture(const size_t& nIdx);
+    MTexturePtr                                             GetInputTexture(const MStringId& nIdx);
+    MTexturePtr                                             GetOutputTexture(const MStringId& nIdx);
     MRenderTaskNodeOutput*                                  GetRenderOutput(const size_t& nIdx);
 
 private:

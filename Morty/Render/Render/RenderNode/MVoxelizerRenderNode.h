@@ -10,13 +10,13 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 #include "Basic/MBuffer.h"
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {
@@ -46,17 +46,17 @@ public:
         return m_voxelizerMaterial;
     }
 
-    const MBuffer*            GetVoxelTableBuffer() const;
+    const MBuffer*   GetVoxelTableBuffer() const;
 
-    const MBuffer*            GetVoxelDebugBuffer() const;
+    const MBuffer*   GetVoxelDebugBuffer() const;
 
-    std::shared_ptr<MTexture> GetVoxelGITexture() const;
+    MTexturePtr      GetVoxelGITexture() const;
 
-    MBoundsAABB               GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const;
+    MBoundsAABB      GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const;
 
-    void                      SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
+    void             SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
 
-    MVoxelMapSetting          GetVoxelSetting() const { return m_voxelSetting; }
+    MVoxelMapSetting GetVoxelSetting() const { return m_voxelSetting; }
 
 protected:
     void                                                      InitializeBuffer();
@@ -89,7 +89,7 @@ protected:
     std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_voxelizerMaterial        = {};
     MBuffer                                                   m_voxelizerBuffer;
 
-    std::shared_ptr<MTexture>                                 m_voxelGITexture = nullptr;
+    MTexturePtr                                               m_voxelGITexture = nullptr;
 };
 
 }// namespace morty

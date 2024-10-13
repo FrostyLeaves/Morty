@@ -44,3 +44,24 @@ void MRenderGraph::Resize(const Vector2i& size)
 
     for (auto pTaskNode: GetOrderedNodes()) { pTaskNode->DynamicCast<MRenderTaskNode>()->Resize(size); }
 }
+
+MRenderTaskNode* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
+{
+    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
+    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
+
+    return nullptr;
+}
+
+MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType)
+{
+    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
+    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
+
+    auto node = MTypeClass::New(strTaskNodeType)->DynamicCast<MRenderTaskNode>();
+    AddNode(strTaskNodeName, node);
+
+    m_taskNodeTable[strTaskNodeName] = node;
+
+    return node;
+}

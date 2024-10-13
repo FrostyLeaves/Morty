@@ -22,6 +22,7 @@
 
 namespace morty
 {
+class MTexture;
 
 class MORTY_API MRenderGlobal
 {
@@ -81,7 +82,8 @@ public:
 
 using MMeshInstanceKey     = size_t;
 using MSkeletonInstanceKey = size_t;
-
+using MTexturePtr          = std::shared_ptr<MTexture>;
+using MTextureArray        = std::vector<MTexturePtr>;
 
 enum class MECameraType
 {

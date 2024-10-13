@@ -4,8 +4,9 @@
 #include "Math/Vector.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
+#include "Utility/MRenderGraphName.h"
 
 namespace morty
 {
@@ -25,7 +26,7 @@ class MORTY_API IGetTextureAdapter
 public:
     virtual ~IGetTextureAdapter() = default;
 
-    virtual std::shared_ptr<MTexture> GetTexture() = 0;
+    virtual MTexturePtr GetTexture() = 0;
 };
 
 class MORTY_API IPropertyBlockAdapter
@@ -58,8 +59,8 @@ class MORTY_API IGBufferAdapter
 public:
     virtual ~IGBufferAdapter() = default;
 
-    [[nodiscard]] virtual std::vector<std::shared_ptr<MTexture>> GetBackTextures() const = 0;
-    [[nodiscard]] virtual std::shared_ptr<MTexture>              GetDepthTexture() const = 0;
+    [[nodiscard]] virtual MTextureArray GetBackTextures() const = 0;
+    [[nodiscard]] virtual MTexturePtr   GetDepthTexture() const = 0;
 };
 
 class MORTY_API IRenderable
@@ -120,12 +121,12 @@ public:
 class MGetTextureAdapter : public IGetTextureAdapter
 {
 public:
-    explicit MGetTextureAdapter(const std::shared_ptr<MTexture>& tex)
+    explicit MGetTextureAdapter(const MTexturePtr& tex)
         : pTexture(tex)
     {}
 
-    virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
-    std::shared_ptr<MTexture>         pTexture = nullptr;
+    MTexturePtr GetTexture() override { return pTexture; }
+    MTexturePtr pTexture = nullptr;
 };
 
 }// namespace morty

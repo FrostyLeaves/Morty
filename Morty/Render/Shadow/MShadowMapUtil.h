@@ -3,7 +3,7 @@
 #include "Utility/MGlobal.h"
 #include "Basic/MCameraFrustum.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 #include "Variant/MVariant.h"
 
 namespace morty

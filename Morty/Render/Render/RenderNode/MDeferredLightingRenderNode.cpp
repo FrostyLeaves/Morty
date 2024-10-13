@@ -1,3 +1,4 @@
+#include "MDeferredLightingRenderNode.h"
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
 #include "Component/MCameraComponent.h"
@@ -5,7 +6,6 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
-#include "MDeferredLightingRenderNode.h"
 #include "MHBAOBlurRenderNode.h"
 #include "MHBAORenderNode.h"
 #include "MVRSTextureRenderNode.h"
@@ -17,7 +17,7 @@
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Scene/MScene.h"
 #include "System/MRenderSystem.h"
@@ -29,7 +29,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
-const MStringId MDeferredLightingRenderNode::DeferredLightingOutput = MStringId("Deferred Lighting Output");
+const MStringId MDeferredLightingRenderNode::DeferredLightingOutput = MStringId("Deferred Lighting");
 
 
 void            MDeferredLightingRenderNode::Render(const MRenderInfo& info)
@@ -109,10 +109,12 @@ void MDeferredLightingRenderNode::BindTarget()
                 MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP,
                 GetInputTexture(MGBufferRenderNode::GBufferDepthBufferOutput)
         );
+        /*
         pParams->SetTexture(
                 MShaderPropertyName::GBUFFER_TEXTURE_SSAO,
                 GetInputTexture(MHBAOBlurRenderNodeH::BlurOutput)
         );
+*/
     }
 
     AutoBindBarrierTexture();
@@ -126,7 +128,7 @@ std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
             {MGBufferRenderNode::GBufferNormalRoughness, METextureBarrierStage::EPixelShaderSample},
             {MGBufferRenderNode::GBufferPositionAmbientOcc, METextureBarrierStage::EPixelShaderSample},
             {MShadowMapRenderNode::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample},
-            {MHBAOBlurRenderNodeH::BlurOutput, METextureBarrierStage::EPixelShaderSample},
+    //{MHBAOBlurRenderNodeH::BlurOutput, METextureBarrierStage::EPixelShaderSample},
 #if MORTY_VXGI_ENABLE
             {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
 #endif

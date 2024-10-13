@@ -13,9 +13,9 @@
 #include "RHI/MRenderPass.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/MeshRender/MIndirectIndexRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "Render/MRenderInfo.h"
+#include "Render/MeshRender/MIndirectIndexRenderable.h"
+#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MStringId.h"
 
@@ -36,14 +36,10 @@ public:
 
     ~MRenderGraph() override;
 
-    template<typename TYPE> MRenderTaskNode*           RegisterTaskNode(const MStringId& strTaskNodeName);
-
-    template<typename TYPE> TYPE*                      FindTaskNode(const MStringId& strTaskNodeName) const;
-
+    [[nodiscard]] MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType);
+    [[nodiscard]] MRenderTaskNode* FindTaskNode(const MStringId& strTaskNodeName) const;
     [[nodiscard]] MRenderTargetManager*                GetRenderTargetManager() const { return m_renderTargetManager; }
-
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
-
     MRenderTaskTarget*                                 FindRenderTaskTarget(const MStringId& name);
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
@@ -78,6 +74,7 @@ public:
     }
 
     void Resize(const Vector2i& size);
+    void Clean();
 
 private:
     Vector2i                                    m_size = {0, 0};
@@ -93,25 +90,5 @@ private:
 
     std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable;
 };
-
-template<typename TYPE> MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName)
-{
-    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
-    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
-
-    auto pRenderNode = AddNode<TYPE>(strTaskNodeName);
-
-    m_taskNodeTable[strTaskNodeName] = pRenderNode;
-
-    return pRenderNode;
-}
-
-template<typename TYPE> TYPE* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
-{
-    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
-    if (findResult != m_taskNodeTable.end()) { return findResult->second->DynamicCast<TYPE>(); }
-
-    return nullptr;
-}
 
 }// namespace morty

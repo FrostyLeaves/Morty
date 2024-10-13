@@ -1,0 +1,34 @@
+include "TaskGraph/MTaskNode.fbs";
+include "Basic/MTexture.fbs";
+namespace morty.fbs;
+
+enum ResizePolicy : byte
+{
+    Fixed = 0,
+    Scale = 1,
+}
+
+enum SharedPolicy : byte
+{
+    Shared    = 0,
+    Exclusive = 1,
+}
+
+table MRenderGraphTargetDesc
+{
+    name: string;
+    scale: float;
+    resize_policy: ResizePolicy;
+    shared_policy: SharedPolicy;
+    texture_desc: MTextureDesc;
+}
+
+table MRenderTaskNode
+{
+    super: MTaskNode;
+    output_name: [string];
+}
+
+root_type MRenderTaskNode;
+
+file_identifier "MFBS";

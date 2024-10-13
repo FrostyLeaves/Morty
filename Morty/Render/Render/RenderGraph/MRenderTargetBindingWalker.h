@@ -10,8 +10,8 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
 #include "TaskGraph/MTaskGraphWalker.h"
 
 namespace morty
@@ -30,8 +30,9 @@ public:
 
     explicit MRenderTargetBindingWalker(MEngine* pEngine);
 
-    ~MRenderTargetBindingWalker();
+    ~MRenderTargetBindingWalker() override;
 
+    void SetForceExclusive(bool bForce);
     void operator()(MTaskGraph* pTaskGraph) override;
 
 private:
@@ -49,7 +50,8 @@ private:
 
     bool                           IsNodeHasAlloced(MRenderTaskNode* pNode);
 
-    MEngine*                       m_engine = nullptr;
+    MEngine*                       m_engine         = nullptr;
+    bool                           m_forceExclusive = false;
 
     class MRenderTargetCacheQueue* m_cacheQueue = nullptr;
 
@@ -58,10 +60,10 @@ private:
         Alloced = 0,
         Free    = 1
     };
-    std::map<MTaskNode*, AllocState>       m_allocedNode;
-    std::map<MRenderTaskTarget*, size_t>   m_targetAllocCount;
+    std::map<MTaskNode*, AllocState>     m_allocedNode;
+    std::map<MRenderTaskTarget*, size_t> m_targetAllocCount;
 
-    std::vector<std::shared_ptr<MTexture>> m_exclusiveTextures;
+    MTextureArray                        m_exclusiveTextures;
 };
 
 }// namespace morty

@@ -10,38 +10,57 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
+#include "MRenderTaskNode.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
-
-#include "MRenderTaskNode.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 #include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
+#include "Flatbuffer/MRenderTaskNode_generated.h"
 
 namespace morty
 {
 
 class MRenderTaskTarget;
 class MRenderPass;
+
+using MEResizePolicy = morty::fbs::ResizePolicy;
+using MESharedPolicy = morty::fbs::SharedPolicy;
+
 class MORTY_API MRenderTargetManager : public MObject
 {
 public:
     MORTY_CLASS(MRenderTargetManager);
+    using RenderTargetTable = std::unordered_map<MStringId, std::unique_ptr<MRenderTaskTarget>>;
 
+    struct RenderTargetDesc {
+        MStringId      name;
+        float          scale        = 1.0f;
+        MEResizePolicy resizePolicy = MEResizePolicy::Scale;
+        MESharedPolicy sharedPolicy = MESharedPolicy::Shared;
+        MTextureDesc   textureDesc;
+    };
 
-    MRenderTaskTarget*                     CreateRenderTarget(const MStringId& name);
-
-    MRenderTaskTarget*                     FindRenderTarget(const MStringId& name) const;
-
-    std::shared_ptr<MTexture>              FindRenderTexture(const MStringId& name) const;
-
+    MRenderTaskTarget*                     CreateRenderTarget(const RenderTargetDesc& desc);
+    MRenderTaskTarget*                     CreateRenderTarget(const morty::fbs::MRenderGraphTargetDesc& fbDesc);
     void                                   ResizeRenderTarget(const Vector2i& size);
 
-    std::vector<std::shared_ptr<MTexture>> GetOutputTextures() const;
+    [[nodiscard]] MRenderTaskTarget*       FindRenderTarget(const MStringId& name) const;
+    [[nodiscard]] MTexturePtr              FindRenderTexture(const MStringId& name) const;
+    [[nodiscard]] MTextureArray            GetOutputTextures() const;
+
+    [[nodiscard]] const RenderTargetTable& GetRenderTargetTable() const { return m_renderTaskTable; }
+
+
+    static flatbuffers::Offset<void>
+    SerializeRenderTarget(MRenderTaskTarget* target, flatbuffers::FlatBufferBuilder& builder);
+    
+protected:
+    MRenderTaskTarget* CreateRenderTarget(const MStringId& name);
 
 private:
-    std::unordered_map<MStringId, std::unique_ptr<MRenderTaskTarget>> m_renderTaskTable;
+    RenderTargetTable m_renderTaskTable;
 };
 
 }// namespace morty

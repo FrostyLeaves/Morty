@@ -68,7 +68,7 @@ void MRenderPass::AddBackTexture(const MRenderTarget& backTexture)
 
 void MRenderPass::SetDepthTexture(const MRenderTarget& backTexture) { m_renderTarget.depthTarget = backTexture; }
 
-void MRenderPass::AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const MPassTargetDescription& desc)
+void MRenderPass::AddBackTexture(MTexturePtr pBackTexture, const MPassTargetDescription& desc)
 {
     MRenderTarget backTexture;
     backTexture.pTexture = pBackTexture;
@@ -77,36 +77,30 @@ void MRenderPass::AddBackTexture(std::shared_ptr<MTexture> pBackTexture, const M
     m_renderTarget.backTargets.push_back(backTexture);
 }
 
-void MRenderPass::SetDepthTexture(std::shared_ptr<MTexture> pDepthTexture, const MPassTargetDescription& desc)
+void MRenderPass::SetDepthTexture(MTexturePtr pDepthTexture, const MPassTargetDescription& desc)
 {
     m_renderTarget.depthTarget.pTexture = pDepthTexture;
     m_renderTarget.depthTarget.desc     = desc;
 }
 
-void MRenderPass::SetShadingRateTexture(std::shared_ptr<MTexture>& pTexture)
-{
-    m_renderTarget.shadingRate.pTexture = pTexture;
-}
+void MRenderPass::SetShadingRateTexture(MTexturePtr& pTexture) { m_renderTarget.shadingRate.pTexture = pTexture; }
 
 void MRenderPass::SetRenderTarget(const MRenderTargetGroup& renderTarget) { m_renderTarget = renderTarget; }
 
-std::shared_ptr<MTexture> MRenderPass::GetBackTexture(size_t nIdx) const
-{
-    return m_renderTarget.backTargets[nIdx].pTexture;
-}
+MTexturePtr   MRenderPass::GetBackTexture(size_t nIdx) const { return m_renderTarget.backTargets[nIdx].pTexture; }
 
-std::vector<std::shared_ptr<MTexture>> MRenderPass::GetBackTextures() const
+MTextureArray MRenderPass::GetBackTextures() const
 {
-    std::vector<std::shared_ptr<MTexture>> vTextures;
+    MTextureArray vTextures;
 
     for (const MRenderTarget& tex: m_renderTarget.backTargets) vTextures.push_back(tex.pTexture);
 
     return vTextures;
 }
 
-std::shared_ptr<MTexture> MRenderPass::GetShadingRateTexture() const { return m_renderTarget.shadingRate.pTexture; }
+MTexturePtr MRenderPass::GetShadingRateTexture() const { return m_renderTarget.shadingRate.pTexture; }
 
-std::shared_ptr<MTexture> MRenderPass::GetDepthTexture() const { return m_renderTarget.depthTarget.pTexture; }
+MTexturePtr MRenderPass::GetDepthTexture() const { return m_renderTarget.depthTarget.pTexture; }
 
 MPassTargetDescription::MPassTargetDescription(const bool bClear, const MColor& cColor, const uint32_t& nMipmap)
     : bClearWhenRender(bClear)

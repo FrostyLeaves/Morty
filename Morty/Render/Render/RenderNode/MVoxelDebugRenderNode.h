@@ -10,13 +10,13 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/RenderGraph/MSinglePassRenderNode.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 #include "Basic/MBuffer.h"
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {
@@ -47,7 +47,7 @@ class MORTY_API MVoxelDebugRenderNode : public ISinglePassRenderNode
 
     const MBuffer*             GetVoxelDebugBuffer() const;
 
-    std::shared_ptr<MTexture>  GetVoxelGITexture() const;
+    MTexturePtr                GetVoxelGITexture() const;
 
 protected:
     void                                            InitializeBuffer();

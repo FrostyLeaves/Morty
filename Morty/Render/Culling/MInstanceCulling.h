@@ -2,7 +2,7 @@
 
 #include "Utility/MGlobal.h"
 #include "Material/MMaterial.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MFunction.h"
 

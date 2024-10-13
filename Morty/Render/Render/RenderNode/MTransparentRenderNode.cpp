@@ -19,15 +19,15 @@
 
 #include "Utility/MGlobal.h"
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MTextureResourceUtil.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderNode, ISinglePassRenderNode)
 
-const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Transparent Back Buffer Output");
+const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Transparent Back");
 
 
 void            MTransparentRenderNode::Initialize(MEngine* pEngine)

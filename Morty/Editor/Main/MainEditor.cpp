@@ -26,7 +26,7 @@
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderCommand.h"
-#include "RenderProgram/MDeferredRenderProgram.h"
+#include "Render/MDeferredRenderProgram.h"
 #include "Scene/MScene.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
@@ -34,10 +34,10 @@
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/MaterialView.h"
-#include "Widget/MessageWidget.h"
 #include "Widget/ModelConvertView.h"
 #include "Widget/NodeTreeView.h"
 #include "Widget/PropertyView.h"
+#include "Widget/RenderGraphView.h"
 #include "Widget/RenderSettingView.h"
 #include "Widget/ResourceView.h"
 #include "Widget/TaskGraphView.h"
@@ -62,20 +62,14 @@ bool    MainEditor::Initialize(MEngine* pEngine)
     m_childView.push_back(new MaterialView());
     m_childView.push_back(new ResourceView());
     m_childView.push_back(new ModelConvertView());
-    m_childView.push_back(new MessageWidget());
     m_childView.push_back(new MainView());
 
     auto pTaskGraphView = new TaskGraphView("Task Graph");
     pTaskGraphView->SetTaskGraph(GetEngine()->GetMainGraph());
     m_childView.push_back(pTaskGraphView);
 
-
-    m_renderGraphView = new TaskGraphView("Render Graph");
+    m_renderGraphView = new RenderGraphView("Render Graph");
     m_childView.push_back(m_renderGraphView);
-
-    m_renderSettingView = new RenderSettingView();
-    m_childView.push_back(m_renderSettingView);
-
 
     for (BaseWidget* pChild: m_childView)
     {
@@ -123,10 +117,7 @@ void       MainEditor::SetScene(MScene* pScene)
 
     m_sceneTexture = CreateSceneViewer("MainScene", m_scene);
 
-    m_renderGraphView->SetTaskGraph(m_sceneTexture->GetRenderProgram()->GetRenderGraph());
-    m_renderSettingView->SetRenderGraph(
-            m_sceneTexture->GetRenderProgram()->GetRenderGraph()->DynamicCast<MRenderGraph>()->GetRenderGraphSetting()
-    );
+    m_renderGraphView->SetRenderProgram(m_sceneTexture->GetRenderProgram());
 }
 
 void                         MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
@@ -158,7 +149,7 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
     {
         pSceneViewer->UpdateTexture(pRenderCommand);
 
-        if (std::shared_ptr<MTexture> pRenderTexture = pSceneViewer->GetTexture())
+        if (MTexturePtr pRenderTexture = pSceneViewer->GetTexture())
         {
             vRenderTextures.push_back(pRenderTexture.get());
         }
@@ -240,11 +231,11 @@ void MainEditor::ShowShadowMapView()
 
     if (ImGui::Begin("DebugView", &m_showDebugView))
     {
-        std::vector<std::shared_ptr<MTexture>> vTexture = m_sceneTexture->GetAllOutputTexture();
+        MTextureArray vTexture = m_sceneTexture->GetAllOutputTexture();
         if (!vTexture.empty())
         {
             size_t nImageSize = 0;
-            for (std::shared_ptr<MTexture> pTexture: vTexture)
+            for (MTexturePtr pTexture: vTexture)
             {
                 if (pTexture) { nImageSize += pTexture->GetSize().z; }
             }
@@ -281,7 +272,7 @@ void MainEditor::ShowView(BaseWidget* pView)
 
     if (bVisible)
     {
-        if (ImGui::Begin(pView->GetName().c_str(), &bVisible, ImGuiWindowFlags_NoCollapse)) { pView->Render(); }
+        if (ImGui::Begin(pView->GetName().c_str(), &bVisible, pView->GetWindowFlags())) { pView->Render(); }
 
         pView->SetVisible(bVisible);
         ImGui::End();

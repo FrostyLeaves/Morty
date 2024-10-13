@@ -20,8 +20,8 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Utility/MBounds.h"
 
 #include "Utility/MGlobal.h"
@@ -30,14 +30,14 @@
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderNode, ISinglePassRenderNode)
-const MStringId MShadowMapRenderNode::ShadowMapBufferOutput = MStringId("Shadow Map Buffer Output");
+const MStringId MShadowMapRenderNode::ShadowMapBufferOutput = MStringId("Shadow Map");
 
 class ShadowMapTexture : public IGetTextureAdapter
 {
 public:
-    virtual std::shared_ptr<MTexture> GetTexture() { return pTexture; }
+    virtual MTexturePtr GetTexture() { return pTexture; }
 
-    std::shared_ptr<MTexture>         pTexture;
+    MTexturePtr         pTexture;
 };
 
 void MShadowMapRenderNode::Initialize(MEngine* pEngine)

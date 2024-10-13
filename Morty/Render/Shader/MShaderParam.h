@@ -76,17 +76,17 @@ struct MShaderTextureParam : public MShaderParam {
     MShaderTextureParam();
 
 public:
-    virtual void                                 SetTexture(std::shared_ptr<MTexture> pTexture);
+    virtual void                                 SetTexture(MTexturePtr pTexture);
 
-    virtual std::shared_ptr<MTexture>            GetTexture() { return pTexture; }
+    virtual MTexturePtr                          GetTexture() { return pTexture; }
 
     virtual std::shared_ptr<MShaderTextureParam> Clone() const;
 
 public:
-    std::shared_ptr<MTexture> pTexture    = nullptr;
-    void*                     pImageIdent = nullptr;
-    METextureType             eType       = METextureType::ETexture2D;
-    MESamplerFormat           eFormat     = MESamplerFormat::EFloat;
+    MTexturePtr     pTexture    = nullptr;
+    void*           pImageIdent = nullptr;
+    METextureType   eType       = METextureType::ETexture2D;
+    MESamplerFormat eFormat     = MESamplerFormat::EFloat;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkDescriptorImageInfo m_vkImageInfo = {};

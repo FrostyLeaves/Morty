@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Object/MObject.h"
 
 namespace morty
@@ -30,24 +30,23 @@ class MORTY_API MIRenderProgram : public MObject
 public:
     MORTY_INTERFACE(MIRenderProgram);
 
-    MIRenderProgram();
+    void                  SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
 
-    virtual ~MIRenderProgram() {}
+    MViewport*            GetViewport() { return m_viewport; }
 
-    void                                           SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
+    virtual void          Render(MIRenderCommand* pPrimaryCommand) = 0;
 
-    MViewport*                                     GetViewport() { return m_viewport; }
+    virtual MTexturePtr   GetOutputTexture() = 0;
 
-    virtual void                                   Render(MIRenderCommand* pPrimaryCommand) = 0;
+    virtual MTextureArray GetOutputTextures();
 
-    virtual std::shared_ptr<MTexture>              GetOutputTexture() = 0;
+    virtual MRenderGraph* GetRenderGraph() = 0;
 
-    virtual std::vector<std::shared_ptr<MTexture>> GetOutputTextures();
-
-    virtual MTaskGraph*                            GetRenderGraph() = 0;
+    virtual void          LoadGraph(const std::vector<MByte>& buffer) = 0;
+    virtual void          SaveGraph(std::vector<MByte>& output)       = 0;
 
 private:
-    MViewport* m_viewport;
+    MViewport* m_viewport = nullptr;
 };
 
 }// namespace morty

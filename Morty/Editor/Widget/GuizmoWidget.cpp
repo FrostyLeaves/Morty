@@ -3,7 +3,7 @@
 
 #include "Basic/MViewport.h"
 #include "Engine/MEngine.h"
-#include "RenderProgram/MRenderInfo.h"
+#include "Render/MRenderInfo.h"
 #include "Resource/MResource.h"
 #include "Scene/MEntity.h"
 #include "System/MRenderSystem.h"
@@ -29,17 +29,15 @@ void GuizmoWidget::Render()
     MSceneComponent* pEditorSceneComponent = pEntity->GetComponent<MSceneComponent>();
     if (nullptr == pEditorSceneComponent) { return; }
 
-    MViewport*       pViewport = GetViewport();
+    MViewport*        pViewport = GetViewport();
 
-    MRenderSystem*   pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    MEntity*         pCameraEntity = pViewport->GetCamera();
-    MSceneComponent* pCameraSceneComponent =
-            pCameraEntity->GetComponent<MSceneComponent>();
-    MCameraComponent* pCameraComponent = pCameraEntity->GetComponent<MCameraComponent>();
+    MRenderSystem*    pRenderSystem         = GetEngine()->FindSystem<MRenderSystem>();
+    MEntity*          pCameraEntity         = pViewport->GetCamera();
+    MSceneComponent*  pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
+    MCameraComponent* pCameraComponent      = pCameraEntity->GetComponent<MCameraComponent>();
 
-    Matrix4           cameraView =
-            pRenderSystem->GetCameraViewMatrix(pCameraSceneComponent).Transposed();
-    Matrix4 cameraProjection = pRenderSystem
+    Matrix4           cameraView       = pRenderSystem->GetCameraViewMatrix(pCameraSceneComponent).Transposed();
+    Matrix4           cameraProjection = pRenderSystem
                                        ->GetCameraProjectionMatrix(
                                                pCameraComponent,
                                                pViewport->GetWidth(),
@@ -59,9 +57,7 @@ void GuizmoWidget::Render()
             (float*) editorMatrix.m
     );
 
-    editorMatrix =
-            (pEditorSceneComponent->GetParentWorldTransform().Inverse() *
-             editorMatrix.Transposed());
+    editorMatrix = (pEditorSceneComponent->GetParentWorldTransform().Inverse() * editorMatrix.Transposed());
 
     if (ImGuizmo::IsUsing())
     {
@@ -77,9 +73,6 @@ void GuizmoWidget::Render()
     }
 }
 
-void GuizmoWidget::Initialize(MainEditor* pMainEditor)
-{
-    BaseWidget::Initialize(pMainEditor);
-}
+void GuizmoWidget::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
 
 void GuizmoWidget::Release() {}

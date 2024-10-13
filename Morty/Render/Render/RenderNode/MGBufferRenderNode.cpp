@@ -8,20 +8,20 @@
 #include "Mesh/MMeshManager.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Scene/MScene.h"
 
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "TaskGraph/MTaskGraph.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MGBufferRenderNode, ISinglePassRenderNode)
 
-const MStringId MGBufferRenderNode::GBufferAlbedoMetallic     = MStringId("GBuffer Albedo Metallic Buffer");
-const MStringId MGBufferRenderNode::GBufferNormalRoughness    = MStringId("GBuffer Normal Roughness Buffer");
-const MStringId MGBufferRenderNode::GBufferPositionAmbientOcc = MStringId("GBuffer Position AmbientOcc Buffer");
-const MStringId MGBufferRenderNode::GBufferDepthBufferOutput  = MStringId("GBuffer Depth Buffer");
+const MStringId MGBufferRenderNode::GBufferAlbedoMetallic     = MStringId("GBuffer Albedo Metallic");
+const MStringId MGBufferRenderNode::GBufferNormalRoughness    = MStringId("GBuffer Normal Roughness");
+const MStringId MGBufferRenderNode::GBufferPositionAmbientOcc = MStringId("GBuffer Position AmbientOcc");
+const MStringId MGBufferRenderNode::GBufferDepthBufferOutput  = MStringId("GBuffer Depth");
 
 void            MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
@@ -44,11 +44,11 @@ void            MGBufferRenderNode::Render(const MRenderInfo& info, const std::v
 class MORTY_API MGBufferTextures : public IGBufferAdapter
 {
 public:
-    std::vector<std::shared_ptr<MTexture>> GetBackTextures() const { return vBackTextures; }
-    std::shared_ptr<MTexture>              GetDepthTexture() const { return pDepthTexture; }
+    [[nodiscard]] MTextureArray GetBackTextures() const override { return vBackTextures; }
+    [[nodiscard]] MTexturePtr   GetDepthTexture() const override { return pDepthTexture; }
 
-    std::vector<std::shared_ptr<MTexture>> vBackTextures;
-    std::shared_ptr<MTexture>              pDepthTexture;
+    MTextureArray               vBackTextures;
+    MTexturePtr                 pDepthTexture;
 };
 
 std::shared_ptr<IGBufferAdapter> MGBufferRenderNode::CreateGBuffer()

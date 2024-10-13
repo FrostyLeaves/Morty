@@ -22,6 +22,26 @@ MRenderTaskTarget* MRenderTargetManager::CreateRenderTarget(const MStringId& nam
     return m_renderTaskTable[name].get();
 }
 
+MRenderTaskTarget* MRenderTargetManager::CreateRenderTarget(const MRenderTargetManager::RenderTargetDesc& desc)
+{
+    return CreateRenderTarget(desc.name)
+            ->InitName(desc.name)
+            ->InitResizePolicy(desc.resizePolicy, desc.scale)
+            ->InitSharedPolicy(desc.sharedPolicy)
+            ->InitTextureDesc(desc.textureDesc);
+}
+
+MRenderTaskTarget* MRenderTargetManager::CreateRenderTarget(const fbs::MRenderGraphTargetDesc& fbDesc)
+{
+    return CreateRenderTarget(RenderTargetDesc{
+            .name         = MStringId(fbDesc.name()->str()),
+            .scale        = fbDesc.scale(),
+            .resizePolicy = fbDesc.resize_policy(),
+            .sharedPolicy = fbDesc.shared_policy(),
+            .textureDesc  = MTexture::CreateTextureFbs(*fbDesc.texture_desc()),
+    });
+}
+
 MRenderTaskTarget* MRenderTargetManager::FindRenderTarget(const MStringId& name) const
 {
     const auto findResult = m_renderTaskTable.find(name);
@@ -30,7 +50,7 @@ MRenderTaskTarget* MRenderTargetManager::FindRenderTarget(const MStringId& name)
     return nullptr;
 }
 
-std::shared_ptr<MTexture> MRenderTargetManager::FindRenderTexture(const MStringId& name) const
+MTexturePtr MRenderTargetManager::FindRenderTexture(const MStringId& name) const
 {
     if (const auto pResult = FindRenderTarget(name)) { return pResult->GetTexture(); }
 
@@ -43,7 +63,7 @@ void MRenderTargetManager::ResizeRenderTarget(const Vector2i& size)
 
     for (const auto& pr: m_renderTaskTable)
     {
-        if (pr.second->GetResizePolicy() == MRenderTaskTarget::ResizePolicy::Scale)
+        if (pr.second->GetResizePolicy() == MEResizePolicy::Scale)
         {
             auto     pTexture = pr.second->GetTexture();
 
@@ -58,17 +78,31 @@ void MRenderTargetManager::ResizeRenderTarget(const Vector2i& size)
     }
 }
 
-std::vector<std::shared_ptr<MTexture>> MRenderTargetManager::GetOutputTextures() const
+MTextureArray MRenderTargetManager::GetOutputTextures() const
 {
-    std::vector<std::shared_ptr<MTexture>> output;
+    MTextureArray output;
 
     for (const auto& pr: m_renderTaskTable)
     {
-        if (pr.second->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Exclusive)
-        {
-            output.push_back(pr.second->GetTexture());
-        }
+        if (pr.second->GetSharedPolicy() == MESharedPolicy::Exclusive) { output.push_back(pr.second->GetTexture()); }
     }
 
     return output;
+}
+
+flatbuffers::Offset<void>
+MRenderTargetManager::SerializeRenderTarget(MRenderTaskTarget* target, flatbuffers::FlatBufferBuilder& builder)
+{
+    auto fbName        = builder.CreateString(target->GetName().ToString());
+    auto fbTextureDesc = MTexture::SerializeFbs(target->GetTexture()->GetTextureDesc(), builder);
+
+    fbs::MRenderGraphTargetDescBuilder targetBuilder(builder);
+
+    targetBuilder.add_name(fbName);
+    targetBuilder.add_scale(target->GetScale());
+    targetBuilder.add_resize_policy(target->GetResizePolicy());
+    targetBuilder.add_shared_policy(target->GetSharedPolicy());
+    targetBuilder.add_texture_desc(fbTextureDesc.o);
+
+    return targetBuilder.Finish().Union();
 }

@@ -13,8 +13,8 @@
 #include "RHI/MRenderPass.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
 
@@ -29,18 +29,13 @@ class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
     MORTY_CLASS(MRenderTaskNodeOutput)
 public:
-    void                      SetName(const MStringId& name) { m_strOutputName = name; }
+    void               SetRenderTarget(MRenderTaskTarget* pRenderTarget);
 
-    MStringId                 GetName() const { return m_strOutputName; }
+    MRenderTaskTarget* GetRenderTarget() const { return m_renderTaskTarget; }
 
-    void                      SetRenderTarget(MRenderTaskTarget* pRenderTarget);
-
-    MRenderTaskTarget*        GetRenderTarget() const { return m_renderTaskTarget; }
-
-    std::shared_ptr<MTexture> GetTexture() const;
+    MTexturePtr        GetTexture() const;
 
 private:
-    MStringId          m_strOutputName;
     MRenderTaskTarget* m_renderTaskTarget = nullptr;
 };
 

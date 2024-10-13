@@ -1,17 +1,12 @@
-#include "RenderProgram/MIRenderProgram.h"
+#include "Render/MIRenderProgram.h"
 
 using namespace morty;
 
 MORTY_INTERFACE_IMPLEMENT(MIRenderProgram, MObject)
 
-MIRenderProgram::MIRenderProgram()
-    : MObject()
-    , m_viewport(nullptr)
-{}
-
-std::vector<std::shared_ptr<MTexture>> MIRenderProgram::GetOutputTextures()
+MTextureArray MIRenderProgram::GetOutputTextures()
 {
-    if (std::shared_ptr<MTexture> pTexture = GetOutputTexture()) { return {pTexture}; }
+    if (MTexturePtr pTexture = GetOutputTexture()) { return {pTexture}; }
 
     return {};
 }

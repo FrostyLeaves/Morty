@@ -8,14 +8,14 @@
 #include "Mesh/MMeshManager.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            MToneMappingRenderNode::ToneMappingResult = MStringId("Tone Mapping Output");
+const MStringId            MToneMappingRenderNode::ToneMappingResult = MStringId("Tone Mapping");
 
 std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 {

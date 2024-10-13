@@ -24,8 +24,8 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MeshRender/MCullingResultRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MeshRender/MCullingResultRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/MBounds.h"
 
@@ -33,8 +33,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDebugRenderNode, ISinglePassRenderNode)
 
-const MStringId MDebugRenderNode::BackBufferOutput  = MStringId("Debug Back Buffer Output");
-const MStringId MDebugRenderNode::DepthBufferOutput = MStringId("Debug Depth Buffer Output");
+const MStringId MDebugRenderNode::BackBufferOutput  = MStringId("Debug Buffer");
+const MStringId MDebugRenderNode::DepthBufferOutput = MStringId("Debug Depth");
 
 void            MDebugRenderNode::Render(const MRenderInfo& info)
 {

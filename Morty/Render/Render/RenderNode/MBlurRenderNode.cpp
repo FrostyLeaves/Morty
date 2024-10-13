@@ -4,8 +4,8 @@
 #include "Material/MMaterial.h"
 #include "Scene/MScene.h"
 
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
-#include "RenderProgram/RenderGraph/MRenderGraphSetting.h"
+#include "Render/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraphSetting.h"
 
 using namespace morty;
 

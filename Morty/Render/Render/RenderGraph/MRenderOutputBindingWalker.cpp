@@ -5,9 +5,9 @@
 #include "Material/MMaterial.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 

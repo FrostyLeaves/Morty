@@ -13,8 +13,8 @@
 
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
 
 namespace morty
 {
@@ -22,7 +22,6 @@ namespace morty
 class MORTY_API MVRSTextureRenderNode : public MRenderTaskNode
 {
     MORTY_CLASS(MVRSTextureRenderNode)
-    static const MStringId VRS_TEXTURE;
 
 public:
     void     Initialize(MEngine* pEngine) override;

@@ -4,9 +4,9 @@
 #include "Material/MMaterial.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderCommon.h"
-#include "RenderProgram/RenderGraph/MRenderTaskNode.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MRenderTaskNode.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MUtils.h"
@@ -18,7 +18,7 @@ class MRenderTargetCacheQueue
 {
 
 public:
-    static size_t Hash(const MTextureDesc& desc, const MRenderTaskTarget::ResizePolicy eResizePolicy)
+    static size_t Hash(const MTextureDesc& desc, const MEResizePolicy eResizePolicy)
     {
         std::size_t res = 0;
         MUtils::HashCombine(res, desc.n3Size.x);
@@ -34,8 +34,7 @@ public:
         return res;
     }
 
-    std::shared_ptr<MTexture>
-    AllocTexture(const MTextureDesc& desc, const MRenderTaskTarget::ResizePolicy eResizePolicy, MIDevice* pDevice)
+    MTexturePtr AllocTexture(const MTextureDesc& desc, const MEResizePolicy eResizePolicy, MIDevice* pDevice)
     {
         const size_t hash = Hash(desc, eResizePolicy);
 
@@ -53,11 +52,7 @@ public:
         return pTexture;
     }
 
-    void RecoveryTexture(
-            const MTextureDesc&                   desc,
-            const MRenderTaskTarget::ResizePolicy eResizePolicy,
-            std::shared_ptr<MTexture>             pTexture
-    )
+    void RecoveryTexture(const MTextureDesc& desc, const MEResizePolicy eResizePolicy, MTexturePtr pTexture)
     {
         const size_t hash = Hash(desc, eResizePolicy);
 
@@ -76,9 +71,9 @@ public:
     }
 
 private:
-    std::map<size_t, std::queue<std::shared_ptr<MTexture>>> m_renderTargetCache;
+    std::map<size_t, std::queue<MTexturePtr>> m_renderTargetCache;
 
-    std::vector<std::shared_ptr<MTexture>>                  m_allTextures;
+    MTextureArray                             m_allTextures;
 };
 
 }// namespace morty
@@ -99,6 +94,8 @@ MRenderTargetBindingWalker::~MRenderTargetBindingWalker()
     for (auto pTexture: m_exclusiveTextures) { pTexture->DestroyBuffer(pRenderSystem->GetDevice()); }
     m_exclusiveTextures.clear();
 }
+
+void MRenderTargetBindingWalker::SetForceExclusive(bool bForce) { m_forceExclusive = bForce; }
 
 void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
 {
@@ -179,7 +176,7 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskTarget* pRenderTar
 {
     const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
 
-    if (pRenderTarget->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Exclusive)
+    if (pRenderTarget->GetSharedPolicy() == MESharedPolicy::Exclusive || m_forceExclusive)
     {
         auto pTexture = MTexture::CreateTexture(pRenderTarget->GetTextureDesc());
         pTexture->GenerateBuffer(pRenderSystem->GetDevice());
@@ -188,7 +185,7 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskTarget* pRenderTar
 
         m_exclusiveTextures.push_back(pTexture);
     }
-    else if (pRenderTarget->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Shared)
+    else if (pRenderTarget->GetSharedPolicy() == MESharedPolicy::Shared)
     {
         if (m_targetAllocCount.find(pRenderTarget) == m_targetAllocCount.end())
         {
@@ -208,7 +205,7 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskTarget* pRenderTar
 
 void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskTarget* pRenderTarget)
 {
-    if (pRenderTarget->GetSharedPolicy() == MRenderTaskTarget::SharedPolicy::Shared)
+    if (!m_forceExclusive && pRenderTarget->GetSharedPolicy() == MESharedPolicy::Shared)
     {
         auto findCount = m_targetAllocCount.find(pRenderTarget);
         if (findCount == m_targetAllocCount.end()) { return; }

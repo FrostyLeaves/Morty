@@ -13,8 +13,8 @@
 #include "RHI/MRenderPass.h"
 #include "TaskGraph/MTaskNodeInput.h"
 
-#include "RenderProgram/MRenderInfo.h"
-#include "RenderProgram/RenderGraph/MRenderTargetManager.h"
+#include "Render/MRenderInfo.h"
+#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "Utility/MStringId.h"
 

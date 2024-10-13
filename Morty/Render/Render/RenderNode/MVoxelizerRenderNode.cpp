@@ -11,7 +11,7 @@
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Scene/MScene.h"
 
@@ -27,9 +27,9 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
-#include "RenderProgram/MFrameShaderPropertyBlock.h"
-#include "RenderProgram/MeshRender/MCullingResultSpecificMaterialRenderable.h"
-#include "RenderProgram/RenderGraph/MRenderGraph.h"
+#include "Render/MFrameShaderPropertyBlock.h"
+#include "Render/MeshRender/MCullingResultSpecificMaterialRenderable.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Utility/MBounds.h"
 #include "VXGI/MVoxelMapUtil.h"
 #include "Variant/MVariant.h"
@@ -38,7 +38,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderNode, ISinglePassRenderNode)
 
-const MStringId MVoxelizerRenderNode::VoxelizerBufferOutput = MStringId("Voxelizer Buffer Output");
+const MStringId MVoxelizerRenderNode::VoxelizerBufferOutput = MStringId("Voxelizer Buffer");
 
 class MVoxelMapPropertyDecorator : public IShaderPropertyUpdateDecorator
 {
@@ -131,13 +131,13 @@ std::shared_ptr<IShaderPropertyUpdateDecorator> MVoxelizerRenderNode::GetFramePr
     return m_framePropertyUpdateDecorator;
 }
 
-void                      MVoxelizerRenderNode::Resize(Vector2i size) { MORTY_UNUSED(size); }
+void           MVoxelizerRenderNode::Resize(Vector2i size) { MORTY_UNUSED(size); }
 
-const MBuffer*            MVoxelizerRenderNode::GetVoxelTableBuffer() const { return &m_voxelizerBuffer; }
+const MBuffer* MVoxelizerRenderNode::GetVoxelTableBuffer() const { return &m_voxelizerBuffer; }
 
-std::shared_ptr<MTexture> MVoxelizerRenderNode::GetVoxelGITexture() const { return m_voxelGITexture; }
+MTexturePtr    MVoxelizerRenderNode::GetVoxelGITexture() const { return m_voxelGITexture; }
 
-MBoundsAABB               MVoxelizerRenderNode::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const
+MBoundsAABB    MVoxelizerRenderNode::GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const
 {
     return MVoxelMapUtil::GetClipMapBounding(m_voxelSetting.vClipmap[nClipmapIdx]);
 }
