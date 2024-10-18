@@ -284,6 +284,9 @@ iOSInjectionProject/
 ### Xcode Patch ###
 **/xcshareddata/WorkspaceSettings.xcsettings
 
+##idea
+*.idea/
+
 
 # End of https://www.gitignore.io/api/swift,xcode,Cobjective-c,osx
 Morty/out
@@ -295,3 +298,4 @@ ThirdParty/__pycache__/
 Resource/Model/*
 Morty/compile_commands.json
 Morty/imgui.ini
+*.gen

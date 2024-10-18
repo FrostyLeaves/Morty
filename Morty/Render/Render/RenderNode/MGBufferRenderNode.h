@@ -18,7 +18,7 @@
 namespace morty
 {
 
-class MORTY_API MGBufferRenderNode : public ISinglePassRenderNode
+ATTR_RENDER_NODE_CLASS MGBufferRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MGBufferRenderNode)
 

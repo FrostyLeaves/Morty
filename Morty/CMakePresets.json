@@ -9,7 +9,8 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_OVERLAY_PORTS": "${sourceDir}/../ThirdParty/overlay_ports",
-        "GENERATOR_FOR_CLANGD": "ON"
+        "GENERATOR_FOR_CLANGD": "ON",
+        "PYTHON_VENV_PATH": "${sourceDir}/../Build/py_venv"
       }
     },
     {
@@ -23,7 +24,8 @@
         "MORTY_SHADER_COMPILER": "dxc",
         "CMAKE_C_COMPILER": "clang.exe",
         "CMAKE_CXX_COMPILER": "clang++.exe",
-        "MORTY_GENERATOR_FOR_CLANGD": "ON"
+        "MORTY_GENERATOR_FOR_CLANGD": "ON",
+        "MORTY_PROFILER": "ON"
       }
     },
     {

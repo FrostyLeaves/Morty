@@ -4,6 +4,7 @@
 #include "GraphEditor.h"
 #include "ImGuiFileDialog.h"
 #include "Property/PropertyBase.h"
+#include "Reflection/MRenderGraphNodeList.h"
 #include "Render/ImGui/imnodes.h"
 #include "Render/MIRenderProgram.h"
 #include "Render/RenderGraph/MRenderGraph.h"
@@ -185,6 +186,16 @@ void RenderGraphView::DrawMenu()
             {
                 ImGuiFileDialog::Instance()
                         ->OpenModal(m_graphSaveDialogId, "Save Render Graph", m_graphFileSuffix.c_str(), ".");
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Node"))
+        {
+            for (const auto& Name: MRenderGraphNodeList::Names)
+            {
+                if (ImGui::MenuItem(Name.c_str(), "")) {}
             }
 
             ImGui::EndMenu();

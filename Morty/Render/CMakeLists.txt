@@ -23,7 +23,7 @@ add_library(Render OBJECT
 ############################################################
 
 target_include_directories(Render
-    PUBLIC 
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/Flatbuffer
 )
@@ -117,3 +117,4 @@ endif()
 target_link_libraries(Render PUBLIC Core)
 
 generate_flatbuffers_header(Render)
+generate_reflection(Render)

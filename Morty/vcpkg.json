@@ -66,12 +66,17 @@
       "name": "pugixml"
     },
     {
+      "name": "python3"
+    },
+    {
       "name": "rapidjson"
     },
     {
       "name": "sdl2",
       "default-features": false,
-      "features": [ "vulkan" ]
+      "features": [
+        "vulkan"
+      ]
     },
     {
       "name": "spirv-cross",
@@ -83,6 +88,9 @@
     {
       "name": "stb",
       "default-features": false
+    },
+    {
+      "name": "tracy"
     },
     {
       "name": "utfcpp"

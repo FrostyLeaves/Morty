@@ -1,8 +1,12 @@
 #coding:UTF-8
 import sys, getopt, os, time
 import datetime
+from distutils.spawn import find_executable
 import clang.cindex # type: ignore
 from clang.cindex import * # type: ignore
+#clang.cindex.Config.set_library_file( 'libclang.dll' ) #clang path
+
+import render_graph_node_collector
 
 registed_attr_name_list = [
     "test_attr"
@@ -10,22 +14,15 @@ registed_attr_name_list = [
 
 parse_empty = "empty.cpp"
 
-def check_attr(node):
-    
-    if node.spelling != '' and node.kind == clang.cindex.CursorKind.ANNOTATE_ATTR:
-        if node.spelling in registed_attr_name_list:
-            return True
-    return False
+collector_list = []
 
 def walk(node, parent, deep):
+    if node.spelling != '' and node.kind == clang.cindex.CursorKind.ANNOTATE_ATTR:
+        for collector in collector_list:
+            if collector.check_attr(node.spelling):
+                collector.add_node(node, parent)
+        
     for child_node in node.get_children():
-        if (check_attr(child_node)):
-            for i in range(0, deep): print('  ', end = '')
-            print ('name: %s, parent: %s' % (node.spelling or node.displayname, parent.displayname))
-            for i in range(0, deep): print('  ', end = '')
-            print ('kind: %s' % (node.kind))
-            for i in range(0, deep): print('  ', end = '')
-            print ('type: %s' % (node.type.spelling))
         walk(child_node, node, deep + 1)
 
 
@@ -47,12 +44,15 @@ def main(argv):
     if len(argv) < 1:
         return
     
-    path = argv[0]
+    source_path = argv[0]
     build_dir = argv[1]
-    clang.cindex.Config.set_library_file(argv[2]) #clang path
 
     filterSuffix = [".h"]
     clang_index = clang.cindex.Index.create()
+
+
+    collector_list.append(render_graph_node_collector.Collector())
+
 
     compdb = clang.cindex.CompilationDatabase.fromDirectory(build_dir)
     commands = compdb.getCompileCommands(parse_empty)
@@ -67,8 +67,7 @@ def main(argv):
 
 
     compile_source = ""
-    print("args: ", file_args)
-    for mainDir, _, fileNames in os.walk(path):
+    for mainDir, _, fileNames in os.walk(source_path):
 
         for fileName in fileNames:
             fullPath = os.path.join(mainDir, fileName)
@@ -76,6 +75,10 @@ def main(argv):
             if suffix in filterSuffix:
                 compile_source += '#include \"'+fullPath+'\"\n'
     clang_parse(compile_source, clang_index, file_args)
+
+
+    for collector in collector_list:
+        collector.output(source_path)
 
 if __name__ == "__main__":
     start_time = time.time()

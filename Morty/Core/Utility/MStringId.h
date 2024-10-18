@@ -20,15 +20,16 @@ public:
 
     explicit MStringId(std::string_view strview);
 
-    bool               operator==(const MStringId& other) const;
+    bool                             operator==(const MStringId& other) const;
 
-    bool               operator<(const MStringId& other) const;
+    bool                             operator<(const MStringId& other) const;
 
-    size_t             Hash() const { return m_hash; }
+    [[nodiscard]] size_t             Hash() const { return m_hash; }
 
-    const std::string& ToString() const { return *m_string; }
+    [[nodiscard]] const std::string& ToString() const { return *m_string; }
+    [[nodiscard]] const char*        c_str() const { return m_string->c_str(); }
 
-    size_t             GetClashIndex() const;
+    [[nodiscard]] size_t             GetClashIndex() const;
 
 private:
     //read only
