@@ -91,7 +91,7 @@ MRenderTargetBindingWalker::~MRenderTargetBindingWalker()
     m_cacheQueue->Release(pRenderSystem->GetDevice());
     MORTY_SAFE_DELETE(m_cacheQueue);
 
-    for (auto pTexture: m_exclusiveTextures) { pTexture->DestroyBuffer(pRenderSystem->GetDevice()); }
+    for (const auto& pTexture: m_exclusiveTextures) { pTexture->DestroyBuffer(pRenderSystem->GetDevice()); }
     m_exclusiveTextures.clear();
 }
 
@@ -106,7 +106,7 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
 
     while (!vNodeStack.empty())
     {
-        MRenderTaskNode* pCurrentNode = vNodeStack.back()->DynamicCast<MRenderTaskNode>();
+        auto* pCurrentNode = vNodeStack.back()->DynamicCast<MRenderTaskNode>();
         vNodeStack.pop_back();
 
         AllocRenderTarget(pCurrentNode);

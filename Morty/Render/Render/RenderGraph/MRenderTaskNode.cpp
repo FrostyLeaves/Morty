@@ -89,17 +89,20 @@ flatbuffers::Offset<void> MRenderTaskNode::Serialize(flatbuffers::FlatBufferBuil
     auto                        fbOutputTargetName = fbb.CreateVector(outputTargetName);
 */
 
-    auto                        fbName = fbb.CreateString(GetNodeName().c_str());
+    auto                        fbSuper = MTaskNode::Serialize(fbb);
+    auto                        fbName  = fbb.CreateString(GetNodeName().c_str());
 
-    fbs::MRenderTaskNodeBuilder renderNodeBuilder(fbb);
-    renderNodeBuilder.add_name(fbName);
+    fbs::MRenderTaskNodeBuilder builder(fbb);
+    builder.add_super(fbSuper.o);
+    builder.add_name(fbName);
 
-    return renderNodeBuilder.Finish().Union();
+    return builder.Finish().Union();
 }
 void MRenderTaskNode::Deserialize(const void* flatbuffer)
 {
     const auto* fbRenderNode = reinterpret_cast<const fbs::MRenderTaskNode*>(flatbuffer);
 
+    MTaskNode::Deserialize(fbRenderNode->super());
     m_strNodeName = MStringId(fbRenderNode->name()->c_str());
 
     /*

@@ -25,6 +25,7 @@ table MRenderGraphTargetDesc
 
 table MRenderTaskNode
 {
+    super: MTaskNode;
     name: string;
 }
 
