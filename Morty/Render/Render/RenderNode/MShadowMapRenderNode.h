@@ -22,20 +22,20 @@ class MTaskNode;
 class IRenderable;
 class MIRenderCommand;
 
-class MORTY_API MShadowMapRenderNode : public ISinglePassRenderNode
+REFL_RENDER_NODE_CLASS MShadowMapRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MShadowMapRenderNode)
     static const MStringId ShadowMapBufferOutput;
 
 public:
-    void                                Initialize(MEngine* pEngine) override;
+    void Initialize(MEngine * pEngine) override;
 
-    void                                Render(const MRenderInfo& info) override;
-    void                                Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void Render(const MRenderInfo& info) override;
+    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-    std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
+    [[nodiscard]] std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
 
-    std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() override;
+    std::shared_ptr<IShaderPropertyUpdateDecorator>   GetFramePropertyDecorator() override;
 
 protected:
     void                               OnCreated() override;

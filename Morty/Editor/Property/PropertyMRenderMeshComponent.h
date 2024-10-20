@@ -23,14 +23,13 @@ public:
     virtual void EditEntity(MEntity* pEntity) override
     {
 
-        if (MRenderMeshComponent* pMeshComponent =
-                    pEntity->GetComponent<MRenderMeshComponent>())
+        if (MRenderMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
         {
             if (ShowNodeBegin("MeshComponent"))
             {
                 if (ShowNodeBegin("Model Mesh"))
                 {
-                    PROPERTY_VALUE_EDIT(
+                    PROPERTY_VALUE_GET_SET_EDIT(
                             pMeshComponent,
                             "DirShadow",
                             bool,
@@ -53,13 +52,10 @@ public:
                             pMaterialResource,
                             [pMeshComponent](const MString& strNewFilePath) {
                                 MResourceSystem* pResourceSystem =
-                                        pMeshComponent->GetEngine()
-                                                ->FindSystem<MResourceSystem>();
+                                        pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
                                 if (std::shared_ptr<MMaterialResource> pMaterialResource =
                                             MTypeClass::DynamicCast<MMaterialResource>(
-                                                    pResourceSystem->LoadResource(
-                                                            strNewFilePath
-                                                    )
+                                                    pResourceSystem->LoadResource(strNewFilePath)
                                             ))
                                 {
                                     pMeshComponent->SetMaterial(pMaterialResource);
@@ -70,22 +66,14 @@ public:
                     ShowValueEnd();
 
                     ShowValueBegin("Instance");
-                    if (ImGui::Button(
-                                "Edit Material",
-                                ImVec2(ImGui::GetContentRegionAvail().x, 0)
-                        ))
+                    if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                     {
                         int nResID = MGlobal::M_INVALID_INDEX;
                         if (pMeshComponent->GetMaterial())
                         {
-                            nResID = static_cast<int>(
-                                    pMeshComponent->GetMaterial()->GetResourceID()
-                            );
+                            nResID = static_cast<int>(pMeshComponent->GetMaterial()->GetResourceID());
                         }
-                        NotifyManager::GetInstance()->SendNotify(
-                                "Edit Material",
-                                MVariant(nResID)
-                        );
+                        NotifyManager::GetInstance()->SendNotify("Edit Material", MVariant(nResID));
                     }
                     ShowValueEnd();
 
@@ -96,13 +84,11 @@ public:
                 if (ShowNodeBegin("Render"))
                 {
                     ShowValueBegin("ShadowType");
-                    MRenderMeshComponent::MEShadowType eType =
-                            pMeshComponent->GetShadowType();
-                    size_t nSelected = (size_t) eType;
+                    MRenderMeshComponent::MEShadowType eType     = pMeshComponent->GetShadowType();
+                    size_t                             nSelected = (size_t) eType;
                     if (EditEnum({"None", "OnlyDirection", "AllLights"}, nSelected))
                     {
-                        pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType
-                        ) nSelected);
+                        pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType) nSelected);
                     }
                     ShowValueEnd();
 

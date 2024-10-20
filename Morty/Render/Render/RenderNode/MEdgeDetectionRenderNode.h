@@ -20,7 +20,7 @@
 namespace morty
 {
 
-class MORTY_API MEdgeDetectionRenderNode : public MBasicPostProcessRenderNode
+REFL_RENDER_NODE_CLASS MEdgeDetectionRenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MEdgeDetectionRenderNode)
 

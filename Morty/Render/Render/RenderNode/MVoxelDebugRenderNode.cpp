@@ -231,11 +231,12 @@ void MVoxelDebugRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 {
     return {
-            {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
+            {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureFormat::UNorm_RGBA8, METextureBarrierStage::EUnknow},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, {true, MColor::Black_T}}, {DepthBufferOutput, {true, MColor::Black_T}}};
+    return {{BackBufferOutput, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}},
+            {DepthBufferOutput, METextureFormat::Depth, {true, MColor::Black_T}}};
 }

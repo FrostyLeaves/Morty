@@ -24,6 +24,7 @@
 #include "System/MResourceSystem.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMaterialName.h"
+#include "Flatbuffer/MDeferredLightingRenderNode_generated.h"
 
 using namespace morty;
 
@@ -109,12 +110,14 @@ void MDeferredLightingRenderNode::BindTarget()
                 MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP,
                 GetInputTexture(MGBufferRenderNode::GBufferDepthBufferOutput)
         );
-        /*
-        pParams->SetTexture(
-                MShaderPropertyName::GBUFFER_TEXTURE_SSAO,
-                GetInputTexture(MHBAOBlurRenderNodeH::BlurOutput)
-        );
-*/
+
+        if (EnableAO)
+        {
+            pParams->SetTexture(
+                    MShaderPropertyName::GBUFFER_TEXTURE_SSAO,
+                    GetInputTexture(MHBAOBlurRenderNodeH::BlurOutput)
+            );
+        }
     }
 
     AutoBindBarrierTexture();
@@ -123,21 +126,47 @@ void MDeferredLightingRenderNode::BindTarget()
 
 std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
 {
-    return {
-            {MGBufferRenderNode::GBufferAlbedoMetallic, METextureBarrierStage::EPixelShaderSample},
-            {MGBufferRenderNode::GBufferNormalRoughness, METextureBarrierStage::EPixelShaderSample},
-            {MGBufferRenderNode::GBufferPositionAmbientOcc, METextureBarrierStage::EPixelShaderSample},
-            {MShadowMapRenderNode::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample},
-    //{MHBAOBlurRenderNodeH::BlurOutput, METextureBarrierStage::EPixelShaderSample},
-#if MORTY_VXGI_ENABLE
-            {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
-#endif
+    std::vector<MRenderTaskInputDesc> result = {
+            {MGBufferRenderNode::GBufferAlbedoMetallic,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
+            {MGBufferRenderNode::GBufferNormalRoughness,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
+            {MGBufferRenderNode::GBufferPositionAmbientOcc,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
+            {MShadowMapRenderNode::ShadowMapBufferOutput,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample}
     };
+    if (EnableAO)
+    {
+        result.push_back(
+                {MHBAOBlurRenderNodeH::BlurOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample}
+        );
+    }
+#if MORTY_VXGI_ENABLE
+    {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
+#endif
+
+            return result;
 }
 
 std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderNode::InitOutputDesc()
 {
     return {
-            {DeferredLightingOutput, {true, MColor::Black_T}},
+            {DeferredLightingOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
     };
 }
+flatbuffers::Offset<void> MDeferredLightingRenderNode::Serialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    auto                                    super = MRenderTaskNode::Serialize(fbb);
+
+    fbs::MDeferredLightingRenderNodeBuilder builder(fbb);
+    builder.add_super(super.o);
+    builder.add_enable_ao(EnableAO);
+
+    return builder.Finish().Union();
+}
+void MDeferredLightingRenderNode::Deserialize(const void* flatbuffer) { MRenderTaskNode::Deserialize(flatbuffer); }

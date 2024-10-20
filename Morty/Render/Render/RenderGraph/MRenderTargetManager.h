@@ -10,7 +10,6 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
-#include "MRenderTaskNode.h"
 #include "Object/MObject.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
@@ -55,7 +54,7 @@ public:
 
     static flatbuffers::Offset<void>
     SerializeRenderTarget(MRenderTaskTarget* target, flatbuffers::FlatBufferBuilder& builder);
-    
+
 protected:
     MRenderTaskTarget* CreateRenderTarget(const MStringId& name);
 

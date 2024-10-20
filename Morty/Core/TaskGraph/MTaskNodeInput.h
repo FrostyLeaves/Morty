@@ -9,6 +9,7 @@
 #pragma once
 #include "Utility/MGlobal.h"
 #include "Type/MType.h"
+#include "Utility/MStringId.h"
 
 namespace morty
 {
@@ -21,20 +22,20 @@ class MORTY_API MTaskNodeInput : public MTypeClass
 public:
     MTaskNodeInput();
 
-    void             LinkTo(MTaskNodeOutput* pOutput);
+    void                           LinkTo(MTaskNodeOutput* pOutput);
 
-    void             UnLink();
+    void                           UnLink();
 
 
-    size_t           GetIndex() const { return m_unIndex; }
-    MString          GetStringID() const;
+    [[nodiscard]] size_t           GetIndex() const { return m_unIndex; }
+    [[nodiscard]] MString          GetStringID() const;
 
-    void             SetName(const MString& strName) { m_strName = strName; }
-    const MString&   GetName() const { return m_strName; }
+    void                           SetName(const MStringId& strName) { m_strName = strName; }
+    [[nodiscard]] const MStringId& GetName() const { return m_strName; }
 
-    MTaskNode*       GetTaskNode() const { return pGraphNode; }
-    MTaskNode*       GetLinkedNode() const;
-    MTaskNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
+    [[nodiscard]] MTaskNode*       GetTaskNode() const { return pGraphNode; }
+    [[nodiscard]] MTaskNode*       GetLinkedNode() const;
+    [[nodiscard]] MTaskNodeOutput* GetLinkedOutput() const { return pLinkedOutput; }
 
 private:
     friend class MTaskNode;
@@ -42,7 +43,7 @@ private:
 
 private:
     size_t           m_unIndex;
-    MString          m_strName;
+    MStringId        m_strName;
     MTaskNode*       pGraphNode;
     MTaskNodeOutput* pLinkedOutput;
 };

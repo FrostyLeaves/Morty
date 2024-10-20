@@ -118,13 +118,19 @@ void MTransparentRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
 {
     return {
-            {MForwardRenderNode::BackBufferOutput, METextureBarrierStage::EPixelShaderWrite},
-            {MDeepPeelRenderNode::FrontTextureOutput, METextureBarrierStage::EPixelShaderSample},
-            {MDeepPeelRenderNode::BackTextureOutput, METextureBarrierStage::EPixelShaderSample},
+            {MForwardRenderNode::BackBufferOutput,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderWrite},
+            {MDeepPeelRenderNode::FrontTextureOutput,
+             METextureFormat::UNorm_RGBA8,
+             METextureBarrierStage::EPixelShaderSample},
+            {MDeepPeelRenderNode::BackTextureOutput,
+             METextureFormat::UNorm_RGBA8,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MTransparentRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, {false, MColor::Black_T}}};
+    return {{BackBufferOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {false, MColor::Black_T}}};
 }

@@ -8,7 +8,9 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderTaskNode, MTaskNode)
 
-void MRenderTaskNode::OnCreated()
+METextureFormat MRenderTaskNode::DefaultLinearSpaceFormat = METextureFormat::Float_RGBA16;
+
+void            MRenderTaskNode::OnCreated()
 {
     for (const auto& input: InitInputDesc())
     {
@@ -65,6 +67,57 @@ MTexturePtr MRenderTaskNode::GetOutputTexture(const MStringId& nIdx)
 MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx)
 {
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>();
+}
+flatbuffers::Offset<void> MRenderTaskNode::Serialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    /*
+    std::vector<flatbuffers::Offset<flatbuffers::String>> outputTargetName(GetOutputSize());
+    for (size_t nOutputIdx = 0; nOutputIdx < GetOutputSize(); ++nOutputIdx)
+    {
+        auto taskOutput = GetOutput(nOutputIdx);
+        if (!taskOutput) continue;
+        auto renderOutput = taskOutput->DynamicCast<MRenderTaskNodeOutput>();
+        if (!renderOutput) continue;
+
+        if (auto renderTarget = renderOutput->GetRenderTarget())
+        {
+            outputTargetName[nOutputIdx] = fbb.CreateString(renderTarget->GetName().ToString());
+        }
+        else { outputTargetName[nOutputIdx] = fbb.CreateString(""); }
+    }
+
+    auto                        fbOutputTargetName = fbb.CreateVector(outputTargetName);
+*/
+
+    auto                        fbName = fbb.CreateString(GetNodeName().c_str());
+
+    fbs::MRenderTaskNodeBuilder renderNodeBuilder(fbb);
+    renderNodeBuilder.add_name(fbName);
+
+    return renderNodeBuilder.Finish().Union();
+}
+void MRenderTaskNode::Deserialize(const void* flatbuffer)
+{
+    const auto* fbRenderNode = reinterpret_cast<const fbs::MRenderTaskNode*>(flatbuffer);
+
+    m_strNodeName = MStringId(fbRenderNode->name()->c_str());
+
+    /*
+    if (!fbRenderNode->output_name()) continue;
+
+    const size_t outputNum = fbRenderNode->output_name()->size();
+    for (size_t nOutputIdx = 0; nOutputIdx < outputNum; ++nOutputIdx)
+    {
+        if (nOutputIdx >= GetOutputSize()) continue;
+
+        auto outputName = fbRenderNode->output_name()->Get(nOutputIdx);
+        if (!outputName) continue;
+        auto renderTarget = rtManager->FindRenderTarget(MStringId(outputName->c_str()));
+        if (!renderTarget) continue;
+
+        renderNode->GetRenderOutput(nOutputIdx)->SetRenderTarget(renderTarget);
+    }
+*/
 }
 
 void               MRenderTaskTarget::SetTexture(const MTexturePtr& pTexture) { m_texture = pTexture; }

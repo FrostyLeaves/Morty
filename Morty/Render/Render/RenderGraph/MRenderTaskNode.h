@@ -14,11 +14,17 @@
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
+#include "Render/RenderGraph//MRenderTaskNodeInput.h"
+#include "Render/RenderGraph//MRenderTaskNodeOutput.h"
 #include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
-#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
 #include "Flatbuffer/MRenderTaskNode_generated.h"
+
+
+#define REFL_RENDER_NODE_CLASS    class MORTY_API [[clang::annotate("RenderGraphNode")]]
+#define REFL_RENDER_NODE_PROPERTY [[clang::annotate("RenderNodeProperty")]]
+
 
 namespace morty
 {
@@ -61,16 +67,6 @@ private:
     size_t         m_texelSize    = 1;
 };
 
-struct MRenderTaskInputDesc {
-    MStringId             name;
-    METextureBarrierStage barrier = METextureBarrierStage::EPixelShaderSample;
-};
-
-struct MRenderTaskOutputDesc {
-    MStringId              name;
-    MPassTargetDescription renderDesc;
-};
-
 class MORTY_API MRenderTaskNode : public MTaskNode
 {
     MORTY_CLASS(MRenderTaskNode)
@@ -82,6 +78,9 @@ public:
     virtual void                                            BindTarget() {}
     virtual void                                            RegisterSetting() {}
     virtual void                                            Resize(Vector2i size) { MORTY_UNUSED(size); }
+
+    flatbuffers::Offset<void>                               Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    void                                                    Deserialize(const void* flatbuffer) override;
 
     virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
@@ -98,6 +97,8 @@ public:
     MTexturePtr                                             GetInputTexture(const MStringId& nIdx);
     MTexturePtr                                             GetOutputTexture(const MStringId& nIdx);
     MRenderTaskNodeOutput*                                  GetRenderOutput(const size_t& nIdx);
+
+    static METextureFormat                                  DefaultLinearSpaceFormat;
 
 private:
     std::unordered_map<MStringId, MRenderTaskNodeInput*>  m_input;

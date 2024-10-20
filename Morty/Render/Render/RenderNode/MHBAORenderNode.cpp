@@ -89,14 +89,18 @@ void MHBAORenderNode::RegisterSetting()
 std::vector<MRenderTaskInputDesc> MHBAORenderNode::InitInputDesc()
 {
     return {
-            {MGBufferRenderNode::GBufferNormalRoughness, METextureBarrierStage::EPixelShaderSample},
-            {MGBufferRenderNode::GBufferDepthBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MGBufferRenderNode::GBufferNormalRoughness,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
+            {MGBufferRenderNode::GBufferDepthBufferOutput,
+             METextureFormat::Depth,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAORenderNode::InitOutputDesc()
 {
     return {
-            {HBAOOutput, {true, MColor::Black_T}},
+            {HBAOOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T}},
     };
 }

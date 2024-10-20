@@ -20,7 +20,7 @@ public:
             if (ShowNodeBegin("ModelComponent"))
             {
 
-                PROPERTY_VALUE_EDIT(
+                PROPERTY_VALUE_GET_SET_EDIT(
                         pModelComponent,
                         "Bounding",
                         bool,

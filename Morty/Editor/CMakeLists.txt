@@ -26,7 +26,6 @@ add_library(Editor OBJECT
         ${EDITOR_IMGUI_FILE_DIALOG_FILES}
 )
 
-
 target_link_libraries(Editor PUBLIC Core)
 target_link_libraries(Editor PUBLIC Render)
 

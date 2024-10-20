@@ -9,8 +9,11 @@ namespace morty
 class MTaskNode;
 class MRenderGraph;
 class MIRenderProgram;
+class MRenderTaskNode;
+class EditRenderTaskNodeBase;
 class RenderGraphView : public BaseWidget
 {
+
 public:
     explicit RenderGraphView(const MString& viewName);
     ~RenderGraphView() override = default;
@@ -29,6 +32,8 @@ public:
 
 private:
     void DrawMenu();
+    void DrawProperty();
+    void DrawGraphView();
     void ProcessDialog();
 
 private:
@@ -47,8 +52,10 @@ private:
     std::string        m_saveToFilePathName;
     std::vector<MByte> m_saveBuffer;
 
-    MStringId          m_finalOutputNodeId;
+    size_t             m_finalOutputNodeId = 0;
     uint32_t           m_finalOutputSlotId = 0;
+
+    std::map<size_t, EditRenderTaskNodeBase*> m_editNodeTable;
 };
 
 }// namespace morty

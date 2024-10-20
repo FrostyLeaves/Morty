@@ -34,6 +34,7 @@ public:
     template<typename TYPE = MTaskNodeOutput> TYPE* AppendOutput();
 
     void                                            SetThreadType(const METhreadType& eType) { m_threadType = eType; }
+    [[nodiscard]] size_t                            GetNodeID() const { return m_id; }
     [[nodiscard]] METhreadType                      GetThreadType() const { return m_threadType; }
     [[nodiscard]] size_t                            GetInputSize() const { return m_input.size(); }
     [[nodiscard]] size_t                            GetOutputSize() const { return m_output.size(); }
@@ -52,9 +53,14 @@ public:
 
     void         BindTaskFunction(const std::function<void(MTaskNode*)>& func) { m_funcTaskFunction = func; };
 
-    virtual void OnCreated();
-    virtual void OnCompile();
-    virtual void OnDelete();
+    virtual void OnCreated() {}
+    virtual void OnCompile() {}
+    virtual void OnDelete() {}
+
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
+    virtual void                      Deserialize(const void* flatbuffer);
+
+    static const size_t               InvalidSlotId;
 
 private:
     void AppendInput(MTaskNodeInput* pInput);
@@ -66,6 +72,7 @@ protected:
     MStringId                       m_strNodeName;
     MTaskGraph*                     m_graph         = nullptr;
     size_t                          m_priorityLevel = 0;
+    size_t                          m_id            = 0;
     METhreadType                    m_threadType    = METhreadType::EAny;
     std::vector<MTaskNodeInput*>    m_input;
     std::vector<MTaskNodeOutput*>   m_output;

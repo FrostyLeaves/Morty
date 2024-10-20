@@ -90,9 +90,9 @@ void MGBufferRenderNode::BindTarget()
 std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()
 {
     return {
-            {GBufferAlbedoMetallic, {true, MColor::Black_T}},
-            {GBufferNormalRoughness, {true, MColor::Black_T}},
-            {GBufferPositionAmbientOcc, {true, MColor::Black_T}},
-            {GBufferDepthBufferOutput, {true, MColor::Black_T}},
+            {GBufferAlbedoMetallic, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            {GBufferNormalRoughness, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            {GBufferPositionAmbientOcc, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            {GBufferDepthBufferOutput, METextureFormat::Depth, {true, MColor::Black_T}},
     };
 }

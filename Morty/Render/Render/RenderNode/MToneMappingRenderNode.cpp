@@ -36,13 +36,15 @@ std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()
 {
     return {
-            {MTransparentRenderNode::BackBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MTransparentRenderNode::BackBufferOutput,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MToneMappingRenderNode::InitOutputDesc()
 {
     return {
-            {ToneMappingResult, {true, MColor::Black_T}},
+            {ToneMappingResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}},
     };
 }

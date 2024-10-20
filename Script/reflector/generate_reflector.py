@@ -7,6 +7,7 @@ from clang.cindex import * # type: ignore
 #clang.cindex.Config.set_library_file( 'libclang.dll' ) #clang path
 
 import render_graph_node_collector
+import render_graph_property_collector
 
 registed_attr_name_list = [
     "test_attr"
@@ -16,14 +17,21 @@ parse_empty = "empty.cpp"
 
 collector_list = []
 
-def walk(node, parent, deep):
+def walk(node, parent, class_name, deep):
+
+    if node.kind == clang.cindex.CursorKind.CLASS_DECL:
+        class_name = node.displayname
+
     if node.spelling != '' and node.kind == clang.cindex.CursorKind.ANNOTATE_ATTR:
         for collector in collector_list:
             if collector.check_attr(node.spelling):
-                collector.add_node(node, parent)
+                collector.add_node(node, parent, class_name)
         
     for child_node in node.get_children():
-        walk(child_node, node, deep + 1)
+        walk(child_node, node, class_name, deep + 1)
+    
+    #reset
+    class_name = ""
 
 
 def clang_parse(compile_source, index, args):
@@ -36,7 +44,7 @@ def clang_parse(compile_source, index, args):
     else:
         rootNode = translationUnit.cursor
         for child_node in rootNode.get_children():
-            walk(child_node, rootNode, 0)
+            walk(child_node, rootNode, "", 0)
 
 
 def main(argv):
@@ -52,6 +60,7 @@ def main(argv):
 
 
     collector_list.append(render_graph_node_collector.Collector())
+    collector_list.append(render_graph_property_collector.Collector())
 
 
     compdb = clang.cindex.CompilationDatabase.fromDirectory(build_dir)

@@ -2,34 +2,42 @@ import os
 import reflector_collector
 
 
-template_document = """#include "MRenderGraphNodeList.h"
+template_document_head = """
 using namespace morty;
 
-const std::vector<MStringId> MRenderGraphNodeList::Names = {{
-    {}
-}};
+const std::vector<MStringId> MRenderGraphNodeList::Names = {
 """
 
+template_document_tail = """
+};
+"""
 
 class Collector(reflector_collector.Basic):
+    
+    def __init__(self):
+        reflector_collector.Basic.__init__(self)
 
     def check_attr(self, attr_node) -> bool:
         return attr_node == "RenderGraphNode"
     
     def output(self, source_path):
-        write_path = source_path + "/Reflection/MRenderGraphNodeList.gen"
+        write_path = source_path + "/../Editor/Reflection/MRenderGraphNodeList.gen"
         if not os.path.exists(write_path) and len(self.m_node_list) == 0:
             return;
     
         fo = open(write_path, "w")
 
-        output_string = ""
+        output_names = ""
         for iter in self.m_node_list:
             node : reflector_collector.ReflectorAttr = iter
 
-            output_string += "MStringId(\"{}\")".format(node.owner_name)
-
+            output_names += "    MStringId(\"{}\"),\n".format(node.owner_name)
         
-        fo.write( template_document.format(output_string) );
+        
+        fo.write(template_document_head)
+        fo.write(output_names)
+        fo.write(template_document_tail)
+
+
         fo.close()
         return;

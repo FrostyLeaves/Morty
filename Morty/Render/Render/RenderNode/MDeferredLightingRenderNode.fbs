@@ -1,0 +1,12 @@
+include "Render/RenderGraph/MRenderTaskNode.fbs";
+namespace morty.fbs;
+
+table MDeferredLightingRenderNode
+{
+    super: MRenderTaskNode;
+    enable_ao: bool;
+}
+
+root_type MDeferredLightingRenderNode;
+
+file_identifier "MFBS";

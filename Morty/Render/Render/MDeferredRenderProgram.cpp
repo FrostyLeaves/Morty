@@ -435,7 +435,7 @@ void MDeferredRenderProgram::LoadGraph(const std::vector<MByte>& buffer)
     auto                            rtManager           = m_renderGraph->GetRenderTargetManager();
     const fbs::MRenderGraph*        fbRenderGraph       = fbs::GetMRenderGraph(fbb.GetCurrentBufferPointer());
     const auto&                     fbRenderTargetArray = *fbRenderGraph->render_target();
-    const auto&                     fbRenderNodeArray   = *fbRenderGraph->node_array();
+    const auto&                     fbRenderNodeArray   = *fbRenderGraph->super()->node_array();
 
     std::vector<MRenderTaskTarget*> renderTargets(fbRenderTargetArray.size());
     std::vector<MRenderTaskNode*>   renderNodes(fbRenderNodeArray.size());
@@ -450,43 +450,41 @@ void MDeferredRenderProgram::LoadGraph(const std::vector<MByte>& buffer)
 
     for (size_t nodeIdx = 0; nodeIdx < fbRenderNodeArray.size(); ++nodeIdx)
     {
-        const fbs::MRenderTaskNode* fbRenderNode = fbRenderNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
-        auto                        nodeTypeName = fbRenderNode->super()->node_type()->str();
-        auto                        renderNode   = RegisterRenderNode(MStringId(nodeTypeName), nodeTypeName);
-        renderNodes[nodeIdx]                     = renderNode;
+        const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbRenderNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
+        auto                      fbTaskNodeData = fbTaskNodeDesc->data();
+        if (nullptr == fbTaskNodeData) { continue; }
 
-        if (!fbRenderNode->output_name()) continue;
+        auto                           nodeTypeName = fbTaskNodeDesc->node_type()->str();
+        auto                           renderNode   = MTypeClass::New(nodeTypeName)->DynamicCast<MRenderTaskNode>();
 
-        const size_t outputNum = fbRenderNode->output_name()->size();
-        for (size_t nOutputIdx = 0; nOutputIdx < outputNum; ++nOutputIdx)
-        {
-            if (nOutputIdx >= renderNode->GetOutputSize()) continue;
+        flatbuffers::FlatBufferBuilder nodeFbb;
+        nodeFbb.PushBytes((const uint8_t*) fbTaskNodeData->data(), fbTaskNodeData->size());
+        renderNode->Deserialize(nodeFbb.GetCurrentBufferPointer());
 
-            auto outputName = fbRenderNode->output_name()->Get(nOutputIdx);
-            if (!outputName) continue;
-            auto renderTarget = rtManager->FindRenderTarget(MStringId(outputName->c_str()));
-            if (!renderTarget) continue;
+        renderNodes[nodeIdx] = renderNode;
 
-            renderNode->GetRenderOutput(nOutputIdx)->SetRenderTarget(renderTarget);
-        }
+        MORTY_ASSERT(m_renderGraph->RegisterTaskNode(renderNode->GetNodeName(), renderNode));
+        renderNode->Initialize(GetEngine());
     }
 
     for (size_t nodeIdx = 0; nodeIdx < fbRenderNodeArray.size(); ++nodeIdx)
     {
-        const fbs::MRenderTaskNode* fbRenderNode = fbRenderNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
-        const fbs::MTaskNode*       fbTaskNode   = fbRenderNode->super();
-        if (fbTaskNode->link_node_id() == nullptr || fbTaskNode->link_output_id() == nullptr) continue;
+        const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbRenderNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
+        if (fbTaskNodeDesc->link_node_id() == nullptr || fbTaskNodeDesc->link_output_id() == nullptr) continue;
 
         MRenderTaskNode* renderNode = renderNodes[nodeIdx];
-        const size_t     connectNum = fbTaskNode->link_node_id()->size();
+        const size_t     connectNum = fbTaskNodeDesc->link_node_id()->size();
 
         for (size_t connIdx = 0; connIdx < connectNum; ++connIdx)
         {
-            const auto prevNodeIdx   = fbTaskNode->link_node_id()->Get(connIdx);
-            const auto prevOutputIdx = fbTaskNode->link_output_id()->Get(connIdx);
-            auto       prevNode      = renderNodes[prevNodeIdx];
+            const auto prevNodeIdx   = fbTaskNodeDesc->link_node_id()->Get(connIdx);
+            const auto prevOutputIdx = fbTaskNodeDesc->link_output_id()->Get(connIdx);
 
-            prevNode->GetOutput(prevOutputIdx)->LinkTo(renderNode->GetInput(connIdx));
+            if (prevNodeIdx != MTaskNode::InvalidSlotId && prevOutputIdx != MTaskNode::InvalidSlotId)
+            {
+                auto prevNode = renderNodes[prevNodeIdx];
+                prevNode->GetOutput(prevOutputIdx)->LinkTo(renderNode->GetInput(connIdx));
+            }
         }
     }
 
@@ -499,95 +497,25 @@ void MDeferredRenderProgram::SaveGraph(std::vector<MByte>& output)
     output.clear();
 
     flatbuffers::FlatBufferBuilder                                fbb;
-
-    auto                                                          rtManager = m_renderGraph->GetRenderTargetManager();
+    auto                                                          rtManager   = m_renderGraph->GetRenderTargetManager();
+    auto                                                          allTaskNode = m_renderGraph->GetAllNodes();
+    auto                                                          fbTaskGraph = m_renderGraph->Serialize(fbb);
 
     std::vector<flatbuffers::Offset<fbs::MRenderGraphTargetDesc>> renderTargetArray;
     for (const auto& pr: rtManager->GetRenderTargetTable())
     {
         renderTargetArray.emplace_back(MRenderTargetManager::SerializeRenderTarget(pr.second.get(), fbb).o);
     }
-    auto                                                   fbRenderTargetArray = fbb.CreateVector(renderTargetArray);
+    auto                     fbRenderTargetArray = fbb.CreateVector(renderTargetArray);
 
-
-    std::vector<flatbuffers::Offset<fbs::MRenderTaskNode>> renderNodeArray;
-    auto                                                   allTaskNode = m_renderGraph->GetAllNodes();
-    for (size_t nNodeIdx = 0; nNodeIdx < allTaskNode.size(); ++nNodeIdx)
-    {
-        auto                  taskNode = allTaskNode[nNodeIdx];
-        std::vector<uint32_t> taskInputNode(taskNode->GetInputSize());
-        std::vector<uint32_t> taskInputSlot(taskNode->GetInputSize());
-
-        for (size_t nInputIdx = 0; nInputIdx < taskNode->GetInputSize(); ++nInputIdx)
-        {
-            auto prevOutput = taskNode->GetInput(nInputIdx)->GetLinkedOutput();
-            auto findResult = std::find(allTaskNode.begin(), allTaskNode.end(), prevOutput->GetTaskNode());
-            if (findResult != allTaskNode.end())
-            {
-                taskInputNode[nInputIdx] = findResult - allTaskNode.begin();
-                taskInputSlot[nInputIdx] = prevOutput->GetIndex();
-            }
-        }
-
-        auto                  fbTypeName  = fbb.CreateString(taskNode->GetTypeName());
-        auto                  fbInputNode = fbb.CreateVector(taskInputNode);
-        auto                  fbInputSlot = fbb.CreateVector(taskInputSlot);
-
-        fbs::MTaskNodeBuilder taskNodeBuilder(fbb);
-        taskNodeBuilder.add_node_id(nNodeIdx);
-        taskNodeBuilder.add_node_type(fbTypeName);
-        taskNodeBuilder.add_link_node_id(fbInputNode.o);
-        taskNodeBuilder.add_link_output_id(fbInputSlot.o);
-
-        auto                                                  fbTaskNode = taskNodeBuilder.Finish().Union();
-
-        std::vector<flatbuffers::Offset<flatbuffers::String>> outputTargetName(taskNode->GetOutputSize());
-        for (size_t nOutputIdx = 0; nOutputIdx < taskNode->GetOutputSize(); ++nOutputIdx)
-        {
-            auto taskOutput = taskNode->GetOutput(nOutputIdx);
-            if (!taskOutput) continue;
-            auto renderOutput = taskOutput->DynamicCast<MRenderTaskNodeOutput>();
-            if (!renderOutput) continue;
-
-            outputTargetName[nOutputIdx] = fbb.CreateString(renderOutput->GetRenderTarget()->GetName().ToString());
-        }
-
-        auto                        fbOutputTargetName = fbb.CreateVector(outputTargetName);
-
-        fbs::MRenderTaskNodeBuilder renderNodeBuilder(fbb);
-        renderNodeBuilder.add_super(fbTaskNode.o);
-        renderNodeBuilder.add_output_name(fbOutputTargetName.o);
-
-        renderNodeArray.emplace_back(renderNodeBuilder.Finish().Union().o);
-    }
-
-    auto                     fbRenderNodeArray = fbb.CreateVector(renderNodeArray);
 
     fbs::MRenderGraphBuilder builder(fbb);
+    builder.add_super(fbTaskGraph.o);
     builder.add_render_target(fbRenderTargetArray);
-    builder.add_node_array(fbRenderNodeArray);
 
     flatbuffers::Offset<fbs::MRenderGraph> root = builder.Finish();
     fbb.Finish(root);
 
     output.resize(fbb.GetSize());
     memcpy(output.data(), fbb.GetBufferPointer(), fbb.GetSize() * sizeof(MByte));
-}
-
-MRenderTaskNode*
-MDeferredRenderProgram::RegisterRenderNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType)
-{
-    MRenderTaskNode* pRenderNode = m_renderGraph->FindTaskNode(strTaskNodeName);
-    if (pRenderNode != nullptr) { return pRenderNode; }
-
-    pRenderNode = m_renderGraph->RegisterTaskNode(strTaskNodeName, strTaskNodeType);
-    if (pRenderNode)
-    {
-        pRenderNode->Initialize(GetEngine());
-        if (auto pFramePropertyDecorator = pRenderNode->GetFramePropertyDecorator())
-        {
-            m_framePropertyAdapter->RegisterPropertyDecorator(pFramePropertyDecorator);
-        }
-    }
-    return pRenderNode;
 }

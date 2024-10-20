@@ -18,7 +18,7 @@ if (MORTY_BUILD_TARGET STREQUAL "WIN")
             PRIVATE CORE_EXPORTS
             PUBLIC MORTY_WIN
             PUBLIC NOMINMAX
-            PUBLIC MORTY_RESOURCE_PATH= "${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
+            PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
     )
     #    message(FATAL_ERROR WIN)
 endif ()
@@ -26,7 +26,7 @@ endif ()
 if (MORTY_BUILD_TARGET STREQUAL "MACOS")
     target_compile_definitions(Core
             PUBLIC MORTY_MACOS
-            PUBLIC MORTY_RESOURCE_PATH= "${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
+            PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
     )
     #    message(FATAL_ERROR MACOS)
 endif ()
@@ -41,7 +41,7 @@ endif ()
 if (MORTY_BUILD_TARGET STREQUAL "LINUX")
     target_compile_definitions(Core
             PUBLIC MORTY_LINUX
-            PUBLIC MORTY_RESOURCE_PATH= "${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
+            PUBLIC MORTY_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../Resource"
     )
     #    message(FATAL_ERROR LINUX)
 endif ()
@@ -63,7 +63,7 @@ target_compile_definitions(Core
 #profiler
 if (MORTY_PROFILER STREQUAL "ON")
     target_compile_definitions(Core
-            public MORTY_PROFILER=1
+            PUBLIC MORTY_PROFILER=1
             PUBLIC TRACY_ENABLE
     )
 endif ()
@@ -120,4 +120,3 @@ set_target_properties(Core PROPERTIES
 )
 
 generate_flatbuffers_header(Core)
-generate_reflection(Core)

@@ -25,15 +25,23 @@ class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
 class MRenderTaskTarget;
+
+struct MRenderTaskOutputDesc {
+    MStringId              name;
+    METextureFormat        format = METextureFormat::UNorm_RGBA8;
+    MPassTargetDescription renderDesc;
+};
+
 class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
     MORTY_CLASS(MRenderTaskNodeOutput)
 public:
-    void               SetRenderTarget(MRenderTaskTarget* pRenderTarget);
+    void                                SetRenderTarget(MRenderTaskTarget* pRenderTarget);
 
-    MRenderTaskTarget* GetRenderTarget() const { return m_renderTaskTarget; }
+    [[nodiscard]] MRenderTaskOutputDesc GetOutputDesc() const;
+    [[nodiscard]] MRenderTaskTarget*    GetRenderTarget() const { return m_renderTaskTarget; }
 
-    MTexturePtr        GetTexture() const;
+    [[nodiscard]] MTexturePtr           GetTexture() const;
 
 private:
     MRenderTaskTarget* m_renderTaskTarget = nullptr;

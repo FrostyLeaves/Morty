@@ -18,7 +18,7 @@
 namespace morty
 {
 
-class MORTY_API MForwardRenderNode : public ISinglePassRenderNode
+REFL_RENDER_NODE_CLASS MForwardRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MForwardRenderNode)
     static const MStringId BackBufferOutput;

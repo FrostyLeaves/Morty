@@ -140,6 +140,6 @@ void MShadowMapRenderNode::BindTarget()
 std::vector<MRenderTaskOutputDesc> MShadowMapRenderNode::InitOutputDesc()
 {
     return {
-            {ShadowMapBufferOutput, {true, MColor::White}},
+            {ShadowMapBufferOutput, METextureFormat::Depth, {true, MColor::White}},
     };
 }

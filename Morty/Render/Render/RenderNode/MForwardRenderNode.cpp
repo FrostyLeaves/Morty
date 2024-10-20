@@ -95,13 +95,20 @@ void MForwardRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MForwardRenderNode::InitInputDesc()
 {
     return {
-            {MDeferredLightingRenderNode::DeferredLightingOutput, METextureBarrierStage::EPixelShaderWrite},
-            {MGBufferRenderNode::GBufferDepthBufferOutput, METextureBarrierStage::EPixelShaderWrite},
-            {MShadowMapRenderNode::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MDeferredLightingRenderNode::DeferredLightingOutput,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderWrite},
+            {MGBufferRenderNode::GBufferDepthBufferOutput,
+             METextureFormat::Depth,
+             METextureBarrierStage::EPixelShaderWrite},
+            {MShadowMapRenderNode::ShadowMapBufferOutput,
+             METextureFormat::Depth,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MForwardRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, {false, MColor::Black_T}}, {DepthBufferOutput, {false, MColor::Black_T}}};
+    return {{BackBufferOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {false, MColor::Black_T}},
+            {DepthBufferOutput, METextureFormat::Depth, {false, MColor::Black_T}}};
 }

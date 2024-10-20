@@ -11,26 +11,13 @@ class PropertyMDirectionalLightComponent : public PropertyBase
 public:
     virtual void EditEntity(MEntity* pEntity) override
     {
-        if (MDirectionalLightComponent* pDirectonalLightComponent =
-                    pEntity->GetComponent<MDirectionalLightComponent>())
+        if (MDirectionalLightComponent* pDirectonalLightComponent = pEntity->GetComponent<MDirectionalLightComponent>())
         {
             if (ShowNodeBegin("DirLightComponent"))
             {
-                PROPERTY_VALUE_EDIT(
-                        pDirectonalLightComponent,
-                        "Enable",
-                        bool,
-                        GetLightEnable,
-                        SetLightEnable
-                );
-                PROPERTY_VALUE_EDIT(
-                        pDirectonalLightComponent,
-                        "Color",
-                        MColor,
-                        GetColor,
-                        SetColor
-                );
-                PROPERTY_VALUE_EDIT(
+                PROPERTY_VALUE_GET_SET_EDIT(pDirectonalLightComponent, "Enable", bool, GetLightEnable, SetLightEnable);
+                PROPERTY_VALUE_GET_SET_EDIT(pDirectonalLightComponent, "Color", MColor, GetColor, SetColor);
+                PROPERTY_VALUE_GET_SET_EDIT(
                         pDirectonalLightComponent,
                         "Intensity",
                         float,

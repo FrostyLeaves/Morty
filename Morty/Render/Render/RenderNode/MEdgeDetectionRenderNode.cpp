@@ -35,13 +35,15 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderNode::CreateMaterial()
 std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderNode::InitInputDesc()
 {
     return {
-            {MForwardRenderNode::BackBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MForwardRenderNode::BackBufferOutput,
+             MRenderTaskNode::DefaultLinearSpaceFormat,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderNode::InitOutputDesc()
 {
     return {
-            {EdgeDetectionResult, {true, MColor::Black_T}},
+            {EdgeDetectionResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}},
     };
 }

@@ -346,13 +346,15 @@ void MVoxelizerRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MVoxelizerRenderNode::InitInputDesc()
 {
     return {
-            {MShadowMapRenderNode::ShadowMapBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MShadowMapRenderNode::ShadowMapBufferOutput,
+             METextureFormat::Depth,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MVoxelizerRenderNode::InitOutputDesc()
 {
     return {
-            {VoxelizerBufferOutput, {true, MColor::Black_T}},
+            {VoxelizerBufferOutput, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}},
     };
 }

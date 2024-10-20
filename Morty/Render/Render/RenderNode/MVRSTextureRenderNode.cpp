@@ -112,13 +112,15 @@ void MVRSTextureRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MVRSTextureRenderNode::InitInputDesc()
 {
     return {
-            {MEdgeDetectionRenderNode::EdgeDetectionResult, METextureBarrierStage::EPixelShaderSample},
+            {MEdgeDetectionRenderNode::EdgeDetectionResult,
+             METextureFormat::UNorm_RGBA8,
+             METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MVRSTextureRenderNode::InitOutputDesc()
 {
     return {
-            {MRenderGraphName::VRS_TEXTURE, {false, MColor::Black_T}},
+            {MRenderGraphName::VRS_TEXTURE, METextureFormat::UInt_R8, {false, MColor::Black_T}},
     };
 }

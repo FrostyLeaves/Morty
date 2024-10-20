@@ -19,16 +19,21 @@
 namespace morty
 {
 
-class MORTY_API MDeferredLightingRenderNode : public ISinglePassRenderNode
+REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MDeferredLightingRenderNode)
-    static const MStringId DeferredLightingOutput;
 
-    void                   Initialize(MEngine* pEngine) override;
+public:
+    static const MStringId    DeferredLightingOutput;
 
-    void                   Release() override;
+    void                      Initialize(MEngine * pEngine) override;
+    void                      Release() override;
+    void                      Render(const MRenderInfo& info) override;
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder & fbb) override;
+    void                      Deserialize(const void* flatbuffer) override;
 
-    void                   Render(const MRenderInfo& info) override;
+public:
+    REFL_RENDER_NODE_PROPERTY bool EnableAO = false;
 
 protected:
     void                               BindTarget() override;

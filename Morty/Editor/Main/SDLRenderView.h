@@ -85,6 +85,7 @@ private:
 
     static MString                  m_windowSettingFileName;
     static MString                  m_imGUISettingFileName;
+    static MString                  m_imNodesSettingFileName;
 };
 
 }// namespace morty

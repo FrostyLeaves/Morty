@@ -45,23 +45,19 @@ void MRenderGraph::Resize(const Vector2i& size)
     for (auto pTaskNode: GetOrderedNodes()) { pTaskNode->DynamicCast<MRenderTaskNode>()->Resize(size); }
 }
 
-MRenderTaskNode* MRenderGraph::FindTaskNode(const MStringId& strTaskNodeName) const
+MRenderTaskNode* MRenderGraph::FindRenderNode(size_t renderNodeId) const
 {
-    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
-    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
-
-    return nullptr;
+    return FindTaskNode(renderNodeId)->DynamicCast<MRenderTaskNode>();
 }
 
-MRenderTaskNode* MRenderGraph::RegisterTaskNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType)
+bool MRenderGraph::RegisterTaskNode(const MStringId& name, MRenderTaskNode* pRenderNode)
 {
-    const auto findResult = m_taskNodeTable.find(strTaskNodeName);
-    if (findResult != m_taskNodeTable.end()) { return findResult->second; }
+    const auto findResult = m_taskNodeTable.find(name);
+    if (findResult != m_taskNodeTable.end()) { return false; }
 
-    auto node = MTypeClass::New(strTaskNodeType)->DynamicCast<MRenderTaskNode>();
-    AddNode(strTaskNodeName, node);
+    AddNode(name, pRenderNode);
 
-    m_taskNodeTable[strTaskNodeName] = node;
+    m_taskNodeTable[pRenderNode->GetNodeName()] = pRenderNode;
 
-    return node;
+    return true;
 }

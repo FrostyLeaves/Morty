@@ -41,8 +41,6 @@ public:
 
     void Render(const MRenderInfo& info) override;
 
-    void Render(const MRenderInfo& info, const std::vector<MCullingResultRenderable*>& vRenderable);
-
 protected:
     void                               InitializeMaterial();
 

@@ -117,7 +117,7 @@ private:
         ShowNodeEnd();                                                                                                 \
     }
 
-#define PROPERTY_VALUE_EDIT(NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC)                                                  \
+#define PROPERTY_VALUE_GET_SET_EDIT(NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC)                                          \
     ShowValueBegin(KEY_NAME);                                                                                          \
     {                                                                                                                  \
         TYPE value = NODE->GET_FUNC();                                                                                 \

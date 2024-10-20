@@ -3,11 +3,13 @@
 #include "TaskGraph/MTaskNodeInput.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MTimer.h"
+#include "Flatbuffer/MTaskNode_generated.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MTaskNode, MTypeClass)
 
+const size_t MTaskNode::InvalidSlotId = ~0U;
 
 MTaskNode::~MTaskNode()
 {
@@ -122,8 +124,36 @@ void MTaskNode::Run()
 #endif
 }
 
-void MTaskNode::OnCreated() {}
+flatbuffers::Offset<void> MTaskNode::Serialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    auto                    extent = Serialize(fbb);
+    auto                    type   = fbb.CreateString(GetTypeName());
 
-void MTaskNode::OnCompile() {}
+    fbs::AnyTaskNodeBuilder builder(fbb);
+    builder.add_data(extent.o);
+    builder.add_type(type);
 
-void MTaskNode::OnDelete() {}
+    auto                  valus = builder.Finish().Union();
+
+    std::vector<uint32_t> taskInputNode(GetInputSize());
+    std::vector<uint32_t> taskInputSlot(GetInputSize());
+
+    for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
+    {
+        auto prevOutput          = GetInput(nInputIdx)->GetLinkedOutput();
+        taskInputNode[nInputIdx] = prevOutput ? prevOutput->GetTaskNode()->GetNodeID() : MTaskNode::InvalidSlotId;
+        taskInputSlot[nInputIdx] = prevOutput ? prevOutput->GetIndex() : MTaskNode::InvalidSlotId;
+    }
+    auto                  fbTypeName  = fbb.CreateString(GetTypeName());
+    auto                  fbInputNode = fbb.CreateVector(taskInputNode);
+    auto                  fbInputSlot = fbb.CreateVector(taskInputSlot);
+
+    fbs::MTaskNodeBuilder taskNodeBuilder(fbb);
+    taskNodeBuilder.add_node_id(GetNodeID());
+    taskNodeBuilder.add_node_type(fbTypeName);
+    taskNodeBuilder.add_link_node_id(fbInputNode.o);
+    taskNodeBuilder.add_link_output_id(fbInputSlot.o);
+    taskNodeBuilder.add_node(valus.o);
+
+    return taskNodeBuilder.Finish().Union();
+}

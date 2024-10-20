@@ -268,18 +268,18 @@ void MDeepPeelRenderNode::BindTarget()
 std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()
 {
     return {
-            {MForwardRenderNode::DepthBufferOutput, METextureBarrierStage::EPixelShaderSample},
+            {MForwardRenderNode::DepthBufferOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample},
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MDeepPeelRenderNode::InitOutputDesc()
 {
     return {
-            {FrontTextureOutput, {true, MColor::Black_T}},
-            {BackTextureOutput, {true, MColor::Black_T}},
-            {DepthOutput[0], {true, MColor::White}},
-            {DepthOutput[1], {true, MColor::Black_T}},
-            {DepthOutput[2], {true, MColor::White}},
-            {DepthOutput[3], {true, MColor::Black_T}},
+            {FrontTextureOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            {BackTextureOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            {DepthOutput[0], METextureFormat::Float_R32, {true, MColor::White}},
+            {DepthOutput[1], METextureFormat::Float_R32, {true, MColor::Black_T}},
+            {DepthOutput[2], METextureFormat::Float_R32, {true, MColor::White}},
+            {DepthOutput[3], METextureFormat::Float_R32, {true, MColor::Black_T}},
     };
 }

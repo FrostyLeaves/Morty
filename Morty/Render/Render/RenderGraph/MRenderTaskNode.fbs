@@ -25,8 +25,7 @@ table MRenderGraphTargetDesc
 
 table MRenderTaskNode
 {
-    super: MTaskNode;
-    output_name: [string];
+    name: string;
 }
 
 root_type MRenderTaskNode;

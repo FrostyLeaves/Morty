@@ -10,6 +10,7 @@
 
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
+#include "Utility/MIDPool.h"
 
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskNodeInput.h"
@@ -40,21 +41,27 @@ public:
     void                                         RequireCompile() { m_requireCompile = true; }
     [[nodiscard]] bool                           NeedCompile() const { return m_requireCompile; }
 
+    [[nodiscard]] MTaskNode*                     FindTaskNode(size_t id) const;
     [[nodiscard]] const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
     [[nodiscard]] const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }
     std::vector<MTaskNode*>                      GetOrderedNodes();
     std::vector<MTaskNode*>                      GetAllNodes();
 
+
+    flatbuffers::Offset<void>                    Serialize(flatbuffers::FlatBufferBuilder& fbb);
+
 protected:
-    bool                    AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
+    bool                                   AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
 
-    std::set<MTaskNode*>    m_taskNode;
+    std::unordered_map<size_t, MTaskNode*> m_taskNode;
 
-    std::vector<MTaskNode*> m_startTaskNode;
-    std::vector<MTaskNode*> m_finalTaskNode;
+    std::vector<MTaskNode*>                m_startTaskNode;
+    std::vector<MTaskNode*>                m_finalTaskNode;
 
-    bool                    m_requireCompile;
-    bool                    m_lock = false;
+    bool                                   m_requireCompile;
+    bool                                   m_lock = false;
+
+    MRepeatIDPool<size_t>                  m_idPool;
 };
 
 template<typename TYPE> TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)

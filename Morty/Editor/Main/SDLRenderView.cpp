@@ -2,7 +2,6 @@
 
 #include "Utility/MGlobal.h"
 #include "SDL.h"
-#include "Utility/IniConfig.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 
@@ -36,8 +35,9 @@
 
 using namespace morty;
 
-MString SDLRenderView::m_windowSettingFileName = MString(MORTY_RESOURCE_PATH) + "/Editor/window.ini";
-MString SDLRenderView::m_imGUISettingFileName  = MString(MORTY_RESOURCE_PATH) + "/Editor/imgui.ini";
+MString SDLRenderView::m_windowSettingFileName  = MString(MORTY_RESOURCE_PATH) + "/Editor/window.ini";
+MString SDLRenderView::m_imGUISettingFileName   = MString(MORTY_RESOURCE_PATH) + "/Editor/imgui.ini";
+MString SDLRenderView::m_imNodesSettingFileName = MString(MORTY_RESOURCE_PATH) + "/Editor/imnodes.ini";
 
 
 void    SDLRenderView::Initialize(MEngine* pEngine)
@@ -66,6 +66,7 @@ void    SDLRenderView::Initialize(MEngine* pEngine)
     io.WantSaveIniSettings = true;
 
     ImGui::LoadIniSettingsFromDisk(m_imGUISettingFileName.c_str());
+    ImNodes::LoadCurrentEditorStateFromIniFile(m_imNodesSettingFileName.c_str());
 
 
     m_imGuiRender = new ImGuiRenderable(pEngine);
@@ -84,6 +85,7 @@ void    SDLRenderView::Initialize(MEngine* pEngine)
 void SDLRenderView::Release()
 {
     ImGui::SaveIniSettingsToDisk(m_imGUISettingFileName.c_str());
+    ImNodes::SaveCurrentEditorStateToIniFile(m_imNodesSettingFileName.c_str());
 
     m_IniConfig.SetValue("Window", "Size", Vector2i(GetWidth(), GetHeight()));
     m_IniConfig.Save(m_windowSettingFileName);

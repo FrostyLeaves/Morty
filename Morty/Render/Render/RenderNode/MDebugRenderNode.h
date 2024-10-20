@@ -19,7 +19,7 @@
 namespace morty
 {
 
-class MORTY_API MDebugRenderNode : public ISinglePassRenderNode
+REFL_RENDER_NODE_CLASS MDebugRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MDebugRenderNode)
 

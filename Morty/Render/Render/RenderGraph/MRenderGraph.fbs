@@ -1,9 +1,10 @@
+include "TaskGraph/MTaskGraph.fbs";
 include "Render/RenderGraph/MRenderTaskNode.fbs";
 namespace morty.fbs;
 
 table MRenderGraph
 {
-    node_array: [MRenderTaskNode];
+    super: MTaskGraph;
 
     render_target: [MRenderGraphTargetDesc];
 }

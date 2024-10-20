@@ -76,28 +76,6 @@ public:
 
 
 protected:
-    MRenderTaskNode*              RegisterRenderNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType);
-
-    template<typename TYPE> TYPE* RegisterRenderNode()
-    {
-        return RegisterRenderNode(MStringId(TYPE::GetClassTypeName()), TYPE::GetClassTypeName())
-                ->template DynamicCast<TYPE>();
-    }
-    template<typename TYPE> TYPE* RegisterRenderNode(const MStringId& strTaskNodeName)
-    {
-        return RegisterRenderNode(strTaskNodeName, TYPE::GetClassTypeName())->template DynamicCast<TYPE>();
-    }
-    template<typename TYPE> TYPE* GetRenderNode() const
-    {
-        return GetRenderNode<TYPE>(MStringId(TYPE::GetClassTypeName()));
-    }
-    template<typename TYPE> TYPE* GetRenderNode(const MStringId& strTaskNodeName) const
-    {
-        return m_renderGraph->FindTaskNode(strTaskNodeName)->DynamicCast<TYPE>();
-    }
-
-
-protected:
     MRenderInfo                                 m_renderInfo;
 
     std::shared_ptr<MFrameShaderPropertyBlock>  m_framePropertyAdapter = nullptr;

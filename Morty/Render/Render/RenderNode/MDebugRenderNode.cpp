@@ -79,11 +79,14 @@ void MDebugRenderNode::BindTarget()
 
 std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()
 {
-    return {{MToneMappingRenderNode::ToneMappingResult, METextureBarrierStage::EPixelShaderWrite},
-            {MForwardRenderNode::DepthBufferOutput, METextureBarrierStage::EPixelShaderWrite}};
+    return {{MToneMappingRenderNode::ToneMappingResult,
+             METextureFormat::UNorm_RGBA8,
+             METextureBarrierStage::EPixelShaderWrite},
+            {MForwardRenderNode::DepthBufferOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderWrite}};
 }
 
 std::vector<MRenderTaskOutputDesc> MDebugRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, {false, MColor::Black_T}}, {DepthBufferOutput, {false, MColor::Black_T}}};
+    return {{BackBufferOutput, METextureFormat::UNorm_RGBA8, {false, MColor::Black_T}},
+            {DepthBufferOutput, METextureFormat::Depth, {false, MColor::Black_T}}};
 }

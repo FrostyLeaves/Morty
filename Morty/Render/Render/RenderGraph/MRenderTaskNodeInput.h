@@ -9,13 +9,12 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Basic/MTexture.h"
+#include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "TaskGraph/MTaskNodeInput.h"
-
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskNodeInput.h"
 #include "Utility/MStringId.h"
 
 namespace morty
@@ -25,16 +24,18 @@ class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
 class MRenderTaskTarget;
+
+struct MRenderTaskInputDesc {
+    MStringId             name;
+    METextureFormat       format  = METextureFormat::UNorm_RGBA8;
+    METextureBarrierStage barrier = METextureBarrierStage::EPixelShaderSample;
+};
+
 class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput
 {
     MORTY_CLASS(MRenderTaskNodeInput)
-public:
-    void      SetName(const MStringId& name) { m_strOutputName = name; }
 
-    MStringId GetName() const { return m_strOutputName; }
-
-private:
-    MStringId m_strOutputName;
+    [[nodiscard]] MRenderTaskInputDesc GetInputDesc() const;
 };
 
 }// namespace morty

@@ -16,11 +16,9 @@
 #include "RHI/Vulkan/MVulkanWrapper.h"
 #endif
 
-#define GPU_CULLING_ENABLE     (false)
-#define MORTY_VXGI_ENABLE      (false)
-#define VRS_OPTIMIZE_ENABLE    (false)
-
-#define ATTR_RENDER_NODE_CLASS class MORTY_API [[clang::annotate("RenderGraphNode")]]
+#define GPU_CULLING_ENABLE  (false)
+#define MORTY_VXGI_ENABLE   (false)
+#define VRS_OPTIMIZE_ENABLE (false)
 
 namespace morty
 {

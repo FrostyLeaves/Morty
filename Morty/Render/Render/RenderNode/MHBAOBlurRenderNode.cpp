@@ -12,22 +12,22 @@ MStringId                         MHBAOBlurRenderNodeV::BlurOutput = MStringId("
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeV::InitInputDesc()
 {
-    return {{MHBAORenderNode::HBAOOutput, METextureBarrierStage::EPixelShaderSample}};
+    return {{MHBAORenderNode::HBAOOutput, METextureFormat::UNorm_R8, METextureBarrierStage::EPixelShaderSample}};
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeV::InitOutputDesc()
 {
-    return {{MHBAOBlurRenderNodeV::BlurOutput, {true, MColor::Black_T, 0}}};
+    return {{MHBAOBlurRenderNodeV::BlurOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T, 0}}};
 }
 
 MStringId                         MHBAOBlurRenderNodeH::BlurOutput = MStringId("Hbao Blur H");
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeH::InitInputDesc()
 {
-    return {{MHBAOBlurRenderNodeV::BlurOutput, METextureBarrierStage::EPixelShaderSample}};
+    return {{MHBAOBlurRenderNodeV::BlurOutput, METextureFormat::UNorm_R8, METextureBarrierStage::EPixelShaderSample}};
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeH::InitOutputDesc()
 {
-    return {{MHBAOBlurRenderNodeH::BlurOutput, {true, MColor::Black_T, 0}}};
+    return {{MHBAOBlurRenderNodeH::BlurOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T, 0}}};
 }

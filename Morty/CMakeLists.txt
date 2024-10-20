@@ -68,6 +68,7 @@ endif ()
 add_subdirectory("Core")
 add_subdirectory("Render")
 add_subdirectory("Editor")
+add_subdirectory("Reflection")
 
 if (NOT MORTY_BUILD_TARGET IN_LIST MORTY_BUILD_LIB_ONLY_PLATFORM)
     add_subdirectory("Test")

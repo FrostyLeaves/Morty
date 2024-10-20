@@ -36,9 +36,9 @@ public:
 
     ~MRenderGraph() override;
 
-    [[nodiscard]] MRenderTaskNode* RegisterTaskNode(const MStringId& strTaskNodeName, const MString& strTaskNodeType);
-    [[nodiscard]] MRenderTaskNode* FindTaskNode(const MStringId& strTaskNodeName) const;
-    [[nodiscard]] MRenderTargetManager*                GetRenderTargetManager() const { return m_renderTargetManager; }
+    [[nodiscard]] bool                  RegisterTaskNode(const MStringId& name, MRenderTaskNode* pRenderTaskNode);
+    [[nodiscard]] MRenderTaskNode*      FindRenderNode(size_t renderNodeId) const;
+    [[nodiscard]] MRenderTargetManager* GetRenderTargetManager() const { return m_renderTargetManager; }
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
     MRenderTaskTarget*                                 FindRenderTaskTarget(const MStringId& name);
 
