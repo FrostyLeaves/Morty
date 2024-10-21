@@ -26,7 +26,7 @@ REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNod
 public:
     static const MStringId    DeferredLightingOutput;
 
-    void                      Initialize(MEngine * pEngine) override;
+    void                      OnCreated() override;
     void                      Release() override;
     void                      Render(const MRenderInfo& info) override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder & fbb) override;

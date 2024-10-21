@@ -31,6 +31,8 @@ void            MRenderTaskNode::OnCreated()
 
 void                  MRenderTaskNode::OnDelete() { Release(); }
 
+MEngine*              MRenderTaskNode::GetEngine() const { return static_cast<MRenderGraph*>(GetGraph())->GetEngine(); }
+
 MRenderGraph*         MRenderTaskNode::GetRenderGraph() const { return GetGraph()->DynamicCast<MRenderGraph>(); }
 
 MRenderTargetManager* MRenderTaskNode::GetRenderTargetManager() const

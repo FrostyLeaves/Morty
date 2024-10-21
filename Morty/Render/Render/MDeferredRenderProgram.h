@@ -88,8 +88,6 @@ protected:
 
     std::unique_ptr<MTaskGraph>                 m_cullingTask = nullptr;
     std::unique_ptr<MRenderGraph>               m_renderGraph = nullptr;
-
-    std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding = nullptr;
 };
 
 }// namespace morty

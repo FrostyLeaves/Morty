@@ -35,7 +35,7 @@ public:
     static const MStringId BackBufferOutput;
 
 public:
-    void Initialize(MEngine* pEngine) override;
+    void OnCreated() override;
 
     void Release() override;
 

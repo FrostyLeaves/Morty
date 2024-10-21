@@ -71,7 +71,6 @@ class MORTY_API MRenderTaskNode : public MTaskNode
 {
     MORTY_CLASS(MRenderTaskNode)
 public:
-    virtual void                                            Initialize(MEngine* pEngine) { MORTY_UNUSED(pEngine); }
     virtual void                                            Release() {}
     virtual void                                            Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
     virtual void                                            RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
@@ -90,6 +89,7 @@ public:
     void                                                    OnCreated() override;
     void                                                    OnDelete() override;
 
+    [[nodiscard]] MEngine*                                  GetEngine() const;
     [[nodiscard]] MRenderGraph*                             GetRenderGraph() const;
     [[nodiscard]] MRenderTargetManager*                     GetRenderTargetManager() const;
     MTexturePtr                                             GetInputTexture(const size_t& nIdx);

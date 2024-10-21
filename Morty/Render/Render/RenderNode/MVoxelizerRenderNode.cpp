@@ -103,9 +103,9 @@ public:
 };
 
 
-void MVoxelizerRenderNode::Initialize(MEngine* pEngine)
+void MVoxelizerRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     InitializeBuffer();
     InitializeRenderPass();

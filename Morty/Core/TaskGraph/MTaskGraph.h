@@ -47,11 +47,12 @@ public:
     std::vector<MTaskNode*>                      GetOrderedNodes();
     std::vector<MTaskNode*>                      GetAllNodes();
 
-
-    flatbuffers::Offset<void>                    Serialize(flatbuffers::FlatBufferBuilder& fbb);
+    virtual void                                 OnPostCompile() {}
+    virtual flatbuffers::Offset<void>            Serialize(flatbuffers::FlatBufferBuilder& fbb);
+    virtual void                                 Deserialize(const void* pBufferPointer);
 
 protected:
-    bool                                   AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
+    virtual bool                           AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode);
 
     std::unordered_map<size_t, MTaskNode*> m_taskNode;
 

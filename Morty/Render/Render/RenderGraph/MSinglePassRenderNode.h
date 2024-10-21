@@ -24,14 +24,14 @@ class MORTY_API ISinglePassRenderNode : public MRenderTaskNode
     MORTY_INTERFACE(ISinglePassRenderNode)
     using BarrierTextureTable = std::unordered_map<METextureBarrierStage, std::vector<MTexture*>>;
 
+    ISinglePassRenderNode();
+
 public:
-    void                                              Initialize(MEngine* pEngine) override;
     void                                              Release() override;
     void                                              Resize(Vector2i size) override;
 
     void                                              SetRenderTarget(const MRenderTargetGroup& renderTarget);
 
-    [[nodiscard]] MEngine*                            GetEngine() const { return m_engine; }
     [[nodiscard]] MTextureArray                       GetBackTextures() const;
     [[nodiscard]] MTexturePtr                         GetDepthTexture() const;
     [[nodiscard]] std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
@@ -42,7 +42,6 @@ protected:
     void                AutoBindBarrierTexture();
     void                AutoSetTextureBarrier(MIRenderCommand* pCommand);
 
-    MEngine*            m_engine = nullptr;
     MRenderPass         m_renderPass;
     BarrierTextureTable m_barrierTexture;
 };

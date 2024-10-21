@@ -14,9 +14,9 @@ using namespace morty;
 
 MORTY_INTERFACE_IMPLEMENT(MBasicPostProcessRenderNode, ISinglePassRenderNode)
 
-void MBasicPostProcessRenderNode::Initialize(MEngine* pEngine)
+void MBasicPostProcessRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     m_material = CreateMaterial();
 }

@@ -67,9 +67,9 @@ void            MDeferredLightingRenderNode::Render(const MRenderInfo& info)
     pCommand->EndRenderPass();
 }
 
-void MDeferredLightingRenderNode::Initialize(MEngine* pEngine)
+void MDeferredLightingRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
     const auto       pTemplate       = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);

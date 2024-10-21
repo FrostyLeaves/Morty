@@ -41,9 +41,9 @@ const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Voxel Debu
 const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Voxel Debug Depth");
 
 
-void            MVoxelDebugRenderNode::Initialize(MEngine* pEngine)
+void            MVoxelDebugRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     InitializeBuffer();
     InitializeDispatcher();

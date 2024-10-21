@@ -36,14 +36,13 @@ const MStringId MDeepPeelRenderNode::DepthOutput[4]     = {
 };
 
 
-void MDeepPeelRenderNode::Initialize(MEngine* pEngine)
+void MDeepPeelRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     InitializeTexture();
     InitializeMaterial();
     InitializeFrameShaderParams();
-
 
     InitializeRenderPass();
 }

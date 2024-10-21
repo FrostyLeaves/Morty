@@ -30,9 +30,9 @@ MORTY_CLASS_IMPLEMENT(MTransparentRenderNode, ISinglePassRenderNode)
 const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Transparent Back");
 
 
-void            MTransparentRenderNode::Initialize(MEngine* pEngine)
+void            MTransparentRenderNode::OnCreated()
 {
-    Super::Initialize(pEngine);
+    Super::OnCreated();
 
     InitializeMaterial();
     InitializeFillRenderPass();
@@ -54,7 +54,7 @@ void MTransparentRenderNode::Render(const MRenderInfo& info)
         return;
     }
 
-    MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+    auto* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
     if (!pMeshManager)
     {
         MORTY_ASSERT(pMeshManager);

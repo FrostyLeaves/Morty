@@ -112,6 +112,7 @@ bool MTaskGraph::Compile()
     }
 
     m_requireCompile = false;
+    OnPostCompile();
 
     return true;
 }
@@ -168,8 +169,7 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
 
 
         flatbuffers::FlatBufferBuilder nodeDataFbb;
-        auto                           root = taskNode->Serialize(nodeDataFbb);
-        nodeDataFbb.Finish(root);
+        nodeDataFbb.Finish(taskNode->Serialize(nodeDataFbb));
 
         std::vector<MByte> nodeData(nodeDataFbb.GetSize());
         memcpy(nodeData.data(), nodeDataFbb.GetBufferPointer(), nodeDataFbb.GetSize() * sizeof(MByte));
@@ -189,4 +189,50 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
     fbs::MTaskGraphBuilder builder(fbb);
     builder.add_node_array(fbNodes);
     return builder.Finish().Union();
+}
+void MTaskGraph::Deserialize(const void* pBufferPointer)
+{
+    const fbs::MTaskGraph*                   fbTaskGraph = reinterpret_cast<const fbs::MTaskGraph*>(pBufferPointer);
+
+    const auto&                              fbTaskNodeArray = *fbTaskGraph->node_array();
+
+    std::unordered_map<uint32_t, MTaskNode*> taskNodes;
+
+    for (size_t nodeIdx = 0; nodeIdx < fbTaskNodeArray.size(); ++nodeIdx)
+    {
+        const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbTaskNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
+        auto                      nodeTypeName   = fbTaskNodeDesc->node_type()->str();
+        auto                      nodeId         = fbTaskNodeDesc->node_id();
+        auto                      taskNode       = MTypeClass::New(nodeTypeName)->DynamicCast<MTaskNode>();
+        auto                      fbTaskNodeData = fbTaskNodeDesc->data();
+
+        flatbuffers::FlatBufferBuilder nodeFbb;
+        nodeFbb.PushBytes((const uint8_t*) fbTaskNodeData->data(), fbTaskNodeData->size());
+        taskNode->Deserialize(nodeFbb.GetCurrentBufferPointer());
+        taskNodes[nodeId] = taskNode;
+
+        MORTY_ASSERT(AddNode(taskNode->GetNodeName(), taskNode));
+    }
+
+    for (size_t idx = 0; idx < fbTaskNodeArray.size(); ++idx)
+    {
+        const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbTaskNodeArray.Get(static_cast<flatbuffers::uoffset_t>(idx));
+        if (fbTaskNodeDesc->link_node_id() == nullptr || fbTaskNodeDesc->link_output_id() == nullptr) continue;
+        const auto   nodeIdx = fbTaskNodeDesc->node_id();
+
+        MTaskNode*   taskNode   = taskNodes[nodeIdx];
+        const size_t connectNum = fbTaskNodeDesc->link_node_id()->size();
+
+        for (size_t connIdx = 0; connIdx < connectNum; ++connIdx)
+        {
+            const auto prevNodeIdx   = fbTaskNodeDesc->link_node_id()->Get(connIdx);
+            const auto prevOutputIdx = fbTaskNodeDesc->link_output_id()->Get(connIdx);
+
+            if (prevNodeIdx != MTaskNode::InvalidSlotId && prevOutputIdx != MTaskNode::InvalidSlotId)
+            {
+                auto prevNode = taskNodes[prevNodeIdx];
+                prevNode->GetOutput(prevOutputIdx)->LinkTo(taskNode->GetInput(connIdx));
+            }
+        }
+    }
 }

@@ -28,8 +28,6 @@ REFL_RENDER_NODE_CLASS MShadowMapRenderNode : public ISinglePassRenderNode
     static const MStringId ShadowMapBufferOutput;
 
 public:
-    void Initialize(MEngine * pEngine) override;
-
     void Render(const MRenderInfo& info) override;
     void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 

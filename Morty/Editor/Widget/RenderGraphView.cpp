@@ -300,12 +300,10 @@ void RenderGraphView::DrawMenu()
 
                     size_t  nameIdx           = 0;
                     MString newRenderNodeName = renderNode->GetTypeName();
-                    while (!pRenderGraph->RegisterTaskNode(MStringId(newRenderNodeName), renderNode))
+                    while (!pRenderGraph->AddNode(MStringId(newRenderNodeName), renderNode))
                     {
                         newRenderNodeName = renderNode->GetTypeName() + MStringUtil::ToString(++nameIdx);
                     }
-
-                    renderNode->Initialize(GetEngine());
                 }
             }
 

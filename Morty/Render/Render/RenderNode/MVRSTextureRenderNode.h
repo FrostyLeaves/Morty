@@ -24,15 +24,13 @@ class MORTY_API MVRSTextureRenderNode : public MRenderTaskNode
     MORTY_CLASS(MVRSTextureRenderNode)
 
 public:
-    void     Initialize(MEngine* pEngine) override;
+    void OnCreated() override;
 
-    void     Release() override;
+    void Release() override;
 
-    void     Resize(Vector2i size) override;
+    void Resize(Vector2i size) override;
 
-    void     Render(const MRenderInfo& info) override;
-
-    MEngine* GetEngine() const { return m_engine; }
+    void Render(const MRenderInfo& info) override;
 
 
 protected:
@@ -41,8 +39,6 @@ protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
-
-    MEngine*                           m_engine = nullptr;
 
     MComputeDispatcher*                m_vRSGenerator = nullptr;
 

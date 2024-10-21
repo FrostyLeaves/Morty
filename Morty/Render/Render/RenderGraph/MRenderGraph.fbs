@@ -5,8 +5,6 @@ namespace morty.fbs;
 table MRenderGraph
 {
     super: MTaskGraph;
-
-    render_target: [MRenderGraphTargetDesc];
 }
 
 root_type MRenderGraph;

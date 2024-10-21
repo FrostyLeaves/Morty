@@ -34,7 +34,7 @@ public:
     static const MStringId DepthOutput[4];
 
 public:
-    void Initialize(MEngine* pEngine) override;
+    void OnCreated() override;
 
     void Release() override;
 

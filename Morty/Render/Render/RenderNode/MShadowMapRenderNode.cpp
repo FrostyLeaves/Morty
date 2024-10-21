@@ -40,12 +40,6 @@ public:
     MTexturePtr         pTexture;
 };
 
-void MShadowMapRenderNode::Initialize(MEngine* pEngine)
-{
-    Super::Initialize(pEngine);
-    m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
-}
-
 void MShadowMapRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
     MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
@@ -129,7 +123,11 @@ std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderNode::GetFramePr
     return std::make_shared<MShadowPropertyDecorator>(this);
 }
 
-void MShadowMapRenderNode::OnCreated() { Super::OnCreated(); }
+void MShadowMapRenderNode::OnCreated()
+{
+    Super::OnCreated();
+    m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
+}
 
 void MShadowMapRenderNode::BindTarget()
 {

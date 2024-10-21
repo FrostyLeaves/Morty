@@ -31,12 +31,12 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MVRSTextureRenderNode, MRenderTaskNode)
 
 
-void MVRSTextureRenderNode::Initialize(MEngine* pEngine)
+void MVRSTextureRenderNode::OnCreated()
 {
-    m_engine = pEngine;
+    Super::OnCreated();
 
     auto           pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-    MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
+    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     m_texelSize = pRenderSystem->GetDevice()->GetShadingRateTextureTexelSize();
 

@@ -38,14 +38,12 @@ public:
         
         if (ShowNodeBegin("{0}"))
         {{
-            ImGui::Columns(2);
 """
 
 template_property = """PROPERTY_VALUE_EDIT(renderNode, "{0}", {1}, {0});
 """
 
 template_node_edit_tail = """
-            ImGui::Columns(1);
             ShowNodeEnd();
         }
     }
@@ -75,6 +73,9 @@ class Collector(reflector_collector.Basic):
         write_path = source_path + "/../Editor/Reflection/MRenderGraphNodeProperty.gen"
         if not os.path.exists(write_path) and len(self.m_node_list) == 0:
             return;
+    
+        if not os.path.exists(source_path + "/../Editor/Reflection"):
+            os.makedirs(source_path + "/../Editor/Reflection")
     
         fo = open(write_path, "w")
         fo.write(template_document_head)

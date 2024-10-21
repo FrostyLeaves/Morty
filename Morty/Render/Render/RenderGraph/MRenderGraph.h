@@ -10,13 +10,13 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
+#include "MRenderTargetBindingWalker.h"
 #include "RHI/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
-
 #include "Render/MRenderInfo.h"
 #include "Render/MeshRender/MIndirectIndexRenderable.h"
 #include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
 
 namespace morty
@@ -36,7 +36,8 @@ public:
 
     ~MRenderGraph() override;
 
-    [[nodiscard]] bool                  RegisterTaskNode(const MStringId& name, MRenderTaskNode* pRenderTaskNode);
+    [[nodiscard]] bool                  AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode) override;
+    [[nodiscard]] MEngine*              GetEngine() const { return m_engine; }
     [[nodiscard]] MRenderTaskNode*      FindRenderNode(size_t renderNodeId) const;
     [[nodiscard]] MRenderTargetManager* GetRenderTargetManager() const { return m_renderTargetManager; }
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
@@ -73,8 +74,12 @@ public:
         return m_voxelizerCullingResult;
     }
 
-    void Resize(const Vector2i& size);
-    void Clean();
+    void                      OnPostCompile() override;
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    void                      Deserialize(const void* pBufferPointer) override;
+
+    void                      Resize(const Vector2i& size);
+    void                      Clean();
 
 private:
     Vector2i                                    m_size = {0, 0};
@@ -87,7 +92,7 @@ private:
     std::shared_ptr<MInstanceCulling>           m_cameraCullingResult    = nullptr;
     std::shared_ptr<MInstanceCulling>           m_shadowCullingResult    = nullptr;
     std::shared_ptr<MInstanceCulling>           m_voxelizerCullingResult = nullptr;
-
+    std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding    = nullptr;
     std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable;
 };
 

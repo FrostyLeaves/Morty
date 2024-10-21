@@ -14,6 +14,7 @@
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -23,10 +24,8 @@ using namespace morty;
 
 MORTY_INTERFACE_IMPLEMENT(ISinglePassRenderNode, MRenderTaskNode)
 
-void ISinglePassRenderNode::Initialize(MEngine* pEngine)
+ISinglePassRenderNode::ISinglePassRenderNode()
 {
-    m_engine = pEngine;
-
 #if MORTY_DEBUG
     m_renderPass.m_strDebugName = GetTypeName();
 #endif
@@ -34,7 +33,7 @@ void ISinglePassRenderNode::Initialize(MEngine* pEngine)
 
 void ISinglePassRenderNode::Release()
 {
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
@@ -106,7 +105,7 @@ void ISinglePassRenderNode::AutoSetTextureBarrier(MIRenderCommand* pCommand)
 
 void ISinglePassRenderNode::Resize(Vector2i size)
 {
-    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     if (m_renderPass.GetFrameBufferSize() != size)
     {
@@ -121,7 +120,7 @@ void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarg
 {
     m_renderPass.SetRenderTarget(renderTarget);
 
-    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
     m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }

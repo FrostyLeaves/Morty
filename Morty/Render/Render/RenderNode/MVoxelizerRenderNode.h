@@ -29,7 +29,7 @@ class MORTY_API MVoxelizerRenderNode : public ISinglePassRenderNode
     static const MStringId VoxelizerBufferOutput;
 
 public:
-    void                                            Initialize(MEngine* pEngine) override;
+    void                                            OnCreated() override;
 
     void                                            Release() override;
 

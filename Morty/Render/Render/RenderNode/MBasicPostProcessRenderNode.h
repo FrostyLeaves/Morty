@@ -19,7 +19,7 @@ class MORTY_API MBasicPostProcessRenderNode : public ISinglePassRenderNode
 {
     MORTY_INTERFACE(MBasicPostProcessRenderNode)
 
-    void                               Initialize(MEngine* pEngine) override;
+    void                               OnCreated() override;
 
     void                               Release() override;
 
