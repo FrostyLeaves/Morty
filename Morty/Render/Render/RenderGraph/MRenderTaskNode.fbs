@@ -14,6 +14,12 @@ enum SharedPolicy : byte
     Exclusive = 1,
 }
 
+enum AllocPolicy: byte
+{
+    Allocate = 0,
+    Input = 1,
+}
+
 table MRenderGraphTargetDesc
 {
     name: string;

@@ -225,7 +225,7 @@ void RenderGraphView::DrawGraphView()
         if (pInput && pOutput)
         {
             const auto inputFormat  = pInput->GetInputDesc().format;
-            const auto outputFormat = pOutput->GetOutputDesc().format;
+            const auto outputFormat = pOutput->GetOutputDesc().GetFormat();
 
             if (inputFormat == outputFormat)
             {

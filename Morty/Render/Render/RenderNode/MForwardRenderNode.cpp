@@ -109,6 +109,6 @@ std::vector<MRenderTaskInputDesc> MForwardRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MForwardRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {false, MColor::Black_T}},
-            {DepthBufferOutput, METextureFormat::Depth, {false, MColor::Black_T}}};
+    return {MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 0),
+            MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 1)};
 }

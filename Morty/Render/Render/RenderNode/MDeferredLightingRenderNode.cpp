@@ -94,30 +94,12 @@ void MDeferredLightingRenderNode::BindTarget()
 {
     if (std::shared_ptr<MShaderPropertyBlock> pParams = m_lightningMaterial->GetMaterialPropertyBlock())
     {
-        pParams->SetTexture(
-                MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC,
-                GetInputTexture(MGBufferRenderNode::GBufferAlbedoMetallic)
-        );
-        pParams->SetTexture(
-                MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS,
-                GetInputTexture(MGBufferRenderNode::GBufferNormalRoughness)
-        );
-        pParams->SetTexture(
-                MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC,
-                GetInputTexture(MGBufferRenderNode::GBufferPositionAmbientOcc)
-        );
-        pParams->SetTexture(
-                MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP,
-                GetInputTexture(MGBufferRenderNode::GBufferDepthBufferOutput)
-        );
+        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, GetInputTexture(0));
+        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(1));
+        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(2));
+        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(3));
 
-        if (EnableAO)
-        {
-            pParams->SetTexture(
-                    MShaderPropertyName::GBUFFER_TEXTURE_SSAO,
-                    GetInputTexture(MHBAOBlurRenderNodeH::BlurOutput)
-            );
-        }
+        if (EnableAO) { pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_SSAO, GetInputTexture(4)); }
     }
 
     AutoBindBarrierTexture();
@@ -156,7 +138,7 @@ std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderNode::InitOutputDesc()
 {
     return {
-            {DeferredLightingOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
+            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
     };
 }
 flatbuffers::Offset<void> MDeferredLightingRenderNode::Serialize(flatbuffers::FlatBufferBuilder& fbb)

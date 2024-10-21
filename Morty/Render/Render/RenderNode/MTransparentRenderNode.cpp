@@ -108,8 +108,8 @@ void MTransparentRenderNode::BindTarget()
 {
     std::vector<std::shared_ptr<MShaderTextureParam>>& params =
             m_drawFillMaterial->GetMaterialPropertyBlock()->m_textures;
-    params[0]->SetTexture(GetInputTexture(MDeepPeelRenderNode::FrontTextureOutput));
-    params[1]->SetTexture(GetInputTexture(MDeepPeelRenderNode::BackTextureOutput));
+    params[0]->SetTexture(GetInputTexture(1));
+    params[1]->SetTexture(GetInputTexture(2));
 
     AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTarget());
@@ -132,5 +132,5 @@ std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MTransparentRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {false, MColor::Black_T}}};
+    return {MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 0)};
 }

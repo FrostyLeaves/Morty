@@ -94,15 +94,9 @@ public:
     [[nodiscard]] MRenderTargetManager*                     GetRenderTargetManager() const;
     MTexturePtr                                             GetInputTexture(const size_t& nIdx);
     MTexturePtr                                             GetOutputTexture(const size_t& nIdx);
-    MTexturePtr                                             GetInputTexture(const MStringId& nIdx);
-    MTexturePtr                                             GetOutputTexture(const MStringId& nIdx);
     MRenderTaskNodeOutput*                                  GetRenderOutput(const size_t& nIdx);
 
     static METextureFormat                                  DefaultLinearSpaceFormat;
-
-private:
-    std::unordered_map<MStringId, MRenderTaskNodeInput*>  m_input;
-    std::unordered_map<MStringId, MRenderTaskNodeOutput*> m_output;
 };
 
 }// namespace morty

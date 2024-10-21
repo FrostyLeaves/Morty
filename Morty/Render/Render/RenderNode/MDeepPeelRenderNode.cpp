@@ -249,7 +249,7 @@ void MDeepPeelRenderNode::ReleaseFrameShaderParams()
 
 void MDeepPeelRenderNode::BindTarget()
 {
-    const auto pDepthTexture = GetInputTexture(MForwardRenderNode::DepthBufferOutput);
+    const auto pDepthTexture = GetInputTexture(0);
     m_drawPeelMaterial->GetMaterialPropertyBlock()->SetTexture(
             MShaderPropertyName::TRANSPARENT_TEXTURE_BACK_TEXTURE,
             pDepthTexture
@@ -274,11 +274,11 @@ std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MDeepPeelRenderNode::InitOutputDesc()
 {
     return {
-            {FrontTextureOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
-            {BackTextureOutput, MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}},
-            {DepthOutput[0], METextureFormat::Float_R32, {true, MColor::White}},
-            {DepthOutput[1], METextureFormat::Float_R32, {true, MColor::Black_T}},
-            {DepthOutput[2], METextureFormat::Float_R32, {true, MColor::White}},
-            {DepthOutput[3], METextureFormat::Float_R32, {true, MColor::Black_T}},
+            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::White}),
+            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::White}),
+            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::Black_T}),
     };
 }

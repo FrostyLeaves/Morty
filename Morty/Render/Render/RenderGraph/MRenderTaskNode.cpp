@@ -16,14 +16,13 @@ void            MRenderTaskNode::OnCreated()
     {
         auto pInput = AppendInput<MRenderTaskNodeInput>();
         pInput->SetName(input.name);
-        m_input[input.name] = pInput;
     }
 
     for (const auto& output: InitOutputDesc())
     {
+        MORTY_UNUSED(output);
         auto pOutput = AppendOutput<MRenderTaskNodeOutput>();
-        pOutput->SetName(output.name);
-        m_output[output.name] = pOutput;
+        MORTY_UNUSED(pOutput);
     }
 
     SetThreadType(METhreadType::ERenderThread);
@@ -48,22 +47,6 @@ MTexturePtr MRenderTaskNode::GetInputTexture(const size_t& nIdx)
 MTexturePtr MRenderTaskNode::GetOutputTexture(const size_t& nIdx)
 {
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>()->GetTexture();
-}
-
-MTexturePtr MRenderTaskNode::GetInputTexture(const MStringId& nIdx)
-{
-    auto findResult = m_input.find(nIdx);
-    if (findResult == m_input.end()) { return nullptr; }
-
-    return findResult->second->GetLinkedOutput()->DynamicCast<MRenderTaskNodeOutput>()->GetTexture();
-}
-
-MTexturePtr MRenderTaskNode::GetOutputTexture(const MStringId& nIdx)
-{
-    auto findResult = m_output.find(nIdx);
-    if (findResult == m_output.end()) { return nullptr; }
-
-    return findResult->second->GetTexture();
 }
 
 MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx)

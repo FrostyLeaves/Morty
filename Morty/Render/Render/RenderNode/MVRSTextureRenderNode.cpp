@@ -120,7 +120,12 @@ std::vector<MRenderTaskInputDesc> MVRSTextureRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MVRSTextureRenderNode::InitOutputDesc()
 {
-    return {
-            {MRenderGraphName::VRS_TEXTURE, METextureFormat::UInt_R8, {false, MColor::Black_T}},
-    };
+    const auto n2TexelSize = GetEngine()->FindSystem<MRenderSystem>()->GetDevice()->GetShadingRateTextureTexelSize();
+
+    return {MRenderTaskNodeOutput::Create(
+            MTexture::CreateShadingRate(),
+            {false, MColor::Black_T},
+            1.0f / static_cast<float>(n2TexelSize.x),
+            n2TexelSize.x
+    )};
 }

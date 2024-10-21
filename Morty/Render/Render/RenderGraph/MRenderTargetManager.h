@@ -26,6 +26,7 @@ class MRenderPass;
 
 using MEResizePolicy = morty::fbs::ResizePolicy;
 using MESharedPolicy = morty::fbs::SharedPolicy;
+using MEAllocPolicy  = morty::fbs::AllocPolicy;
 
 class MORTY_API MRenderTargetManager : public MObject
 {

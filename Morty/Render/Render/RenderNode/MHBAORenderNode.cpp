@@ -101,6 +101,6 @@ std::vector<MRenderTaskInputDesc> MHBAORenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MHBAORenderNode::InitOutputDesc()
 {
     return {
-            {HBAOOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T}},
+            MRenderTaskNodeOutput::Create(METextureFormat::UNorm_R8, {true, MColor::Black_T}),
     };
 }

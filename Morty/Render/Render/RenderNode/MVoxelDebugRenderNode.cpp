@@ -237,6 +237,6 @@ std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderNode::InitOutputDesc()
 {
-    return {{BackBufferOutput, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}},
-            {DepthBufferOutput, METextureFormat::Depth, {true, MColor::Black_T}}};
+    return {MRenderTaskNodeOutput::Create(METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(METextureFormat::Depth, {true, MColor::Black_T})};
 }
