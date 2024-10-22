@@ -14,7 +14,7 @@ enum SharedPolicy : byte
     Exclusive = 1,
 }
 
-enum AllocPolicy: byte
+enum TextureSourceType: byte
 {
     Allocate = 0,
     Input = 1,

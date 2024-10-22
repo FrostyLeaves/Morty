@@ -48,7 +48,7 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
     pCommand->EndRenderPass();
 }
 
-void MBasicPostProcessRenderNode::BindTarget()
+void MBasicPostProcessRenderNode::BindRenderTarget()
 {
     if (std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = m_material->GetMaterialPropertyBlock())
     {

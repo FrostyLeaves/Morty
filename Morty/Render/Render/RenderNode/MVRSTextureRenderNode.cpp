@@ -63,7 +63,7 @@ void MVRSTextureRenderNode::Resize(Vector2i size)
 {
     MORTY_UNUSED(size);
 
-    const auto                                   pVRSTexture = GetRenderOutput(0)->GetTexture();
+    const auto                                   pVRSTexture = GetRenderOutput(0)->GetRenderTexture();
 
     const std::shared_ptr<MShaderPropertyBlock>& params = m_vRSGenerator->GetShaderPropertyBlock(0);
     params->SetValue(
@@ -84,7 +84,7 @@ void MVRSTextureRenderNode::Render(const MRenderInfo& info)
             pEdgeTexture->GetSize2D().y / m_texelSize.y + (pEdgeTexture->GetSize2D().y % m_texelSize.y != 0)
     };
 
-    auto pVRSTexture = GetRenderOutput(0)->GetTexture();
+    auto pVRSTexture = GetRenderOutput(0)->GetRenderTexture();
 
     params->SetTexture(MShaderPropertyName::VRS_EDGE_TEXTURE_NAME, pEdgeTexture);
 
@@ -105,7 +105,7 @@ void MVRSTextureRenderNode::BindTarget()
 {
     if (auto params = m_vRSGenerator->GetShaderPropertyBlock(0))
     {
-        params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, GetRenderOutput(0)->GetTexture());
+        params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, GetRenderOutput(0)->GetRenderTexture());
     }
 }
 

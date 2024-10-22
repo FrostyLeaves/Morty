@@ -12,19 +12,16 @@
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "RHI/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
-
 #include "Render/MRenderInfo.h"
 #include "Render/MeshRender/MIndirectIndexRenderable.h"
-#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
 
 namespace morty
 {
 
 class IPropertyBlockAdapter;
-class MRenderTaskTarget;
 class MRenderTargetManager;
 class MORTY_API MRenderGraphSetting
 {

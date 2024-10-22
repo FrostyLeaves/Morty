@@ -14,7 +14,6 @@
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/MeshRender/MIndirectIndexRenderable.h"
-#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
@@ -24,8 +23,6 @@ namespace morty
 
 class MRenderGraphSetting;
 class IPropertyBlockAdapter;
-class MRenderTaskTarget;
-class MRenderTargetManager;
 class MORTY_API MRenderGraph : public MTaskGraph
 {
     MORTY_CLASS(MRenderGraph)
@@ -36,12 +33,10 @@ public:
 
     ~MRenderGraph() override;
 
-    [[nodiscard]] bool                  AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode) override;
-    [[nodiscard]] MEngine*              GetEngine() const { return m_engine; }
-    [[nodiscard]] MRenderTaskNode*      FindRenderNode(size_t renderNodeId) const;
-    [[nodiscard]] MRenderTargetManager* GetRenderTargetManager() const { return m_renderTargetManager; }
+    [[nodiscard]] bool             AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode) override;
+    [[nodiscard]] MEngine*         GetEngine() const { return m_engine; }
+    [[nodiscard]] MRenderTaskNode* FindRenderNode(size_t renderNodeId) const;
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
-    MRenderTaskTarget*                                 FindRenderTaskTarget(const MStringId& name);
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
 
@@ -74,6 +69,7 @@ public:
         return m_voxelizerCullingResult;
     }
 
+    void                      OnPreCompile() override;
     void                      OnPostCompile() override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
     void                      Deserialize(const void* pBufferPointer) override;
@@ -84,9 +80,8 @@ public:
 private:
     Vector2i                                    m_size = {0, 0};
 
-    MEngine*                                    m_engine              = nullptr;
-    MRenderTargetManager*                       m_renderTargetManager = nullptr;
-    std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting  = nullptr;
+    MEngine*                                    m_engine             = nullptr;
+    std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting = nullptr;
 
     std::shared_ptr<IPropertyBlockAdapter>      m_framePropertyAdapter   = nullptr;
     std::shared_ptr<MInstanceCulling>           m_cameraCullingResult    = nullptr;

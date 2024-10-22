@@ -26,8 +26,6 @@ public:
     void                           SetRect(Vector2i pos, Vector2i size);
     void                           SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
 
-    MTexturePtr                    GetTexture();
-    MTextureArray                  GetAllOutputTexture();
     [[nodiscard]] MScene*          GetScene() const { return m_scene; }
     [[nodiscard]] MViewport*       GetViewport() const { return m_renderViewport; }
     [[nodiscard]] MTaskNode*       GetRenderTask() const { return m_updateTask; }

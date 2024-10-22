@@ -102,11 +102,7 @@ void SceneViewer::SetRect(Vector2i pos, Vector2i size)
     m_renderViewport->SetSize(size);
 }
 
-MTexturePtr   SceneViewer::GetTexture() { return m_renderProgram->GetOutputTexture(); }
-
-MTextureArray SceneViewer::GetAllOutputTexture() { return m_renderProgram->GetOutputTextures(); }
-
-void          SceneViewer::Snapshot(const MString& strSnapshotPath)
+void SceneViewer::Snapshot(const MString& strSnapshotPath)
 {
     m_snapshotPath = strSnapshotPath;
     m_snapshot     = true;

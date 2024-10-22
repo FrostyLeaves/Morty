@@ -63,6 +63,8 @@ void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
 
 bool MTaskGraph::Compile()
 {
+    OnPreCompile();
+
     const size_t           nTaskNodeNum = m_taskNode.size();
 
     std::queue<MTaskNode*> queue;

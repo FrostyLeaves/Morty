@@ -36,10 +36,6 @@ public:
 
     virtual void          Render(MIRenderCommand* pPrimaryCommand) = 0;
 
-    virtual MTexturePtr   GetOutputTexture() = 0;
-
-    virtual MTextureArray GetOutputTextures();
-
     virtual MRenderGraph* GetRenderGraph() = 0;
 
     virtual void          LoadGraph(const std::vector<MByte>& buffer) = 0;

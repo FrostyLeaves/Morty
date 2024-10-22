@@ -57,7 +57,7 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
 
     for (size_t nIdx = 0; nIdx < GetOutputSize(); ++nIdx)
     {
-        auto pTexture = GetRenderOutput(nIdx)->GetTexture();
+        auto pTexture = GetRenderOutput(nIdx)->GetRenderTexture();
 
         if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
             pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)

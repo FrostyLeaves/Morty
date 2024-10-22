@@ -11,12 +11,11 @@
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "RHI/MRenderPass.h"
-#include "TaskGraph/MTaskNodeOutput.h"
-
 #include "Render/MRenderInfo.h"
-#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
+#include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
+#include "Flatbuffer/MRenderTaskNode_generated.h"
 
 namespace morty
 {
@@ -26,11 +25,15 @@ class MRenderGraph;
 class MRenderPass;
 class MRenderTaskTarget;
 
+using METextureSourceType = morty::fbs::TextureSourceType;
+using MEResizePolicy      = morty::fbs::ResizePolicy;
+using MESharedPolicy      = morty::fbs::SharedPolicy;
+
 struct MRenderTaskOutputDesc {
     MTextureDesc           texture;
     MPassTargetDescription renderDesc;
 
-    MEAllocPolicy          allocPolicy  = MEAllocPolicy::Allocate;
+    METextureSourceType    allocPolicy  = METextureSourceType::Allocate;
     MESharedPolicy         sharedPolicy = MESharedPolicy::Shared;
     MEResizePolicy         resizePolicy = MEResizePolicy::Scale;
     float                  scale        = 1.0f;
@@ -42,16 +45,19 @@ class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
     MORTY_CLASS(MRenderTaskNodeOutput)
 public:
-    void                                SetRenderTarget(MRenderTaskTarget* pRenderTarget);
+    void                                 SetOutputDesc(const MRenderTaskOutputDesc& desc) { m_desc = desc; }
+    [[nodiscard]] MRenderTaskOutputDesc  GetOutputDesc() const { return m_desc; }
 
-    [[nodiscard]] MRenderTaskOutputDesc GetOutputDesc() const;
-    [[nodiscard]] MRenderTaskTarget*    GetRenderTarget() const { return m_renderTaskTarget; }
 
-    [[nodiscard]] MTexturePtr           GetTexture() const;
+    void                                 SetRenderTexture(const MTexturePtr& pTexture) { m_renderTexture = pTexture; }
+    [[nodiscard]] MTexturePtr            GetRenderTexture() const { return m_renderTexture; }
+    [[nodiscard]] METextureFormat        GetFormat() const;
+    [[nodiscard]] MRenderTaskNodeOutput* GetActualOutput();
 
-    [[nodiscard]] METextureFormat       GetFormat() const;
+    bool                                 CanLink(const MTaskNodeInput* pInput) const override;
 
-    static MRenderTaskOutputDesc        Create(const METextureFormat& format, const MPassTargetDescription& rtDesc);
+public:
+    static MRenderTaskOutputDesc Create(const METextureFormat& format, const MPassTargetDescription& rtDesc);
     static MRenderTaskOutputDesc
     Create(const MTextureDesc& texDesc, const MPassTargetDescription& rtDesc, float scale, size_t texelSize);
     static MRenderTaskOutputDesc
@@ -59,7 +65,8 @@ public:
     static MRenderTaskOutputDesc CreateFromInput(const MPassTargetDescription& rtDesc, size_t nInputIdx);
 
 private:
-    MRenderTaskTarget* m_renderTaskTarget = nullptr;
+    MRenderTaskOutputDesc m_desc;
+    MTexturePtr           m_renderTexture;
 };
 
 }// namespace morty

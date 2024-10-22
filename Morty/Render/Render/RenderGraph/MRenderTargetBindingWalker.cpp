@@ -152,9 +152,9 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNode* pNode)
 
     for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
     {
-        auto pRenderTarget = pNode->GetRenderOutput(nIdx)->GetRenderTarget();
+        auto pOutput = pNode->GetRenderOutput(nIdx);
 
-        AllocRenderTarget(pRenderTarget);
+        AllocRenderTarget(pOutput->GetActualOutput());
     }
 }
 
@@ -164,55 +164,61 @@ void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNode* pNode)
 
     for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
     {
-        auto pRenderTarget = pNode->GetRenderOutput(nIdx)->GetRenderTarget();
+        auto pOutput = pNode->GetRenderOutput(nIdx);
 
-        FreeRenderTarget(pRenderTarget);
+        FreeRenderTarget(pOutput);
     }
 
     m_allocedNode[pNode] = AllocState::Free;
 }
 
-void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskTarget* pRenderTarget)
+void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* pOutput)
 {
+    if (pOutput == nullptr) return;
+
     const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    const auto&          desc          = pOutput->GetOutputDesc();
 
-    if (pRenderTarget->GetSharedPolicy() == MESharedPolicy::Exclusive || m_forceExclusive)
+    MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
+
+    if (desc.sharedPolicy == MESharedPolicy::Exclusive || m_forceExclusive)
     {
-        auto pTexture = MTexture::CreateTexture(pRenderTarget->GetTextureDesc());
+        auto pTexture = MTexture::CreateTexture(desc.texture);
         pTexture->GenerateBuffer(pRenderSystem->GetDevice());
-
-        pRenderTarget->SetTexture(pTexture);
+        pOutput->SetRenderTexture(pTexture);
 
         m_exclusiveTextures.push_back(pTexture);
     }
-    else if (pRenderTarget->GetSharedPolicy() == MESharedPolicy::Shared)
+    else if (desc.sharedPolicy == MESharedPolicy::Shared)
     {
-        if (m_targetAllocCount.find(pRenderTarget) == m_targetAllocCount.end())
+        if (m_targetAllocCount.find(pOutput) == m_targetAllocCount.end())
         {
-            auto pTexture = m_cacheQueue->AllocTexture(
-                    pRenderTarget->GetTextureDesc(),
-                    pRenderTarget->GetResizePolicy(),
-                    pRenderSystem->GetDevice()
-            );
-            pRenderTarget->SetTexture(pTexture);
+            auto pTexture = m_cacheQueue->AllocTexture(desc.texture, desc.resizePolicy, pRenderSystem->GetDevice());
+            pOutput->SetRenderTexture(pTexture);
 
-            m_targetAllocCount[pRenderTarget] = 1;
+            m_targetAllocCount[pOutput] = 0;
         }
-        else { m_targetAllocCount[pRenderTarget]++; }
+        m_targetAllocCount[pOutput]++;
     }
     else { MORTY_ASSERT(false); }
 }
 
-void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskTarget* pRenderTarget)
+void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNodeOutput* pOutput)
 {
-    if (!m_forceExclusive && pRenderTarget->GetSharedPolicy() == MESharedPolicy::Shared)
+    if (pOutput == nullptr) return;
+
+    const auto& desc = pOutput->GetOutputDesc();
+
+    MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
+
+    if (!m_forceExclusive && desc.sharedPolicy == MESharedPolicy::Shared)
     {
-        auto findCount = m_targetAllocCount.find(pRenderTarget);
+        auto findCount = m_targetAllocCount.find(pOutput);
         if (findCount == m_targetAllocCount.end()) { return; }
         if (findCount->second <= 1)
         {
-            auto pTexture = pRenderTarget->GetTexture();
-            m_cacheQueue->RecoveryTexture(pRenderTarget->GetTextureDesc(), pRenderTarget->GetResizePolicy(), pTexture);
+            auto pTexture = pOutput->GetRenderTexture();
+            m_cacheQueue->RecoveryTexture(desc.texture, desc.resizePolicy, pTexture);
 
             m_targetAllocCount.erase(findCount);
         }

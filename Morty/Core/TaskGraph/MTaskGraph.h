@@ -47,6 +47,7 @@ public:
     std::vector<MTaskNode*>                      GetOrderedNodes();
     std::vector<MTaskNode*>                      GetAllNodes();
 
+    virtual void                                 OnPreCompile() {}
     virtual void                                 OnPostCompile() {}
     virtual flatbuffers::Offset<void>            Serialize(flatbuffers::FlatBufferBuilder& fbb);
     virtual void                                 Deserialize(const void* pBufferPointer);

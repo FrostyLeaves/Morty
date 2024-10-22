@@ -12,7 +12,6 @@
 #include "RHI/MRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
-#include "Render/RenderGraph/MRenderTargetManager.h"
 #include "TaskGraph/MTaskNode.h"
 #include "TaskGraph/MTaskNodeInput.h"
 #include "Utility/MStringId.h"
@@ -23,7 +22,6 @@ namespace morty
 class MRenderTargetManager;
 class MRenderGraph;
 class MRenderPass;
-class MRenderTaskTarget;
 
 struct MRenderTaskInputDesc {
     MStringId             name;
@@ -35,7 +33,13 @@ class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput
 {
     MORTY_CLASS(MRenderTaskNodeInput)
 
-    [[nodiscard]] MRenderTaskInputDesc GetInputDesc() const;
+    void                               SetInputDesc(const MRenderTaskInputDesc& desc) { m_desc = desc; }
+    [[nodiscard]] MRenderTaskInputDesc GetInputDesc() const { return m_desc; }
+
+    METextureFormat                    GetFormat() const { return m_desc.format; }
+
+private:
+    MRenderTaskInputDesc m_desc;
 };
 
 }// namespace morty

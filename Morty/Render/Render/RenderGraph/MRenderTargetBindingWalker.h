@@ -40,9 +40,9 @@ private:
 
     void                           FreeRenderTarget(MRenderTaskNode* pNode);
 
-    void                           AllocRenderTarget(MRenderTaskTarget* pRenderTarget);
+    void                           AllocRenderTarget(MRenderTaskNodeOutput* pOutput);
 
-    void                           FreeRenderTarget(MRenderTaskTarget* pRenderTarget);
+    void                           FreeRenderTarget(MRenderTaskNodeOutput* pOutput);
 
     bool                           IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode);
 
@@ -60,10 +60,10 @@ private:
         Alloced = 0,
         Free    = 1
     };
-    std::map<MTaskNode*, AllocState>     m_allocedNode;
-    std::map<MRenderTaskTarget*, size_t> m_targetAllocCount;
+    std::map<MTaskNode*, AllocState>         m_allocedNode;
+    std::map<MRenderTaskNodeOutput*, size_t> m_targetAllocCount;
 
-    MTextureArray                        m_exclusiveTextures;
+    MTextureArray                            m_exclusiveTextures;
 };
 
 }// namespace morty

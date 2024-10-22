@@ -19,16 +19,20 @@ MString MTaskNodeOutput::GetStringID() const
 {
     if (!GetTaskNode()) return "";
 
-    return GetTaskNode()->GetNodeName().ToString() + "_Output_" +
-           MStringUtil::ToString(m_unIndex);
+    return GetTaskNode()->GetNodeName().ToString() + "_Output_" + MStringUtil::ToString(m_unIndex);
 }
 
-void MTaskNodeOutput::LinkTo(MTaskNodeInput* pInput)
+bool MTaskNodeOutput::LinkTo(MTaskNodeInput* pInput)
 {
-    if (pInput && UNION_PUSH_BACK_VECTOR(vLinkedInput, pInput))
+    if (!CanLink(pInput)) { return false; }
+
+    if (pInput)
     {
+        UNION_PUSH_BACK_VECTOR(vLinkedInput, pInput);
         pInput->pLinkedOutput = this;
     }
+
+    return true;
 }
 
 void MTaskNodeOutput::UnLink(MTaskNodeInput* pInput)
@@ -38,4 +42,10 @@ void MTaskNodeOutput::UnLink(MTaskNodeInput* pInput)
         ERASE_FIRST_VECTOR(vLinkedInput, pInput);
         pInput->pLinkedOutput = nullptr;
     }
+}
+
+bool MTaskNodeOutput::CanLink(const MTaskNodeInput* pInput) const
+{
+    MORTY_UNUSED(pInput);
+    return true;
 }

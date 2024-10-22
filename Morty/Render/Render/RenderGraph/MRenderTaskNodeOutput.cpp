@@ -5,27 +5,12 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderTaskNodeOutput, MTaskNodeOutput)
 
-void MRenderTaskNodeOutput::SetRenderTarget(MRenderTaskTarget* pRenderTarget) { m_renderTaskTarget = pRenderTarget; }
-
-MTexturePtr MRenderTaskNodeOutput::GetTexture() const
-{
-    if (m_renderTaskTarget) { return m_renderTaskTarget->GetTexture(); }
-
-    return nullptr;
-}
-
-MRenderTaskOutputDesc MRenderTaskNodeOutput::GetOutputDesc() const
-{
-    const size_t nIndex = GetIndex();
-    return GetTaskNode()->DynamicCast<MRenderTaskNode>()->InitOutputDesc().at(nIndex);
-}
-
 MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const METextureFormat& format, const MPassTargetDescription& rtDesc)
 {
     return {
             .texture      = MTexture::CreateRenderTarget("", format),
             .renderDesc   = rtDesc,
-            .allocPolicy  = MEAllocPolicy::Allocate,
+            .allocPolicy  = METextureSourceType::Allocate,
             .sharedPolicy = MESharedPolicy::Exclusive,
             .resizePolicy = MEResizePolicy::Scale,
             .scale        = 1.0f,
@@ -37,7 +22,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFromInput(const MPassTargetDe
     return {
             .texture     = MTextureDesc(),
             .renderDesc  = rtDesc,
-            .allocPolicy = MEAllocPolicy::Input,
+            .allocPolicy = METextureSourceType::Input,
             .inputIdx    = nInputIdx,
     };
 }
@@ -52,7 +37,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
     return {
             .texture      = texDesc,
             .renderDesc   = rtDesc,
-            .allocPolicy  = MEAllocPolicy::Allocate,
+            .allocPolicy  = METextureSourceType::Allocate,
             .sharedPolicy = MESharedPolicy::Exclusive,
             .resizePolicy = MEResizePolicy::Scale,
             .scale        = scale,
@@ -68,9 +53,41 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFixed(
     return {
             .texture      = MTexture::CreateRenderTarget("", format).InitSize(size),
             .renderDesc   = rtDesc,
-            .allocPolicy  = MEAllocPolicy::Allocate,
+            .allocPolicy  = METextureSourceType::Allocate,
             .sharedPolicy = MESharedPolicy::Exclusive,
             .resizePolicy = MEResizePolicy::Fixed,
     };
 }
-METextureFormat MRenderTaskNodeOutput::GetFormat() const {}
+
+METextureFormat MRenderTaskNodeOutput::GetFormat() const
+{
+    if (m_desc.allocPolicy == METextureSourceType::Input)
+    {
+        auto input = static_cast<MRenderTaskNode*>(GetTaskNode())->GetInput(m_desc.inputIdx);
+        return static_cast<MRenderTaskNodeInput*>(input)->GetInputDesc().format;
+    }
+
+    return m_desc.texture.eFormat;
+}
+
+MRenderTaskNodeOutput* MRenderTaskNodeOutput::GetActualOutput()
+{
+    if (m_desc.allocPolicy == METextureSourceType::Input)
+    {
+        auto input      = static_cast<MRenderTaskNode*>(GetTaskNode())->GetInput(m_desc.inputIdx);
+        auto prevOutput = static_cast<MRenderTaskNodeOutput*>(input->GetLinkedOutput());
+        if (!prevOutput) { return nullptr; }
+
+        return prevOutput->GetActualOutput();
+    }
+
+    return this;
+}
+
+bool MRenderTaskNodeOutput::CanLink(const MTaskNodeInput* pInput) const
+{
+    auto pRenderInput = pInput->DynamicCast<MRenderTaskNodeInput>();
+    if (!pRenderInput) return false;
+
+    return GetFormat() == pRenderInput->GetFormat();
+}

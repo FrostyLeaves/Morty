@@ -224,14 +224,7 @@ void RenderGraphView::DrawGraphView()
 
         if (pInput && pOutput)
         {
-            const auto inputFormat  = pInput->GetInputDesc().format;
-            const auto outputFormat = pOutput->GetOutputDesc().GetFormat();
-
-            if (inputFormat == outputFormat)
-            {
-                pOutput->LinkTo(pInput);
-                pRenderGraph->RequireCompile();
-            }
+            if (pOutput->LinkTo(pInput)) { pRenderGraph->RequireCompile(); }
         }
     }
 }
@@ -367,7 +360,7 @@ MTexturePtr RenderGraphView::GetFinalOutput()
     auto finalRenderOutput = finalOutput->DynamicCast<MRenderTaskNodeOutput>();
     if (!finalRenderOutput) { return nullptr; }
 
-    return finalRenderOutput->GetTexture();
+    return finalRenderOutput->GetRenderTexture();
 }
 
 void RenderGraphView::LoadGraph(const std::vector<MByte>& buffer) { m_renderProgram->LoadGraph(buffer); }

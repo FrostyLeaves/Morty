@@ -57,8 +57,6 @@ public:
     void          Render(MIRenderCommand* pPrimaryCommand) override;
     void          RenderSetup(MIRenderCommand* pPrimaryCommand);
 
-    MTexturePtr   GetOutputTexture() override;
-    MTextureArray GetOutputTextures() override;
     MRenderGraph* GetRenderGraph() override { return m_renderGraph.get(); }
 
 public:

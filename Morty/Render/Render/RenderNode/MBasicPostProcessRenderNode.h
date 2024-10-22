@@ -28,7 +28,7 @@ class MORTY_API MBasicPostProcessRenderNode : public ISinglePassRenderNode
     virtual std::shared_ptr<MMaterial> CreateMaterial() = 0;
 
 protected:
-    void                       BindTarget() override;
+    void                       BindRenderTarget() override;
 
     std::shared_ptr<MMaterial> m_material = nullptr;
 };

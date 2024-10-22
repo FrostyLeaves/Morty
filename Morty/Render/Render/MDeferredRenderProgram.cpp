@@ -141,16 +141,6 @@ void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
     setupWalker(m_renderGraph.get());
 }
 
-MTexturePtr MDeferredRenderProgram::GetOutputTexture()
-{
-    return m_renderGraph->GetRenderTargetManager()->FindRenderTexture(FinalBackBuffer);
-}
-
-MTextureArray MDeferredRenderProgram::GetOutputTextures()
-{
-    return m_renderGraph->GetRenderTargetManager()->GetOutputTextures();
-}
-
 void MDeferredRenderProgram::OnCreated()
 {
     Super::OnCreated();

@@ -120,14 +120,9 @@ std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
              METextureBarrierStage::EPixelShaderSample},
             {MShadowMapRenderNode::ShadowMapBufferOutput,
              MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample}
+             METextureBarrierStage::EPixelShaderSample},
+            {MHBAOBlurRenderNodeH::BlurOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample}
     };
-    if (EnableAO)
-    {
-        result.push_back(
-                {MHBAOBlurRenderNodeH::BlurOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample}
-        );
-    }
 #if MORTY_VXGI_ENABLE
     {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
 #endif

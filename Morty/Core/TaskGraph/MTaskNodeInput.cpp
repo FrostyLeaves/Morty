@@ -15,10 +15,10 @@ MTaskNodeInput::MTaskNodeInput()
     , pLinkedOutput(nullptr)
 {}
 
-void MTaskNodeInput::LinkTo(MTaskNodeOutput* pOutput)
+bool MTaskNodeInput::LinkTo(MTaskNodeOutput* pOutput)
 {
     UnLink();
-    pOutput->LinkTo(this);
+    return pOutput->LinkTo(this);
 }
 
 void MTaskNodeInput::UnLink()
@@ -30,8 +30,7 @@ MString MTaskNodeInput::GetStringID() const
 {
     if (!GetTaskNode()) return "";
 
-    return GetTaskNode()->GetNodeName().ToString() + "_Input_" +
-           MStringUtil::ToString(m_unIndex);
+    return GetTaskNode()->GetNodeName().ToString() + "_Input_" + MStringUtil::ToString(m_unIndex);
 }
 
 MTaskNode* MTaskNodeInput::GetLinkedNode() const
