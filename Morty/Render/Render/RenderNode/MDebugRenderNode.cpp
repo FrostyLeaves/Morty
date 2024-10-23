@@ -71,12 +71,6 @@ void MDebugRenderNode::Render(const MRenderInfo& info, const std::vector<IRender
     pCommand->EndRenderPass();
 }
 
-void MDebugRenderNode::BindTarget()
-{
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
-}
-
 std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()
 {
     return {{MToneMappingRenderNode::ToneMappingResult,

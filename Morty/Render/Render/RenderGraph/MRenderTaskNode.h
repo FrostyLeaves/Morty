@@ -45,7 +45,7 @@ public:
     virtual void                                            Release() {}
     virtual void                                            Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
     virtual void                                            RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
-    virtual void                                            BindRenderTarget() {}
+    virtual void                                            BindInOutTexture() {}
     virtual void                                            RegisterSetting() {}
     virtual void                                            Resize(Vector2i size);
 

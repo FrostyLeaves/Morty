@@ -48,7 +48,7 @@ protected:
 
     void                               InitializeFillRenderPass();
 
-    void                               BindTarget() override;
+    void                               BindInOutTexture() override;
 
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 

@@ -102,24 +102,25 @@ void SceneViewer::SetRect(Vector2i pos, Vector2i size)
     m_renderViewport->SetSize(size);
 }
 
-void SceneViewer::Snapshot(const MString& strSnapshotPath)
-{
-    m_snapshotPath = strSnapshotPath;
-    m_snapshot     = true;
-}
-
 void SceneViewer::UpdateTexture(MIRenderCommand* pRenderCommand)
 {
     if (m_pauseUpdate) { return; }
 
     m_renderProgram->Render(pRenderCommand);
+}
+void SceneViewer::SetFinalOutput(const size_t nodeId, const size_t nSlotId)
+{
+    m_finalOutputNode = nodeId;
+    m_finalOutputSlot = nSlotId;
+}
 
-    if (m_snapshot)
-    {
-        pRenderCommand->DownloadTexture(GetTexture().get(), 0, [=](void* pImageData, const Vector2& v2Size) {
-            stbi_write_png(m_snapshotPath.c_str(), v2Size.x, v2Size.y, 4, pImageData, v2Size.x * 4);
-        });
+MTexturePtr SceneViewer::GetFinalOutputTexture() const
+{
+    auto pNode = m_renderProgram->GetRenderGraph()->FindRenderNode(m_finalOutputNode);
+    if (pNode == nullptr) { return nullptr; }
 
-        m_snapshot = false;
-    }
+    auto pOutput = pNode->GetRenderOutput(m_finalOutputSlot);
+    if (pOutput == nullptr) { return nullptr; }
+
+    return pOutput->GetRenderTexture();
 }

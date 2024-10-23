@@ -351,18 +351,6 @@ void RenderGraphView::ProcessDialog()
     }
 }
 
-MTexturePtr RenderGraphView::GetFinalOutput()
-{
-    auto finalTaskNode = m_renderProgram->GetRenderGraph()->FindRenderNode(m_finalOutputNodeId);
-    if (!finalTaskNode) { return nullptr; }
-    auto finalOutput = finalTaskNode->GetOutput(m_finalOutputSlotId);
-    if (!finalOutput) { return nullptr; }
-    auto finalRenderOutput = finalOutput->DynamicCast<MRenderTaskNodeOutput>();
-    if (!finalRenderOutput) { return nullptr; }
-
-    return finalRenderOutput->GetRenderTexture();
-}
-
 void RenderGraphView::LoadGraph(const std::vector<MByte>& buffer) { m_renderProgram->LoadGraph(buffer); }
 
 void RenderGraphView::SaveGraph(std::vector<MByte>& buffer) { m_renderProgram->SaveGraph(buffer); }

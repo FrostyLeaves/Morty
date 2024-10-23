@@ -101,7 +101,7 @@ void MVRSTextureRenderNode::Render(const MRenderInfo& info)
     info.pPrimaryRenderCommand->DispatchComputeJob(m_vRSGenerator, n2ThreadNum.x, n2ThreadNum.y, 1);
 }
 
-void MVRSTextureRenderNode::BindTarget()
+void MVRSTextureRenderNode::BindInOutTexture()
 {
     if (auto params = m_vRSGenerator->GetShaderPropertyBlock(0))
     {

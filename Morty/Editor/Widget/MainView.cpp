@@ -57,7 +57,7 @@ void MainView::Render()
             Vector4(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight()
             );
 
-    if (auto pTexture = GetMainEditor()->GetRenderGraphView()->GetFinalOutput())
+    if (auto pTexture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
     {
         ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
     }

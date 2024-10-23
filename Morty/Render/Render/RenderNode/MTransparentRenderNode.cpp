@@ -104,15 +104,14 @@ void MTransparentRenderNode::InitializeFillRenderPass()
     m_renderPass.SetDepthWriteEnable(false);
 }
 
-void MTransparentRenderNode::BindTarget()
+void MTransparentRenderNode::BindInOutTexture()
 {
     std::vector<std::shared_ptr<MShaderTextureParam>>& params =
             m_drawFillMaterial->GetMaterialPropertyBlock()->m_textures;
     params[0]->SetTexture(GetInputTexture(1));
     params[1]->SetTexture(GetInputTexture(2));
 
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
+    Super::BindInOutTexture();
 }
 
 std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()

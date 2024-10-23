@@ -41,6 +41,7 @@ protected:
     MRenderTargetGroup  AutoBindTargetWithVRS();
     void                AutoBindBarrierTexture();
     void                AutoSetTextureBarrier(MIRenderCommand* pCommand);
+    void                BindInOutTexture() override;
 
     MRenderPass         m_renderPass;
     BarrierTextureTable m_barrierTexture;

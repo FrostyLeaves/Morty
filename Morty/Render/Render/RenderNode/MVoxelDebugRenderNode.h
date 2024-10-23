@@ -58,8 +58,6 @@ protected:
 
     void                                            ReleaseDispatcher();
 
-    void                                            BindTarget() override;
-
     std::vector<MRenderTaskInputDesc>               InitInputDesc() override;
 
     std::vector<MRenderTaskOutputDesc>              InitOutputDesc() override;

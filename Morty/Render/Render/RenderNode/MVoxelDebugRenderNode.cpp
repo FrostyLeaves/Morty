@@ -222,12 +222,6 @@ void MVoxelDebugRenderNode::ReleaseDispatcher()
     m_voxelDebugMaterial = nullptr;
 }
 
-void MVoxelDebugRenderNode::BindTarget()
-{
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
-}
-
 std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 {
     return {

@@ -48,7 +48,7 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
     pCommand->EndRenderPass();
 }
 
-void MBasicPostProcessRenderNode::BindRenderTarget()
+void MBasicPostProcessRenderNode::BindInOutTexture()
 {
     if (std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = m_material->GetMaterialPropertyBlock())
     {
@@ -61,6 +61,5 @@ void MBasicPostProcessRenderNode::BindRenderTarget()
         }
     }
 
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
+    Super::BindInOutTexture();
 }

@@ -144,15 +144,17 @@ void MainEditor::DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer)
 
 void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
 {
+    m_sceneTexture->SetFinalOutput(
+            m_renderGraphView->GetFinalOutputNodeId(),
+            m_renderGraphView->GetFinalOutputSlotId()
+    );
+
+
     std::vector<MTexture*> vRenderTextures;
-    for (auto pSceneViewer: m_sceneViewer)
+    for (const auto& pSceneViewer: m_sceneViewer)
     {
         pSceneViewer->UpdateTexture(pRenderCommand);
-
-        if (MTexturePtr pRenderTexture = pSceneViewer->GetTexture())
-        {
-            vRenderTextures.push_back(pRenderTexture.get());
-        }
+        vRenderTextures.emplace_back(pSceneViewer->GetFinalOutputTexture().get());
     }
 
     pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);
@@ -183,7 +185,6 @@ void MainEditor::ShowMenu()
         if (ImGui::BeginMenu("View"))
         {
             if (ImGui::MenuItem("Render", "", &m_showRenderView)) {}
-            if (ImGui::MenuItem("DebugTexture", "", &m_showDebugView)) {}
 
             for (BaseWidget* pView: m_childView)
             {
@@ -204,66 +205,10 @@ void MainEditor::ShowMenu()
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Tool"))
-        {
-            if (ImGui::MenuItem("Snip shot"))
-            {
-                auto t = std::time(nullptr);
-                tm   outtm;
-                MORTY_ASSERT(0 == MTimer::LocalTime(t, outtm));
-                std::ostringstream oss;
-                oss << std::put_time(&outtm, "%d-%m-%Y %H-%M-%S");
-                auto str = oss.str();
-
-                if (m_sceneTexture) { m_sceneTexture->Snapshot("./Snipshot-" + str + ".png"); }
-            }
-
-            ImGui::EndMenu();
-        }
+        if (ImGui::BeginMenu("Tool")) { ImGui::EndMenu(); }
 
         ImGui::EndMainMenuBar();
     }
-}
-
-void MainEditor::ShowShadowMapView()
-{
-    if (!m_showDebugView) return;
-
-    if (ImGui::Begin("DebugView", &m_showDebugView))
-    {
-        MTextureArray vTexture = m_sceneTexture->GetAllOutputTexture();
-        if (!vTexture.empty())
-        {
-            size_t nImageSize = 0;
-            for (MTexturePtr pTexture: vTexture)
-            {
-                if (pTexture) { nImageSize += pTexture->GetSize().z; }
-            }
-
-            // n * n
-            Vector4 v4Rect    = GetCurrentWidgetSize();
-            size_t  nRowCount = std::ceil(std::sqrt(nImageSize));
-            Vector2 v2Size    = Vector2((v4Rect.z) / nRowCount, (v4Rect.w) / nRowCount);
-
-            ImGui::Columns(static_cast<int>(nRowCount));
-            for (size_t nTexIdx = 0; nTexIdx < vTexture.size(); ++nTexIdx)
-            {
-                for (size_t nLayerIdx = 0; nLayerIdx < static_cast<size_t>(vTexture[nTexIdx]->GetSize().z); ++nLayerIdx)
-                {
-                    ImGui::Image(
-                            {vTexture[nTexIdx], intptr_t(vTexture[nTexIdx].get()), nLayerIdx},
-                            ImVec2(v2Size.x, v2Size.y)
-                    );
-                    ImGui::Text("%s (%d)", vTexture[nTexIdx]->GetName().c_str(), static_cast<int>(nLayerIdx));
-
-                    ImGui::NextColumn();
-                }
-            }
-            ImGui::Columns(1);
-        }
-    }
-
-    ImGui::End();
 }
 
 void MainEditor::ShowView(BaseWidget* pView)
@@ -323,17 +268,10 @@ Vector4 MainEditor::GetCurrentWidgetSize() const
 
 void MainEditor::OnRender(MIRenderCommand* pRenderCommand)
 {
-    if (m_sceneTexture)
-    {
-        //		m_sceneTexture->SetRect(Vector2(m_renderViewSize.x, m_renderViewSize.y), Vector2(m_renderViewSize.z, m_renderViewSize.w));
-    }
-
     //update all scene viewer.
     UpdateSceneViewer(pRenderCommand);
 
     ShowMenu();
-
-    ShowShadowMapView();
 
     ImGui::DockSpaceOverViewport();
 

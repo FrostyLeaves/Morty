@@ -31,8 +31,6 @@ public:
     void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
 protected:
-    void                               BindTarget() override;
-
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;

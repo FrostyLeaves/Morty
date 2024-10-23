@@ -83,7 +83,7 @@ void MaterialView::Render()
 
     if (m_material)
     {
-        if (MTexturePtr pTexture = m_sceneTexture->GetTexture())
+        if (MTexturePtr pTexture = m_sceneTexture->GetFinalOutputTexture())
         {
             float fImageSize = ImGui::GetContentRegionAvail().x;
             ImGui::SameLine(fImageSize * 0.25f);

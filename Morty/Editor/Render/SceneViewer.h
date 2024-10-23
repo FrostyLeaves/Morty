@@ -22,9 +22,11 @@ public:
     void                           Release();
 
     void                           UpdateTexture(MIRenderCommand* pRenderCommand);
-    void                           Snapshot(const MString& strSnapshotPath);
     void                           SetRect(Vector2i pos, Vector2i size);
     void                           SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
+
+    [[nodiscard]] MTexturePtr      GetFinalOutputTexture() const;
+    void                           SetFinalOutput(const size_t nodeId, const size_t nSlotId);
 
     [[nodiscard]] MScene*          GetScene() const { return m_scene; }
     [[nodiscard]] MViewport*       GetViewport() const { return m_renderViewport; }
@@ -37,10 +39,11 @@ protected:
     MIRenderProgram* m_renderProgram  = nullptr;
     bool             m_pauseUpdate    = false;
     MTaskNode*       m_updateTask     = nullptr;
-    bool             m_snapshot       = false;
-    MString          m_snapshotPath;
 
     static MString   m_defaultRenderGraphPath;
+
+    size_t           m_finalOutputNode;
+    size_t           m_finalOutputSlot;
 };
 
 }// namespace morty

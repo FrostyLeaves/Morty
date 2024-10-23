@@ -71,8 +71,6 @@ protected:
 
     void ShowMenu();
 
-    void ShowShadowMapView();
-
     void ShowView(BaseWidget* pView);
 
     void ShowDialog();
@@ -84,7 +82,6 @@ private:
     std::set<std::shared_ptr<SceneViewer>> m_sceneViewer;
 
     bool                                   m_showRenderView = false;
-    bool                                   m_showDebugView  = false;
 
     Vector4                                m_renderViewSize = Vector4(0, 0, 32, 32);
 

@@ -247,7 +247,7 @@ void MDeepPeelRenderNode::ReleaseFrameShaderParams()
     m_forwardMaterial = nullptr;
 }
 
-void MDeepPeelRenderNode::BindTarget()
+void MDeepPeelRenderNode::BindInOutTexture()
 {
     const auto pDepthTexture = GetInputTexture(0);
     m_drawPeelMaterial->GetMaterialPropertyBlock()->SetTexture(
@@ -260,8 +260,7 @@ void MDeepPeelRenderNode::BindTarget()
     m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, GetOutputTexture(2));
     m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, GetOutputTexture(3));
 
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
+    Super::BindInOutTexture();
 }
 
 std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()

@@ -18,17 +18,19 @@ public:
     explicit RenderGraphView(const MString& viewName);
     ~RenderGraphView() override = default;
 
-    void             Render() override;
+    void                 Render() override;
 
-    void             Initialize(MainEditor* pMainEditor) override;
+    void                 Initialize(MainEditor* pMainEditor) override;
 
-    void             Release() override;
+    void                 Release() override;
 
-    void             SetRenderProgram(MIRenderProgram* pRenderProgram);
+    void                 SetRenderProgram(MIRenderProgram* pRenderProgram);
 
-    ImGuiWindowFlags GetWindowFlags() override { return BaseWidget::GetWindowFlags() | ImGuiWindowFlags_MenuBar; }
+    ImGuiWindowFlags     GetWindowFlags() override { return BaseWidget::GetWindowFlags() | ImGuiWindowFlags_MenuBar; }
 
-    MTexturePtr      GetFinalOutput();
+    [[nodiscard]] size_t GetFinalOutputNodeId() const { return m_finalOutputNodeId; }
+    [[nodiscard]] size_t GetFinalOutputSlotId() const { return m_finalOutputSlotId; }
+
 
 private:
     void DrawMenu();

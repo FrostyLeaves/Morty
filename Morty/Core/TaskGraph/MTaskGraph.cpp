@@ -137,13 +137,14 @@ std::vector<MTaskNode*> MTaskGraph::GetOrderedNodes()
     return vNodes;
 }
 
-std::vector<MTaskNode*> MTaskGraph::GetAllNodes()
+std::vector<MTaskNode*> MTaskGraph::GetAllNodes() const
 {
     std::vector<MTaskNode*> vNodes(m_taskNode.size());
     std::transform(m_taskNode.begin(), m_taskNode.end(), vNodes.begin(), [](auto node) { return node.second; });
 
     return vNodes;
 }
+
 MTaskNode* MTaskGraph::FindTaskNode(size_t id) const
 {
     auto findResult = m_taskNode.find(id);

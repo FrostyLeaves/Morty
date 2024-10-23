@@ -129,12 +129,6 @@ void MShadowMapRenderNode::OnCreated()
     m_renderPass.SetViewportNum(MRenderGlobal::CASCADED_SHADOW_MAP_NUM);
 }
 
-void MShadowMapRenderNode::BindTarget()
-{
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
-}
-
 std::vector<MRenderTaskOutputDesc> MShadowMapRenderNode::InitOutputDesc()
 {
     return {

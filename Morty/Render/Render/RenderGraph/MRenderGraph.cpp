@@ -71,3 +71,13 @@ void MRenderGraph::OnPostCompile()
     //Bind Render Target
     (*m_renderTargetBinding)(this);
 }
+
+MRenderTaskNode* MRenderGraph::FindRenderNode(const MStringId& nodeName) const
+{
+    for (auto node: GetAllNodes())
+    {
+        if (node->GetNodeName() == nodeName) { return node->DynamicCast<MRenderTaskNode>(); }
+    }
+
+    return nullptr;
+}

@@ -79,7 +79,7 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTargetWithVRS()
 {
     auto group = AutoBindTarget();
 
-    auto pVRSTexture  = GetRenderTargetManager()->FindRenderTexture(MRenderGraphName::VRS_TEXTURE);
+    auto pVRSTexture  = GetRenderGraph()->GetTextureVRS();
     group.shadingRate = {pVRSTexture, {false, MColor::Black_T}};
 
     return group;
@@ -124,3 +124,9 @@ void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarg
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
     m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
+
+void ISinglePassRenderNode::BindInOutTexture()
+{
+    AutoBindBarrierTexture();
+    SetRenderTarget(AutoBindTarget());
+};

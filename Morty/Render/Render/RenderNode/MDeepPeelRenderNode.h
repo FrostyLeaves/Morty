@@ -57,7 +57,7 @@ protected:
 
     void                               ReleaseFrameShaderParams();
 
-    void                               BindTarget() override;
+    void                               BindInOutTexture() override;
 
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 

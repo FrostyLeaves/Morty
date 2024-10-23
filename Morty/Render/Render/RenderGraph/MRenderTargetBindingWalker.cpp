@@ -18,29 +18,36 @@ class MRenderTargetCacheQueue
 {
 
 public:
-    static size_t Hash(const MTextureDesc& desc, const MEResizePolicy eResizePolicy)
+    static size_t Hash(const MRenderTaskOutputDesc& desc)
     {
         std::size_t res = 0;
-        MUtils::HashCombine(res, desc.n3Size.x);
-        MUtils::HashCombine(res, desc.n3Size.y);
-        MUtils::HashCombine(res, desc.n3Size.z);
-        MUtils::HashCombine(res, desc.eTextureType);
-        MUtils::HashCombine(res, desc.eFormat);
-        MUtils::HashCombine(res, desc.nWriteUsage);
-        MUtils::HashCombine(res, desc.nReadUsage);
-        MUtils::HashCombine(res, desc.eMipmapDataType);
-        MUtils::HashCombine(res, eResizePolicy);
+        if (desc.resizePolicy == MEResizePolicy::Fixed)
+        {
+            MUtils::HashCombine(res, desc.texture.n3Size.x);
+            MUtils::HashCombine(res, desc.texture.n3Size.y);
+            MUtils::HashCombine(res, desc.texture.n3Size.z);
+        }
+        else
+        {
+            MUtils::HashCombine(res, static_cast<int>(desc.scale * 100));
+            MUtils::HashCombine(res, desc.texelSize);
+        }
+        MUtils::HashCombine(res, desc.texture.eTextureType);
+        MUtils::HashCombine(res, desc.texture.eFormat);
+        MUtils::HashCombine(res, desc.texture.nWriteUsage);
+        MUtils::HashCombine(res, desc.texture.nReadUsage);
+        MUtils::HashCombine(res, desc.texture.eMipmapDataType);
 
         return res;
     }
 
-    MTexturePtr AllocTexture(const MTextureDesc& desc, const MEResizePolicy eResizePolicy, MIDevice* pDevice)
+    MTexturePtr AllocTexture(const MRenderTaskOutputDesc& desc, MIDevice* pDevice)
     {
-        const size_t hash = Hash(desc, eResizePolicy);
+        const size_t hash = Hash(desc);
 
         if (m_renderTargetCache[hash].empty())
         {
-            auto pTexture = MTexture::CreateTexture(desc);
+            auto pTexture = MTexture::CreateTexture(desc.texture);
             pTexture->GenerateBuffer(pDevice);
             m_allTextures.push_back(pTexture);
             return pTexture;
@@ -52,9 +59,9 @@ public:
         return pTexture;
     }
 
-    void RecoveryTexture(const MTextureDesc& desc, const MEResizePolicy eResizePolicy, MTexturePtr pTexture)
+    void RecoveryTexture(const MRenderTaskOutputDesc& desc, const MTexturePtr& pTexture)
     {
-        const size_t hash = Hash(desc, eResizePolicy);
+        const size_t hash = Hash(desc);
 
         m_renderTargetCache[hash].push(pTexture);
     }
@@ -138,7 +145,7 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
         auto pRenderNode = pNode->DynamicCast<MRenderTaskNode>();
         if (pRenderNode)
         {
-            pRenderNode->BindTarget();
+            pRenderNode->BindInOutTexture();
             pRenderNode->RegisterSetting();
         }
     }
@@ -193,7 +200,7 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* pOutpu
     {
         if (m_targetAllocCount.find(pOutput) == m_targetAllocCount.end())
         {
-            auto pTexture = m_cacheQueue->AllocTexture(desc.texture, desc.resizePolicy, pRenderSystem->GetDevice());
+            auto pTexture = m_cacheQueue->AllocTexture(desc, pRenderSystem->GetDevice());
             pOutput->SetRenderTexture(pTexture);
 
             m_targetAllocCount[pOutput] = 0;
@@ -218,7 +225,7 @@ void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNodeOutput* pOutput
         if (findCount->second <= 1)
         {
             auto pTexture = pOutput->GetRenderTexture();
-            m_cacheQueue->RecoveryTexture(desc.texture, desc.resizePolicy, pTexture);
+            m_cacheQueue->RecoveryTexture(desc, pTexture);
 
             m_targetAllocCount.erase(findCount);
         }

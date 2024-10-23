@@ -45,7 +45,7 @@ public:
     [[nodiscard]] const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
     [[nodiscard]] const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }
     std::vector<MTaskNode*>                      GetOrderedNodes();
-    std::vector<MTaskNode*>                      GetAllNodes();
+    std::vector<MTaskNode*>                      GetAllNodes() const;
 
     virtual void                                 OnPreCompile() {}
     virtual void                                 OnPostCompile() {}

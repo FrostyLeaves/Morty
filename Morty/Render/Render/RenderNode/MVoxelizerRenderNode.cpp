@@ -337,12 +337,6 @@ void MVoxelizerRenderNode::InitializeRenderPass()
     m_renderPass.SetViewportNum(1);
 }
 
-void MVoxelizerRenderNode::BindTarget()
-{
-    AutoBindBarrierTexture();
-    SetRenderTarget(AutoBindTarget());
-}
-
 std::vector<MRenderTaskInputDesc> MVoxelizerRenderNode::InitInputDesc()
 {
     return {

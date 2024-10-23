@@ -36,6 +36,7 @@ public:
     [[nodiscard]] bool             AddNode(const MStringId& strNodeName, MTaskNode* pGraphNode) override;
     [[nodiscard]] MEngine*         GetEngine() const { return m_engine; }
     [[nodiscard]] MRenderTaskNode* FindRenderNode(size_t renderNodeId) const;
+    [[nodiscard]] MRenderTaskNode* FindRenderNode(const MStringId& nodeName) const;
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
@@ -69,13 +70,15 @@ public:
         return m_voxelizerCullingResult;
     }
 
+    void                      SetTextureVRS(const MTexturePtr& pTexture) { m_vrsTexture = pTexture; }
+    [[nodiscard]] MTexturePtr GetTextureVRS() const { return m_vrsTexture; }
+
     void                      OnPreCompile() override;
     void                      OnPostCompile() override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
     void                      Deserialize(const void* pBufferPointer) override;
 
     void                      Resize(const Vector2i& size);
-    void                      Clean();
 
 private:
     Vector2i                                    m_size = {0, 0};
@@ -88,6 +91,7 @@ private:
     std::shared_ptr<MInstanceCulling>           m_shadowCullingResult    = nullptr;
     std::shared_ptr<MInstanceCulling>           m_voxelizerCullingResult = nullptr;
     std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding    = nullptr;
+    MTexturePtr                                 m_vrsTexture             = nullptr;
     std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable;
 };
 

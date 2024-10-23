@@ -90,7 +90,7 @@ void MDeferredLightingRenderNode::Release()
     Super::Release();
 }
 
-void MDeferredLightingRenderNode::BindTarget()
+void MDeferredLightingRenderNode::BindInOutTexture()
 {
     if (std::shared_ptr<MShaderPropertyBlock> pParams = m_lightningMaterial->GetMaterialPropertyBlock())
     {
