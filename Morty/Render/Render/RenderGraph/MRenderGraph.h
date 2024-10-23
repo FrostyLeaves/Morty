@@ -79,6 +79,7 @@ public:
     void                      Deserialize(const void* pBufferPointer) override;
 
     void                      Resize(const Vector2i& size);
+    [[nodiscard]] Vector2i    GetSize() const { return m_size; }
 
 private:
     Vector2i                                    m_size = {0, 0};

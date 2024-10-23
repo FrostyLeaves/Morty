@@ -95,15 +95,9 @@ void MForwardRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MForwardRenderNode::InitInputDesc()
 {
     return {
-            {MDeferredLightingRenderNode::DeferredLightingOutput,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderWrite},
-            {MGBufferRenderNode::GBufferDepthBufferOutput,
-             METextureFormat::Depth,
-             METextureBarrierStage::EPixelShaderWrite},
-            {MShadowMapRenderNode::ShadowMapBufferOutput,
-             METextureFormat::Depth,
-             METextureBarrierStage::EPixelShaderSample},
+            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),// color buffer
+            MRenderTaskNodeInput::CreateDepth(),                                                 //depth buffer
+            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false),                   //shadow map buffer
     };
 }
 

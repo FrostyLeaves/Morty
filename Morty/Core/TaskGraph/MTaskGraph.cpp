@@ -84,7 +84,7 @@ bool MTaskGraph::Compile()
             queue.push(pNode);
         }
 
-        pNode->OnCompile();
+        pNode->OnPreCompile();
     }
 
     if (queue.empty()) { return false; }
@@ -166,7 +166,7 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
             taskInputNode[nInputIdx] = prevOutput ? prevOutput->GetTaskNode()->GetNodeID() : MTaskNode::InvalidSlotId;
             taskInputSlot[nInputIdx] = prevOutput ? prevOutput->GetIndex() : MTaskNode::InvalidSlotId;
         }
-        auto                           fbTypeName  = fbb.CreateString(taskNode->GetTypeName());
+        auto                           fbTypeName  = fbb.CreateString(taskNode->GetTypeName().ToString());
         auto                           fbInputNode = fbb.CreateVector(taskInputNode);
         auto                           fbInputSlot = fbb.CreateVector(taskInputSlot);
 
@@ -206,7 +206,7 @@ void MTaskGraph::Deserialize(const void* pBufferPointer)
         const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbTaskNodeArray.Get(static_cast<flatbuffers::uoffset_t>(nodeIdx));
         auto                      nodeTypeName   = fbTaskNodeDesc->node_type()->str();
         auto                      nodeId         = fbTaskNodeDesc->node_id();
-        auto                      taskNode       = MTypeClass::New(nodeTypeName)->DynamicCast<MTaskNode>();
+        auto                      taskNode       = MTypeClass::New(MStringId(nodeTypeName))->DynamicCast<MTaskNode>();
         auto                      fbTaskNodeData = fbTaskNodeDesc->data();
 
         flatbuffers::FlatBufferBuilder nodeFbb;

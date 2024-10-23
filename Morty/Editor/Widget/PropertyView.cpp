@@ -16,8 +16,8 @@
 
 using namespace morty;
 
-#define REGISTER_PROPERTY(CLASS_NAME)                                                    \
-    m_createPropertyFactory[#CLASS_NAME] = []() { return new Property##CLASS_NAME(); };
+#define REGISTER_PROPERTY(CLASS_NAME)                                                                                  \
+    m_createPropertyFactory[MStringId(#CLASS_NAME)] = []() { return new Property##CLASS_NAME(); };
 
 PropertyView::PropertyView()
     : BaseWidget()
@@ -65,10 +65,7 @@ void PropertyView::Render()
     ImGui::PopStyleVar();
 }
 
-void PropertyView::Initialize(MainEditor* pMainEditor)
-{
-    BaseWidget::Initialize(pMainEditor);
-}
+void PropertyView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
 
 void PropertyView::Release() {}
 
@@ -100,9 +97,6 @@ void PropertyView::UpdatePropertyList(MEntity* pEntity)
     auto vComponents = pEntity->GetComponents();
     for (MComponent* pComponent: vComponents)
     {
-        if (auto func = m_createPropertyFactory[pComponent->GetType()->m_strName])
-        {
-            m_propertyList.push_back(func());
-        }
+        if (auto func = m_createPropertyFactory[pComponent->GetTypeName()]) { m_propertyList.push_back(func()); }
     }
 }

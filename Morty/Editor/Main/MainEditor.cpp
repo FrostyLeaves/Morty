@@ -44,10 +44,10 @@
 
 using namespace morty;
 
-MString MainEditor::m_renderProgramName    = MDeferredRenderProgram::GetClassTypeName();
-MString MainEditor::m_editorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
+MStringId MainEditor::m_renderProgramName    = MDeferredRenderProgram::GetClassTypeName();
+MString   MainEditor::m_editorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
 
-bool    MainEditor::Initialize(MEngine* pEngine)
+bool      MainEditor::Initialize(MEngine* pEngine)
 {
     m_engine = pEngine;
 
@@ -154,7 +154,8 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
     for (const auto& pSceneViewer: m_sceneViewer)
     {
         pSceneViewer->UpdateTexture(pRenderCommand);
-        vRenderTextures.emplace_back(pSceneViewer->GetFinalOutputTexture().get());
+
+        if (auto pTexture = pSceneViewer->GetFinalOutputTexture()) { vRenderTextures.emplace_back(pTexture.get()); }
     }
 
     pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);

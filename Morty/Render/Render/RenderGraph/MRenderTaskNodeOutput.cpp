@@ -17,6 +17,30 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const METextureFormat& forma
     };
 }
 
+MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const MTextureDesc& desc, const MPassTargetDescription& rtDesc)
+{
+    return {
+            .texture      = desc,
+            .renderDesc   = rtDesc,
+            .allocPolicy  = METextureSourceType::Allocate,
+            .sharedPolicy = MESharedPolicy::Exclusive,
+            .resizePolicy = MEResizePolicy::Scale,
+            .scale        = 1.0f,
+    };
+}
+
+MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateDepth(const MPassTargetDescription& rtDesc)
+{
+    return {
+            .texture      = MTexture::CreateDepthBuffer(""),
+            .renderDesc   = rtDesc,
+            .allocPolicy  = METextureSourceType::Allocate,
+            .sharedPolicy = MESharedPolicy::Exclusive,
+            .resizePolicy = MEResizePolicy::Scale,
+            .scale        = 1.0f,
+    };
+}
+
 MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFromInput(const MPassTargetDescription& rtDesc, size_t nInputIdx)
 {
     return {
@@ -90,4 +114,12 @@ bool MRenderTaskNodeOutput::CanLink(const MTaskNodeInput* pInput) const
     if (!pRenderInput) return false;
 
     return GetFormat() == pRenderInput->GetFormat();
+}
+void MRenderTaskNodeOutput::SetOutputDesc(const MRenderTaskOutputDesc& desc)
+{
+    m_desc = desc;
+    if (m_desc.texture.strName.empty())
+    {
+        m_desc.texture.strName = GetTaskNode()->GetNodeName().ToString() + "_out_" + MStringUtil::ToString(GetIndex());
+    }
 }

@@ -21,14 +21,9 @@ void MRenderGraphWalker::operator()(MTaskGraph* pTaskGraph)
 
     for (MTaskNode* pCurrentNode: vNodes)
     {
-        bool bOutputExist    = true;
-        auto pRenderTaskNode = pCurrentNode->DynamicCast<MRenderTaskNode>();
-        for (size_t nOutputIdx = 0; nOutputIdx < pRenderTaskNode->GetOutputSize(); ++nOutputIdx)
-        {
-            bOutputExist &= (nullptr != pRenderTaskNode->GetOutputTexture(nOutputIdx));
-        }
+        auto pRenderTaskNode = static_cast<MRenderTaskNode*>(pCurrentNode);
 
-        if (bOutputExist) { pRenderTaskNode->Render(m_renderInfo); }
+        if (pRenderTaskNode->IsValidRenderNode()) { pRenderTaskNode->Render(m_renderInfo); }
     }
 }
 

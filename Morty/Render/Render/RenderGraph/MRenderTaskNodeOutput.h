@@ -45,7 +45,7 @@ class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
 {
     MORTY_CLASS(MRenderTaskNodeOutput)
 public:
-    void                                 SetOutputDesc(const MRenderTaskOutputDesc& desc) { m_desc = desc; }
+    void                                 SetOutputDesc(const MRenderTaskOutputDesc& desc);
     [[nodiscard]] MRenderTaskOutputDesc  GetOutputDesc() const { return m_desc; }
 
 
@@ -58,6 +58,8 @@ public:
 
 public:
     static MRenderTaskOutputDesc Create(const METextureFormat& format, const MPassTargetDescription& rtDesc);
+    static MRenderTaskOutputDesc Create(const MTextureDesc& desc, const MPassTargetDescription& rtDesc);
+    static MRenderTaskOutputDesc CreateDepth(const MPassTargetDescription& rtDesc);
     static MRenderTaskOutputDesc
     Create(const MTextureDesc& texDesc, const MPassTargetDescription& rtDesc, float scale, size_t texelSize);
     static MRenderTaskOutputDesc

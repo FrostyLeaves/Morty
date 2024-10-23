@@ -289,13 +289,14 @@ void RenderGraphView::DrawMenu()
             {
                 if (ImGui::MenuItem(Name.c_str(), ""))
                 {
-                    auto    renderNode = MTypeClass::New(Name.c_str())->DynamicCast<MRenderTaskNode>();
+                    auto   renderNode = MTypeClass::New(Name)->DynamicCast<MRenderTaskNode>();
 
-                    size_t  nameIdx           = 0;
-                    MString newRenderNodeName = renderNode->GetTypeName();
-                    while (!pRenderGraph->AddNode(MStringId(newRenderNodeName), renderNode))
+                    size_t nameIdx           = 0;
+                    auto   newRenderNodeName = renderNode->GetTypeName();
+                    while (!pRenderGraph->AddNode(newRenderNodeName, renderNode))
                     {
-                        newRenderNodeName = renderNode->GetTypeName() + MStringUtil::ToString(++nameIdx);
+                        newRenderNodeName =
+                                MStringId(renderNode->GetTypeName().ToString() + MStringUtil::ToString(++nameIdx));
                     }
                 }
             }

@@ -255,10 +255,22 @@ void MDeepPeelRenderNode::BindInOutTexture()
             pDepthTexture
     );
 
-    m_framePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, GetOutputTexture(4));
-    m_framePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, GetOutputTexture(5));
-    m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, GetOutputTexture(2));
-    m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, GetOutputTexture(3));
+    if (auto texture = GetOutputTexture(4))
+    {
+        m_framePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, texture);
+    }
+    if (auto texture = GetOutputTexture(5))
+    {
+        m_framePropertyBlock[0]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, texture);
+    }
+    if (auto texture = GetOutputTexture(2))
+    {
+        m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_0, texture);
+    }
+    if (auto texture = GetOutputTexture(3))
+    {
+        m_framePropertyBlock[1]->SetTexture(MShaderPropertyName::TRANSPARENT_TEXTURE_INPUT_1, texture);
+    }
 
     Super::BindInOutTexture();
 }
@@ -266,7 +278,7 @@ void MDeepPeelRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()
 {
     return {
-            {MForwardRenderNode::DepthBufferOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample},
+            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false),
     };
 }
 

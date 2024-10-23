@@ -34,11 +34,7 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderNode::CreateMaterial()
 
 std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderNode::InitInputDesc()
 {
-    return {
-            {MForwardRenderNode::BackBufferOutput,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-    };
+    return {MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false)};
 }
 
 std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderNode::InitOutputDesc()

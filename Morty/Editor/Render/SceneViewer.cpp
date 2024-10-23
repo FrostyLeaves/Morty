@@ -26,7 +26,7 @@ using namespace morty;
 
 MString SceneViewer::m_defaultRenderGraphPath = MString(MORTY_RESOURCE_PATH) + "/Pipeline/default_render_graph.mrg";
 
-void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MString& strRenderProgram)
+void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MStringId& strRenderProgram)
 {
     m_scene = pScene;
 
@@ -57,7 +57,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
 
     std::vector<MByte> renderGraphBuffer;
     MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
-    m_renderProgram->LoadGraph(renderGraphBuffer);
+    //m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)

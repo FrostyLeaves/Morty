@@ -44,7 +44,7 @@ public:
         return pObject;
     }
 
-    MObject* CreateObject(const MString& strTypeName);
+    MObject* CreateObject(const MStringId& strTypeName);
 
     MObject* FindObject(const MObjectID& unID);
 

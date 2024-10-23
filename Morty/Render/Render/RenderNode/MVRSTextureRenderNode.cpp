@@ -105,16 +105,17 @@ void MVRSTextureRenderNode::BindInOutTexture()
 {
     if (auto params = m_vRSGenerator->GetShaderPropertyBlock(0))
     {
-        params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, GetRenderOutput(0)->GetRenderTexture());
+        if (auto texture = GetOutputTexture(0))
+        {
+            params->SetTexture(MShaderPropertyName::VRS_OUTPUT_VRS_TEXTURE_NAME, texture);
+        }
     }
 }
 
 std::vector<MRenderTaskInputDesc> MVRSTextureRenderNode::InitInputDesc()
 {
     return {
-            {MEdgeDetectionRenderNode::EdgeDetectionResult,
-             METextureFormat::UNorm_RGBA8,
-             METextureBarrierStage::EPixelShaderSample},
+            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false)// edge detection
     };
 }
 

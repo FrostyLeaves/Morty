@@ -54,7 +54,7 @@ public:
     void         BindTaskFunction(const std::function<void(MTaskNode*)>& func) { m_funcTaskFunction = func; };
 
     virtual void OnCreated() {}
-    virtual void OnCompile() {}
+    virtual void OnPreCompile() {}
     virtual void OnDelete() {}
 
     virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);

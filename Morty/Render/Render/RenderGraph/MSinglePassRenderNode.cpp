@@ -27,7 +27,7 @@ MORTY_INTERFACE_IMPLEMENT(ISinglePassRenderNode, MRenderTaskNode)
 ISinglePassRenderNode::ISinglePassRenderNode()
 {
 #if MORTY_DEBUG
-    m_renderPass.m_strDebugName = GetTypeName();
+    m_renderPass.m_strDebugName = GetTypeName().ToString();
 #endif
 }
 
@@ -52,22 +52,20 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
 {
     MRenderTargetGroup group;
 
-    auto               vOutputDesc = InitOutputDesc();
-    MORTY_ASSERT(vOutputDesc.size() == GetOutputSize());
-
     for (size_t nIdx = 0; nIdx < GetOutputSize(); ++nIdx)
     {
-        auto pTexture = GetRenderOutput(nIdx)->GetRenderTexture();
+        auto pOutput  = GetRenderOutput(nIdx);
+        auto pTexture = pOutput->GetRenderTexture();
 
         if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
             pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
         {
-            group.backTargets.push_back({pTexture, vOutputDesc[nIdx].renderDesc});
+            group.backTargets.push_back({pTexture, pOutput->GetOutputDesc().renderDesc});
         }
         else if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
         {
             MORTY_ASSERT(group.depthTarget.pTexture == nullptr);
-            group.depthTarget = {pTexture, vOutputDesc[nIdx].renderDesc};
+            group.depthTarget = {pTexture, pOutput->GetOutputDesc().renderDesc};
         }
         else { MORTY_ASSERT(false); }
     }
@@ -91,7 +89,10 @@ void ISinglePassRenderNode::AutoBindBarrierTexture()
     auto vInputs = InitInputDesc();
     for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
     {
-        m_barrierTexture[vInputs[nInputIdx].barrier].push_back(GetInputTexture(nInputIdx).get());
+        if (const auto& texture = GetInputTexture(nInputIdx))
+        {
+            m_barrierTexture[vInputs[nInputIdx].barrier].push_back(texture.get());
+        }
     }
 }
 
@@ -114,6 +115,8 @@ void ISinglePassRenderNode::Resize(Vector2i size)
         //MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
         //pRenderSystem->ResizeFrameBuffer(m_renderPass, size);
     }
+
+    Super::Resize(size);
 }
 
 void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarget)

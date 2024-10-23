@@ -25,7 +25,7 @@ void MObjectSystem::InitObject(MObject* pObject)
     for (auto func: m_postCreateObjectFunction) { func(pObject); }
 }
 
-MObject* MObjectSystem::CreateObject(const MString& strTypeName)
+MObject* MObjectSystem::CreateObject(const MStringId& strTypeName)
 {
     if (MTypeClass* pTypedIns = MTypeClass::New(strTypeName))
     {
@@ -47,10 +47,7 @@ MObject* MObjectSystem::FindObject(const MObjectID& unID)
     return iter->second;
 }
 
-void MObjectSystem::RemoveObject(const MObjectID& unID)
-{
-    m_removeObjects.push_back(unID);
-}
+void MObjectSystem::RemoveObject(const MObjectID& unID) { m_removeObjects.push_back(unID); }
 
 void MObjectSystem::CleanRemoveObject()
 {
@@ -83,9 +80,7 @@ void MObjectSystem::Release()
         std::map<MObjectID, MObject*> tObjects = std::move(m_objects);
         m_objects                              = {};
 
-        for (std::map<MObjectID, MObject*>::iterator iter = tObjects.begin();
-             iter != tObjects.end();
-             ++iter)
+        for (std::map<MObjectID, MObject*>::iterator iter = tObjects.begin(); iter != tObjects.end(); ++iter)
         {
             iter->second->OnDelete();
             delete iter->second;

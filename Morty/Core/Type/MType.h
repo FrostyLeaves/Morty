@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Utility/MString.h"
+#include "Utility/MStringId.h"
 
 namespace morty
 {
@@ -17,7 +17,7 @@ namespace morty
 #define M_TYPE_DECL(Class)                                                                                             \
 public:                                                                                                                \
     static const MType* GetClassType();                                                                                \
-    static MString      GetClassTypeName() { return Class::GetClassType()->m_strName; }                                \
+    static MStringId    GetClassTypeName() { return Class::GetClassType()->m_strName; }                                \
     const MType*        GetType() const override { return Class::GetClassType(); };
 
 
@@ -26,7 +26,7 @@ public:                                                                         
     typedef CurrClass Class;                                                                                           \
     const MType*      Class::GetClassType()                                                                            \
     {                                                                                                                  \
-        static const MType type(#CurrClass, BaseClass::GetClassType());                                                \
+        static const MType type(MStringId(#CurrClass), BaseClass::GetClassType());                                     \
         return &type;                                                                                                  \
     }
 
@@ -56,7 +56,7 @@ public:                                                                         
 class MType
 {
 public:
-    MType(const MString& strName, const MType* pBaseType)
+    MType(const MStringId& strName, const MType* pBaseType)
         : m_strName(strName)
         , m_baseType(pBaseType)
         , m_unDeep(pBaseType == nullptr ? 0 : pBaseType->m_unDeep + 1)
@@ -65,9 +65,9 @@ public:
     ~MType() {}
 
 public:
-    const MString m_strName;
-    const MType*  m_baseType;
-    const int     m_unDeep;
+    const MStringId m_strName;
+    const MType*    m_baseType;
+    const int       m_unDeep;
 };
 
 template<typename T> class MTypeCreator
@@ -94,11 +94,11 @@ public:
     virtual ~MTypeClass() {}
 
 
-    MString                       GetTypeName() { return GetType()->m_strName; }
+    MStringId                     GetTypeName() { return GetType()->m_strName; }
 
     static const MType*           GetClassType();
 
-    static MString                GetClassTypeName() { return MTypeClass::GetClassType()->m_strName; }
+    static MStringId              GetClassTypeName() { return MTypeClass::GetClassType()->m_strName; }
 
     virtual const MType*          GetType() const { return MTypeClass::GetClassType(); };
 
@@ -144,7 +144,7 @@ public:
 
     template<typename T> static void RegisterTypedClass()
     {
-        const MString&   strName = T::GetClassType()->m_strName;
+        const MStringId& strName = T::GetClassType()->m_strName;
         MDynamicTypeInfo info;
         info.m_funcNew                    = &T::New;
         info.m_type                       = T::GetClassType();
@@ -152,16 +152,16 @@ public:
         GetTypeTable()[T::GetClassType()] = info;
     }
 
-    static MTypeClass*  New(const MString& strTypeName);
+    static MTypeClass*  New(const MStringId& strTypeName);
 
     static MTypeClass*  New(const MType* type);
 
-    static const MType* GetType(const MString& strTypeName);
+    static const MType* GetType(const MStringId& strTypeName);
 
 public:
-    static std::map<const MType*, MDynamicTypeInfo>& GetTypeTable();
+    static std::unordered_map<const MType*, MDynamicTypeInfo>& GetTypeTable();
 
-    static std::map<MString, MDynamicTypeInfo>&      GetNameTable();
+    static std::unordered_map<MStringId, MDynamicTypeInfo>&    GetNameTable();
 };
 
 template<typename T> MTypeCreator<T>::MTypeCreator() { MTypeClass::RegisterTypedClass<T>(); }

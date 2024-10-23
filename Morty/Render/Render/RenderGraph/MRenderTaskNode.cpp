@@ -34,17 +34,20 @@ MEngine*      MRenderTaskNode::GetEngine() const { return static_cast<MRenderGra
 
 MRenderGraph* MRenderTaskNode::GetRenderGraph() const { return GetGraph()->DynamicCast<MRenderGraph>(); }
 
-MTexturePtr   MRenderTaskNode::GetInputTexture(const size_t& nIdx)
+MTexturePtr   MRenderTaskNode::GetInputTexture(const size_t& nIdx) const
 {
-    return GetInput(nIdx)->GetLinkedOutput()->DynamicCast<MRenderTaskNodeOutput>()->GetRenderTexture();
+    auto pConnOutput = GetInput(nIdx)->GetLinkedOutput();
+    if (!pConnOutput) return nullptr;
+
+    return static_cast<MRenderTaskNodeOutput*>(pConnOutput)->GetRenderTexture();
 }
 
-MTexturePtr MRenderTaskNode::GetOutputTexture(const size_t& nIdx)
+MTexturePtr MRenderTaskNode::GetOutputTexture(const size_t& nIdx) const
 {
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>()->GetRenderTexture();
 }
 
-MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx)
+MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx) const
 {
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>();
 }
@@ -86,4 +89,38 @@ void MRenderTaskNode::Deserialize(const void* flatbuffer)
 
     MTaskNode::Deserialize(fbRenderNode->super());
     m_strNodeName = MStringId(fbRenderNode->name()->c_str());
+}
+bool MRenderTaskNode::IsValidRenderNode()
+{
+    if (m_validCacheFlag != ValidCacheFlag::EUnknow) { return m_validCacheFlag == ValidCacheFlag::EValid; }
+
+    for (size_t idx = 0; idx < GetInputSize(); ++idx)
+    {
+        auto pInput = static_cast<MRenderTaskNodeInput*>(GetInput(idx));
+        if (!pInput->GetInputDesc().allowEmpty)
+        {
+            auto pConnOutput = static_cast<MRenderTaskNodeOutput*>(pInput->GetLinkedOutput());
+            if (pConnOutput == nullptr)
+            {
+                m_validCacheFlag = ValidCacheFlag::EInvalid;
+                return false;
+            }
+
+            auto pConnNode = pConnOutput->GetTaskNode();
+            if (!static_cast<MRenderTaskNode*>(pConnNode)->IsValidRenderNode())
+            {
+                m_validCacheFlag = ValidCacheFlag::EInvalid;
+                return false;
+            }
+        }
+    }
+
+    m_validCacheFlag = ValidCacheFlag::EValid;
+    return true;
+}
+
+void MRenderTaskNode::OnPreCompile()
+{
+    MTaskNode::OnPreCompile();
+    m_validCacheFlag = ValidCacheFlag::EUnknow;
 }

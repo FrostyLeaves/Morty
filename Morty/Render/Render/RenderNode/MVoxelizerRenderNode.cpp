@@ -340,9 +340,7 @@ void MVoxelizerRenderNode::InitializeRenderPass()
 std::vector<MRenderTaskInputDesc> MVoxelizerRenderNode::InitInputDesc()
 {
     return {
-            {MShadowMapRenderNode::ShadowMapBufferOutput,
-             METextureFormat::Depth,
-             METextureBarrierStage::EPixelShaderSample},
+            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false)// shadow map
     };
 }
 

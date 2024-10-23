@@ -73,10 +73,10 @@ void MDebugRenderNode::Render(const MRenderInfo& info, const std::vector<IRender
 
 std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()
 {
-    return {{MToneMappingRenderNode::ToneMappingResult,
-             METextureFormat::UNorm_RGBA8,
-             METextureBarrierStage::EPixelShaderWrite},
-            {MForwardRenderNode::DepthBufferOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderWrite}};
+    return {
+            MRenderTaskNodeInput::CreatePixelWrite(METextureFormat::UNorm_RGBA8, false),// color buffer
+            MRenderTaskNodeInput::CreateDepth(),                                        // depth buffer
+    };
 }
 
 std::vector<MRenderTaskOutputDesc> MDebugRenderNode::InitOutputDesc()

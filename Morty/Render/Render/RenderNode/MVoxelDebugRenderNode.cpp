@@ -224,9 +224,7 @@ void MVoxelDebugRenderNode::ReleaseDispatcher()
 
 std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 {
-    return {
-            {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureFormat::UNorm_RGBA8, METextureBarrierStage::EUnknow},
-    };
+    return {{METextureFormat::UNorm_RGBA8, false, METextureBarrierStage::EUnknow}};
 }
 
 std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderNode::InitOutputDesc()

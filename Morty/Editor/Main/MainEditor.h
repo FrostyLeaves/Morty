@@ -56,7 +56,7 @@ public:
 
     void                                       OnTick(float fDelta) override;
 
-    static morty::MString                      GetRenderProgramName() { return m_renderProgramName; }
+    static morty::MStringId                    GetRenderProgramName() { return m_renderProgramName; }
 
     MTaskNode*                                 GetRenderTask() override { return m_renderTask; }
 
@@ -91,7 +91,7 @@ private:
 
     IniConfig                              m_IniConfig;
 
-    static MString                         m_renderProgramName;
+    static MStringId                       m_renderProgramName;
     static MString                         m_editorConfigFilePath;
 };
 

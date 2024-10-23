@@ -6,6 +6,7 @@
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MRenderGraph.h"
 #include "Render/RenderGraph/MRenderTaskNode.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
@@ -108,6 +109,9 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
 {
     if (pTaskGraph->NeedCompile() && !pTaskGraph->Compile()) { return; }
 
+    auto pRenderGraph = pTaskGraph->DynamicCast<MRenderGraph>();
+    if (nullptr == pRenderGraph) { return; }
+
     std::vector<MTaskNode*> vNodeStack = pTaskGraph->GetStartNodes();
 
 
@@ -123,7 +127,7 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
             auto pInput           = pCurrentNode->GetInput(nInputIdx);
             auto pPrevProcessNode = pInput->GetLinkedNode()->DynamicCast<MRenderTaskNode>();
 
-            if (IsAllNextNodeHasAlloced(pPrevProcessNode)) { FreeRenderTarget(pPrevProcessNode); }
+            if (pPrevProcessNode && IsAllNextNodeHasAlloced(pPrevProcessNode)) { FreeRenderTarget(pPrevProcessNode); }
         }
 
         for (size_t nOutputIdx = 0; nOutputIdx < pCurrentNode->GetOutputSize(); ++nOutputIdx)
@@ -143,10 +147,11 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
     for (MTaskNode* pNode: pTaskGraph->GetAllNodes())
     {
         auto pRenderNode = pNode->DynamicCast<MRenderTaskNode>();
-        if (pRenderNode)
+        if (pRenderNode && pRenderNode->IsValidRenderNode())
         {
             pRenderNode->BindInOutTexture();
             pRenderNode->RegisterSetting();
+            pRenderNode->Resize(pRenderGraph->GetSize());
         }
     }
 }
@@ -237,9 +242,12 @@ bool MRenderTargetBindingWalker::IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode)
 {
     for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
     {
-        auto pInput    = pNode->GetInput(nInputIdx);
+        auto pInput    = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nInputIdx));
         auto pPrevNode = pInput->GetLinkedNode();
-        if (m_allocedNode.find(pPrevNode) == m_allocedNode.end()) { return false; }
+        if (!pInput->GetInputDesc().allowEmpty && m_allocedNode.find(pPrevNode) == m_allocedNode.end())
+        {
+            return false;
+        }
     }
 
     return true;

@@ -108,8 +108,9 @@ void MTransparentRenderNode::BindInOutTexture()
 {
     std::vector<std::shared_ptr<MShaderTextureParam>>& params =
             m_drawFillMaterial->GetMaterialPropertyBlock()->m_textures;
-    params[0]->SetTexture(GetInputTexture(1));
-    params[1]->SetTexture(GetInputTexture(2));
+
+    if (auto texture = GetInputTexture(1)) { params[0]->SetTexture(texture); }
+    if (auto texture = GetInputTexture(1)) { params[1]->SetTexture(texture); }
 
     Super::BindInOutTexture();
 }
@@ -117,15 +118,9 @@ void MTransparentRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
 {
     return {
-            {MForwardRenderNode::BackBufferOutput,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderWrite},
-            {MDeepPeelRenderNode::FrontTextureOutput,
-             METextureFormat::UNorm_RGBA8,
-             METextureBarrierStage::EPixelShaderSample},
-            {MDeepPeelRenderNode::BackTextureOutput,
-             METextureFormat::UNorm_RGBA8,
-             METextureBarrierStage::EPixelShaderSample},
+            MRenderTaskNodeInput::CreatePixelWrite(MRenderTaskNode::DefaultLinearSpaceFormat, false),// color buffer
+            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false),                 //front buffer
+            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false),                 //back buffer
     };
 }
 

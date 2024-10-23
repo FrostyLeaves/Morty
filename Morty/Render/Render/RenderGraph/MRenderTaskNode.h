@@ -51,6 +51,7 @@ public:
 
     flatbuffers::Offset<void>                               Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
     void                                                    Deserialize(const void* flatbuffer) override;
+    void                                                    OnPreCompile() override;
 
     virtual std::shared_ptr<IShaderPropertyUpdateDecorator> GetFramePropertyDecorator() { return nullptr; }
 
@@ -62,11 +63,21 @@ public:
 
     [[nodiscard]] MEngine*                                  GetEngine() const;
     [[nodiscard]] MRenderGraph*                             GetRenderGraph() const;
-    MTexturePtr                                             GetInputTexture(const size_t& nIdx);
-    MTexturePtr                                             GetOutputTexture(const size_t& nIdx);
-    MRenderTaskNodeOutput*                                  GetRenderOutput(const size_t& nIdx);
+    [[nodiscard]] MTexturePtr                               GetInputTexture(const size_t& nIdx) const;
+    [[nodiscard]] MTexturePtr                               GetOutputTexture(const size_t& nIdx) const;
+    [[nodiscard]] MRenderTaskNodeOutput*                    GetRenderOutput(const size_t& nIdx) const;
+    [[nodiscard]] bool                                      IsValidRenderNode();
 
     static METextureFormat                                  DefaultLinearSpaceFormat;
+
+private:
+    enum ValidCacheFlag
+    {
+        EUnknow  = 0,
+        EInvalid = 1,
+        EValid   = 2,
+    };
+    ValidCacheFlag m_validCacheFlag = ValidCacheFlag::EUnknow;
 };
 
 }// namespace morty

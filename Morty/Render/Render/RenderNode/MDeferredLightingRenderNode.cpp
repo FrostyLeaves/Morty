@@ -94,12 +94,26 @@ void MDeferredLightingRenderNode::BindInOutTexture()
 {
     if (std::shared_ptr<MShaderPropertyBlock> pParams = m_lightningMaterial->GetMaterialPropertyBlock())
     {
-        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, GetInputTexture(0));
-        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, GetInputTexture(1));
-        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, GetInputTexture(2));
-        pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_DEPTH_MAP, GetInputTexture(3));
-
-        if (EnableAO) { pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_SSAO, GetInputTexture(4)); }
+        if (auto texture = GetInputTexture(0))
+        {
+            pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_ALBEDO_METALLIC, texture);
+        }
+        if (auto texture = GetInputTexture(1))
+        {
+            pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_NORMAL_ROUGHNESS, texture);
+        }
+        if (auto texture = GetInputTexture(2))
+        {
+            pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_POSITION_AMBIENTOCC, texture);
+        }
+        if (auto texture = GetInputTexture(3))
+        {
+            pParams->SetTexture(MShaderPropertyName::TEXTURE_SHADOW_MAP, texture);
+        }
+        if (auto texture = GetInputTexture(4))
+        {
+            pParams->SetTexture(MShaderPropertyName::GBUFFER_TEXTURE_SSAO, texture);
+        }
     }
 
     AutoBindBarrierTexture();
@@ -109,19 +123,11 @@ void MDeferredLightingRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
 {
     std::vector<MRenderTaskInputDesc> result = {
-            {MGBufferRenderNode::GBufferAlbedoMetallic,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-            {MGBufferRenderNode::GBufferNormalRoughness,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-            {MGBufferRenderNode::GBufferPositionAmbientOcc,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-            {MShadowMapRenderNode::ShadowMapBufferOutput,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-            {MHBAOBlurRenderNodeH::BlurOutput, METextureFormat::Depth, METextureBarrierStage::EPixelShaderSample}
+            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
+            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
+            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
+            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, true),
+            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, true),
     };
 #if MORTY_VXGI_ENABLE
     {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},

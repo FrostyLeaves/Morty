@@ -93,9 +93,9 @@ void MEntity::DeleteSelf()
 
 flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& builder)
 {
-    MGuid      id = GetID();
-    fbs::MGuid fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
-    auto       fbname = builder.CreateString(GetName());
+    MGuid                                               id = GetID();
+    fbs::MGuid                                          fbguid(id.data[0], id.data[1], id.data[2], id.data[3]);
+    auto                                                fbname = builder.CreateString(GetName());
 
     std::vector<flatbuffers::Offset<fbs::AnyComponent>> vFbComponents;
     std::vector<MComponent*>&&                          vComponents = GetComponents();
@@ -105,15 +105,10 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
         flatbuffers::Offset<void>&&    componentRoot = pComponent->Serialize(compBuilder);
         compBuilder.Finish(componentRoot);
 
-        flatbuffers::Offset<flatbuffers::Vector<uint8_t>>&& fbdata = builder.CreateVector(
-                compBuilder.GetBufferPointer(),
-                compBuilder.GetSize()
-        );
-        flatbuffers::Offset<fbs::AnyComponent>&& fbcomponent = fbs::CreateAnyComponent(
-                builder,
-                builder.CreateString(pComponent->GetTypeName()),
-                fbdata
-        );
+        flatbuffers::Offset<flatbuffers::Vector<uint8_t>>&& fbdata =
+                builder.CreateVector(compBuilder.GetBufferPointer(), compBuilder.GetSize());
+        flatbuffers::Offset<fbs::AnyComponent>&& fbcomponent =
+                fbs::CreateAnyComponent(builder, builder.CreateString(pComponent->GetTypeName().c_str()), fbdata);
 
         vFbComponents.push_back(fbcomponent);
     }
@@ -137,14 +132,13 @@ void MEntity::Deserialize(const void* pBufferPointer)
     //m_id = MGuid(fbguid->data0(), fbguid->data1(), fbguid->data2(), fbguid->data3());
     m_strName = fbEntity->name()->c_str();
 
-    const flatbuffers::Vector<flatbuffers::Offset<fbs::AnyComponent>>& vfbcomponents =
-            *fbEntity->components();
+    const flatbuffers::Vector<flatbuffers::Offset<fbs::AnyComponent>>& vfbcomponents = *fbEntity->components();
 
     for (size_t i = 0; i < vfbcomponents.size(); ++i)
     {
-        auto    fbcomponent = vfbcomponents.Get(static_cast<flatbuffers::uoffset_t>(i));
+        auto                           fbcomponent = vfbcomponents.Get(static_cast<flatbuffers::uoffset_t>(i));
 
-        MString type = fbcomponent->type()->c_str();
+        MStringId                      type = MStringId(fbcomponent->type()->c_str());
 
         const MType*                   pType      = MTypeClass::GetType(type);
         MComponent*                    pComponent = GetScene()->AddComponent(this, pType);
@@ -159,9 +153,6 @@ void MEntity::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
     for (auto& pr: m_components)
     {
-        if (MComponent* pComponent = pr.second)
-        {
-            pComponent->PostDeserialize(tRedirectGuid);
-        }
+        if (MComponent* pComponent = pr.second) { pComponent->PostDeserialize(tRedirectGuid); }
     }
 }

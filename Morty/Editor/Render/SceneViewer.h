@@ -18,19 +18,19 @@ class MIRenderProgram;
 class SceneViewer
 {
 public:
-    void                           Initialize(const MString& viewName, MScene* pScene, const MString& strRenderProgram);
-    void                           Release();
+    void                      Initialize(const MString& viewName, MScene* pScene, const MStringId& strRenderProgram);
+    void                      Release();
 
-    void                           UpdateTexture(MIRenderCommand* pRenderCommand);
-    void                           SetRect(Vector2i pos, Vector2i size);
-    void                           SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
+    void                      UpdateTexture(MIRenderCommand* pRenderCommand);
+    void                      SetRect(Vector2i pos, Vector2i size);
+    void                      SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
 
-    [[nodiscard]] MTexturePtr      GetFinalOutputTexture() const;
-    void                           SetFinalOutput(const size_t nodeId, const size_t nSlotId);
+    [[nodiscard]] MTexturePtr GetFinalOutputTexture() const;
+    void                      SetFinalOutput(const size_t nodeId, const size_t nSlotId);
 
-    [[nodiscard]] MScene*          GetScene() const { return m_scene; }
-    [[nodiscard]] MViewport*       GetViewport() const { return m_renderViewport; }
-    [[nodiscard]] MTaskNode*       GetRenderTask() const { return m_updateTask; }
+    [[nodiscard]] MScene*     GetScene() const { return m_scene; }
+    [[nodiscard]] MViewport*  GetViewport() const { return m_renderViewport; }
+    [[nodiscard]] MTaskNode*  GetRenderTask() const { return m_updateTask; }
     [[nodiscard]] MIRenderProgram* GetRenderProgram() const { return m_renderProgram; }
 
 protected:

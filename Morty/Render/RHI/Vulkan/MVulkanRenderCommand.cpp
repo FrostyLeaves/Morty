@@ -599,8 +599,9 @@ void MVulkanRenderCommand::SetTextureLayout(
 
     for (size_t nTexIdx = 0; nTexIdx < vTextures.size(); ++nTexIdx)
     {
-        MTexture*     pTexture   = vTextures[nTexIdx];
-        auto          textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+        MTexture* pTexture   = vTextures[nTexIdx];
+        auto      textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+        if (textureRHI->vkTextureImage == VK_NULL_HANDLE) { continue; }
 
         VkImageLayout oldLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
         auto          findResult = m_textureLayout.find(pTexture);

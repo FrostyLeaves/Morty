@@ -4,11 +4,12 @@ using namespace morty;
 
 const MType* MTypeClass::GetClassType()
 {
-    static const MType type("MTypeClass", nullptr);
+    static MStringId   basic("MTypeClass");
+    static const MType type(basic, nullptr);
     return &type;
 }
 
-MTypeClass* MTypeClass::New(const MString& strTypeName)
+MTypeClass* MTypeClass::New(const MStringId& strTypeName)
 {
     auto findResult = GetNameTable().find(strTypeName);
     if (findResult != GetNameTable().end()) return findResult->second.m_funcNew();
@@ -24,7 +25,7 @@ MTypeClass* MTypeClass::New(const MType* type)
     return nullptr;
 }
 
-const MType* MTypeClass::GetType(const MString& strTypeName)
+const MType* MTypeClass::GetType(const MStringId& strTypeName)
 {
     auto findResult = GetNameTable().find(strTypeName);
     if (findResult != GetNameTable().end()) return findResult->second.m_type;
@@ -32,14 +33,14 @@ const MType* MTypeClass::GetType(const MString& strTypeName)
     return nullptr;
 }
 
-std::map<MString, MDynamicTypeInfo>& MTypeClass::GetNameTable()
+std::unordered_map<MStringId, MDynamicTypeInfo>& MTypeClass::GetNameTable()
 {
-    static std::map<MString, MDynamicTypeInfo> m;
+    static std::unordered_map<MStringId, MDynamicTypeInfo> m;
     return m;
 }
 
-std::map<const MType*, MDynamicTypeInfo>& MTypeClass::GetTypeTable()
+std::unordered_map<const MType*, MDynamicTypeInfo>& MTypeClass::GetTypeTable()
 {
-    static std::map<const MType*, MDynamicTypeInfo> m;
+    static std::unordered_map<const MType*, MDynamicTypeInfo> m;
     return m;
 }

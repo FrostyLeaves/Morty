@@ -35,11 +35,7 @@ std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()
 {
-    return {
-            {MTransparentRenderNode::BackBufferOutput,
-             MRenderTaskNode::DefaultLinearSpaceFormat,
-             METextureBarrierStage::EPixelShaderSample},
-    };
+    return {MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false)};
 }
 
 std::vector<MRenderTaskOutputDesc> MToneMappingRenderNode::InitOutputDesc()

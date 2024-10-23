@@ -132,6 +132,13 @@ void MShadowMapRenderNode::OnCreated()
 std::vector<MRenderTaskOutputDesc> MShadowMapRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(METextureFormat::Depth, {true, MColor::White}),
+            MRenderTaskNodeOutput::Create(
+                    MTexture::CreateShadowMapArray(
+                            "Cascaded Shadow Map",
+                            MRenderGlobal::SHADOW_TEXTURE_SIZE,
+                            MRenderGlobal::CASCADED_SHADOW_MAP_NUM
+                    ),
+                    {true, MColor::White}
+            ),
     };
 }

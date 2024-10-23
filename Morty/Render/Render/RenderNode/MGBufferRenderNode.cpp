@@ -93,6 +93,6 @@ std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()
             MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
             MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
             MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Depth, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::CreateDepth({true, MColor::Black_T}),
     };
 }
