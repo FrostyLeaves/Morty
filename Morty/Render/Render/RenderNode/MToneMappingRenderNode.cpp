@@ -41,6 +41,6 @@ std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MToneMappingRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(ToneMappingResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
     };
 }

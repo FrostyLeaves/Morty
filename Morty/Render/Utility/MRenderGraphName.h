@@ -7,9 +7,8 @@
 namespace morty
 {
 
-struct MORTY_API MRenderGraphName {
+struct MORTY_API MRenderGraphName{
 
-    static const MStringId VRS_TEXTURE;
 };
 
 }// namespace morty

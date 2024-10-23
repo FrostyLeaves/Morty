@@ -43,6 +43,8 @@ protected:
     MComputeDispatcher*                m_vRSGenerator = nullptr;
 
     Vector2i                           m_texelSize = {8, 8};
+
+    static const MStringId             VRS_TEXTURE;
 };
 
 }// namespace morty

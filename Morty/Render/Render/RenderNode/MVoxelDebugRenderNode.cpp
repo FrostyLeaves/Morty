@@ -37,8 +37,8 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MVoxelDebugRenderNode, ISinglePassRenderNode)
 
 
-const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Voxel Debug Back");
-const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Voxel Debug Depth");
+const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Color Buffer");
+const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Depth Buffer");
 
 
 void            MVoxelDebugRenderNode::OnCreated()
@@ -229,6 +229,6 @@ std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::Create(METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Depth, {true, MColor::Black_T})};
+    return {MRenderTaskNodeOutput::Create(BackBufferOutput, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(DepthBufferOutput, METextureFormat::Depth, {true, MColor::Black_T})};
 }

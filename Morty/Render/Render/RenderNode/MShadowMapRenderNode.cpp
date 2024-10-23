@@ -133,6 +133,7 @@ std::vector<MRenderTaskOutputDesc> MShadowMapRenderNode::InitOutputDesc()
 {
     return {
             MRenderTaskNodeOutput::Create(
+                    ShadowMapBufferOutput,
                     MTexture::CreateShadowMapArray(
                             "Cascaded Shadow Map",
                             MRenderGlobal::SHADOW_TEXTURE_SIZE,

@@ -17,7 +17,7 @@ std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeV::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeV::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::Create(METextureFormat::UNorm_R8, {true, MColor::Black_T, 0})};
+    return {MRenderTaskNodeOutput::Create(BlurOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T, 0})};
 }
 
 MStringId                         MHBAOBlurRenderNodeH::BlurOutput = MStringId("Hbao Blur H");
@@ -29,5 +29,5 @@ std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeH::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeH::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::Create(METextureFormat::UNorm_R8, {true, MColor::Black_T, 0})};
+    return {MRenderTaskNodeOutput::Create(BlurOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T, 0})};
 }

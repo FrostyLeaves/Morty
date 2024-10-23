@@ -34,8 +34,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MForwardRenderNode, ISinglePassRenderNode)
 
-const MStringId MForwardRenderNode::BackBufferOutput  = MStringId("Forward Back");
-const MStringId MForwardRenderNode::DepthBufferOutput = MStringId("Forward Depth");
+const MStringId MForwardRenderNode::BackBufferOutput  = MStringId("Color Buffer");
+const MStringId MForwardRenderNode::DepthBufferOutput = MStringId("Depth Buffer");
 
 
 void            MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
@@ -103,6 +103,6 @@ std::vector<MRenderTaskInputDesc> MForwardRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MForwardRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 0),
-            MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 1)};
+    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0),
+            MRenderTaskNodeOutput::CreateFromInput(DepthBufferOutput, {false, MColor::Black_T}, 1)};
 }

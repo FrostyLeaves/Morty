@@ -348,5 +348,10 @@ std::vector<MRenderTaskOutputDesc> MVoxelizerRenderNode::InitOutputDesc()
 {
     const Vector2i size = Vector2i(MRenderGlobal::VOXEL_VIEWPORT_SIZE, MRenderGlobal::VOXEL_VIEWPORT_SIZE);
 
-    return {MRenderTaskNodeOutput::CreateFixed(METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}, size)};
+    return {MRenderTaskNodeOutput::CreateFixed(
+            VoxelizerBufferOutput,
+            METextureFormat::UNorm_RGBA8,
+            {true, MColor::Black_T},
+            size
+    )};
 }

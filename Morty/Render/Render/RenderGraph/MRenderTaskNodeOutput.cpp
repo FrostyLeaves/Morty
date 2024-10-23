@@ -5,9 +5,14 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderTaskNodeOutput, MTaskNodeOutput)
 
-MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const METextureFormat& format, const MPassTargetDescription& rtDesc)
+MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
+        const MStringId&              name,
+        const METextureFormat&        format,
+        const MPassTargetDescription& rtDesc
+)
 {
     return {
+            .name         = name,
             .texture      = MTexture::CreateRenderTarget("", format),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -17,9 +22,11 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const METextureFormat& forma
     };
 }
 
-MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const MTextureDesc& desc, const MPassTargetDescription& rtDesc)
+MRenderTaskOutputDesc
+MRenderTaskNodeOutput::Create(const MStringId& name, const MTextureDesc& desc, const MPassTargetDescription& rtDesc)
 {
     return {
+            .name         = name,
             .texture      = desc,
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -29,9 +36,10 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(const MTextureDesc& desc, co
     };
 }
 
-MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateDepth(const MPassTargetDescription& rtDesc)
+MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateDepth(const MStringId& name, const MPassTargetDescription& rtDesc)
 {
     return {
+            .name         = name,
             .texture      = MTexture::CreateDepthBuffer(""),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -41,9 +49,11 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateDepth(const MPassTargetDescri
     };
 }
 
-MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFromInput(const MPassTargetDescription& rtDesc, size_t nInputIdx)
+MRenderTaskOutputDesc
+MRenderTaskNodeOutput::CreateFromInput(const MStringId& name, const MPassTargetDescription& rtDesc, size_t nInputIdx)
 {
     return {
+            .name        = name,
             .texture     = MTextureDesc(),
             .renderDesc  = rtDesc,
             .allocPolicy = METextureSourceType::Input,
@@ -52,6 +62,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFromInput(const MPassTargetDe
 }
 
 MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
+        const MStringId&              name,
         const MTextureDesc&           texDesc,
         const MPassTargetDescription& rtDesc,
         float                         scale,
@@ -59,6 +70,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
 )
 {
     return {
+            .name         = name,
             .texture      = texDesc,
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -69,12 +81,14 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
     };
 }
 MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFixed(
+        const MStringId&              name,
         const METextureFormat&        format,
         const MPassTargetDescription& rtDesc,
         const Vector2i&               size
 )
 {
     return {
+            .name         = name,
             .texture      = MTexture::CreateRenderTarget("", format).InitSize(size),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -122,4 +136,6 @@ void MRenderTaskNodeOutput::SetOutputDesc(const MRenderTaskOutputDesc& desc)
     {
         m_desc.texture.strName = GetTaskNode()->GetNodeName().ToString() + "_out_" + MStringUtil::ToString(GetIndex());
     }
+
+    SetName(m_desc.name);
 }

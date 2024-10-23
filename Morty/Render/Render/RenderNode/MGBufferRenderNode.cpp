@@ -18,10 +18,10 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MGBufferRenderNode, ISinglePassRenderNode)
 
-const MStringId MGBufferRenderNode::GBufferAlbedoMetallic     = MStringId("GBuffer Albedo Metallic");
-const MStringId MGBufferRenderNode::GBufferNormalRoughness    = MStringId("GBuffer Normal Roughness");
-const MStringId MGBufferRenderNode::GBufferPositionAmbientOcc = MStringId("GBuffer Position AmbientOcc");
-const MStringId MGBufferRenderNode::GBufferDepthBufferOutput  = MStringId("GBuffer Depth");
+const MStringId MGBufferRenderNode::GBufferAlbedoMetallic     = MStringId("Albedo Metallic");
+const MStringId MGBufferRenderNode::GBufferNormalRoughness    = MStringId("Normal Roughness");
+const MStringId MGBufferRenderNode::GBufferPositionAmbientOcc = MStringId("Position AO");
+const MStringId MGBufferRenderNode::GBufferDepthBufferOutput  = MStringId("Depth Buffer");
 
 void            MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
@@ -90,9 +90,21 @@ void MGBufferRenderNode::BindInOutTexture()
 std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::CreateDepth({true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    GBufferAlbedoMetallic,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::Create(
+                    GBufferNormalRoughness,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::Create(
+                    GBufferPositionAmbientOcc,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::CreateDepth(GBufferDepthBufferOutput, {true, MColor::Black_T}),
     };
 }

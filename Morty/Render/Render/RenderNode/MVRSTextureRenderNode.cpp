@@ -30,8 +30,9 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVRSTextureRenderNode, MRenderTaskNode)
 
+const MStringId MVRSTextureRenderNode::VRS_TEXTURE = MStringId("VRS");
 
-void MVRSTextureRenderNode::OnCreated()
+void            MVRSTextureRenderNode::OnCreated()
 {
     Super::OnCreated();
 
@@ -124,6 +125,7 @@ std::vector<MRenderTaskOutputDesc> MVRSTextureRenderNode::InitOutputDesc()
     const auto n2TexelSize = GetEngine()->FindSystem<MRenderSystem>()->GetDevice()->GetShadingRateTextureTexelSize();
 
     return {MRenderTaskNodeOutput::Create(
+            VRS_TEXTURE,
             MTexture::CreateShadingRate(),
             {false, MColor::Black_T},
             1.0f / static_cast<float>(n2TexelSize.x),

@@ -81,6 +81,6 @@ std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MDebugRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 0),
-            MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 1)};
+    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0),
+            MRenderTaskNodeOutput::CreateFromInput(DepthBufferOutput, {false, MColor::Black_T}, 1)};
 }

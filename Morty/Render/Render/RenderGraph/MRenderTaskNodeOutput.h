@@ -30,6 +30,7 @@ using MEResizePolicy      = morty::fbs::ResizePolicy;
 using MESharedPolicy      = morty::fbs::SharedPolicy;
 
 struct MRenderTaskOutputDesc {
+    MStringId              name;
     MTextureDesc           texture;
     MPassTargetDescription renderDesc;
 
@@ -57,14 +58,25 @@ public:
     bool                                 CanLink(const MTaskNodeInput* pInput) const override;
 
 public:
-    static MRenderTaskOutputDesc Create(const METextureFormat& format, const MPassTargetDescription& rtDesc);
-    static MRenderTaskOutputDesc Create(const MTextureDesc& desc, const MPassTargetDescription& rtDesc);
-    static MRenderTaskOutputDesc CreateDepth(const MPassTargetDescription& rtDesc);
     static MRenderTaskOutputDesc
-    Create(const MTextureDesc& texDesc, const MPassTargetDescription& rtDesc, float scale, size_t texelSize);
+    Create(const MStringId& name, const METextureFormat& format, const MPassTargetDescription& rtDesc);
     static MRenderTaskOutputDesc
-    CreateFixed(const METextureFormat& format, const MPassTargetDescription& rtDesc, const Vector2i& size);
-    static MRenderTaskOutputDesc CreateFromInput(const MPassTargetDescription& rtDesc, size_t nInputIdx);
+    Create(const MStringId& name, const MTextureDesc& desc, const MPassTargetDescription& rtDesc);
+    static MRenderTaskOutputDesc CreateDepth(const MStringId& name, const MPassTargetDescription& rtDesc);
+    static MRenderTaskOutputDesc
+                                 Create(const MStringId&              name,
+                                        const MTextureDesc&           texDesc,
+                                        const MPassTargetDescription& rtDesc,
+                                        float                         scale,
+                                        size_t                        texelSize);
+    static MRenderTaskOutputDesc CreateFixed(
+            const MStringId&              name,
+            const METextureFormat&        format,
+            const MPassTargetDescription& rtDesc,
+            const Vector2i&               size
+    );
+    static MRenderTaskOutputDesc
+    CreateFromInput(const MStringId& name, const MPassTargetDescription& rtDesc, size_t nInputIdx);
 
 private:
     MRenderTaskOutputDesc m_desc;

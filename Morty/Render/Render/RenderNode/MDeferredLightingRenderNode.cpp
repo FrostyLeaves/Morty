@@ -30,7 +30,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
-const MStringId MDeferredLightingRenderNode::DeferredLightingOutput = MStringId("Deferred Lighting");
+const MStringId MDeferredLightingRenderNode::DeferredLightingOutput = MStringId("Color Buffer");
 
 
 void            MDeferredLightingRenderNode::Render(const MRenderInfo& info)
@@ -139,7 +139,11 @@ std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    DeferredLightingOutput,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
     };
 }
 flatbuffers::Offset<void> MDeferredLightingRenderNode::Serialize(flatbuffers::FlatBufferBuilder& fbb)

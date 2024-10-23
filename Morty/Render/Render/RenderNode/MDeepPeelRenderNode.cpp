@@ -26,13 +26,13 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeepPeelRenderNode, ISinglePassRenderNode)
 
-const MStringId MDeepPeelRenderNode::FrontTextureOutput = MStringId("Deep Peel Front");
-const MStringId MDeepPeelRenderNode::BackTextureOutput  = MStringId("Deep Peel Back");
+const MStringId MDeepPeelRenderNode::FrontTextureOutput = MStringId("Front");
+const MStringId MDeepPeelRenderNode::BackTextureOutput  = MStringId("Back");
 const MStringId MDeepPeelRenderNode::DepthOutput[4]     = {
-        MStringId("Deep Peel Front Depth Output 0"),
-        MStringId("Deep Peel Back Depth Output 0"),
-        MStringId("Deep Peel Front Buffer Output 1"),
-        MStringId("Deep Peel Back Depth Output 1"),
+        MStringId("Front Depth 0"),
+        MStringId("Back Depth 0"),
+        MStringId("Front Depth 1"),
+        MStringId("Back Depth 1"),
 };
 
 
@@ -285,11 +285,19 @@ std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MDeepPeelRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(MRenderTaskNode::DefaultLinearSpaceFormat, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::White}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::White}),
-            MRenderTaskNodeOutput::Create(METextureFormat::Float_R32, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    FrontTextureOutput,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::Create(
+                    BackTextureOutput,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::Create(DepthOutput[0], METextureFormat::Float_R32, {true, MColor::White}),
+            MRenderTaskNodeOutput::Create(DepthOutput[1], METextureFormat::Float_R32, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(DepthOutput[2], METextureFormat::Float_R32, {true, MColor::White}),
+            MRenderTaskNodeOutput::Create(DepthOutput[3], METextureFormat::Float_R32, {true, MColor::Black_T}),
     };
 }

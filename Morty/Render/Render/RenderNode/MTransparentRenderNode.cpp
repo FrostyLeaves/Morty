@@ -27,7 +27,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderNode, ISinglePassRenderNode)
 
-const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Transparent Back");
+const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Color Buffer");
 
 
 void            MTransparentRenderNode::OnCreated()
@@ -126,5 +126,5 @@ std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
 
 std::vector<MRenderTaskOutputDesc> MTransparentRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput({false, MColor::Black_T}, 0)};
+    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0)};
 }

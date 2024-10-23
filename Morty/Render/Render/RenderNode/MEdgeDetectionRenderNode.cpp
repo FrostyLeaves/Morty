@@ -40,6 +40,6 @@ std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderNode::InitInputDesc()
 std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(EdgeDetectionResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
     };
 }
