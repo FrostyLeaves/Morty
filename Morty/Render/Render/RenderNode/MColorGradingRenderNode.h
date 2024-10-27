@@ -32,8 +32,6 @@ class MORTY_API MColorGradingRenderNode : public MBasicPostProcessRenderNode
 
     void                       RenderSetup(const MRenderInfo& info) override;
 
-    void                       RegisterSetting() override;
-
 protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
 

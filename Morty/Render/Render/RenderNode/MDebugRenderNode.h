@@ -23,9 +23,6 @@ REFL_RENDER_NODE_CLASS MDebugRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MDebugRenderNode)
 
-    static const MStringId BackBufferOutput;
-    static const MStringId DepthBufferOutput;
-
 public:
     void Render(const MRenderInfo& info) override;
     void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);

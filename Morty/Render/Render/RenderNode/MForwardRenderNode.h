@@ -21,9 +21,6 @@ namespace morty
 REFL_RENDER_NODE_CLASS MForwardRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MForwardRenderNode)
-    static const MStringId BackBufferOutput;
-    static const MStringId DepthBufferOutput;
-
 public:
     void Render(const MRenderInfo& info) override;
 

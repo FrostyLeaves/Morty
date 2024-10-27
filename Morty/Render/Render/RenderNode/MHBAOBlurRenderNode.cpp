@@ -12,7 +12,7 @@ MStringId                         MHBAOBlurRenderNodeV::BlurOutput = MStringId("
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeV::InitInputDesc()
 {
-    return {MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_R8, false)};
+    return {MRenderTaskNodeInput::CreateSample(MRenderGraphName::TextureAO, METextureFormat::UNorm_R8, false)};
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeV::InitOutputDesc()
@@ -24,7 +24,7 @@ MStringId                         MHBAOBlurRenderNodeH::BlurOutput = MStringId("
 
 std::vector<MRenderTaskInputDesc> MHBAOBlurRenderNodeH::InitInputDesc()
 {
-    return {MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_R8, false)};
+    return {MRenderTaskNodeInput::CreateSample(MRenderGraphName::TextureAO, METextureFormat::UNorm_R8, false)};
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAOBlurRenderNodeH::InitOutputDesc()

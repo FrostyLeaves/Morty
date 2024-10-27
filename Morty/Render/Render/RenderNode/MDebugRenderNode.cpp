@@ -33,10 +33,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDebugRenderNode, ISinglePassRenderNode)
 
-const MStringId MDebugRenderNode::BackBufferOutput  = MStringId("Debug Buffer");
-const MStringId MDebugRenderNode::DepthBufferOutput = MStringId("Debug Depth");
-
-void            MDebugRenderNode::Render(const MRenderInfo& info)
+void MDebugRenderNode::Render(const MRenderInfo& info)
 {
     //Current viewport.
     const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
@@ -74,13 +71,17 @@ void MDebugRenderNode::Render(const MRenderInfo& info, const std::vector<IRender
 std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreatePixelWrite(METextureFormat::UNorm_RGBA8, false),// color buffer
-            MRenderTaskNodeInput::CreateDepth(),                                        // depth buffer
+            MRenderTaskNodeInput::CreatePixelWrite(
+                    MRenderGraphName::ColorBuffer,
+                    METextureFormat::UNorm_RGBA8,
+                    false
+            ),                                                               // color buffer
+            MRenderTaskNodeInput::CreateDepth(MRenderGraphName::DepthBuffer),// depth buffer
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MDebugRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0),
-            MRenderTaskNodeOutput::CreateFromInput(DepthBufferOutput, {false, MColor::Black_T}, 1)};
+    return {MRenderTaskNodeOutput::CreateFromInput(MRenderGraphName::ColorBuffer, {false, MColor::Black_T}, 0),
+            MRenderTaskNodeOutput::CreateFromInput(MRenderGraphName::DepthBuffer, {false, MColor::Black_T}, 1)};
 }

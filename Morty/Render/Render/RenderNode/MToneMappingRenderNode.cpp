@@ -15,8 +15,6 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            MToneMappingRenderNode::ToneMappingResult = MStringId("Tone Mapping");
-
 std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 {
     MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
@@ -35,12 +33,20 @@ std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()
 {
-    return {MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false)};
+    return {MRenderTaskNodeInput::CreateSample(
+            MRenderGraphName::ColorBuffer,
+            MRenderTaskNode::DefaultLinearSpaceFormat,
+            false
+    )};
 }
 
 std::vector<MRenderTaskOutputDesc> MToneMappingRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(ToneMappingResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    MRenderGraphName::ToneMapping,
+                    METextureFormat::UNorm_RGBA8,
+                    {true, MColor::Black_T}
+            ),
     };
 }

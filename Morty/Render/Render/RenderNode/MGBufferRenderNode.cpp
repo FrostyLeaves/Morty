@@ -18,12 +18,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MGBufferRenderNode, ISinglePassRenderNode)
 
-const MStringId MGBufferRenderNode::GBufferAlbedoMetallic     = MStringId("Albedo Metallic");
-const MStringId MGBufferRenderNode::GBufferNormalRoughness    = MStringId("Normal Roughness");
-const MStringId MGBufferRenderNode::GBufferPositionAmbientOcc = MStringId("Position AO");
-const MStringId MGBufferRenderNode::GBufferDepthBufferOutput  = MStringId("Depth Buffer");
 
-void            MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+void MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
     MIRenderCommand* pCommand  = info.pPrimaryRenderCommand;
     const Vector2i   v2LeftTop = info.f2ViewportLeftTop;
@@ -91,20 +87,20 @@ std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()
 {
     return {
             MRenderTaskNodeOutput::Create(
-                    GBufferAlbedoMetallic,
+                    MRenderGraphName::GBuffer[0],
                     MRenderTaskNode::DefaultLinearSpaceFormat,
                     {true, MColor::Black_T}
             ),
             MRenderTaskNodeOutput::Create(
-                    GBufferNormalRoughness,
+                    MRenderGraphName::GBuffer[1],
                     MRenderTaskNode::DefaultLinearSpaceFormat,
                     {true, MColor::Black_T}
             ),
             MRenderTaskNodeOutput::Create(
-                    GBufferPositionAmbientOcc,
+                    MRenderGraphName::GBuffer[2],
                     MRenderTaskNode::DefaultLinearSpaceFormat,
                     {true, MColor::Black_T}
             ),
-            MRenderTaskNodeOutput::CreateDepth(GBufferDepthBufferOutput, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::CreateDepth(MRenderGraphName::DepthBuffer, {true, MColor::Black_T}),
     };
 }

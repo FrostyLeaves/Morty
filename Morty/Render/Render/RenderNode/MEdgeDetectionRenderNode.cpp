@@ -14,8 +14,6 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MEdgeDetectionRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            MEdgeDetectionRenderNode::EdgeDetectionResult = MStringId("Edge Detection");
-
 std::shared_ptr<MMaterial> MEdgeDetectionRenderNode::CreateMaterial()
 {
     MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
@@ -34,12 +32,20 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderNode::CreateMaterial()
 
 std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderNode::InitInputDesc()
 {
-    return {MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false)};
+    return {MRenderTaskNodeInput::CreateSample(
+            MRenderGraphName::DepthBuffer,
+            MRenderTaskNode::DefaultLinearSpaceFormat,
+            false
+    )};
 }
 
 std::vector<MRenderTaskOutputDesc> MEdgeDetectionRenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(EdgeDetectionResult, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    MRenderGraphName::EdgeDetection,
+                    METextureFormat::UNorm_RGBA8,
+                    {true, MColor::Black_T}
+            ),
     };
 }

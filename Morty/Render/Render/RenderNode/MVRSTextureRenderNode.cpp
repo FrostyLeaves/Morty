@@ -30,14 +30,12 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVRSTextureRenderNode, MRenderTaskNode)
 
-const MStringId MVRSTextureRenderNode::VRS_TEXTURE = MStringId("VRS");
-
-void            MVRSTextureRenderNode::OnCreated()
+void MVRSTextureRenderNode::OnCreated()
 {
     Super::OnCreated();
 
-    auto           pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto  pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     m_texelSize = pRenderSystem->GetDevice()->GetShadingRateTextureTexelSize();
 
@@ -116,7 +114,11 @@ void MVRSTextureRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MVRSTextureRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false)// edge detection
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::EdgeDetection,
+                    METextureFormat::UNorm_RGBA8,
+                    false
+            )// edge detection
     };
 }
 
@@ -125,7 +127,7 @@ std::vector<MRenderTaskOutputDesc> MVRSTextureRenderNode::InitOutputDesc()
     const auto n2TexelSize = GetEngine()->FindSystem<MRenderSystem>()->GetDevice()->GetShadingRateTextureTexelSize();
 
     return {MRenderTaskNodeOutput::Create(
-            VRS_TEXTURE,
+            MRenderGraphName::TextureVRS,
             MTexture::CreateShadingRate(),
             {false, MColor::Black_T},
             1.0f / static_cast<float>(n2TexelSize.x),

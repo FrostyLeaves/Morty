@@ -24,8 +24,6 @@ REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNod
     MORTY_CLASS(MDeferredLightingRenderNode)
 
 public:
-    static const MStringId    DeferredLightingOutput;
-
     void                      OnCreated() override;
     void                      Release() override;
     void                      Render(const MRenderInfo& info) override;

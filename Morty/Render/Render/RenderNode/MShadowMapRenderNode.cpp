@@ -30,7 +30,6 @@
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MShadowMapRenderNode, ISinglePassRenderNode)
-const MStringId MShadowMapRenderNode::ShadowMapBufferOutput = MStringId("Shadow Map");
 
 class ShadowMapTexture : public IGetTextureAdapter
 {
@@ -133,7 +132,7 @@ std::vector<MRenderTaskOutputDesc> MShadowMapRenderNode::InitOutputDesc()
 {
     return {
             MRenderTaskNodeOutput::Create(
-                    ShadowMapBufferOutput,
+                    MRenderGraphName::ShadowMap,
                     MTexture::CreateShadowMapArray(
                             "Cascaded Shadow Map",
                             MRenderGlobal::SHADOW_TEXTURE_SIZE,

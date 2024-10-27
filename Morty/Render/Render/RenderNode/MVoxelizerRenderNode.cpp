@@ -38,8 +38,6 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVoxelizerRenderNode, ISinglePassRenderNode)
 
-const MStringId MVoxelizerRenderNode::VoxelizerBufferOutput = MStringId("Voxelizer Buffer");
-
 class MVoxelMapPropertyDecorator : public IShaderPropertyUpdateDecorator
 {
 public:
@@ -340,7 +338,7 @@ void MVoxelizerRenderNode::InitializeRenderPass()
 std::vector<MRenderTaskInputDesc> MVoxelizerRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false)// shadow map
+            MRenderTaskNodeInput::CreateSample(MRenderGraphName::ShadowMap, METextureFormat::Depth, false)// shadow map
     };
 }
 
@@ -349,7 +347,7 @@ std::vector<MRenderTaskOutputDesc> MVoxelizerRenderNode::InitOutputDesc()
     const Vector2i size = Vector2i(MRenderGlobal::VOXEL_VIEWPORT_SIZE, MRenderGlobal::VOXEL_VIEWPORT_SIZE);
 
     return {MRenderTaskNodeOutput::CreateFixed(
-            VoxelizerBufferOutput,
+            MRenderGraphName::Voxelizer,
             METextureFormat::UNorm_RGBA8,
             {true, MColor::Black_T},
             size

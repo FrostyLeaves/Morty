@@ -42,14 +42,6 @@ void MColorGradingRenderNode::RenderSetup(const MRenderInfo& info)
     if (GetRenderGraph()->GetRenderGraphSetting()->IsDirty(GetNodeName())) {}
 }
 
-void MColorGradingRenderNode::RegisterSetting()
-{
-    MVariantStruct ColorGradingSetting;
-    MVariantStructBuilder(ColorGradingSetting).Finish();
-
-    GetRenderGraph()->GetRenderGraphSetting()->RegisterProperty(GetNodeName(), ColorGradingSetting);
-}
-
 std::vector<MRenderTaskInputDesc> MColorGradingRenderNode::InitInputDesc()
 {
     return {

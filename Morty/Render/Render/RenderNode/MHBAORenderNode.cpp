@@ -16,8 +16,6 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MHBAORenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            MHBAORenderNode::HBAOOutput = MStringId("HBAO");
-
 const MStringId            HbaoRadius       = MStringId("HBAO Radius");
 const MStringId            HbaoNearestScale = MStringId("HBAO Nearest Scale");
 const MStringId            HbaoOtherScale   = MStringId("HBAO Other Scale");
@@ -42,59 +40,46 @@ std::shared_ptr<MMaterial> MHBAORenderNode::CreateMaterial()
 
 void MHBAORenderNode::RenderSetup(const MRenderInfo& info)
 {
-    auto        setting = GetRenderGraph()->GetRenderGraphSetting()->GetValue<MVariantStruct>(GetNodeName());
-    const float fRadius = setting.GetVariant<float>(HbaoRadius);
+    auto setting = GetRenderGraph()->GetRenderGraphSetting()->GetValue<MVariantStruct>(GetNodeName());
 
-    if (GetRenderGraph()->GetRenderGraphSetting()->IsDirty(GetNodeName()))
-    {
-        const float fNearestAoScale = setting.GetVariant<float>(HbaoNearestScale);
-        const float fOtherAoScale   = setting.GetVariant<float>(HbaoOtherScale);
-        const float fNDotVBias      = setting.GetVariant<float>(HbaoNDotVBias);
-
-        m_material->SetValue(MShaderPropertyName::HBAO_NEAREST_AO_SCALE, fNearestAoScale);
-        m_material->SetValue(MShaderPropertyName::HBAO_OTHER_AO_SCALE, fOtherAoScale);
-        m_material->SetValue(MShaderPropertyName::HBAO_NDOTV_BIAS, fNDotVBias);
-        m_material->SetValue(MShaderPropertyName::HBAO_RADIUS_UV_SQUARE_NEG_INV, -1.0f / (fRadius * fRadius));
-    }
+    m_material->SetValue(MShaderPropertyName::HBAO_NEAREST_AO_SCALE, HbaoNearestScale);
+    m_material->SetValue(MShaderPropertyName::HBAO_OTHER_AO_SCALE, HbaoOtherScale);
+    m_material->SetValue(MShaderPropertyName::HBAO_NDOTV_BIAS, HbaoNDotVBias);
+    m_material->SetValue(MShaderPropertyName::HBAO_RADIUS_UV_SQUARE_NEG_INV, -1.0f / (HbaoRadius * HbaoRadius));
 
     const float fFocalX    = info.m4ProjectionMatrix.m[0][0];
     const float fFocalY    = info.m4ProjectionMatrix.m[1][1];
-    const float fInvFocalX = 1.0 / fFocalX;
-    const float fInvFocalY = 1.0 / fFocalY;
+    const float fInvFocalX = 1.0f / fFocalX;
+    const float fInvFocalY = 1.0f / fFocalY;
 
     // View_xy = (uv * 2 - 1) * (invFocalX, invFocalY)
-    Vector4     f4UVToView = Vector4(2.0 * fInvFocalX, -2.0 * fInvFocalY, -1.0 * fInvFocalX, 1.0 * fInvFocalY);
+    Vector4     f4UVToView = Vector4(2.0f * fInvFocalX, -2.0f * fInvFocalY, -1.0f * fInvFocalX, 1.0f * fInvFocalY);
     m_material->SetValue(MShaderPropertyName::HBAO_UV_TO_VIEW, f4UVToView);
 
 
     const float fFocalLength = info.m4ProjectionMatrix.m[0][0];
-    const float fRadiusUV    = 0.5f * fRadius * fFocalLength;
-    const float fRadiusPixel = fRadiusUV * info.f2ViewportSize.y;
+    const float fRadiusUV    = 0.5f * HbaoRadius * fFocalLength;
+    const float fRadiusPixel = fRadiusUV * static_cast<float>(info.f2ViewportSize.y);
     m_material->SetValue(MShaderPropertyName::HBAO_RADIUS_PIXEL, fRadiusPixel);
-}
-
-void MHBAORenderNode::RegisterSetting()
-{
-    MVariantStruct HbaoSetting;
-    MVariantStructBuilder(HbaoSetting)
-            .AppendVariant(HbaoRadius, 2.0f)
-            .AppendVariant(HbaoNearestScale, 1.0f)
-            .AppendVariant(HbaoOtherScale, 1.0f)
-            .AppendVariant(HbaoNDotVBias, 0.2f)
-            .Finish();
-
-    GetRenderGraph()->GetRenderGraphSetting()->RegisterProperty(GetNodeName(), HbaoSetting);
 }
 
 std::vector<MRenderTaskInputDesc> MHBAORenderNode::InitInputDesc()
 {
-    return {MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false)};
+    return {MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::GBuffer[1],
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),
+            MRenderTaskNodeInput::CreateSample(MRenderGraphName::DepthBuffer, METextureFormat::Depth, false)};
 }
 
 std::vector<MRenderTaskOutputDesc> MHBAORenderNode::InitOutputDesc()
 {
     return {
-            MRenderTaskNodeOutput::Create(HBAOOutput, METextureFormat::UNorm_R8, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::Create(
+                    MRenderGraphName::TextureAO,
+                    METextureFormat::UNorm_R8,
+                    {true, MColor::Black_T}
+            ),
     };
 }

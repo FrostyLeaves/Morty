@@ -24,6 +24,7 @@ class MRenderGraph;
 class MRenderPass;
 
 struct MRenderTaskInputDesc {
+    MStringId             name;
     METextureFormat       format     = METextureFormat::UNorm_RGBA8;
     bool                  allowEmpty = false;
     METextureBarrierStage barrier    = METextureBarrierStage::EPixelShaderSample;
@@ -33,13 +34,13 @@ class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput
 {
     MORTY_CLASS(MRenderTaskNodeInput)
 
-    void                               SetInputDesc(const MRenderTaskInputDesc& desc) { m_desc = desc; }
+    void                               SetInputDesc(const MRenderTaskInputDesc& desc);
     [[nodiscard]] MRenderTaskInputDesc GetInputDesc() const { return m_desc; }
     [[nodiscard]] METextureFormat      GetFormat() const { return m_desc.format; }
 
-    static MRenderTaskInputDesc        CreateSample(METextureFormat format, bool allowEmpty);
-    static MRenderTaskInputDesc        CreatePixelWrite(METextureFormat format, bool allowEmpty);
-    static MRenderTaskInputDesc        CreateDepth();
+    static MRenderTaskInputDesc        CreateSample(const MStringId& name, METextureFormat format, bool allowEmpty);
+    static MRenderTaskInputDesc        CreatePixelWrite(const MStringId& name, METextureFormat format, bool allowEmpty);
+    static MRenderTaskInputDesc        CreateDepth(const MStringId& name);
 
 private:
     MRenderTaskInputDesc m_desc;

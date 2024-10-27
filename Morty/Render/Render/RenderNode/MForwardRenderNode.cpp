@@ -34,11 +34,8 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MForwardRenderNode, ISinglePassRenderNode)
 
-const MStringId MForwardRenderNode::BackBufferOutput  = MStringId("Color Buffer");
-const MStringId MForwardRenderNode::DepthBufferOutput = MStringId("Depth Buffer");
 
-
-void            MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
+void MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
     MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
@@ -95,14 +92,22 @@ void MForwardRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MForwardRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),// color buffer
-            MRenderTaskNodeInput::CreateDepth(),                                                 //depth buffer
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false),                   //shadow map buffer
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::ColorBuffer,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),                                                               // color buffer
+            MRenderTaskNodeInput::CreateDepth(MRenderGraphName::DepthBuffer),//depth buffer
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::ShadowMap,
+                    METextureFormat::Depth,
+                    false
+            ),//shadow map buffer
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MForwardRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0),
-            MRenderTaskNodeOutput::CreateFromInput(DepthBufferOutput, {false, MColor::Black_T}, 1)};
+    return {MRenderTaskNodeOutput::CreateFromInput(MRenderGraphName::ColorBuffer, {false, MColor::Black_T}, 0),
+            MRenderTaskNodeOutput::CreateFromInput(MRenderGraphName::DepthBuffer, {false, MColor::Black_T}, 1)};
 }

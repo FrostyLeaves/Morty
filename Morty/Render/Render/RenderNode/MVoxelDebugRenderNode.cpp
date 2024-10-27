@@ -36,12 +36,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MVoxelDebugRenderNode, ISinglePassRenderNode)
 
-
-const MStringId MVoxelDebugRenderNode::BackBufferOutput  = MStringId("Color Buffer");
-const MStringId MVoxelDebugRenderNode::DepthBufferOutput = MStringId("Depth Buffer");
-
-
-void            MVoxelDebugRenderNode::OnCreated()
+void MVoxelDebugRenderNode::OnCreated()
 {
     Super::OnCreated();
 
@@ -224,11 +219,19 @@ void MVoxelDebugRenderNode::ReleaseDispatcher()
 
 std::vector<MRenderTaskInputDesc> MVoxelDebugRenderNode::InitInputDesc()
 {
-    return {{METextureFormat::UNorm_RGBA8, false, METextureBarrierStage::EUnknow}};
+    return {{MRenderGraphName::Voxelizer, METextureFormat::UNorm_RGBA8, false, METextureBarrierStage::EUnknow}};
 }
 
 std::vector<MRenderTaskOutputDesc> MVoxelDebugRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::Create(BackBufferOutput, METextureFormat::UNorm_RGBA8, {true, MColor::Black_T}),
-            MRenderTaskNodeOutput::Create(DepthBufferOutput, METextureFormat::Depth, {true, MColor::Black_T})};
+    return {MRenderTaskNodeOutput::Create(
+                    MRenderGraphName::ColorBuffer,
+                    METextureFormat::UNorm_RGBA8,
+                    {true, MColor::Black_T}
+            ),
+            MRenderTaskNodeOutput::Create(
+                    MRenderGraphName::DepthBuffer,
+                    METextureFormat::Depth,
+                    {true, MColor::Black_T}
+            )};
 }

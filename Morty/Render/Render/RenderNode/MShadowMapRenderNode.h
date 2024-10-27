@@ -25,7 +25,6 @@ class MIRenderCommand;
 REFL_RENDER_NODE_CLASS MShadowMapRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MShadowMapRenderNode)
-    static const MStringId ShadowMapBufferOutput;
 
 public:
     void Render(const MRenderInfo& info) override;

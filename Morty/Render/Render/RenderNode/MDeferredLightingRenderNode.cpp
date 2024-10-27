@@ -30,10 +30,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
-const MStringId MDeferredLightingRenderNode::DeferredLightingOutput = MStringId("Color Buffer");
-
-
-void            MDeferredLightingRenderNode::Render(const MRenderInfo& info)
+void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
 {
     MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
     if (!pMeshManager)
@@ -123,11 +120,23 @@ void MDeferredLightingRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MDeferredLightingRenderNode::InitInputDesc()
 {
     std::vector<MRenderTaskInputDesc> result = {
-            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
-            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
-            MRenderTaskNodeInput::CreateSample(MRenderTaskNode::DefaultLinearSpaceFormat, false),
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, true),
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, true),
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::GBuffer[0],
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::GBuffer[1],
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::GBuffer[2],
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),
+            MRenderTaskNodeInput::CreateSample(MRenderGraphName::ShadowMap, METextureFormat::Depth, true),
+            MRenderTaskNodeInput::CreateSample(MRenderGraphName::TextureAO, METextureFormat::Depth, true),
     };
 #if MORTY_VXGI_ENABLE
     {MVoxelizerRenderNode::VoxelizerBufferOutput, METextureBarrierStage::EUnknow},
@@ -140,7 +149,7 @@ std::vector<MRenderTaskOutputDesc> MDeferredLightingRenderNode::InitOutputDesc()
 {
     return {
             MRenderTaskNodeOutput::Create(
-                    DeferredLightingOutput,
+                    MRenderGraphName::ColorBuffer,
                     MRenderTaskNode::DefaultLinearSpaceFormat,
                     {true, MColor::Black_T}
             ),

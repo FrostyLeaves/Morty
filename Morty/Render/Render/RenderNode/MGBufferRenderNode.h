@@ -22,11 +22,6 @@ REFL_RENDER_NODE_CLASS MGBufferRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MGBufferRenderNode)
 
-    static const MStringId GBufferAlbedoMetallic;
-    static const MStringId GBufferNormalRoughness;
-    static const MStringId GBufferPositionAmbientOcc;
-    static const MStringId GBufferDepthBufferOutput;
-
 public:
     void                             Render(const MRenderInfo& info) override;
     void                             Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);

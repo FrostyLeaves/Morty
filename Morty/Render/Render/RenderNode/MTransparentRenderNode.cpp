@@ -27,10 +27,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MTransparentRenderNode, ISinglePassRenderNode)
 
-const MStringId MTransparentRenderNode::BackBufferOutput = MStringId("Color Buffer");
-
-
-void            MTransparentRenderNode::OnCreated()
+void MTransparentRenderNode::OnCreated()
 {
     Super::OnCreated();
 
@@ -118,13 +115,25 @@ void MTransparentRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreatePixelWrite(MRenderTaskNode::DefaultLinearSpaceFormat, false),// color buffer
-            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false),                 //front buffer
-            MRenderTaskNodeInput::CreateSample(METextureFormat::UNorm_RGBA8, false),                 //back buffer
+            MRenderTaskNodeInput::CreatePixelWrite(
+                    MRenderGraphName::ColorBuffer,
+                    MRenderTaskNode::DefaultLinearSpaceFormat,
+                    false
+            ),// color buffer
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::TransparentFront,
+                    METextureFormat::UNorm_RGBA8,
+                    false
+            ),//front buffer
+            MRenderTaskNodeInput::CreateSample(
+                    MRenderGraphName::TransparentBack,
+                    METextureFormat::UNorm_RGBA8,
+                    false
+            ),//back buffer
     };
 }
 
 std::vector<MRenderTaskOutputDesc> MTransparentRenderNode::InitOutputDesc()
 {
-    return {MRenderTaskNodeOutput::CreateFromInput(BackBufferOutput, {false, MColor::Black_T}, 0)};
+    return {MRenderTaskNodeOutput::CreateFromInput(MRenderGraphName::ColorBuffer, {false, MColor::Black_T}, 0)};
 }

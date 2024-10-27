@@ -24,8 +24,6 @@ class MORTY_API MToneMappingRenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MToneMappingRenderNode)
 
-    static const MStringId     ToneMappingResult;
-
     std::shared_ptr<MMaterial> CreateMaterial() override;
 
 protected:

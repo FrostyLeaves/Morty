@@ -278,7 +278,7 @@ void MDeepPeelRenderNode::BindInOutTexture()
 std::vector<MRenderTaskInputDesc> MDeepPeelRenderNode::InitInputDesc()
 {
     return {
-            MRenderTaskNodeInput::CreateSample(METextureFormat::Depth, false),
+            MRenderTaskNodeInput::CreateSample(MRenderGraphName::DepthBuffer, METextureFormat::Depth, false),
     };
 }
 

@@ -24,8 +24,6 @@ REFL_RENDER_NODE_CLASS MEdgeDetectionRenderNode : public MBasicPostProcessRender
 {
     MORTY_CLASS(MEdgeDetectionRenderNode)
 
-    static const MStringId     EdgeDetectionResult;
-
     std::shared_ptr<MMaterial> CreateMaterial() override;
 
 protected:

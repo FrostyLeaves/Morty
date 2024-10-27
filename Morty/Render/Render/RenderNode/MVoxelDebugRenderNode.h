@@ -26,9 +26,6 @@ class MORTY_API MVoxelDebugRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MVoxelDebugRenderNode)
 
-    static const MStringId                          BackBufferOutput;
-    static const MStringId                          DepthBufferOutput;
-
     void                                            OnCreated() override;
 
     void                                            Release() override;

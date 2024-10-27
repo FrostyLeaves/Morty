@@ -32,8 +32,6 @@ class MORTY_API MTransparentRenderNode : public ISinglePassRenderNode
 public:
     MORTY_CLASS(MTransparentRenderNode);
 
-    static const MStringId BackBufferOutput;
-
 public:
     void OnCreated() override;
 
