@@ -10,6 +10,8 @@ class MTaskNode;
 class MRenderGraph;
 class MIRenderProgram;
 class MRenderTaskNode;
+class MRenderTaskNodeInput;
+class MRenderTaskNodeOutput;
 class EditRenderTaskNodeBase;
 class RenderGraphView : public BaseWidget
 {
@@ -31,6 +33,12 @@ public:
     [[nodiscard]] size_t GetFinalOutputNodeId() const { return m_finalOutputNodeId; }
     [[nodiscard]] size_t GetFinalOutputSlotId() const { return m_finalOutputSlotId; }
 
+
+protected:
+    static void  SetupLinkStyle(MRenderTaskNodeInput* pInput);
+    static void  SetupLinkStyle(MRenderTaskNodeOutput* pOutput);
+    static float GetNodeWidth(MRenderTaskNode* pNode);
+    static void  ResetLinkStyle();
 
 private:
     void DrawMenu();

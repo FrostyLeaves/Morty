@@ -182,11 +182,11 @@ void MRenderModule::RegisterMaterial(MEngine* pEngine)
     frame_mat->LoadShader(universal_vs);
     frame_mat->LoadShader(gbuffer_ps);
 
-    const auto basic_ps  = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
-    const auto basic_mat = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::BASIC_LIGHTING);
-    basic_mat->SetCullMode(MECullMode::ECullBack);
-    basic_mat->LoadShader(universal_vs);
-    basic_mat->LoadShader(basic_ps);
+    //const auto basic_ps  = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
+    //const auto basic_mat = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::BASIC_LIGHTING);
+    //basic_mat->SetCullMode(MECullMode::ECullBack);
+    //basic_mat->LoadShader(universal_vs);
+    //basic_mat->LoadShader(basic_ps);
 
     const auto basic_ske_mat =
             pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::BASIC_LIGHTING_SKELETON);

@@ -145,6 +145,27 @@ std::vector<MTaskNode*> MTaskGraph::GetAllNodes() const
     return vNodes;
 }
 
+bool MTaskGraph::CheckCycle(MTaskNode* pPrevNode, MTaskNode* pNextNode)
+{
+    std::queue<MTaskNode*> queue;
+    queue.emplace(pPrevNode);
+    
+    while (!queue.empty())
+    {
+        auto node = queue.front();
+        queue.pop();
+
+        if (pNextNode == node) { return true; }
+
+        for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
+        {
+            if (auto linkedNode = node->GetInput(nInputIdx)->GetLinkedNode()) { queue.emplace(linkedNode); }
+        }
+    }
+
+    return false;
+}
+
 MTaskNode* MTaskGraph::FindTaskNode(size_t id) const
 {
     auto findResult = m_taskNode.find(id);

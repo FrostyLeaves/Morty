@@ -87,41 +87,6 @@ std::shared_ptr<IGetTextureAdapter> MShadowMapRenderNode::GetShadowMap() const
     return pShadowMap;
 }
 
-class MORTY_API MShadowPropertyDecorator : public IShaderPropertyUpdateDecorator
-{
-public:
-    explicit MShadowPropertyDecorator(MShadowMapRenderNode* pOwner)
-        : m_owner(pOwner)
-    {}
-
-    void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) override
-    {
-        MORTY_ASSERT(
-                m_shadowTextureParam = pShaderPropertyBlock->FindTextureParam(MShaderPropertyName::TEXTURE_SHADOW_MAP)
-        );
-    }
-
-    void Update(const MRenderInfo& info) override
-    {
-        MORTY_UNUSED(info);
-
-        const auto pTexture = m_owner->GetShadowMap()->GetTexture();
-        if (m_shadowTextureParam && m_shadowTextureParam->GetTexture() != pTexture)
-        {
-            m_shadowTextureParam->SetTexture(pTexture);
-        }
-    }
-
-    std::shared_ptr<MShaderTextureParam> m_shadowTextureParam = nullptr;
-
-    MShadowMapRenderNode*                m_owner = nullptr;
-};
-
-std::shared_ptr<IShaderPropertyUpdateDecorator> MShadowMapRenderNode::GetFramePropertyDecorator()
-{
-    return std::make_shared<MShadowPropertyDecorator>(this);
-}
-
 void MShadowMapRenderNode::OnCreated()
 {
     Super::OnCreated();

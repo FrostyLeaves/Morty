@@ -139,13 +139,17 @@ void RenderGraphView::DrawGraphView()
             ImGui::TextUnformatted(pNode->GetNodeName().ToString().c_str());
             ImNodes::EndNodeTitleBar();
 
+            float nodeWidth = GetNodeWidth(static_cast<MRenderTaskNode*>(pNode));
+
             //input
             for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
             {
-                auto pNodeInput = pNode->GetInput(nIdx);
+                auto pNodeInput = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nIdx));
+                SetupLinkStyle(pNodeInput);
                 ImNodes::BeginInputAttribute(GetInputSlotId(pNodeInput));
                 ImGui::Text("%s", pNodeInput->GetName().c_str());
                 ImNodes::EndInputAttribute();
+                ResetLinkStyle();
             }
 
             auto         property = pRenderGraph->GetRenderGraphSetting()->GetPropertyVariant(pNode->GetNodeName());
@@ -155,10 +159,17 @@ void RenderGraphView::DrawGraphView()
             //output
             for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
             {
-                auto pNodeOutput = pNode->GetOutput(nIdx);
+                auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(pNode->GetOutput(nIdx));
+                SetupLinkStyle(pNodeOutput);
                 ImNodes::BeginOutputAttribute(GetOutputSlotId(pNodeOutput));
                 bool check = pNode->GetNodeID() == m_finalOutputNodeId && nIdx == m_finalOutputSlotId;
-                if (ImGui::Checkbox(pNodeOutput->GetName().ToString().c_str(), &check))
+
+                ImGui::SetCursorPosX(
+                        ImGui::GetCursorPosX() + nodeWidth - ImGui::CalcTextSize(pNodeOutput->GetName().c_str()).x - 4
+                );
+                ImGui::TextUnformatted(pNodeOutput->GetName().ToString().c_str());
+                ImGui::SameLine(nodeWidth);
+                if (ImGui::Checkbox("", &check))
                 {
                     m_finalOutputNodeId = pNode->GetNodeID();
                     m_finalOutputSlotId = nIdx;
@@ -166,6 +177,7 @@ void RenderGraphView::DrawGraphView()
                 }
 
                 ImNodes::EndOutputAttribute();
+                ResetLinkStyle();
             }
         }
         ImNodes::EndNode();
@@ -222,7 +234,7 @@ void RenderGraphView::DrawGraphView()
         auto   pInput      = pInputNode->GetInput(inputSlotId)->DynamicCast<MRenderTaskNodeInput>();
         auto   pOutput     = pOutputNode->GetOutput(outputSlotId)->DynamicCast<MRenderTaskNodeOutput>();
 
-        if (pInput && pOutput)
+        if (pInput && pOutput && !pRenderGraph->CheckCycle(pOutputNode, pInputNode))
         {
             if (pOutput->LinkTo(pInput)) { pRenderGraph->RequireCompile(); }
         }
@@ -352,6 +364,60 @@ void RenderGraphView::ProcessDialog()
     }
 }
 
-void RenderGraphView::LoadGraph(const std::vector<MByte>& buffer) { m_renderProgram->LoadGraph(buffer); }
+void    RenderGraphView::LoadGraph(const std::vector<MByte>& buffer) { m_renderProgram->LoadGraph(buffer); }
 
-void RenderGraphView::SaveGraph(std::vector<MByte>& buffer) { m_renderProgram->SaveGraph(buffer); }
+void    RenderGraphView::SaveGraph(std::vector<MByte>& buffer) { m_renderProgram->SaveGraph(buffer); }
+
+ImColor GetColorFromTextureFormat(METextureFormat format)
+{
+
+    static ImColor                                      AllowEmptyColor  = ImColor(230, 155, 3);
+    static ImColor                                      DefaultLinkColor = ImColor(225, 238, 210);
+
+    static std::unordered_map<METextureFormat, ImColor> ColorTable = {
+            {METextureFormat ::Unknow, DefaultLinkColor},
+            {METextureFormat ::Depth, ImColor(255, 227, 132)},
+            {METextureFormat ::UNorm_R8, ImColor(240, 128, 128)},
+            {METextureFormat ::UNorm_RGBA8, ImColor(152, 251, 152)},
+            {METextureFormat ::Float_R32, ImColor(220, 20, 60)},
+            {METextureFormat ::Float_RGBA16, ImColor(124, 252, 0)},
+            {METextureFormat ::Float_RGBA32, ImColor(124, 252, 0)},
+            {METextureFormat ::SRGB_R8, ImColor(208, 32, 144)},
+            {METextureFormat ::SRGB_R8G8B8A8, ImColor(50, 205, 50)},
+    };
+
+    return FIND_OR_DEFAULT(ColorTable, format, DefaultLinkColor);
+}
+
+void RenderGraphView::SetupLinkStyle(MRenderTaskNodeInput* pInput)
+{
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(pInput->GetFormat()));
+}
+
+void RenderGraphView::SetupLinkStyle(MRenderTaskNodeOutput* pOutput)
+{
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(pOutput->GetFormat()));
+}
+
+void  RenderGraphView::ResetLinkStyle() { ImNodes::PopColorStyle(); }
+
+float RenderGraphView::GetNodeWidth(MRenderTaskNode* pNode)
+{
+    const float emptyWidth = 30;
+
+    float       width = ImGui::CalcTextSize(pNode->GetNodeName().c_str()).x;
+    for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
+    {
+        auto pNodeInput = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nIdx));
+        width           = std::max(width, ImGui::CalcTextSize(pNodeInput->GetName().c_str()).x);
+    }
+
+    //output
+    for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
+    {
+        auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(pNode->GetOutput(nIdx));
+        width            = std::max(width, ImGui::CalcTextSize(pNodeOutput->GetName().c_str()).x);
+    }
+
+    return width + emptyWidth;
+}

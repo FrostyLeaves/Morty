@@ -32,8 +32,6 @@ public:
 
     [[nodiscard]] std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
 
-    std::shared_ptr<IShaderPropertyUpdateDecorator>   GetFramePropertyDecorator() override;
-
 protected:
     void                               OnCreated() override;
 

@@ -4,7 +4,7 @@
 #include "../Internal/internal_uniform_global.hlsl"
 #include "../Internal/internal_uniform_model.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "../Lighting/pbr_uniform_material.hlsl"
+#include "../Deferred/pbr_uniform_material.hlsl"
 #include "../Voxel/voxel_function.hlsl"
 
 

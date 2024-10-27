@@ -41,6 +41,9 @@ public:
     void                                         RequireCompile() { m_requireCompile = true; }
     [[nodiscard]] bool                           NeedCompile() const { return m_requireCompile; }
 
+    [[nodiscard]] bool                           CheckCycle(MTaskNode* pPrevNode, MTaskNode* pNextNode);
+
+
     [[nodiscard]] MTaskNode*                     FindTaskNode(size_t id) const;
     [[nodiscard]] const std::vector<MTaskNode*>& GetStartNodes() const { return m_startTaskNode; }
     [[nodiscard]] const std::vector<MTaskNode*>& GetFinalNodes() const { return m_finalTaskNode; }

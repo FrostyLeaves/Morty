@@ -21,6 +21,7 @@ struct PS_OUT
 [[vk::binding(0,0)]]Texture2D u_mat_f3Albedo_fMetallic;
 [[vk::binding(1,0)]]Texture2D u_mat_f3Normal_fRoughness;
 [[vk::binding(2,0)]]Texture2D u_mat_f3Position_fAmbientOcc;
+[[vk::binding(3,0)]]Texture2DArray u_texShadowMap;
 [[vk::binding(4,0)]]Texture2D u_mat_SSAO;
 
 
@@ -90,7 +91,7 @@ float3 AdditionAllLights(VS_OUT input)
     pointData.fMetallic = fMetallic;
     pointData.bReceiveShadow = true;
 
-    float3 f3LightColor = PbrLighting(pointData) * fAO;
+    float3 f3LightColor = PbrLighting(pointData, u_texShadowMap) * fAO;
 
     float4 f4VXGIColor = float4(0,0,0,0);
 

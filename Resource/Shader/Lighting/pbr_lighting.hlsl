@@ -56,7 +56,7 @@ float3 AdditionDirectionLight(DirectionLight dirLight, SurfaceData pointData)
 }
 
 
-float3 PbrLighting(SurfaceData pointData)
+float3 PbrLighting(SurfaceData pointData, Texture2DArray texShadowMap)
 {
     float3 f3Color = float3(0.0f, 0.0f, 0.0f);
     
@@ -68,7 +68,7 @@ float3 PbrLighting(SurfaceData pointData)
         
         if (pointData.bReceiveShadow)
         {
-            shadow = GetDirectionShadow(u_texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, f3LightInverseDirection);
+            shadow = GetDirectionShadow(texShadowMap, pointData.f3WorldPosition, pointData.f3Normal, f3LightInverseDirection);
         }
         
         f3Color += shadow * AdditionDirectionLight(u_xDirectionalLight, pointData);

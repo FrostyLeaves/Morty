@@ -33,7 +33,7 @@ std::shared_ptr<MMaterial> MEdgeDetectionRenderNode::CreateMaterial()
 std::vector<MRenderTaskInputDesc> MEdgeDetectionRenderNode::InitInputDesc()
 {
     return {MRenderTaskNodeInput::CreateSample(
-            MRenderGraphName::DepthBuffer,
+            MRenderGraphName::ColorBuffer,
             MRenderTaskNode::DefaultLinearSpaceFormat,
             false
     )};

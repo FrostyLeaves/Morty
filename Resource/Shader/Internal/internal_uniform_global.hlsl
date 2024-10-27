@@ -48,9 +48,6 @@
     float4 u_vCascadeSplits[CASCADED_SHADOW_MAP_NUM];
 };
 
-//Shadowmap
-[[vk::binding(4,1)]]Texture2DArray u_texShadowMap;
-
 //Environment
 [[vk::binding(5,1)]]TextureCube u_texIrradianceMap;
 [[vk::binding(6,1)]]TextureCube u_texPrefilterMap;
