@@ -26,8 +26,8 @@ struct MORTY_API MMaterialName {
     static MString DEFERRED_GBUFFER;
     static MString DEFERRED_GBUFFER_SKELETON;
 
-    static MString BASIC_LIGHTING;
-    static MString BASIC_LIGHTING_SKELETON;
+    static MString FORWARD_TRANSPARENT;
+    static MString FORWARD_TRANSPARENT_SKELETON;
 
     static MString SHADOW_MAP;
 

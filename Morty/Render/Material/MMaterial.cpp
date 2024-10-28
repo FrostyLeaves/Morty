@@ -12,7 +12,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
-void MMaterial::SetTexture(const MStringId& strName, std::shared_ptr<MResource> pResource)
+void MMaterial::SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pResource)
 {
     for (size_t i = 0; i < GetMaterialPropertyBlock()->m_textures.size(); ++i)
     {

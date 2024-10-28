@@ -1,5 +1,5 @@
 [[vk::binding(1,0)]]Texture2D BackTexture;
-[[vk::binding(2,0)]]sampler LinearSampler;
+[[vk::binding(2,0)]]sampler NearestSampler;
 
 struct VS_OUT
 {
@@ -22,7 +22,7 @@ PS_OUT PS_MAIN(VS_OUT input)
     output.f4FrontColor = float4(0, 0, 0, 0);
     output.fBackColor = float4(0, 0, 0, 0);
     output.fFrontDepth = 0;
-    output.fBackDepth = BackTexture.Sample(LinearSampler, input.uv).r;
+    output.fBackDepth = BackTexture.Sample(NearestSampler, input.uv).r;
 
     return output;
 }

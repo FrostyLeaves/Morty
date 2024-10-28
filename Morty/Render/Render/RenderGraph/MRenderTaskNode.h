@@ -41,11 +41,13 @@ using MESharedPolicy = morty::fbs::SharedPolicy;
 class MORTY_API MRenderTaskNode : public MTaskNode
 {
     MORTY_CLASS(MRenderTaskNode)
+    using BarrierTextureTable = std::unordered_map<METextureBarrierStage, std::vector<MTexture*>>;
+
 public:
     virtual void                                            Release() {}
     virtual void                                            Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
     virtual void                                            RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
-    virtual void                                            BindInOutTexture() {}
+    virtual void                                            BindInOutTexture();
     virtual void                                            RegisterSetting() {}
     virtual void                                            Resize(Vector2i size);
 
@@ -68,6 +70,9 @@ public:
     [[nodiscard]] MRenderTaskNodeOutput*                    GetRenderOutput(const size_t& nIdx) const;
     [[nodiscard]] bool                                      IsValidRenderNode();
 
+    void                                                    AutoBindBarrierTexture();
+    void                                                    AutoSetTextureBarrier(MIRenderCommand* pCommand);
+
     static METextureFormat                                  DefaultLinearSpaceFormat;
 
 private:
@@ -77,7 +82,9 @@ private:
         EInvalid = 1,
         EValid   = 2,
     };
-    ValidCacheFlag m_validCacheFlag = ValidCacheFlag::EUnknow;
+    ValidCacheFlag      m_validCacheFlag = ValidCacheFlag::EUnknow;
+
+    BarrierTextureTable m_barrierTexture;
 };
 
 }// namespace morty

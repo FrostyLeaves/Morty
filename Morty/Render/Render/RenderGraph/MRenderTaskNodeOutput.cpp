@@ -139,3 +139,5 @@ void MRenderTaskNodeOutput::SetOutputDesc(const MRenderTaskOutputDesc& desc)
 
     SetName(m_desc.name);
 }
+
+MRenderTarget MRenderTaskNodeOutput::CreateRenderTarget() const { return {GetRenderTexture(), m_desc.renderDesc}; }

@@ -1,5 +1,5 @@
 #include "RHI/Vulkan/MVulkanDevice.h"
-#include "vulkan/vulkan_core.h"
+#if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "Utility/MGlobal.h"
 #include "Basic/MBuffer.h"
@@ -12,29 +12,23 @@
 #include "Resource/MResource.h"
 #include "Shader/MShaderParam.h"
 #include "Utility/MFileHelper.h"
-
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
-
-
-#define VALUE_MAX(a, b) (a > b ? a : b)
-
-#if RENDER_GRAPHICS == MORTY_VULKAN
+#include "vulkan/vulkan_core.h"
 
 #ifdef MORTY_WIN
-#include <windows.h>
-
 #include "vulkan/vulkan_win32.h"
+#include <windows.h>
 #endif
 
 #ifdef MORTY_ANDROID
 #include "vulkan/vulkan_android.h"
 #endif
+
+#ifdef MORTY_SHADER_COMPILER_DXC
+#include "MVulkanShaderCompilerDxc.h"
+#else
+#include "MVulkanShaderCompilerGlslang.h"
+#endif
+
 
 using namespace morty;
 
@@ -73,11 +67,16 @@ const VkImageLayout UndefinedImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 MVulkanDevice::MVulkanDevice()
     : MIDevice()
-    , m_ShaderCompiler(this)
     , m_ShaderReflector(this)
     , m_PipelineManager(this)
     , m_BufferPool(this)
-{}
+{
+#ifdef MORTY_SHADER_COMPILER_DXC
+    m_ShaderCompiler = std::make_unique<MVulkanShaderCompilerDxc>(this);
+#else
+    m_ShaderCompiler = std::make_unique<MVulkanShaderCompilerGlslang>(this);
+#endif
+}
 
 bool MVulkanDevice::Initialize()
 {
@@ -758,9 +757,9 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     if (!pShader) return false;
 
     std::vector<uint32_t> spirv;
-    m_ShaderCompiler.CompileShader(pShader->GetShaderPath(), pShader->GetType(), pShader->GetMacro(), spirv);
+    m_ShaderCompiler->CompileShader(pShader->GetShaderPath(), pShader->GetType(), pShader->GetMacro(), spirv);
 
-    if (spirv.size() == 0) return false;
+    if (spirv.empty()) return false;
 
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -798,37 +797,39 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     }
     else { MORTY_ASSERT(false); }
 
-
     shaderStageInfo.pSpecializationInfo = nullptr;
 
     MShaderBuffer* pShaderBuffer = nullptr;
     if (MEShaderType::EVertex == pShader->GetType())
     {
-        MVertexShaderBuffer* pBuffer = new MVertexShaderBuffer();
+        auto* pBuffer = new MVertexShaderBuffer();
         m_ShaderReflector.GetVertexInputState(compiler, pBuffer);
         pShaderBuffer = pBuffer;
     }
     else if (MEShaderType::EPixel == pShader->GetType())
     {
-        MPixelShaderBuffer* pBuffer = new MPixelShaderBuffer();
-        pShaderBuffer               = pBuffer;
+        auto* pBuffer = new MPixelShaderBuffer();
+        pShaderBuffer = pBuffer;
     }
     else if (MEShaderType::ECompute == pShader->GetType())
     {
-        MComputeShaderBuffer* pBuffer = new MComputeShaderBuffer();
-        pShaderBuffer                 = pBuffer;
+        auto* pBuffer = new MComputeShaderBuffer();
+        pShaderBuffer = pBuffer;
     }
     else if (MEShaderType::EGeometry == pShader->GetType())
     {
-        MGeometryShaderBuffer* pBuffer = new MGeometryShaderBuffer();
-        pShaderBuffer                  = pBuffer;
+        auto* pBuffer = new MGeometryShaderBuffer();
+        pShaderBuffer = pBuffer;
     }
-    else { MORTY_ASSERT(false); }
 
+    MORTY_ASSERT(pShaderBuffer);
 
-    pShaderBuffer->m_vkShaderModule    = shaderModule;
-    pShaderBuffer->m_vkShaderStageInfo = shaderStageInfo;
-    m_ShaderReflector.GetShaderParam(compiler, pShaderBuffer);
+    if (pShaderBuffer)
+    {
+        pShaderBuffer->m_vkShaderModule    = shaderModule;
+        pShaderBuffer->m_vkShaderStageInfo = shaderStageInfo;
+        m_ShaderReflector.GetShaderParam(compiler, pShaderBuffer);
+    }
 
     pShader->SetBuffer(pShaderBuffer);
     return true;
@@ -1974,9 +1975,9 @@ void MVulkanDevice::CreateImage(
     imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType     = imageType;
     imageInfo.flags         = createFlag;
-    imageInfo.extent.width  = VALUE_MAX(nWidth, 1);
-    imageInfo.extent.height = VALUE_MAX(nHeight, 1);
-    imageInfo.extent.depth  = VALUE_MAX(nDepth, 1);
+    imageInfo.extent.width  = std::max(nWidth, 1u);
+    imageInfo.extent.height = std::max(nHeight, 1u);
+    imageInfo.extent.depth  = std::max(nDepth, 1u);
     imageInfo.mipLevels     = unMipmap;
     imageInfo.arrayLayers   = unLayerCount;
     imageInfo.format        = format;

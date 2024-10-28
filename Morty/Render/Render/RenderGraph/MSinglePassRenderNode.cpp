@@ -37,17 +37,6 @@ void ISinglePassRenderNode::Release()
     m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-MTextureArray ISinglePassRenderNode::GetBackTextures() const { return m_renderPass.GetBackTextures(); }
-
-MTexturePtr   ISinglePassRenderNode::GetDepthTexture() const { return m_renderPass.GetDepthTexture(); }
-
-std::shared_ptr<IGetTextureAdapter> ISinglePassRenderNode::CreateOutput() const
-{
-    auto pOutput = std::make_shared<MGetTextureAdapter>(m_renderPass.GetBackTexture(0));
-
-    return pOutput;
-}
-
 MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
 {
     MRenderTargetGroup group;
@@ -60,12 +49,12 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
         if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
             pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
         {
-            group.backTargets.push_back({pTexture, pOutput->GetOutputDesc().renderDesc});
+            group.backTargets.emplace_back(pOutput->CreateRenderTarget());
         }
         else if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
         {
             MORTY_ASSERT(group.depthTarget.pTexture == nullptr);
-            group.depthTarget = {pTexture, pOutput->GetOutputDesc().renderDesc};
+            group.depthTarget = {pOutput->CreateRenderTarget()};
         }
         else { MORTY_ASSERT(false); }
     }
@@ -83,40 +72,13 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTargetWithVRS()
     return group;
 }
 
-void ISinglePassRenderNode::AutoBindBarrierTexture()
-{
-    m_barrierTexture.clear();
-    auto vInputs = InitInputDesc();
-    for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
-    {
-        if (const auto& texture = GetInputTexture(nInputIdx))
-        {
-            m_barrierTexture[vInputs[nInputIdx].barrier].push_back(texture.get());
-        }
-    }
-}
-
-void ISinglePassRenderNode::AutoSetTextureBarrier(MIRenderCommand* pCommand)
-{
-    for (const auto& [barrier, textures]: m_barrierTexture)
-    {
-        if (barrier != METextureBarrierStage::EUnknow) { pCommand->AddRenderToTextureBarrier(textures, barrier); }
-    }
-}
-
 void ISinglePassRenderNode::Resize(Vector2i size)
 {
+    Super::Resize(size);
+
     auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-    if (m_renderPass.GetFrameBufferSize() != size)
-    {
-        m_renderPass.Resize(pRenderSystem->GetDevice());
-
-        //MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-        //pRenderSystem->ResizeFrameBuffer(m_renderPass, size);
-    }
-
-    Super::Resize(size);
+    if (m_renderPass.GetFrameBufferSize() != size) { m_renderPass.Resize(pRenderSystem->GetDevice()); }
 }
 
 void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarget)
@@ -130,6 +92,6 @@ void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarg
 
 void ISinglePassRenderNode::BindInOutTexture()
 {
-    AutoBindBarrierTexture();
+    Super::AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTarget());
 };

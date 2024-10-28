@@ -89,6 +89,8 @@ void MDeferredLightingRenderNode::Release()
 
 void MDeferredLightingRenderNode::BindInOutTexture()
 {
+    Super::AutoBindBarrierTexture();
+
     if (std::shared_ptr<MShaderPropertyBlock> pParams = m_lightningMaterial->GetMaterialPropertyBlock())
     {
         if (auto texture = GetInputTexture(0))
@@ -113,7 +115,6 @@ void MDeferredLightingRenderNode::BindInOutTexture()
         }
     }
 
-    AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTargetWithVRS());
 }
 

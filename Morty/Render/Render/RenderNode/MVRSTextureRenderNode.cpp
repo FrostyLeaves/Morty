@@ -102,6 +102,8 @@ void MVRSTextureRenderNode::Render(const MRenderInfo& info)
 
 void MVRSTextureRenderNode::BindInOutTexture()
 {
+    Super::AutoBindBarrierTexture();
+
     if (auto params = m_vRSGenerator->GetShaderPropertyBlock(0))
     {
         if (auto texture = GetOutputTexture(0))

@@ -22,29 +22,21 @@ class IGetTextureAdapter;
 class MORTY_API ISinglePassRenderNode : public MRenderTaskNode
 {
     MORTY_INTERFACE(ISinglePassRenderNode)
-    using BarrierTextureTable = std::unordered_map<METextureBarrierStage, std::vector<MTexture*>>;
 
     ISinglePassRenderNode();
 
 public:
-    void                                              Release() override;
-    void                                              Resize(Vector2i size) override;
+    void Release() override;
+    void Resize(Vector2i size) override;
 
-    void                                              SetRenderTarget(const MRenderTargetGroup& renderTarget);
-
-    [[nodiscard]] MTextureArray                       GetBackTextures() const;
-    [[nodiscard]] MTexturePtr                         GetDepthTexture() const;
-    [[nodiscard]] std::shared_ptr<IGetTextureAdapter> CreateOutput() const;
+    void SetRenderTarget(const MRenderTargetGroup& renderTarget);
 
 protected:
-    MRenderTargetGroup  AutoBindTarget();
-    MRenderTargetGroup  AutoBindTargetWithVRS();
-    void                AutoBindBarrierTexture();
-    void                AutoSetTextureBarrier(MIRenderCommand* pCommand);
-    void                BindInOutTexture() override;
+    MRenderTargetGroup AutoBindTarget();
+    MRenderTargetGroup AutoBindTargetWithVRS();
+    void               BindInOutTexture() override;
 
-    MRenderPass         m_renderPass;
-    BarrierTextureTable m_barrierTexture;
+    MRenderPass        m_renderPass;
 };
 
 }// namespace morty

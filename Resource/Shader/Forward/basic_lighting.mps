@@ -1,6 +1,13 @@
-#include "../Forward/light_forward.hlsl"
+#include "../Internal/internal_uniform_global.hlsl"
+#include "../Internal/internal_functional.hlsl"
+#include "../Internal/internal_uniform_model.hlsl"
+#include "../Deferred/pbr_uniform_material.hlsl"
+#include "../Model/universal_vsout.hlsl"
+#include "../Lighting/pbr_lighting.hlsl"
 
-#ifdef MTRANSPARENT_DEPTH_PEELING
+
+[[vk::binding(3,0)]]Texture2DArray u_texShadowMap;
+[[vk::binding(4,0)]]Texture2D u_mat_SSAO;
 
 //Transparent
 [[vk::input_attachment_index(0)]] [[vk::binding(0, 3)]] SubpassInput u_texSubpassInput0;
@@ -15,35 +22,64 @@ struct PS_OUT
     float fBackDepth: SV_Target3;
 };
 
-#else
 
-struct PS_OUT
+float3 GetPixelColor(VS_OUT input)
 {
-    float4 target0: SV_Target;
-};
+    float2 uv = input.uv;
+    uv = saturate(uv);
 
-#endif
+    float3 T = normalize(input.tangent);
+    float3 B = normalize(input.bitangent);
+    float3 N = normalize(input.normal);
+    float3x3 TBN = float3x3(T,B,N);
+
+
+    float3 f3Normal = float3(0.0f, 0.0f, 1.0f);
+    f3Normal = u_texNormal.Sample(LinearSampler, uv).xyz;
+    f3Normal = (f3Normal * 2.0f) - 1.0f;
+    f3Normal = mul(f3Normal, TBN);
+    f3Normal = normalize(f3Normal);
+
+    float3 f3Albedo   = u_mat_texAlbedo.Sample(LinearSampler, uv).rgb;
+    float fMetallic   = u_mat_texMetallic.Sample(LinearSampler, uv).r;
+    float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv).r;
+    float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
+    float fSSAO = u_mat_SSAO.Sample(NearestSampler, input.uv).x;
+
+    float3 f3WorldPosition = input.worldPos;
+    float3 f3CameraDir = normalize(u_f3CameraPosition - f3WorldPosition);
+    float fAO = fAmbientOcc * fSSAO;
+    
+    
+    SurfaceData pointData;
+    pointData.f3CameraDir = f3CameraDir;
+    pointData.f3Normal = f3Normal;
+    pointData.f3WorldPosition = f3WorldPosition;
+    pointData.f3Albedo = f3Albedo;
+    pointData.fRoughness = fRoughness;
+    pointData.fMetallic = fMetallic;
+    pointData.bReceiveShadow = true;
+
+    float3 f3LightColor = PbrLighting(pointData, u_texShadowMap);
+
+    float3 f3Ambient = Ambient(pointData);
+
+    float4 f4VXGIColor = float4(0,0,0,0);
+
+    float3 f3Color = (f3LightColor + f4VXGIColor.rgb + f3Ambient) * fAO;
+
+    return f3Color;
+}
+
 
 PS_OUT PS_MAIN(VS_OUT input)
 {
     PS_OUT output;
-    
-    float4 f3AmbiColor = u_texDiffuse.Sample(LinearSampler, input.uv);
 
-    float3 f3Color = u_xMaterial.f3Ambient * f3AmbiColor.xyz * 0.2f;
-
-    float fAlpha = saturate(u_xMaterial.fAlphaFactor) * f3AmbiColor.w;
-
-    if (u_xMaterial.bUseTransparentTex > 0)
-    {
-        float4 transparentColor = u_texTransparent.Sample(LinearSampler, input.uv);
-        fAlpha *= transparentColor.a;
-        clip(fAlpha - 0.1f);
-    }
+    float3 f3Color = GetPixelColor(input);
+    float fAlpha = saturate(u_xMaterial.fAlphaFactor);
 
     
-#ifdef MTRANSPARENT_DEPTH_PEELING
-
     float fZDepth = input.pos.z;
     float fZFront = u_texSubpassInput0.SubpassLoad().r;
     float fZBack = u_texSubpassInput1.SubpassLoad().r;
@@ -64,22 +100,6 @@ PS_OUT PS_MAIN(VS_OUT input)
         return output;
     }
 
-    if (u_xMaterial.bUseEmissiveTex > 0)
-    {
-        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv).rgb;
-        if(length(f3EmissiveColor) <= 0.0f)
-        {
-            f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
-        }
-        else
-        {
-            f3Color += f3EmissiveColor;
-        }
-    }
-    else
-    {
-        f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
-    }
     // color = destColor + srcColor * srcAlpha * (1 - destAlpha)
     // return [srcColor * srcAlpha] as srcColor
     // blend destColor * 1 + srcColor * (1 - destAlpha)
@@ -87,25 +107,6 @@ PS_OUT PS_MAIN(VS_OUT input)
         output.f4FrontColor = float4(f3Color * fAlpha, fAlpha);
     else
         output.fBackColor = float4(f3Color, fAlpha);
-#else
-    if (u_xMaterial.bUseEmissiveTex > 0)
-    {
-        float3 f3EmissiveColor = u_texEmissive.Sample(LinearSampler, input.uv).xyz;
-        if(length(f3EmissiveColor) <= 0.0f)
-        {
-            f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
-        }
-        else
-        {
-            f3Color += f3EmissiveColor;
-        }
-    }
-    else
-    {
-        f3Color = AdditionAllLights(f3Color, f3AmbiColor, input);
-    }
-    output.target0 = float4(f3Color, fAlpha);
-#endif
     
     return output;
 }

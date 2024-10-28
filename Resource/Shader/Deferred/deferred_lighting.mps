@@ -54,53 +54,26 @@ float3 AdditionAllLights(VS_OUT input)
     float3 f3WorldPosition = f3Position_fAmbientOcc.rgb;
     float3 f3CameraDir = normalize(u_f3CameraPosition - f3WorldPosition);
 
-    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
-    f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
-    
-    float3 f3Ambient = float3(0.0, 0.0, 0.0);
-
-    float3 kS = FresnelSchlickRoughness(max(dot(f3Normal, f3CameraDir), 0.0), f3BaseColor, fRoughness);
-    float3 kD = (1.0f - kS) * (1.0f - fMetallic);
-
-    if(u_bEnvironmentMapEnabled)
-    {
-
-        float3 f3Irradiance = u_texIrradianceMap.SampleLevel(LinearSampler, f3Normal, 0).rgb;
-        float3 f3Diffuse = f3Irradiance * f3Albedo;
-
-        const float MAX_REFLECTION_LOD = 4.0f;
-        float3 f3Reflect = reflect(-f3CameraDir, f3Normal); 
-        float3 f3PrefilteredColor = u_texPrefilterMap.SampleLevel(LinearSampler, f3Reflect,  fRoughness * MAX_REFLECTION_LOD).rgb;    
-        float2 brdf = u_texBrdfLUT.Sample(LinearSampler, float2(max(dot(f3Normal, f3CameraDir), 0.0), fRoughness)).rg;
-        float3 f3Specular = f3PrefilteredColor * (kS * brdf.x + brdf.y);
-
-        f3Ambient = (kD * f3Diffuse + f3Specular) * fAO;
-    }
-    else
-    {
-        f3Ambient = float3(0.1, 0.1, 0.1) * f3Albedo * fAO;
-    }
-
     SurfaceData pointData;
     pointData.f3CameraDir = f3CameraDir;
     pointData.f3Normal = f3Normal;
     pointData.f3WorldPosition = f3WorldPosition;
-    pointData.f3BaseColor = f3BaseColor;
     pointData.f3Albedo = f3Albedo;
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;
     pointData.bReceiveShadow = true;
 
-    float3 f3LightColor = PbrLighting(pointData, u_texShadowMap) * fAO;
+    float3 f3LightColor = PbrLighting(pointData, u_texShadowMap);
+
+    float3 f3Ambient = Ambient(pointData);
 
     float4 f4VXGIColor = float4(0,0,0,0);
 
 #if MORTY_VXGI_ENABLE
     f4VXGIColor = VoxelDiffuseTracing(u_texVoxelMap, voxelMapSetting, f3WorldPosition,  f3Normal);
-    f4VXGIColor.rgb *= fAO;
 #endif
 
-    float3 f3Color = f3LightColor + f4VXGIColor.rgb + f3Ambient;
+    float3 f3Color = (f3LightColor + f4VXGIColor.rgb + f3Ambient) * fAO;
 
     return f3Color;
 }

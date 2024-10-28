@@ -124,3 +124,26 @@ void MRenderTaskNode::OnPreCompile()
     MTaskNode::OnPreCompile();
     m_validCacheFlag = ValidCacheFlag::EUnknow;
 }
+
+void MRenderTaskNode::AutoBindBarrierTexture()
+{
+    m_barrierTexture.clear();
+    auto vInputs = InitInputDesc();
+    for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
+    {
+        if (const auto& texture = GetInputTexture(nInputIdx))
+        {
+            m_barrierTexture[vInputs[nInputIdx].barrier].push_back(texture.get());
+        }
+    }
+}
+
+void MRenderTaskNode::AutoSetTextureBarrier(MIRenderCommand* pCommand)
+{
+    for (const auto& [barrier, textures]: m_barrierTexture)
+    {
+        if (barrier != METextureBarrierStage::EUnknow) { pCommand->AddRenderToTextureBarrier(textures, barrier); }
+    }
+}
+
+void MRenderTaskNode::BindInOutTexture() { AutoBindBarrierTexture(); }

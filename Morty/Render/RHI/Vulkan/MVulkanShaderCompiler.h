@@ -7,23 +7,9 @@
 **/
 
 #pragma once
-
-#include "Utility/MRenderGlobal.h"
-
 #if RENDER_GRAPHICS == MORTY_VULKAN
-
+#include "Utility/MRenderGlobal.h"
 #include "Shader/MShader.h"
-
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
-
-#include "spirv_cross/spirv_cross.hpp"
-#include "spirv_cross/spirv_parser.hpp"
 
 namespace morty
 {
@@ -38,9 +24,9 @@ public:
 
     ~MPreamble();
 
-    bool                            IsValid() const;
+    [[nodiscard]] bool              IsValid() const;
 
-    const char*                     GetText() const { return m_strText.c_str(); }
+    [[nodiscard]] const char*       GetText() const { return m_strText.c_str(); }
 
     const std::vector<std::string>& GetProcesses() { return m_processes; }
 
@@ -57,27 +43,21 @@ private:
 class MORTY_API MVulkanShaderCompiler
 {
 public:
-    MVulkanShaderCompiler(MVulkanDevice* pDevice);
+    explicit MVulkanShaderCompiler(MVulkanDevice* pDevice);
+    virtual ~MVulkanShaderCompiler() = default;
 
-    ~MVulkanShaderCompiler();
-
-    bool CompileShader(
+    virtual bool CompileShader(
             const MString&         strShaderPath,
             const MEShaderType&    eShaderType,
             const MShaderMacro&    macro,
             std::vector<uint32_t>& vSpirv
-    );
+    ) = 0;
 
-    void ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
+    void           ConvertMacro(const MShaderMacro& macro, MPreamble& preamble);
+
+    MVulkanDevice* GetDevice() const { return m_device; }
 
 private:
-    bool CompileHlslShader(
-            const MString&         strShaderPath,
-            const MEShaderType&    eShaderType,
-            const MShaderMacro&    macro,
-            std::vector<uint32_t>& vSpirv
-    );
-
     MVulkanDevice* m_device;
 };
 

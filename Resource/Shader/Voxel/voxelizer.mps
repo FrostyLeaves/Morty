@@ -57,14 +57,13 @@ float4 PS_MAIN(VS_OUT input) : SV_Target
     float fRoughness  = u_mat_texRoughness.Sample(LinearSampler, uv)[u_xMaterial.nRoughnessChannel] * u_xMaterial.fRoughness;
     float fAmbientOcc = u_mat_texAmbientOcc.Sample(LinearSampler, uv).r;
 
-    float3 f3BaseColor = float3(0.0f, 0.0f, 0.0f);
+    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
     f3BaseColor = lerp(f3BaseColor, f3Albedo, fMetallic);
-
+    
     SurfaceData pointData;
     pointData.f3CameraDir = f3CameraDir;
     pointData.f3Normal = f3Normal;
     pointData.f3WorldPosition = f3WorldPosition;
-    pointData.f3BaseColor = f3BaseColor;
     pointData.f3Albedo = f3Albedo;
     pointData.fRoughness = fRoughness;
     pointData.fMetallic = fMetallic;

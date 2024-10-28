@@ -90,8 +90,10 @@ float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 // ----------------------------------------------------------------------------
 
 // Cook-Torrance BRDF
-float3 BRDF(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 f3Normal, float3 f3BaseColor, float3 f3Albedo, float fRoughness, float fMetallic)
+float3 BRDF(float3 f3LightColor, float3 f3CameraDir, float3 _f3LightDir, float3 f3Normal, float3 f3Albedo, float fRoughness, float fMetallic)
 {
+    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
+    
     float3 f3LightInverseDir = -_f3LightDir;
 
     float3 f3HalfDir = normalize(f3CameraDir + f3LightInverseDir);

@@ -26,6 +26,7 @@ public:
     static void          RegisterMaterial(MEngine* pEngine);
 
     static const MString DefaultWhite;
+    static const MString DefaultBlack;
     static const MString DefaultNormal;
     static const MString Default_R8_One;
     static const MString Default_R8_Zero;

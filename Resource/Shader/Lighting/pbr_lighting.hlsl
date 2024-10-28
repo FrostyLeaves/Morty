@@ -19,7 +19,7 @@ float3 AdditionSpotLight(SpotLight spotLight, SurfaceData pointData)
 
         float3 f3LightColor = spotLight.f3Intensity * fIntensity;
                     
-        return BRDF(f3LightColor, pointData.f3CameraDir, f3LightDir, pointData.f3Normal, pointData.f3BaseColor, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
+        return BRDF(f3LightColor, pointData.f3CameraDir, f3LightDir, pointData.f3Normal, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
     }
     else
     {
@@ -37,7 +37,7 @@ float3 AdditionPointLight(PointLight pointLight, SurfaceData pointData)
 
     float3 f3LightColor = pointLight.f3Intensity * fAttenuation;
 
-    return BRDF(f3LightColor, pointData.f3CameraDir, f3LightDir, pointData.f3Normal, pointData.f3BaseColor, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
+    return BRDF(f3LightColor, pointData.f3CameraDir, f3LightDir, pointData.f3Normal, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
 }
 
 // direction light
@@ -49,12 +49,40 @@ float3 AdditionDirectionLight(DirectionLight dirLight, SurfaceData pointData)
     {
         float3 f3LightColor = dirLight.f3Intensity;
 
-        return BRDF(f3LightColor, pointData.f3CameraDir, dirLight.f3LightDir, pointData.f3Normal, pointData.f3BaseColor, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
+        return BRDF(f3LightColor, pointData.f3CameraDir, dirLight.f3LightDir, pointData.f3Normal, pointData.f3Albedo, pointData.fRoughness, pointData.fMetallic);
     }
 
     return float3(0, 0, 0);
 }
 
+float3 Ambient(SurfaceData pointData)
+{
+    float3 f3Ambient = float3(0.0, 0.0, 0.0);
+
+    float3 kS = FresnelSchlickRoughness(max(dot(pointData.f3Normal, pointData.f3CameraDir), 0.0), pointData.fRoughness);
+    float3 kD = (1.0f - kS) * (1.0f - pointData.fMetallic);
+
+    if(u_bEnvironmentMapEnabled)
+    {
+
+        float3 f3Irradiance = u_texIrradianceMap.SampleLevel(LinearSampler, pointData.f3Normal, 0).rgb;
+        float3 f3Diffuse = f3Irradiance * pointData.f3Albedo;
+
+        const float MAX_REFLECTION_LOD = 4.0f;
+        float3 f3Reflect = reflect(-pointData.f3CameraDir, pointData.f3Normal); 
+        float3 f3PrefilteredColor = u_texPrefilterMap.SampleLevel(LinearSampler, f3Reflect,  pointData.fRoughness * MAX_REFLECTION_LOD).rgb;    
+        float2 brdf = u_texBrdfLUT.Sample(LinearSampler, float2(max(dot(pointData.f3Normal, pointData.f3CameraDir), 0.0), pointData.fRoughness)).rg;
+        float3 f3Specular = f3PrefilteredColor * (kS * brdf.x + brdf.y);
+
+        f3Ambient = (kD * f3Diffuse + f3Specular);
+    }
+    else
+    {
+        f3Ambient = float3(0.1, 0.1, 0.1) * pointData.f3Albedo;
+    }
+
+    return f3Ambient * pointData.fAO;
+}
 
 float3 PbrLighting(SurfaceData pointData, Texture2DArray texShadowMap)
 {
@@ -86,5 +114,5 @@ float3 PbrLighting(SurfaceData pointData, Texture2DArray texShadowMap)
         f3Color += AdditionSpotLight(u_vSpotLights[nSpotLightIdx], pointData);
     }
 
-    return f3Color;
+    return f3Color * pointData.fAO;
 }

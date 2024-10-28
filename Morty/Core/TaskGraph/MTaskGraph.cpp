@@ -149,7 +149,7 @@ bool MTaskGraph::CheckCycle(MTaskNode* pPrevNode, MTaskNode* pNextNode)
 {
     std::queue<MTaskNode*> queue;
     queue.emplace(pPrevNode);
-    
+
     while (!queue.empty())
     {
         auto node = queue.front();
@@ -178,18 +178,29 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
     std::vector<flatbuffers::Offset<fbs::MTaskNodeDesc>> nodes;
     for (auto& taskNode: GetAllNodes())
     {
-        std::vector<uint32_t> taskInputNode(taskNode->GetInputSize());
-        std::vector<uint32_t> taskInputSlot(taskNode->GetInputSize());
-
+        std::vector<flatbuffers::Offset<fbs::MTaskNodeInputDesc>>  taskInputDesc(taskNode->GetInputSize());
+        std::vector<flatbuffers::Offset<fbs::MTaskNodeOutputDesc>> taskOutputDesc(taskNode->GetOutputSize());
         for (size_t nInputIdx = 0; nInputIdx < taskNode->GetInputSize(); ++nInputIdx)
         {
-            auto prevOutput          = taskNode->GetInput(nInputIdx)->GetLinkedOutput();
-            taskInputNode[nInputIdx] = prevOutput ? prevOutput->GetTaskNode()->GetNodeID() : MTaskNode::InvalidSlotId;
-            taskInputSlot[nInputIdx] = prevOutput ? prevOutput->GetIndex() : MTaskNode::InvalidSlotId;
+            auto                           prevOutput = taskNode->GetInput(nInputIdx)->GetLinkedOutput();
+
+            fbs::MTaskNodeInputDescBuilder inputBuilder(fbb);
+            inputBuilder.add_link_node_id(
+                    prevOutput ? prevOutput->GetTaskNode()->GetNodeID() : MTaskNode::InvalidSlotId
+            );
+            inputBuilder.add_link_output_id(prevOutput ? prevOutput->GetIndex() : MTaskNode::InvalidSlotId);
+
+            taskInputDesc[nInputIdx] = inputBuilder.Finish().o;
         }
-        auto                           fbTypeName  = fbb.CreateString(taskNode->GetTypeName().ToString());
-        auto                           fbInputNode = fbb.CreateVector(taskInputNode);
-        auto                           fbInputSlot = fbb.CreateVector(taskInputSlot);
+        for (size_t nOutputIdx = 0; nOutputIdx < taskNode->GetOutputSize(); ++nOutputIdx)
+        {
+            fbs::MTaskNodeOutputDescBuilder outputBuilder(fbb);
+            taskOutputDesc[nOutputIdx] = outputBuilder.Finish().o;
+        }
+
+        auto                           fbTypeName       = fbb.CreateString(taskNode->GetTypeName().ToString());
+        auto                           fbInputNodeDesc  = fbb.CreateVector(taskInputDesc).Union().o;
+        auto                           fbOutputNodeDesc = fbb.CreateVector(taskOutputDesc).Union().o;
 
 
         flatbuffers::FlatBufferBuilder nodeDataFbb;
@@ -202,11 +213,11 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
         fbs::MTaskNodeDescBuilder nodeBuilder(fbb);
         nodeBuilder.add_node_id(taskNode->GetNodeID());
         nodeBuilder.add_node_type(fbTypeName);
-        nodeBuilder.add_link_node_id(fbInputNode.o);
-        nodeBuilder.add_link_output_id(fbInputSlot.o);
+        nodeBuilder.add_inputs(fbInputNodeDesc);
+        nodeBuilder.add_outputs(fbOutputNodeDesc);
         nodeBuilder.add_data(fbNodeData.o);
 
-        return nodeBuilder.Finish().Union();
+        nodes.emplace_back(nodeBuilder.Finish());
     }
     auto                   fbNodes = fbb.CreateVector(nodes);
 
@@ -216,7 +227,7 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
 }
 void MTaskGraph::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MTaskGraph*                   fbTaskGraph = reinterpret_cast<const fbs::MTaskGraph*>(pBufferPointer);
+    const auto*                              fbTaskGraph = reinterpret_cast<const fbs::MTaskGraph*>(pBufferPointer);
 
     const auto&                              fbTaskNodeArray = *fbTaskGraph->node_array();
 
@@ -236,27 +247,66 @@ void MTaskGraph::Deserialize(const void* pBufferPointer)
         taskNodes[nodeId] = taskNode;
 
         MORTY_ASSERT(AddNode(taskNode->GetNodeName(), taskNode));
+
+        if (fbTaskNodeDesc->inputs() != nullptr)
+        {
+            for (size_t inIdx = 0; inIdx < fbTaskNodeDesc->inputs()->size(); ++inIdx) { taskNode->AppendInput(); }
+        }
+        if (fbTaskNodeDesc->outputs() != nullptr)
+        {
+            for (size_t outIdx = 0; outIdx < fbTaskNodeDesc->outputs()->size(); ++outIdx) { taskNode->AppendOutput(); }
+        }
     }
 
     for (size_t idx = 0; idx < fbTaskNodeArray.size(); ++idx)
     {
         const fbs::MTaskNodeDesc* fbTaskNodeDesc = fbTaskNodeArray.Get(static_cast<flatbuffers::uoffset_t>(idx));
-        if (fbTaskNodeDesc->link_node_id() == nullptr || fbTaskNodeDesc->link_output_id() == nullptr) continue;
-        const auto   nodeIdx = fbTaskNodeDesc->node_id();
+        if (fbTaskNodeDesc->inputs() == nullptr) { continue; }
 
-        MTaskNode*   taskNode   = taskNodes[nodeIdx];
-        const size_t connectNum = fbTaskNodeDesc->link_node_id()->size();
+        auto       inputs   = fbTaskNodeDesc->inputs();
+        const auto nodeIdx  = fbTaskNodeDesc->node_id();
+        MTaskNode* taskNode = taskNodes[nodeIdx];
 
-        for (size_t connIdx = 0; connIdx < connectNum; ++connIdx)
+        for (size_t inIdx = 0; inIdx < inputs->size(); ++inIdx)
         {
-            const auto prevNodeIdx   = fbTaskNodeDesc->link_node_id()->Get(connIdx);
-            const auto prevOutputIdx = fbTaskNodeDesc->link_output_id()->Get(connIdx);
+            const auto input         = inputs->Get(inIdx);
+            const auto prevNodeIdx   = input->link_node_id();
+            const auto prevOutputIdx = input->link_output_id();
 
             if (prevNodeIdx != MTaskNode::InvalidSlotId && prevOutputIdx != MTaskNode::InvalidSlotId)
             {
                 auto prevNode = taskNodes[prevNodeIdx];
-                prevNode->GetOutput(prevOutputIdx)->LinkTo(taskNode->GetInput(connIdx));
+                prevNode->GetOutput(prevOutputIdx)->LinkTo(taskNode->GetInput(inIdx));
             }
         }
     }
+}
+
+
+TEST_CASE("task graph serialize test")
+{
+    MTaskGraph graph;
+
+    auto       a   = graph.AddNode<MTaskNode>(MStringId("a"));
+    auto       b   = graph.AddNode<MTaskNode>(MStringId("b"));
+    auto       aid = a->GetNodeID();
+    auto       bid = b->GetNodeID();
+
+    a->AppendOutput()->LinkTo(b->AppendInput());
+    CHECK(graph.CheckCycle(b, a));
+
+    flatbuffers::FlatBufferBuilder fbb;
+    auto                           fbGraph = graph.Serialize(fbb);
+    fbb.Finish(fbGraph);
+
+
+    MTaskGraph graph2;
+    graph2.Deserialize(fbs::GetMTaskGraph(fbb.GetBufferPointer()));
+
+    auto a2 = graph2.FindTaskNode(aid);
+    auto b2 = graph2.FindTaskNode(bid);
+
+    CHECK(a2->GetOutput(0));
+    CHECK(b2->GetInput(0));
+    CHECK(b2->GetInput(0)->GetLinkedOutput() == a2->GetOutput(0));
 }

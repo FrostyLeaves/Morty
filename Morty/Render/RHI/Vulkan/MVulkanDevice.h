@@ -272,10 +272,10 @@ public:
     VkSampler        m_vkNearestSampler = VK_NULL_HANDLE;
 
 public:
-    MVulkanShaderCompiler  m_ShaderCompiler;
-    MVulkanShaderReflector m_ShaderReflector;
-    MVulkanPipelineManager m_PipelineManager;
-    MVulkanBufferPool      m_BufferPool;
+    std::unique_ptr<MVulkanShaderCompiler> m_ShaderCompiler;
+    MVulkanShaderReflector                 m_ShaderReflector;
+    MVulkanPipelineManager                 m_PipelineManager;
+    MVulkanBufferPool                      m_BufferPool;
 
 
     struct MVkFrameData {

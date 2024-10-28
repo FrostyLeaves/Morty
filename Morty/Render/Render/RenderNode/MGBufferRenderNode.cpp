@@ -79,7 +79,7 @@ void MGBufferRenderNode::Render(const MRenderInfo& info)
 
 void MGBufferRenderNode::BindInOutTexture()
 {
-    AutoBindBarrierTexture();
+    Super::AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTargetWithVRS());
 }
 

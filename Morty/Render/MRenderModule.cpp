@@ -40,6 +40,7 @@
 using namespace morty;
 
 const MString MRenderModule::DefaultWhite             = MString("Default_White");
+const MString MRenderModule::DefaultBlack             = MString("Default_Black");
 const MString MRenderModule::DefaultNormal            = MString("Default_Normal");
 const MString MRenderModule::Default_R8_One           = MString("Default_R8_One");
 const MString MRenderModule::Default_R8_Zero          = MString("Default_R8_Zero");
@@ -72,9 +73,14 @@ bool          MRenderModule::Register(MEngine* pEngine)
         {
             std::vector<MByte> byte(4);
             byte[0] = byte[1] = byte[2] = byte[3] = 255;
-            pTexture->Load(
-                    MTextureResourceUtil::LoadFromMemory("Default_White", byte, 1, 1, 4, MTexturePixelType::Byte8)
-            );
+            pTexture->Load(MTextureResourceUtil::LoadFromMemory(DefaultWhite, byte, 1, 1, 4, MTexturePixelType::Byte8));
+        }
+        if (std::shared_ptr<MTextureResource> pTexture =
+                    pResourceSystem->CreateResource<MTextureResource>(DefaultBlack))
+        {
+            std::vector<MByte> byte(4);
+            byte[0] = byte[1] = byte[2] = byte[3] = 0;
+            pTexture->Load(MTextureResourceUtil::LoadFromMemory(DefaultBlack, byte, 1, 1, 4, MTexturePixelType::Byte8));
         }
 
         if (std::shared_ptr<MTextureResource> pTexture =
@@ -182,16 +188,19 @@ void MRenderModule::RegisterMaterial(MEngine* pEngine)
     frame_mat->LoadShader(universal_vs);
     frame_mat->LoadShader(gbuffer_ps);
 
-    //const auto basic_ps  = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
-    //const auto basic_mat = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::BASIC_LIGHTING);
-    //basic_mat->SetCullMode(MECullMode::ECullBack);
-    //basic_mat->LoadShader(universal_vs);
-    //basic_mat->LoadShader(basic_ps);
+    const auto basic_ps = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
+    const auto basic_mat =
+            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FORWARD_TRANSPARENT);
+    basic_mat->SetCullMode(MECullMode::ECullNone);
+    basic_mat->SetMaterialType(MEMaterialType::EDepthPeel);
+    basic_mat->LoadShader(universal_vs);
+    basic_mat->LoadShader(basic_ps);
 
     const auto basic_ske_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::BASIC_LIGHTING_SKELETON);
+            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FORWARD_TRANSPARENT_SKELETON);
     basic_ske_mat->AddDefine(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    basic_ske_mat->SetCullMode(MECullMode::ECullBack);
+    basic_ske_mat->SetCullMode(MECullMode::ECullNone);
+    basic_ske_mat->SetMaterialType(MEMaterialType::EDepthPeel);
     basic_ske_mat->LoadShader(universal_vs);
     basic_ske_mat->LoadShader(gbuffer_ps);
 

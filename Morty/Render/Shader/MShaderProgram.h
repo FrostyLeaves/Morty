@@ -60,10 +60,9 @@ public:
 
 public:
     explicit MShaderProgram() = default;
-
     explicit MShaderProgram(MEngine* pEngine, EUsage usage);
 
-    ~MShaderProgram() override;
+    ~MShaderProgram() override = default;
 
 public:
     static std::shared_ptr<MShaderProgram> MakeShared(MEngine* pEngine, EUsage usage);
@@ -71,7 +70,7 @@ public:
     void                                   InitializeShaderPropertyBlock();
 
 public:
-    bool                       LoadShader(std::shared_ptr<MResource> pResource);
+    bool                       LoadShader(const std::shared_ptr<MResource>& pResource);
 
     std::shared_ptr<MResource> GetShaderResource(MEShaderType eType) const
     {

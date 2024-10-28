@@ -12,11 +12,11 @@ MORTY_CLASS_IMPLEMENT(MThreadPool, MTypeClass)
 
 std::array<METhreadType, MGlobal::M_MAX_THREAD_NUM> MThreadPool::s_tThreadType = {};
 
-thread_local static size_t ThreadIndex = MGlobal::M_MAX_THREAD_NUM;
+thread_local static size_t                          ThreadIndex = 0;
 
-constexpr bool             bSingleThreadMode = false;
+constexpr bool                                      bSingleThreadMode = false;
 
-void                       MThreadPool::Initialize()
+void                                                MThreadPool::Initialize()
 {
     ThreadIndex                = 0;
     s_tThreadType[ThreadIndex] = METhreadType::EMainThread;
@@ -29,13 +29,11 @@ void                       MThreadPool::Initialize()
 
     for (size_t nThreadIdx = 1; nThreadIdx < m_thread.size(); ++nThreadIdx)
     {
-        MString strThreadName = MString("Thread ") + MStringUtil::ToString(nThreadIdx);
-        m_thread[nThreadIdx] =
-                std::thread(&MThreadPool::ThreadRun, this, nThreadIdx, strThreadName);
-        s_tThreadType[nThreadIdx] =
-                nThreadIdx < static_cast<int>(METhreadType::ENameThreadNum)
-                        ? static_cast<METhreadType>(nThreadIdx)
-                        : METhreadType::EAny;
+        MString strThreadName     = MString("Thread ") + MStringUtil::ToString(nThreadIdx);
+        m_thread[nThreadIdx]      = std::thread(&MThreadPool::ThreadRun, this, nThreadIdx, strThreadName);
+        s_tThreadType[nThreadIdx] = nThreadIdx < static_cast<int>(METhreadType::ENameThreadNum)
+                                            ? static_cast<METhreadType>(nThreadIdx)
+                                            : METhreadType::EAny;
         m_thread[nThreadIdx].detach();
     }
 
@@ -69,14 +67,8 @@ bool MThreadPool::AddWork(const MThreadWork& work)
         return true;
     }
 
-    if (work.eThreadType == static_cast<int>(METhreadType::ECurrentThread))
-    {
-        work.funcWorkFunction();
-    }
-    else if (work.eThreadType == static_cast<int>(GetCurrentThreadType()))
-    {
-        work.funcWorkFunction();
-    }
+    if (work.eThreadType == static_cast<int>(METhreadType::ECurrentThread)) { work.funcWorkFunction(); }
+    else if (work.eThreadType == static_cast<int>(GetCurrentThreadType())) { work.funcWorkFunction(); }
     else if (work.eThreadType != static_cast<int>(METhreadType::EAny))
     {
         std::unique_lock<std::mutex> lck(m_ConditionMutex);
@@ -116,8 +108,7 @@ void MThreadPool::ThreadRun(size_t nThreadIndex, MString strThreadName)
             m_ConditionVariable.wait(lock, [=] {
                 if (m_close) return true;
 
-                if (m_specificWaitingWork[nThreadIndex].empty() && m_waitingWork.empty())
-                    return false;
+                if (m_specificWaitingWork[nThreadIndex].empty() && m_waitingWork.empty()) return false;
 
                 return true;
             });

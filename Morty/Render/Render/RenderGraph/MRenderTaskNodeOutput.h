@@ -57,6 +57,8 @@ public:
 
     bool                                 CanLink(const MTaskNodeInput* pInput) const override;
 
+    [[nodiscard]] MRenderTarget          CreateRenderTarget() const;
+
 public:
     static MRenderTaskOutputDesc
     Create(const MStringId& name, const METextureFormat& format, const MPassTargetDescription& rtDesc);

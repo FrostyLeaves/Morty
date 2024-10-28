@@ -45,24 +45,21 @@ std::shared_ptr<MShaderProgram> MShaderProgram::MakeShared(MEngine* pEngine, EUs
     return pResult;
 }
 
-
-MShaderProgram::~MShaderProgram() {}
-
-bool MShaderProgram::LoadShader(std::shared_ptr<MResource> pResource)
+bool MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
 {
     if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
     {
         auto eShaderType = pShaderResource->GetShaderType();
         auto LoadFunc    = [this, eShaderType]() {
-            MShaderDesc&     desc            = m_shaders[static_cast<size_t>(eShaderType)];
-            MShaderResource* pShaderResource = desc.resource.GetResource()->template DynamicCast<MShaderResource>();
+            MShaderDesc& desc            = m_shaders[static_cast<size_t>(eShaderType)];
+            auto*        pShaderResource = desc.resource.GetResource()->template DynamicCast<MShaderResource>();
             if (nullptr == pShaderResource) { return false; }
 
             desc.nShaderIdx = pShaderResource->FindShaderByMacroParam(m_ShaderMacro);
             desc.pShader    = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
             if (desc.pShader && nullptr == desc.pShader->GetBuffer())
             {
-                MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+                auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
                 if (!desc.pShader->CompileShader(pRenderSystem->GetDevice()))
                 {
                     MORTY_ASSERT(false);

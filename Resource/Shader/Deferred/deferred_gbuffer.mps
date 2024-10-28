@@ -13,7 +13,6 @@ struct PS_OUT
 };
 
 
-
 float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
 { 
     const float fMinLayers = 8;
@@ -48,6 +47,7 @@ float2 ParallaxMapping(float2 uv, float3 f3ViewDir, float fScale)
 
     return f2FinalTexCoords;
 }
+
 
 PS_OUT PS_MAIN(VS_OUT input)
 {

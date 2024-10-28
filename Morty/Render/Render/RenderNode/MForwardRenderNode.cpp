@@ -85,7 +85,7 @@ void MForwardRenderNode::Render(const MRenderInfo& info)
 
 void MForwardRenderNode::BindInOutTexture()
 {
-    AutoBindBarrierTexture();
+    Super::AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTargetWithVRS());
 }
 

@@ -32,7 +32,7 @@ public:
 
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
 
-    void                         SetTexture(const MStringId& strName, std::shared_ptr<MResource> pTexResource);
+    void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
 
 
     MShaderMacro                 GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }

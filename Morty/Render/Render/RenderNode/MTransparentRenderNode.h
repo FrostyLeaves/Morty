@@ -27,7 +27,7 @@ namespace morty
 class MCullingResultRenderable;
 class MTexture;
 class MTextureResource;
-class MORTY_API MTransparentRenderNode : public ISinglePassRenderNode
+class MORTY_API MTransparentRenderNode : public MRenderTaskNode
 {
 public:
     MORTY_CLASS(MTransparentRenderNode);
@@ -41,10 +41,15 @@ public:
 
 protected:
     void                               InitializeMaterial();
-
     void                               ReleaseMaterial();
 
-    void                               InitializeFillRenderPass();
+    void                               InitializeTexture();
+    void                               ReleaseTexture();
+
+    void                               InitializeRenderPass();
+
+    void                               DrawPeel(const MRenderInfo& info);
+    void                               DrawFill(const MRenderInfo& info);
 
     void                               BindInOutTexture() override;
 
@@ -52,9 +57,17 @@ protected:
 
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
-
 private:
-    std::shared_ptr<MMaterial> m_drawFillMaterial = nullptr;
+    std::shared_ptr<MResource>                           m_whiteTexture = nullptr;
+    std::shared_ptr<MResource>                           m_blackTexture = nullptr;
+
+    std::shared_ptr<MMaterial>                           m_copyDepthMaterial = nullptr;
+    std::shared_ptr<MMaterial>                           m_blendMaterial     = nullptr;
+
+    std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_framePropertyBlock;
+
+    MRenderPass                                          m_peelPass;
+    MRenderPass                                          m_fillPass;
 };
 
 }// namespace morty
