@@ -683,23 +683,20 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
 
     std::shared_ptr<MMaterialResource> pMaterial = nullptr;
+
+    if (m_skeletonResource)
+    {
+        const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER_SKELETON);
+        pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
+    }
+    else
+    {
+        const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
+        pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
+    }
+
     if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
     {
-        std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-        std::shared_ptr<MResource> pMeshPSResource =
-                pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
-
-        if (m_skeletonResource)
-        {
-            const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER_SKELETON);
-            pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
-        }
-        else
-        {
-            const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
-            pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
-        }
-
         pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
         pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
         pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
@@ -735,20 +732,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
     }
     else
     {
-        std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-        std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
-
-        if (m_skeletonResource)
-        {
-            const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING_SKELETON);
-            pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
-        }
-        else
-        {
-            const auto pTemplate = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
-            pMaterial            = MMaterialResource::CreateMaterial(pTemplate);
-        }
-
         std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
         for (size_t i = 0; i < pMaterial->GetMaterialPropertyBlock()->m_textures.size(); ++i)
         {

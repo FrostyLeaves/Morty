@@ -52,6 +52,7 @@ public:
     virtual void                                            Resize(Vector2i size);
 
     flatbuffers::Offset<void>                               Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    void                                                    Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
     void                                                    Deserialize(const void* flatbuffer) override;
     void                                                    OnPreCompile() override;
 

@@ -20,7 +20,6 @@
 #include "RenderGraph/MRenderGraph.h"
 #include "RenderGraph/MRenderOutputBindingWalker.h"
 #include "RenderNode/MDebugRenderNode.h"
-#include "RenderNode/MDeepPeelRenderNode.h"
 #include "RenderNode/MDeferredLightingRenderNode.h"
 #include "RenderNode/MEdgeDetectionRenderNode.h"
 #include "RenderNode/MForwardRenderNode.h"

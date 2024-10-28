@@ -17,28 +17,29 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
     MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
 
-    const auto       pTemplate        = pResourceSystem->LoadResource(MMaterialName::BASIC_LIGHTING);
-    const auto       pForwardMaterial = MMaterialResource::CreateMaterial(pTemplate);
+    const auto       pTemplate         = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
+    const auto       pDeferredMaterial = MMaterialResource::CreateMaterial(pTemplate);
     {
-        pForwardMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_AMBIENT,
-                Vector3(1.0f, 1.0f, 1.0f)
+        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(
+                MShaderPropertyName::MATERIAL_ALBEDO,
+                Vector4(1.0f, 1.0f, 1.0f, 1.0f)
         );
-        pForwardMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_DIFFUSE,
-                Vector3(1.0f, 1.0f, 1.0f)
-        );
-        pForwardMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_SPECULAR,
-                Vector3(1.0f, 1.0f, 1.0f)
-        );
-        pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
-        pForwardMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, 32.0f);
+        
+        std::shared_ptr<MResource> albedo    = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
+        std::shared_ptr<MResource> normal    = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
+        std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+        std::shared_ptr<MResource> ao        = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+        std::shared_ptr<MResource> metal     = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);
+        std::shared_ptr<MResource> height    = pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero);
 
-        std::shared_ptr<MResource> diffuse = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-        std::shared_ptr<MResource> normal  = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
-        pForwardMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE, diffuse);
-        pForwardMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, albedo);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, normal);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_METALLIC, metal);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS, roughness);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, ao);
+        pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, height);
     }
 
     std::shared_ptr<MMeshResource> pCubeResource = pResourceSystem->CreateResource<MMeshResource>();
@@ -54,7 +55,7 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
     if (MRenderMeshComponent* pMeshComponent = pParent->RegisterComponent<MRenderMeshComponent>())
     {
-        pMeshComponent->SetMaterial(pForwardMaterial);
+        pMeshComponent->SetMaterial(pDeferredMaterial);
         pMeshComponent->Load(pCubeResource);
     }
 
@@ -71,7 +72,7 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
 
     if (MRenderMeshComponent* pMeshComponent = pChild->RegisterComponent<MRenderMeshComponent>())
     {
-        pMeshComponent->SetMaterial(pForwardMaterial);
+        pMeshComponent->SetMaterial(pDeferredMaterial);
         pMeshComponent->Load(pCubeResource);
     }
 }

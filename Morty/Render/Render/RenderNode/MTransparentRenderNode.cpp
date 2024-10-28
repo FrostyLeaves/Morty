@@ -173,6 +173,18 @@ void MTransparentRenderNode::DrawPeel(const MRenderInfo& info)
         return;
     }
 
+    pCommand->AddRenderToTextureBarrier(
+            {
+                    GetOutputTexture(1).get(),
+                    GetOutputTexture(2).get(),
+                    GetOutputTexture(3).get(),
+                    GetOutputTexture(4).get(),
+                    GetOutputTexture(5).get(),
+                    GetOutputTexture(6).get(),
+            },
+            METextureBarrierStage::EPixelShaderWrite
+    );
+
     const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
     //Render static mesh.
@@ -221,6 +233,11 @@ void MTransparentRenderNode::DrawFill(const MRenderInfo& info)
         MORTY_ASSERT(pMeshManager);
         return;
     }
+
+    pCommand->AddRenderToTextureBarrier(
+            {GetOutputTexture(1).get(), GetOutputTexture(2).get()},
+            METextureBarrierStage::EPixelShaderSample
+    );
 
     pCommand->BeginRenderPass(&m_fillPass);
 
@@ -285,6 +302,13 @@ void MTransparentRenderNode::BindInOutTexture()
     m_fillPass.SetRenderTarget(
             {.backTargets = {GetRenderOutput(0)->CreateRenderTarget()}, .depthTarget = {}, .shadingRate = {}}
     );
+
+
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    m_peelPass.DestroyBuffer(pRenderSystem->GetDevice());
+    m_peelPass.GenerateBuffer(pRenderSystem->GetDevice());
+    m_fillPass.DestroyBuffer(pRenderSystem->GetDevice());
+    m_fillPass.GenerateBuffer(pRenderSystem->GetDevice());
 }
 
 std::vector<MRenderTaskInputDesc> MTransparentRenderNode::InitInputDesc()
@@ -326,4 +350,13 @@ std::vector<MRenderTaskOutputDesc> MTransparentRenderNode::InitOutputDesc()
             MRenderTaskNodeOutput::Create(DepthOutput[2], METextureFormat::Float_R32, {true, MColor::White}),
             MRenderTaskNodeOutput::Create(DepthOutput[3], METextureFormat::Float_R32, {true, MColor::Black_T}),
     };
+}
+void MTransparentRenderNode::Resize(Vector2i size)
+{
+    Super::Resize(size);
+
+    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+
+    if (m_peelPass.GetFrameBufferSize() != size) { m_peelPass.Resize(pRenderSystem->GetDevice()); }
+    if (m_fillPass.GetFrameBufferSize() != size) { m_fillPass.Resize(pRenderSystem->GetDevice()); }
 }

@@ -58,6 +58,7 @@ public:
     virtual void OnDelete() {}
 
     virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb);
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb);
     virtual void                      Deserialize(const void* flatbuffer);
 
     static const size_t               InvalidSlotId;

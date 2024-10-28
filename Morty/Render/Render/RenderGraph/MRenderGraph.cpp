@@ -55,8 +55,8 @@ flatbuffers::Offset<void> MRenderGraph::Serialize(flatbuffers::FlatBufferBuilder
 
 void MRenderGraph::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MRenderGraph* fbRenderGraph = reinterpret_cast<const fbs::MRenderGraph*>(pBufferPointer);
-    auto                     fbSuper       = fbRenderGraph->super();
+    const auto* fbRenderGraph = reinterpret_cast<const fbs::MRenderGraph*>(pBufferPointer);
+    auto        fbSuper       = fbRenderGraph->super();
 
     MTaskGraph::Deserialize(fbSuper);
 }

@@ -27,7 +27,7 @@ namespace morty
 class MCullingResultRenderable;
 class MTexture;
 class MTextureResource;
-class MORTY_API MTransparentRenderNode : public MRenderTaskNode
+REFL_RENDER_NODE_CLASS MTransparentRenderNode : public MRenderTaskNode
 {
 public:
     MORTY_CLASS(MTransparentRenderNode);
@@ -39,6 +39,8 @@ public:
 
     void Render(const MRenderInfo& info) override;
 
+    void Resize(Vector2i size) override;
+    
 protected:
     void                               InitializeMaterial();
     void                               ReleaseMaterial();

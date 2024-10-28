@@ -126,10 +126,10 @@ TBuiltInResource* GlslangDefaultResources()
     return &Resources;
 }
 
-class MVulkanIncludeHandler : public glslang::TShader::Includer
+class MGlslangIncludeHandler : public glslang::TShader::Includer
 {
 public:
-    MVulkanIncludeHandler() = default;
+    MGlslangIncludeHandler() = default;
 
     void           SetSystemSearchPath(const std::vector<std::string>& paths) { m_searchPath = paths; }
 
@@ -259,10 +259,10 @@ bool MVulkanShaderCompilerGlslang::CompileShader(
     shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
     shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
 
-    MVulkanIncludeHandler includer;
+    MGlslangIncludeHandler includer;
 
-    std::string           strShaderDirectory;
-    const size_t          last_slash_idx = strShaderPath.rfind('/');
+    std::string            strShaderDirectory;
+    const size_t           last_slash_idx = strShaderPath.rfind('/');
     if (std::string::npos != last_slash_idx) { strShaderDirectory = strShaderPath.substr(0, last_slash_idx); }
 
     includer.SetSystemSearchPath({MORTY_RESOURCE_PATH "/Shader/", strShaderDirectory + "/"});

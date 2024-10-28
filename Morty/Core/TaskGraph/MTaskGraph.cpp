@@ -225,6 +225,7 @@ flatbuffers::Offset<void> MTaskGraph::Serialize(flatbuffers::FlatBufferBuilder& 
     builder.add_node_array(fbNodes);
     return builder.Finish().Union();
 }
+
 void MTaskGraph::Deserialize(const void* pBufferPointer)
 {
     const auto*                              fbTaskGraph = reinterpret_cast<const fbs::MTaskGraph*>(pBufferPointer);
@@ -243,19 +244,10 @@ void MTaskGraph::Deserialize(const void* pBufferPointer)
 
         flatbuffers::FlatBufferBuilder nodeFbb;
         nodeFbb.PushBytes((const uint8_t*) fbTaskNodeData->data(), fbTaskNodeData->size());
-        taskNode->Deserialize(nodeFbb.GetCurrentBufferPointer());
+        taskNode->Deserialize(nodeFbb);
         taskNodes[nodeId] = taskNode;
 
         MORTY_ASSERT(AddNode(taskNode->GetNodeName(), taskNode));
-
-        if (fbTaskNodeDesc->inputs() != nullptr)
-        {
-            for (size_t inIdx = 0; inIdx < fbTaskNodeDesc->inputs()->size(); ++inIdx) { taskNode->AppendInput(); }
-        }
-        if (fbTaskNodeDesc->outputs() != nullptr)
-        {
-            for (size_t outIdx = 0; outIdx < fbTaskNodeDesc->outputs()->size(); ++outIdx) { taskNode->AppendOutput(); }
-        }
     }
 
     for (size_t idx = 0; idx < fbTaskNodeArray.size(); ++idx)

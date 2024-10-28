@@ -28,6 +28,7 @@ public:
     void                      Release() override;
     void                      Render(const MRenderInfo& info) override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder & fbb) override;
+    void                      Deserialize(flatbuffers::FlatBufferBuilder & fbb) override;
     void                      Deserialize(const void* flatbuffer) override;
 
 public:

@@ -54,10 +54,11 @@ public:
     [[nodiscard]] MTexturePtr            GetRenderTexture() const { return m_renderTexture; }
     [[nodiscard]] METextureFormat        GetFormat() const;
     [[nodiscard]] MRenderTaskNodeOutput* GetActualOutput();
+    [[nodiscard]] MTexturePtr            GetActualTexture() { return GetActualOutput()->GetRenderTexture(); }
 
     bool                                 CanLink(const MTaskNodeInput* pInput) const override;
 
-    [[nodiscard]] MRenderTarget          CreateRenderTarget() const;
+    [[nodiscard]] MRenderTarget          CreateRenderTarget();
 
 public:
     static MRenderTaskOutputDesc

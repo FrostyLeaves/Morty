@@ -17,13 +17,13 @@
 
 using namespace morty;
 
-struct MVulkanIncludeHandler : public IDxcIncludeHandler {
-    MVulkanIncludeHandler(IDxcUtils* pUtils, IDxcIncludeHandler* pDefaultIncludeHandler)
+struct MDxcIncludeHandler : public IDxcIncludeHandler {
+    MDxcIncludeHandler(IDxcUtils* pUtils, IDxcIncludeHandler* pDefaultIncludeHandler)
         : m_utils(pUtils)
         , m_includeHandler(pDefaultIncludeHandler)
     {}
 
-    virtual ~MVulkanIncludeHandler() = default;
+    virtual ~MDxcIncludeHandler() = default;
 
     void SetLocalPath(const std::wstring& strShaderDir) { m_strShaderDir = strShaderDir; }
 
@@ -98,8 +98,8 @@ bool MVulkanShaderCompilerDxc::CompileShader(
     pUtils->CreateDefaultIncludeHandler(&pDefaultIncludeHandler);
 
 
-    std::shared_ptr<MVulkanIncludeHandler> pIncludeHandler =
-            std::make_shared<MVulkanIncludeHandler>(pUtils, pDefaultIncludeHandler);
+    std::shared_ptr<MDxcIncludeHandler> pIncludeHandler =
+            std::make_shared<MDxcIncludeHandler>(pUtils, pDefaultIncludeHandler);
     pIncludeHandler->SetSystemSearchPath(
             {strShaderLocalDir, MStringUtil::ConvertToWString(MORTY_RESOURCE_PATH) + L"/Shader/"}
     );

@@ -83,6 +83,13 @@ flatbuffers::Offset<void> MRenderTaskNode::Serialize(flatbuffers::FlatBufferBuil
 
     return builder.Finish().Union();
 }
+
+void MRenderTaskNode::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    auto fbNode = fbs::GetMRenderTaskNode(fbb.GetCurrentBufferPointer());
+    Deserialize(fbNode);
+}
+
 void MRenderTaskNode::Deserialize(const void* flatbuffer)
 {
     const auto* fbRenderNode = reinterpret_cast<const fbs::MRenderTaskNode*>(flatbuffer);
@@ -90,6 +97,7 @@ void MRenderTaskNode::Deserialize(const void* flatbuffer)
     MTaskNode::Deserialize(fbRenderNode->super());
     m_strNodeName = MStringId(fbRenderNode->name()->c_str());
 }
+
 bool MRenderTaskNode::IsValidRenderNode()
 {
     if (m_validCacheFlag != ValidCacheFlag::EUnknow) { return m_validCacheFlag == ValidCacheFlag::EValid; }

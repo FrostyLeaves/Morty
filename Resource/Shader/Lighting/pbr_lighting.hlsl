@@ -59,7 +59,10 @@ float3 Ambient(SurfaceData pointData)
 {
     float3 f3Ambient = float3(0.0, 0.0, 0.0);
 
-    float3 kS = FresnelSchlickRoughness(max(dot(pointData.f3Normal, pointData.f3CameraDir), 0.0), pointData.fRoughness);
+    float3 f3BaseColor = float3(0.04, 0.04, 0.04);
+    float3 F0 = lerp(f3BaseColor, pointData.f3Albedo, pointData.fMetallic);
+
+    float3 kS = FresnelSchlickRoughness(max(dot(pointData.f3Normal, pointData.f3CameraDir), 0.0), f3BaseColor, pointData.fRoughness);
     float3 kD = (1.0f - kS) * (1.0f - pointData.fMetallic);
 
     if(u_bEnvironmentMapEnabled)
@@ -81,7 +84,7 @@ float3 Ambient(SurfaceData pointData)
         f3Ambient = float3(0.1, 0.1, 0.1) * pointData.f3Albedo;
     }
 
-    return f3Ambient * pointData.fAO;
+    return f3Ambient;
 }
 
 float3 PbrLighting(SurfaceData pointData, Texture2DArray texShadowMap)
@@ -114,5 +117,5 @@ float3 PbrLighting(SurfaceData pointData, Texture2DArray texShadowMap)
         f3Color += AdditionSpotLight(u_vSpotLights[nSpotLightIdx], pointData);
     }
 
-    return f3Color * pointData.fAO;
+    return f3Color;
 }

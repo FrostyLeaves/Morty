@@ -12,8 +12,8 @@ MString MMaterialName::DEFERRED_GBUFFER = MString("Deferred GBuffer Material");
 
 MString MMaterialName::DEFERRED_GBUFFER_SKELETON = MString("Deferred GBuffer With Skeleton Material");
 
-MString MMaterialName::BASIC_LIGHTING          = MString("Basic Lighting Material");
-MString MMaterialName::BASIC_LIGHTING_SKELETON = MString("Basic Lighting With Skeleton Material");
+MString MMaterialName::FORWARD_TRANSPARENT          = MString("Forward Transparent Material");
+MString MMaterialName::FORWARD_TRANSPARENT_SKELETON = MString("Forward Transparent With Skeleton Material");
 
 MString MMaterialName::SHADOW_MAP = MString("Shadow Map Material");
 

@@ -130,4 +130,10 @@ flatbuffers::Offset<void> MTaskNode::Serialize(flatbuffers::FlatBufferBuilder& f
     return builder.Finish().Union();
 }
 
+void MTaskNode::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    auto fbNode = fbs::GetMTaskNode(fbb.GetCurrentBufferPointer());
+    Deserialize(fbNode);
+}
+
 void MTaskNode::Deserialize(const void* flatbuffer) { MORTY_UNUSED(flatbuffer); }

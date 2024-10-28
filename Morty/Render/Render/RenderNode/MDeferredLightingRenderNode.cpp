@@ -166,4 +166,17 @@ flatbuffers::Offset<void> MDeferredLightingRenderNode::Serialize(flatbuffers::Fl
 
     return builder.Finish().Union();
 }
-void MDeferredLightingRenderNode::Deserialize(const void* flatbuffer) { MRenderTaskNode::Deserialize(flatbuffer); }
+
+void MDeferredLightingRenderNode::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
+{
+    auto fbNode = fbs::GetMDeferredLightingRenderNode(fbb.GetCurrentBufferPointer());
+    Deserialize(fbNode);
+}
+
+void MDeferredLightingRenderNode::Deserialize(const void* flatbuffer)
+{
+    const auto* fbDeferredNode = reinterpret_cast<const fbs::MDeferredLightingRenderNode*>(flatbuffer);
+    MRenderTaskNode::Deserialize(fbDeferredNode->super());
+
+    EnableAO = fbDeferredNode->enable_ao();
+}
