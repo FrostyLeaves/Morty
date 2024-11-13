@@ -10,7 +10,7 @@
 #include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
 #include "Manager/MAnimationManager.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Render/MIRenderProgram.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MEntity.h"
@@ -102,7 +102,7 @@ void SceneViewer::SetRect(Vector2i pos, Vector2i size)
     m_renderViewport->SetSize(size);
 }
 
-void SceneViewer::UpdateTexture(MIRenderCommand* pRenderCommand)
+void SceneViewer::UpdateTexture(IRenderCommand* pRenderCommand)
 {
     if (m_pauseUpdate) { return; }
 

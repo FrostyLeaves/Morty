@@ -20,7 +20,7 @@ namespace morty
 
 class MTaskNode;
 class IRenderable;
-class MIRenderCommand;
+class IRenderCommand;
 
 REFL_RENDER_NODE_CLASS MShadowMapRenderNode : public ISinglePassRenderNode
 {

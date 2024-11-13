@@ -13,7 +13,7 @@ namespace morty
 class MIMesh;
 class MTexture;
 class MMaterial;
-class MIRenderCommand;
+class IRenderCommand;
 class MSkeletonInstance;
 class MDebugMeshComponent;
 class MRenderMeshComponent;
@@ -72,15 +72,15 @@ struct MRenderInfo {
     const MScene*                                                                 pScene = nullptr;
 
     /************************** render **************************/
-    MIRenderCommand*                                                              pPrimaryRenderCommand = nullptr;
+    IRenderCommand*                                                               pPrimaryRenderCommand = nullptr;
 
     /************************** basic **************************/
     uint32_t                                                                      nFrameIndex = 0;
     float                                                                         fDelta      = 0.0f;
     float                                                                         fGameTime   = 0.0f;
 
-    Vector2i                                                                      f2ViewportLeftTop;
-    Vector2i                                                                      f2ViewportSize;
+    Vector2                                                                       f2ViewportLeftTop;
+    Vector2                                                                       f2ViewportSize;
 
     /************************** camera **************************/
     Vector2                                                                       f2CameraNearFar;

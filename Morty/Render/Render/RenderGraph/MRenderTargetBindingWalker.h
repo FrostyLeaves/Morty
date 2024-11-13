@@ -19,7 +19,7 @@ namespace morty
 
 class IPropertyBlockAdapter;
 class MIMesh;
-class MIRenderCommand;
+class IRenderCommand;
 class MTaskNode;
 class MTaskGraph;
 class MRenderTaskNode;

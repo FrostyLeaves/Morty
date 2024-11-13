@@ -3,7 +3,7 @@
 #include "Basic/MViewport.h"
 #include "Engine/MEngine.h"
 #include "Math/MMath.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Scene/MEntity.h"
 
 #include "Material/MMaterial.h"
@@ -15,6 +15,7 @@
 #include "Resource/MTextureResource.h"
 
 #include "Component/MSkyBoxComponent.h"
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Resource/MMeshResourceUtil.h"
 
 using namespace morty;
@@ -50,7 +51,7 @@ void MEnvironmentMapRenderNode::OnDelete()
 
 void MEnvironmentMapRenderNode::MarkUpdateEnvironment() { m_updateNextFrame = true; }
 
-void MEnvironmentMapRenderNode::RenderEnvironment(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
+void MEnvironmentMapRenderNode::RenderEnvironment(IRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
     if (!m_updateNextFrame) return;
 
@@ -70,7 +71,7 @@ std::shared_ptr<MResource> MEnvironmentMapRenderNode::GetDiffuseOutputTexture() 
     return m_DiffuseEnvironmentMap.GetResource();
 }
 
-void MEnvironmentMapRenderNode::RenderDiffuse(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
+void MEnvironmentMapRenderNode::RenderDiffuse(IRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
 
     std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
@@ -80,31 +81,24 @@ void MEnvironmentMapRenderNode::RenderDiffuse(MIRenderCommand* pCommand, MSkyBox
     }
 
 
-    pCommand->BeginRenderPass(&m_DiffuseRenderPass);
+    auto command = pCommand->BeginRenderPass(&m_DiffuseRenderPass);
 
-    const Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-    const Vector2 v2Size    = Vector2(EnvironmentTextureSize, EnvironmentTextureSize);
-    pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-    pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+    command.SetViewportAndScissor(
+            {.x = 0.0f, .y = 0.0f, .width = EnvironmentTextureSize, .height = EnvironmentTextureSize}
+    );
 
-    pCommand->SetUseMaterial(m_DiffuseMaterial);
-    pCommand->DrawMesh(m_cubeMesh->GetMesh());
+    command.SetMaterial(m_DiffuseMaterial.get());
+    command.DrawMesh(m_cubeMesh->GetMesh());
 
-    pCommand->EndRenderPass();
-
+    pCommand->EndRenderPass(command);
 
     if (std::shared_ptr<MTextureResource> pDiffuseTexture = m_DiffuseEnvironmentMap.GetResource<MTextureResource>())
     {
-        if (MTexturePtr pTexture = pDiffuseTexture->GetTextureTemplate())
-        {
-            pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
-        }
-
         pSkyBoxComponent->LoadDiffuseEnvResource(pDiffuseTexture);
     }
 }
 
-void MEnvironmentMapRenderNode::RenderSpecular(MIRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
+void MEnvironmentMapRenderNode::RenderSpecular(IRenderCommand* pCommand, MSkyBoxComponent* pSkyBoxComponent)
 {
     std::shared_ptr<MResource> pSkyBoxTexture = pSkyBoxComponent->GetSkyBoxResource();
 
@@ -118,27 +112,19 @@ void MEnvironmentMapRenderNode::RenderSpecular(MIRenderCommand* pCommand, MSkyBo
             m_specularMaterial[nIdx]->SetTexture(MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX, pSkyBoxTexture);
         }
 
-        pCommand->BeginRenderPass(&m_specularRenderPass[nIdx]);
+        MRenderPassCmd command = pCommand->BeginRenderPass(&m_specularRenderPass[nIdx]);
+        Vector2        v2Size  = pSpecularTexture->GetMipmapSize(nIdx);
 
-        Vector2 v2LeftTop = Vector2(0.0f, 0.0f);
-        Vector2 v2Size    = pSpecularTexture->GetMipmapSize(nIdx);
+        command.SetViewportAndScissor({.x = 0.0f, .y = 0.0f, .width = v2Size.x, .height = v2Size.y});
 
-        pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-        pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
+        command.SetMaterial(m_specularMaterial[nIdx].get());
+        command.DrawMesh(m_cubeMesh->GetMesh());
 
-        pCommand->SetUseMaterial(m_specularMaterial[nIdx]);
-        pCommand->DrawMesh(m_cubeMesh->GetMesh());
-
-        pCommand->EndRenderPass();
+        pCommand->EndRenderPass(command);
     }
 
     if (std::shared_ptr<MTextureResource> pSpecularTexture = m_SpecularEnvironmentMap.GetResource<MTextureResource>())
     {
-        if (MTexturePtr pTexture = pSpecularTexture->GetTextureTemplate())
-        {
-            pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
-        }
-
         pSkyBoxComponent->LoadSpecularEnvResource(pSpecularTexture);
     }
 }

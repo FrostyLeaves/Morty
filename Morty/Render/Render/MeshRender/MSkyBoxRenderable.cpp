@@ -1,17 +1,14 @@
 #include "MSkyBoxRenderable.h"
-
+#include "Component/MSkyBoxComponent.h"
 #include "Engine/MEngine.h"
+#include "Manager/MEnvironmentManager.h"
 #include "Material/MMaterial.h"
-#include "RHI/MRenderCommand.h"
+#include "Mesh/MMeshManager.h"
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
 #include "Scene/MScene.h"
-
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
-#include "Component/MSkyBoxComponent.h"
-
-#include "Manager/MEnvironmentManager.h"
-#include "Mesh/MMeshManager.h"
 
 using namespace morty;
 
@@ -24,7 +21,7 @@ void MSkyBoxRenderable::SetPropertyBlockAdapter(const std::vector<std::shared_pt
     m_framePropertyAdapter = vAdapter;
 }
 
-void MSkyBoxRenderable::Render(MIRenderCommand* pCommand)
+void MSkyBoxRenderable::Render(MRenderPassCmd* pCommand)
 {
     if (!m_mesh)
     {
@@ -38,11 +35,11 @@ void MSkyBoxRenderable::Render(MIRenderCommand* pCommand)
         return;
     }
 
-    pCommand->SetUseMaterial(m_material);
+    pCommand->SetMaterial(m_material.get());
 
     for (const auto& pAdapter: m_framePropertyAdapter)
     {
-        pCommand->SetShaderPropertyBlock(pAdapter->GetPropertyBlock());
+        pCommand->SetShaderPropertyBlock(pAdapter->GetPropertyBlock().get());
     }
 
     pCommand->DrawMesh(m_mesh);

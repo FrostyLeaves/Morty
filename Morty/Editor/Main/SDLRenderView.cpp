@@ -19,7 +19,7 @@
 #include "Engine/MEngine.h"
 #include "Input/MInputEvent.h"
 #include "Mesh/MMesh.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Scene/MScene.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
@@ -31,6 +31,7 @@
 #include "System/MInputSystem.h"
 #include "System/MRenderSystem.h"
 
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Utility/RenderMessageManager.h"
 
 using namespace morty;
@@ -332,7 +333,7 @@ void SDLRenderView::Render(MTaskNode* pNode)
     MViewRenderTarget* pRenderTarget = GetNextRenderTarget();
     if (!pRenderTarget) return;
 
-    MIRenderCommand* pRenderCommand = pDevice->CreateRenderCommand("MainEditor RenderCommand");
+    IRenderCommand* pRenderCommand = pDevice->CreateRenderCommand("MainEditor RenderCommand");
     if (!pRenderCommand) return;
 
     pRenderTarget->BindPrimaryCommand(pRenderCommand);
@@ -353,10 +354,9 @@ void SDLRenderView::Render(MTaskNode* pNode)
     if (m_imGuiRender)
     {
         m_imGuiRender->Tick(0.0f);
-        m_imGuiRender->WaitTextureReady(pRenderCommand);
-        pRenderCommand->BeginRenderPass(&pRenderTarget->renderPass);
-        m_imGuiRender->Render(pRenderCommand);
-        pRenderCommand->EndRenderPass();
+        auto command = pRenderCommand->BeginRenderPass(&pRenderTarget->renderPass);
+        m_imGuiRender->Render(&command);
+        pRenderCommand->EndRenderPass(command);
     }
 
     pRenderCommand->RenderCommandEnd();

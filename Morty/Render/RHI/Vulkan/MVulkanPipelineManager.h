@@ -102,14 +102,11 @@ public:
     VkPipeline
          CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher);
 
-    void AllocateShaderPropertyBlock(
-            const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock,
-            const std::shared_ptr<MPipeline>&            pPipeline
-    );
+    void AllocateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock, const MPipeline* pPipeline);
 
-    void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock);
+    void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);
 
-    void DestroyShaderPropertyBlockImpl(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) const;
+    void DestroyShaderPropertyBlockImpl(MShaderPropertyBlock* pPropertyBlock) const;
 
 public:
     void GeneratePipelineLayout(

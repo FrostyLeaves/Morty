@@ -15,7 +15,8 @@ class MBuffer;
 class MTexture;
 class MMaterial;
 class MRenderPass;
-class MIRenderCommand;
+class MRenderPassCmd;
+class IRenderCommand;
 class MComputeDispatcher;
 class MShaderPropertyBlock;
 struct MMeshInstanceRenderProxy;
@@ -68,7 +69,7 @@ class MORTY_API IRenderable
 public:
     virtual ~IRenderable() = default;
 
-    virtual void Render(MIRenderCommand* pCommand) = 0;
+    virtual void Render(MRenderPassCmd* pCommand) = 0;
 };
 
 class MORTY_API IRenderableFilter

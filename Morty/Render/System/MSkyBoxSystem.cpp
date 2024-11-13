@@ -2,7 +2,7 @@
 
 #include "Engine/MEngine.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
@@ -37,7 +37,7 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 
     MIDevice*                  pDevice = pRenderSystem->GetDevice();
 
-    MIRenderCommand*           pCommand = pDevice->CreateRenderCommand("Render Environment");
+    IRenderCommand*            pCommand = pDevice->CreateRenderCommand("Render Environment");
 
     pCommand->RenderCommandBegin();
 

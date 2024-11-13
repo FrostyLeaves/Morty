@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "TaskGraph/MTaskNode.h"

@@ -16,11 +16,11 @@ class MNode;
 class MScene;
 class MInputEvent;
 class MTaskNode;
-class MIRenderCommand;
+class IRenderCommand;
 class RenderViewContent
 {
 public:
-    virtual void       OnRender(MIRenderCommand* pRenderCommand) = 0;
+    virtual void       OnRender(IRenderCommand* pRenderCommand) = 0;
 
     virtual void       OnResize(Vector2 size) = 0;
 

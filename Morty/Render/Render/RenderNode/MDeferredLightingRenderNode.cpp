@@ -15,7 +15,8 @@
 #include "Mesh/MVertex.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
@@ -32,36 +33,31 @@ MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
 void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
 {
-    MMeshManager* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+    auto* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
     if (!pMeshManager)
     {
         MORTY_ASSERT(pMeshManager);
         return;
     }
 
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
-
-    AutoSetTextureBarrier(pCommand);
-
-    pCommand->BeginRenderPass(&m_renderPass);
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    auto            command  = pCommand->BeginRenderPass(&m_renderPass);
 
     //pCommand->SetShadingRate({ 1, 1 }, { MEShadingRateCombinerOp::Keep, MEShadingRateCombinerOp::Replace });
 
-    const Vector2i n2Size = m_renderPass.GetFrameBufferSize();
+    const Vector2i  n2Size = m_renderPass.GetFrameBufferSize();
 
-    pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
+    command.SetViewportAndScissor(
+            {.x = 0.0f, .y = 0.0f, .width = static_cast<float>(n2Size.x), .height = static_cast<float>(n2Size.y)}
+    );
 
+    command.SetMaterial(m_lightningMaterial.get());
+    auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
+    command.SetShaderPropertyBlock(pPropertyBlock);
 
-    if (pCommand->SetUseMaterial(m_lightningMaterial))
-    {
-        auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
-        pCommand->SetShaderPropertyBlock(pPropertyBlock);
+    command.DrawMesh(pMeshManager->GetScreenRect());
 
-        pCommand->DrawMesh(pMeshManager->GetScreenRect());
-    }
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 void MDeferredLightingRenderNode::OnCreated()

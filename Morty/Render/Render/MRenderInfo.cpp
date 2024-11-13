@@ -33,8 +33,10 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     MRenderInfo info;
     info.pScene = pScene;
 
-    info.f2ViewportLeftTop = pViewport->GetLeftTop();
-    info.f2ViewportSize    = pViewport->GetSize();
+    info.f2ViewportLeftTop.x = pViewport->GetLeftTop().x;
+    info.f2ViewportLeftTop.y = pViewport->GetLeftTop().y;
+    info.f2ViewportSize.x    = pViewport->GetSize().x;
+    info.f2ViewportSize.y    = pViewport->GetSize().y;
 
     info.m4CameraTransform = pCameraSceneComponent->GetWorldTransform();
     info.f2CameraNearFar   = pCameraComponent->GetZNearFar();

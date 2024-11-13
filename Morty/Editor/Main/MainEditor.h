@@ -50,7 +50,7 @@ public:
 
     void                                       OnResize(morty::Vector2 size) override;
 
-    void                                       OnRender(MIRenderCommand* pRenderCommand) override;
+    void                                       OnRender(IRenderCommand* pRenderCommand) override;
 
     void                                       OnInput(MInputEvent* pEvent) override;
 
@@ -67,7 +67,7 @@ public:
     [[nodiscard]] morty::Vector4               GetCurrentWidgetSize() const;
 
 protected:
-    void UpdateSceneViewer(MIRenderCommand* pRenderCommand);
+    void UpdateSceneViewer(IRenderCommand* pRenderCommand);
 
     void ShowMenu();
 

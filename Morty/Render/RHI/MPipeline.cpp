@@ -2,7 +2,7 @@
 
 using namespace morty;
 
-VkPipeline MGraphicsPipeline::GetSubpassPipeline(size_t nSubPassIdx)
+VkPipeline MGraphicsPipeline::GetSubpassPipeline(size_t nSubPassIdx) const
 {
     if (nSubPassIdx < m_subpassPipeline.size()) return m_subpassPipeline[nSubPassIdx];
 

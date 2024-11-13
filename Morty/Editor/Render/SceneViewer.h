@@ -13,7 +13,7 @@ class MScene;
 class MEngine;
 class MViewport;
 class MTexture;
-class MIRenderCommand;
+class IRenderCommand;
 class MIRenderProgram;
 class SceneViewer
 {
@@ -21,7 +21,7 @@ public:
     void                      Initialize(const MString& viewName, MScene* pScene, const MStringId& strRenderProgram);
     void                      Release();
 
-    void                      UpdateTexture(MIRenderCommand* pRenderCommand);
+    void                      UpdateTexture(IRenderCommand* pRenderCommand);
     void                      SetRect(Vector2i pos, Vector2i size);
     void                      SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
 

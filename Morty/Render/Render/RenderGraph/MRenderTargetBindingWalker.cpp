@@ -2,7 +2,7 @@
 
 #include "Basic/MTexture.h"
 #include "Material/MMaterial.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph/MRenderCommon.h"

@@ -11,7 +11,7 @@
 #include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "MRenderTaskNodeOutput.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph//MRenderTaskNodeInput.h"
@@ -72,7 +72,6 @@ public:
     [[nodiscard]] bool                                      IsValidRenderNode();
 
     void                                                    AutoBindBarrierTexture();
-    void                                                    AutoSetTextureBarrier(MIRenderCommand* pCommand);
 
     static METextureFormat                                  DefaultLinearSpaceFormat;
 

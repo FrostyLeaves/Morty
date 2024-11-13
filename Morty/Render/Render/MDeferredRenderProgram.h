@@ -39,7 +39,7 @@ class ITextureInputAdapter;
 class MViewport;
 class MMaterial;
 class MRenderGraph;
-class MIRenderCommand;
+class IRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
@@ -54,8 +54,8 @@ public:
 #endif
 
 public:
-    void          Render(MIRenderCommand* pPrimaryCommand) override;
-    void          RenderSetup(MIRenderCommand* pPrimaryCommand);
+    void          Render(IRenderCommand* pPrimaryCommand) override;
+    void          RenderSetup(IRenderCommand* pPrimaryCommand);
 
     MRenderGraph* GetRenderGraph() override { return m_renderGraph.get(); }
 

@@ -16,7 +16,7 @@
 namespace morty
 {
 
-class MIRenderCommand;
+class IRenderCommand;
 class MSkyBoxComponent;
 class MORTY_API MSkyBoxSystem : public MISystem
 {

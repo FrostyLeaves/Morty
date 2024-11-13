@@ -146,12 +146,4 @@ void MRenderTaskNode::AutoBindBarrierTexture()
     }
 }
 
-void MRenderTaskNode::AutoSetTextureBarrier(MIRenderCommand* pCommand)
-{
-    for (const auto& [barrier, textures]: m_barrierTexture)
-    {
-        if (barrier != METextureBarrierStage::EUnknow) { pCommand->AddRenderToTextureBarrier(textures, barrier); }
-    }
-}
-
 void MRenderTaskNode::BindInOutTexture() { AutoBindBarrierTexture(); }

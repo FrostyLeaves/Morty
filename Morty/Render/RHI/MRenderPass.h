@@ -90,7 +90,6 @@ public:
 
     ~MRenderPass();
 
-
     void     GenerateBuffer(MIDevice* pDevice);
 
     void     DestroyBuffer(MIDevice* pDevice);

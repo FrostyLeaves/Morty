@@ -131,7 +131,7 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
 
     for (const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock: pipeline->m_shaderPropertyBlocks)
     {
-        DestroyShaderPropertyBlockImpl(pPropertyBlock);
+        DestroyShaderPropertyBlockImpl(pPropertyBlock.get());
     }
 
     DestroyPipelineLayout(pipeline);
@@ -740,8 +740,8 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(
 }
 
 void MVulkanPipelineManager::AllocateShaderPropertyBlock(
-        const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock,
-        const std::shared_ptr<MPipeline>&            pPipeline
+        MShaderPropertyBlock* pPropertyBlock,
+        const MPipeline*      pPipeline
 )
 {
     std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
@@ -777,15 +777,12 @@ void MVulkanPipelineManager::AllocateShaderPropertyBlock(
     pPropertyBlock->m_vkDescriptorSet = descriptorSet;
 }
 
-void MVulkanPipelineManager::DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+void MVulkanPipelineManager::DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
 {
-    std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
-
     DestroyShaderPropertyBlockImpl(pPropertyBlock);
 }
 
-void MVulkanPipelineManager::DestroyShaderPropertyBlockImpl(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock
-) const
+void MVulkanPipelineManager::DestroyShaderPropertyBlockImpl(MShaderPropertyBlock* pPropertyBlock) const
 {
     if (!pPropertyBlock) return;
 

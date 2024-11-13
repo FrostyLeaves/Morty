@@ -7,8 +7,8 @@
 #include "Engine/MEngine.h"
 #include "MVulkanPhysicalDevice.h"
 #include "Mesh/MMesh.h"
+#include "RHI/Vulkan/MRenderCommandVulkan.h"
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
-#include "RHI/Vulkan/MVulkanRenderCommand.h"
 #include "Resource/MResource.h"
 #include "Shader/MShaderParam.h"
 #include "Utility/MFileHelper.h"
@@ -857,7 +857,7 @@ bool MVulkanDevice::GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPro
 
 void MVulkanDevice::DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
 {
-    if (pPropertyBlock) { m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock); }
+    if (pPropertyBlock) { m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock.get()); }
 }
 
 bool MVulkanDevice::GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam)
@@ -1330,7 +1330,13 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
     }
 }
 
-MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)
+std::shared_ptr<MGraphicsPipeline>
+MVulkanDevice::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass)
+{
+    return m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, pRenderPass);
+}
+
+IRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)
 {
     MVulkanPrimaryRenderCommand* pCommand = new MVulkanPrimaryRenderCommand();
     pCommand->m_device                    = this;
@@ -1365,7 +1371,7 @@ MIRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandNam
     return pCommand;
 }
 
-void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
+void MVulkanDevice::RecoveryRenderCommand(IRenderCommand* pRenderCommand)
 {
     MVulkanPrimaryRenderCommand* pCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderCommand);
 
@@ -1410,7 +1416,7 @@ void MVulkanDevice::RecoveryRenderCommand(MIRenderCommand* pRenderCommand)
     delete pCommand;
 }
 
-bool MVulkanDevice::IsFinishedCommand(MIRenderCommand* pCommand)
+bool MVulkanDevice::IsFinishedCommand(IRenderCommand* pCommand)
 {
     if (MVulkanPrimaryRenderCommand* pVulkanCommand = static_cast<MVulkanPrimaryRenderCommand*>(pCommand))
     {
@@ -1420,7 +1426,7 @@ bool MVulkanDevice::IsFinishedCommand(MIRenderCommand* pCommand)
     return false;
 }
 
-void MVulkanDevice::SubmitCommand(MIRenderCommand* pCommand)
+void MVulkanDevice::SubmitCommand(IRenderCommand* pCommand)
 {
     MVulkanPrimaryRenderCommand* pRenderCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
     if (!pRenderCommand) return;
@@ -2166,7 +2172,7 @@ void MVulkanDevice::CheckFrameFinish()
     {
         auto& vCommand  = iter->second.vCommand;
         bool  bFinished = true;
-        for (MVulkanRenderCommand* pCommand: vCommand)
+        for (MRenderCommandVulkan* pCommand: vCommand)
         {
             const bool bCommandFinished = pCommand->IsFinished() && IsFinishedCommand(pCommand);
             if (bCommandFinished) { pCommand->OnCommandFinished(); }
@@ -2176,7 +2182,7 @@ void MVulkanDevice::CheckFrameFinish()
 
         if (bFinished)
         {
-            for (MVulkanRenderCommand* pCommand: vCommand) { RecoveryRenderCommand(pCommand); }
+            for (MRenderCommandVulkan* pCommand: vCommand) { RecoveryRenderCommand(pCommand); }
 
             if (auto& pRecycleBin = iter->second.pRecycleBin)
             {

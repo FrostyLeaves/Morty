@@ -3,7 +3,7 @@
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
-#include "RHI/Vulkan/MVulkanRenderCommand.h"
+#include "RHI/Vulkan/MRenderCommandVulkan.h"
 
 #endif
 
@@ -14,7 +14,7 @@
 
 using namespace morty;
 
-void MViewRenderTarget::BindPrimaryCommand(MIRenderCommand* pCommand)
+void MViewRenderTarget::BindPrimaryCommand(IRenderCommand* pCommand)
 {
     pPrimaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
     pPrimaryCommand->m_renderWaitSemaphore.push_back(vkImageReadySemaphore);

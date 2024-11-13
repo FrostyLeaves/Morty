@@ -13,8 +13,8 @@ namespace morty
 
 class MEngine;
 class MTexture;
-class MIRenderer;
-class MIRenderCommand;
+class MRenderPassCmd;
+class IRenderCommand;
 class MShaderPropertyBlock;
 class ImGuiRenderable
 {
@@ -44,9 +44,7 @@ public:
 
     void Tick(const float& fDelta);
 
-    void WaitTextureReady(MIRenderCommand* pCommand);
-
-    void Render(MIRenderCommand* pCommand);
+    void Render(MRenderPassCmd* pCommand);
 
 
 protected:

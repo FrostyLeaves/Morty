@@ -38,7 +38,7 @@ public:
 class MORTY_API MGraphicsPipeline : public MPipeline
 {
 public:
-    VkPipeline GetSubpassPipeline(size_t nSubPassIdx);
+    VkPipeline GetSubpassPipeline(size_t nSubPassIdx) const;
 
 
 public:

@@ -4,7 +4,7 @@
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Mesh/MMeshManager.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MRenderSystem.h"
@@ -26,7 +26,7 @@ void MBoundingCulling::Release()
 
 void MBoundingCulling::AddFilter(std::shared_ptr<IMeshInstanceFilter> pFilter) { m_filter.push_back(pFilter); }
 
-void MBoundingCulling::UploadBuffer(MIRenderCommand* pCommand)
+void MBoundingCulling::UploadBuffer(IRenderCommand* pCommand)
 {
     const size_t nDrawIndirectBufferSize = m_drawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
     pCommand->UploadBuffer(
@@ -81,7 +81,8 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
                         1,
                         static_cast<uint32_t>(data.indexInfo.begin),
                         0,
-                        static_cast<uint32_t>(nIdx)};
+                        static_cast<uint32_t>(nIdx)
+                };
                 vDrawIndirectData.push_back(indirectData);
             });
 

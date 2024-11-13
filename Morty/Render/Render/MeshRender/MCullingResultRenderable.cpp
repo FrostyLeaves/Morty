@@ -1,27 +1,24 @@
 #include "MCullingResultRenderable.h"
-
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Engine/MEngine.h"
-#include "Material/MMaterial.h"
-#include "Model/MSkeleton.h"
-#include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
-#include "RHI/MRenderPass.h"
-#include "Scene/MScene.h"
-
-#include "System/MRenderSystem.h"
-#include "System/MResourceSystem.h"
-
+#include "Batch/MMaterialBatchGroup.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Culling/MInstanceCulling.h"
-#include "Mesh/MVertex.h"
-
-#include "Batch/MMaterialBatchGroup.h"
+#include "Engine/MEngine.h"
+#include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
+#include "Mesh/MVertex.h"
+#include "Model/MSkeleton.h"
+#include "RHI/Abstract/MIDevice.h"
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
+#include "RHI/MRenderPass.h"
+#include "Scene/MScene.h"
+#include "System/MRenderSystem.h"
+#include "System/MResourceSystem.h"
 #include "Utility/MBounds.h"
 
 using namespace morty;
@@ -49,7 +46,7 @@ std::shared_ptr<MMaterial> MCullingResultRenderable::GetMaterial(const MMaterial
     return pMaterial;
 }
 
-void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
+void MCullingResultRenderable::Render(MRenderPassCmd* pCommand)
 {
     if (!m_meshBuffer)
     {
@@ -73,7 +70,7 @@ void MCullingResultRenderable::Render(MIRenderCommand* pCommand)
         const auto& pMaterial = GetMaterial(group);
         if (pMaterial == nullptr) { continue; }
 
-        pCommand->SetGraphPipeline(pMaterial);
+        pCommand->SetGraphPipeline(pMaterial.get());
 
         for (auto& vPropertyBlock: m_framePropertyAdapter)
         {

@@ -9,7 +9,7 @@
 #include "Material/MMaterial.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
@@ -27,6 +27,7 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Render/MFrameShaderPropertyBlock.h"
 #include "Render/MeshRender/MCullingResultSpecificMaterialRenderable.h"
 #include "Render/RenderGraph/MRenderGraph.h"
@@ -176,21 +177,18 @@ void MVoxelizerRenderNode::Render(const MRenderInfo& info)
 
 void MVoxelizerRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
 
     pCommand->ResetBuffer(&m_voxelizerBuffer);
 
     constexpr uint32_t fViewportSize = MRenderGlobal::VOXEL_VIEWPORT_SIZE;
+    auto               command       = pCommand->BeginRenderPass(&m_renderPass);
 
-    AutoSetTextureBarrier(pCommand);
+    command.SetViewportAndScissor({.x = 0.0f, .y = 0.0f, .width = fViewportSize, .height = fViewportSize});
 
-    pCommand->BeginRenderPass(&m_renderPass);
-    pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, fViewportSize, fViewportSize));
+    for (IRenderable* renderable: vRenderable) { renderable->Render(&command); }
 
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(pCommand); }
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 
     if (m_voxelizerVoxelMapSetting)
     {

@@ -20,7 +20,7 @@ namespace morty
 {
 
 class MMeshResource;
-class MIRenderCommand;
+class IRenderCommand;
 class MSkyBoxComponent;
 class MORTY_API MEnvironmentMapRenderNode : public MObject
 {
@@ -38,14 +38,14 @@ public:
 public:
     void                       MarkUpdateEnvironment();
 
-    void                       RenderEnvironment(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+    void                       RenderEnvironment(IRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
     std::shared_ptr<MResource> GetDiffuseOutputTexture() const;
 
 protected:
-    void RenderDiffuse(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+    void RenderDiffuse(IRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
-    void RenderSpecular(MIRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
+    void RenderSpecular(IRenderCommand* pRenderCommand, MSkyBoxComponent* pSkyBoxComponent);
 
 protected:
     void InitializeResource();

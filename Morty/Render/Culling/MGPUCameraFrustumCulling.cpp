@@ -7,7 +7,7 @@
 #include "Material/MComputeDispatcher.h"
 #include "Mesh/MMeshManager.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Scene/MEntity.h"
 #include "Shadow/MShadowMapUtil.h"
 #include "System/MObjectSystem.h"

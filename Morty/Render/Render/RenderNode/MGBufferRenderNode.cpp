@@ -6,11 +6,12 @@
 #include "Engine/MEngine.h"
 #include "MVRSTextureRenderNode.h"
 #include "Mesh/MMeshManager.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Scene/MScene.h"
 
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "TaskGraph/MTaskGraph.h"
 
@@ -21,20 +22,17 @@ MORTY_CLASS_IMPLEMENT(MGBufferRenderNode, ISinglePassRenderNode)
 
 void MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-    MIRenderCommand* pCommand  = info.pPrimaryRenderCommand;
-    const Vector2i   v2LeftTop = info.f2ViewportLeftTop;
-    const Vector2i   v2Size    = info.f2ViewportSize;
+    IRenderCommand* pCommand  = info.pPrimaryRenderCommand;
+    const Vector2   v2LeftTop = info.f2ViewportLeftTop;
+    const Vector2   v2Size    = info.f2ViewportSize;
 
-    AutoSetTextureBarrier(pCommand);
+    auto            command = pCommand->BeginRenderPass(&m_renderPass);
+    command.SetViewport({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
+    command.SetScissor({.x = 0.0f, .y = 0.0f, .width = v2Size.x, .height = v2Size.y});
 
-    pCommand->BeginRenderPass(&m_renderPass);
-    pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
+    for (IRenderable* renderable: vRenderable) { renderable->Render(&command); }
 
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(pCommand); }
-
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 class MORTY_API MGBufferTextures : public IGBufferAdapter

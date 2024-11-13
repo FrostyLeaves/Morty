@@ -1,15 +1,13 @@
 #include "ImGuiRenderable.h"
-
+#include "Utility/MGlobal.h"
 #include "Basic/MTexture.h"
 #include "Engine/MEngine.h"
 #include "Material/MMaterial.h"
-#include "RHI/MRenderCommand.h"
-#include "Shader/MShaderPropertyBlock.h"
-
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
 #include "Resource/MTextureResource.h"
 #include "Resource/MTextureResourceUtil.h"
-
-#include "Utility/MGlobal.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
@@ -142,40 +140,15 @@ void ImGuiRenderable::Tick(const float& fDelta)
     UpdateMesh();
 }
 
-void ImGuiRenderable::WaitTextureReady(MIRenderCommand* pCommand)
+void ImGuiRenderable::Render(MRenderPassCmd* pCommand)
 {
-    std::set<ImTextureID> tTextures;
-
-    auto                  draw_data = ImGui::GetDrawData();
-    for (int n = 0; n < draw_data->CmdListsCount; n++)
-    {
-        const ImDrawList* cmd_list = draw_data->CmdLists[n];
-        for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-        {
-            const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-            tTextures.insert(pcmd->TextureId);
-        }
-    }
-
-
-    for (const ImTextureID& texid: tTextures)
-    {
-        if (MTexturePtr pTexture = texid.pTexture)
-        {
-            pCommand->AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderSample);
-        }
-    }
-}
-
-void ImGuiRenderable::Render(MIRenderCommand* pCommand)
-{
-    auto draw_data = ImGui::GetDrawData();
+    auto  draw_data = ImGui::GetDrawData();
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    int  fb_width  = (int) (draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int  fb_height = (int) (draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    float fb_width  = (draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+    float fb_height = (draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0) return;
 
-    pCommand->SetViewport(MViewportInfo(0.0f, fb_height, fb_width, -fb_height));
+    pCommand->SetViewport({.x = 0.0f, .y = fb_height, .width = fb_width, .height = -fb_height});
 
     Vector2 scale;
     scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -195,7 +168,7 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
         }
     }
 
-    pCommand->SetUseMaterial(m_material);
+    pCommand->SetMaterial(m_material.get());
 
     // Will project scissor/clipping rectangles into framebuffer space
     ImVec2       clip_off   = draw_data->DisplayPos;      // (0,0) unless using multi-viewports
@@ -239,7 +212,10 @@ void ImGuiRenderable::Render(MIRenderCommand* pCommand)
                 if (clip_rect.y < 0.0f) clip_rect.y = 0.0f;
 
                 pCommand->SetScissor(
-                        MScissorInfo(clip_rect.x, clip_rect.y, clip_rect.z - clip_rect.x, clip_rect.w - clip_rect.y)
+                        {.x      = clip_rect.x,
+                         .y      = clip_rect.y,
+                         .width  = clip_rect.z - clip_rect.x,
+                         .height = clip_rect.w - clip_rect.y}
                 );
 
                 pCommand->DrawMesh(

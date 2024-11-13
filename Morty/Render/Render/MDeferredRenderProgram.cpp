@@ -13,7 +13,7 @@
 #include "Engine/MEngine.h"
 #include "Material/MComputeDispatcher.h"
 #include "MeshRender/MCullingResultRenderable.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Render/MFrameShaderPropertyBlock.h"
 #include "Render/RenderGraph/MRenderGraphWalker.h"
 #include "Render/RenderGraph/MRenderTaskNode.h"
@@ -45,7 +45,7 @@ MORTY_CLASS_IMPLEMENT(MDeferredRenderProgram, MIRenderProgram)
 
 const MStringId FinalBackBuffer = MStringId("Final Back Buffer");
 
-void            MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
+void            MDeferredRenderProgram::Render(IRenderCommand* pPrimaryCommand)
 {
     if (!GetViewport()) return;
     if (m_renderGraph->NeedCompile()) { m_renderGraph->Compile(); }
@@ -66,7 +66,7 @@ void            MDeferredRenderProgram::Render(MIRenderCommand* pPrimaryCommand)
     walker(m_renderGraph.get());
 }
 
-void MDeferredRenderProgram::RenderSetup(MIRenderCommand* pPrimaryCommand)
+void MDeferredRenderProgram::RenderSetup(IRenderCommand* pPrimaryCommand)
 {
 
     MViewport* pViewport             = GetViewport();

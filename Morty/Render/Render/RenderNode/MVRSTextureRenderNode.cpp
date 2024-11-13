@@ -7,7 +7,7 @@
 #include "Material/MMaterial.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Scene/MScene.h"
 
@@ -86,16 +86,6 @@ void MVRSTextureRenderNode::Render(const MRenderInfo& info)
     auto pVRSTexture = GetRenderOutput(0)->GetRenderTexture();
 
     params->SetTexture(MShaderPropertyName::VRS_EDGE_TEXTURE_NAME, pEdgeTexture);
-
-    info.pPrimaryRenderCommand->AddRenderToTextureBarrier(
-            {pEdgeTexture.get()},
-            METextureBarrierStage::EComputeShaderRead
-    );
-
-    info.pPrimaryRenderCommand->AddRenderToTextureBarrier(
-            {pVRSTexture.get()},
-            METextureBarrierStage::EComputeShaderWrite
-    );
 
     info.pPrimaryRenderCommand->DispatchComputeJob(m_vRSGenerator, n2ThreadNum.x, n2ThreadNum.y, 1);
 }

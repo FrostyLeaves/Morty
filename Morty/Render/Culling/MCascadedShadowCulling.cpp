@@ -31,7 +31,7 @@ void MCascadedShadowCulling::SetCamera(MEntity* pCameraEntity) { m_cameraEntity 
 
 void MCascadedShadowCulling::SetDirectionalLight(MEntity* pDirectionalLight) { m_directionalLight = pDirectionalLight; }
 
-void MCascadedShadowCulling::UploadBuffer(MIRenderCommand* pCommand)
+void MCascadedShadowCulling::UploadBuffer(IRenderCommand* pCommand)
 {
     const size_t nDrawIndirectBufferSize = m_drawIndirectData.size() * sizeof(MDrawIndexedIndirectData);
     pCommand->UploadBuffer(

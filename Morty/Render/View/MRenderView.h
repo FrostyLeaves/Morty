@@ -23,11 +23,11 @@ namespace morty
 {
 
 class MTaskNode;
-class MIRenderCommand;
+class IRenderCommand;
 class MORTY_API MViewRenderTarget
 {
 public:
-    void                         BindPrimaryCommand(MIRenderCommand* pCommand);
+    void                         BindPrimaryCommand(IRenderCommand* pCommand);
 
     MRenderPass                  renderPass;
     uint32_t                     unImageIndex    = 0;

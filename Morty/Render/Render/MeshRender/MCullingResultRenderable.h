@@ -32,7 +32,7 @@ public:
 
     void SetInstanceCulling(const std::shared_ptr<MInstanceCulling>& pCulling);
 
-    void Render(MIRenderCommand* pCommand) override;
+    void Render(MRenderPassCmd* pCommand) override;
 
     //override to use other material.
     virtual std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const;

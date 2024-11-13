@@ -29,7 +29,7 @@ public:
 
     void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
 
-    void Render(MIRenderCommand* pCommand) override;
+    void Render(MRenderPassCmd* pCommand) override;
 
 private:
     MIMesh*                                             m_mesh     = nullptr;

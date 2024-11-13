@@ -21,7 +21,6 @@ namespace morty
 class MEntity;
 class MScene;
 class MPainter;
-class MIRenderer;
 class MInputEvent;
 class MPointLight;
 class MInputManager;

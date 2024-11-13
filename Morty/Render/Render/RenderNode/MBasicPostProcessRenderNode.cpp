@@ -5,7 +5,8 @@
 #include "MForwardRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"
@@ -25,27 +26,23 @@ void MBasicPostProcessRenderNode::Release() { Super::Release(); }
 
 void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
 {
-    auto    pCommand    = info.pPrimaryRenderCommand;
-    MIMesh* pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
+    auto           pCommand    = info.pPrimaryRenderCommand;
+    MIMesh*        pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
+    const Vector2i n2Size      = m_renderPass.GetFrameBufferSize();
+    MRenderPassCmd command     = pCommand->BeginRenderPass(&m_renderPass);
 
-    AutoSetTextureBarrier(pCommand);
+    command.SetViewportAndScissor(MSetViewportCmd{
+            .x      = 0.0f,
+            .y      = 0.0f,
+            .width  = static_cast<float>(n2Size.x),
+            .height = static_cast<float>(n2Size.y)
+    });
 
-    pCommand->BeginRenderPass(&m_renderPass);
+    command.SetMaterial(m_material.get());
+    command.SetShaderPropertyBlock(GetRenderGraph()->GetFrameProperty()->GetPropertyBlock());
+    command.DrawMesh(pScreenMesh);
 
-    const Vector2i n2Size = m_renderPass.GetFrameBufferSize();
-
-    pCommand->SetViewport(MViewportInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, n2Size.x, n2Size.y));
-
-
-    if (pCommand->SetUseMaterial(m_material))
-    {
-        pCommand->SetShaderPropertyBlock(GetRenderGraph()->GetFrameProperty()->GetPropertyBlock());
-
-        pCommand->DrawMesh(pScreenMesh);
-    }
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 void MBasicPostProcessRenderNode::BindInOutTexture()

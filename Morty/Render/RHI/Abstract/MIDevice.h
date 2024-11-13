@@ -27,51 +27,14 @@ class MRenderPass;
 class MIRenderTarget;
 class MTextureRenderTarget;
 struct MShaderConstantParam;
-
+class MGraphicsPipeline;
+class MMaterialTemplate;
 class MMaterial;
 class MComputeDispatcher;
-class MIRenderCommand;
-enum class MEDeviceFeature
-{
-    EConservativeRasterization,
-    EHLSLFunctionality,
-    EVariableRateShading,
-};
-
-enum class MEBufferBarrierStage
-{
-    EUnknow = 0,
-    EComputeShaderWrite,
-    EComputeShaderRead,
-    EPixelShaderWrite,
-    EPixelShaderRead,
-    EDrawIndirectRead,
-    EShadingRateRead,
-};
-
-enum class MEShadingRateCombinerOp
-{
-    Keep = 0,
-    Replace,
-    Min,
-    Max,
-    Mul,
-};
-
-struct MShadingRateType {
-    static constexpr MByte Rate_1x1 = 0;
-    static constexpr MByte Rate_1X2 = 1;
-    static constexpr MByte Rate_2X1 = 4;
-    static constexpr MByte Rate_2X2 = 5;
-    static constexpr MByte Rate_2X4 = 6;
-    static constexpr MByte Rate_4X2 = 9;
-    static constexpr MByte Rate_4X4 = 10;
-};
+class IRenderCommand;
 
 class MORTY_API MIDevice
 {
-    ;
-
 public:
     MIDevice()
         : m_engine(nullptr)
@@ -123,19 +86,22 @@ public:
 
     virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
-    virtual MIRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
+    virtual std::shared_ptr<MGraphicsPipeline>
+    FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass) = 0;
 
-    virtual void             RecoveryRenderCommand(MIRenderCommand* pCommand) = 0;
+    virtual IRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 
-    virtual bool             IsFinishedCommand(MIRenderCommand* pCommand) = 0;
+    virtual void            RecoveryRenderCommand(IRenderCommand* pCommand) = 0;
 
-    virtual void             SubmitCommand(MIRenderCommand* pCommand) = 0;
+    virtual bool            IsFinishedCommand(IRenderCommand* pCommand) = 0;
 
-    virtual void             Update() {}
+    virtual void            SubmitCommand(IRenderCommand* pCommand) = 0;
 
-    virtual bool             GetDeviceFeatureSupport(MEDeviceFeature feature) const = 0;
+    virtual void            Update() {}
 
-    virtual Vector2i         GetShadingRateTextureTexelSize() const = 0;
+    virtual bool            GetDeviceFeatureSupport(MEDeviceFeature feature) const = 0;
+
+    virtual Vector2i        GetShadingRateTextureTexelSize() const = 0;
 
 private:
     MEngine* m_engine = nullptr;

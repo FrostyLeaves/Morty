@@ -18,10 +18,9 @@ class MTaskGraph;
 class MScene;
 class MTexture;
 class MViewport;
-class MIRenderer;
 class MRenderGraph;
 class MIMeshInstance;
-class MIRenderCommand;
+class IRenderCommand;
 struct MRenderInfo;
 struct MShaderConstantParam;
 
@@ -34,7 +33,7 @@ public:
 
     MViewport*            GetViewport() { return m_viewport; }
 
-    virtual void          Render(MIRenderCommand* pPrimaryCommand) = 0;
+    virtual void          Render(IRenderCommand* pPrimaryCommand) = 0;
 
     virtual MRenderGraph* GetRenderGraph() = 0;
 

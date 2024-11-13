@@ -66,7 +66,7 @@ public:
 
     virtual void           Culling(const std::vector<MMaterialBatchGroup*>& vInstanceGroup) = 0;
 
-    virtual void           UploadBuffer(MIRenderCommand* pCommand) = 0;
+    virtual void           UploadBuffer(IRenderCommand* pCommand) = 0;
 
     virtual const MBuffer* GetDrawIndirectBuffer() = 0;
 
@@ -76,16 +76,16 @@ public:
 class MORTY_API MCameraFrustumCulling : public MInstanceCulling
 {
 public:
-    void SetCommand(MIRenderCommand* pCommand) { m_command = pCommand; }
+    void SetCommand(IRenderCommand* pCommand) { m_command = pCommand; }
 
     void SetCameraFrustum(MCameraFrustum cameraFrustum) { m_cameraFrustum = cameraFrustum; }
 
     void SetCameraPosition(Vector3 v3CameraPosition) { m_cameraPosition = v3CameraPosition; }
 
 protected:
-    Vector3          m_cameraPosition;
-    MCameraFrustum   m_cameraFrustum;
-    MIRenderCommand* m_command = nullptr;
+    Vector3         m_cameraPosition;
+    MCameraFrustum  m_cameraFrustum;
+    IRenderCommand* m_command = nullptr;
 };
 
 template<typename TYPE> class MORTY_API MCullingTaskNode : public MTaskNode

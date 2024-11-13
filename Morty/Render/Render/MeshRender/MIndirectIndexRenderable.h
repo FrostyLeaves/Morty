@@ -35,7 +35,7 @@ public:
 
     void SetMeshBuffer(const std::shared_ptr<MMeshBufferAdapter>& pMeshBuffer) { m_meshBuffer = pMeshBuffer; }
 
-    void Render(MIRenderCommand* pCommand) override;
+    void Render(MRenderPassCmd* pCommand) override;
 
     //override to use other material.
     virtual const std::shared_ptr<MMaterial>& GetMaterial() const { return m_material; }

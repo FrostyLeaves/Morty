@@ -33,7 +33,7 @@ namespace morty
 {
 
 class MBuffer;
-class MVulkanRenderCommand;
+class MRenderCommandVulkan;
 class MVulkanPrimaryRenderCommand;
 class MVulkanSecondaryRenderCommand;
 class MORTY_API MVulkanDevice : public MIDevice
@@ -52,45 +52,48 @@ public:
     void
     UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 
-    void             DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
+    void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
-    void             GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer) override;
+    void GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer) override;
 
-    void             DestroyTexture(MTexture* pTexture) override;
+    void DestroyTexture(MTexture* pTexture) override;
 
-    bool             CompileShader(MShader* pShader) override;
+    bool CompileShader(MShader* pShader) override;
 
-    void             CleanShader(MShader* pShader) override;
+    void CleanShader(MShader* pShader) override;
 
-    bool             GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+    bool GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
-    void             DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+    void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
 
-    bool             GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
+    bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
 
-    void             DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
+    void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
 
-    bool             GenerateRenderPass(MRenderPass* pRenderPass) override;
+    bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 
-    void             DestroyRenderPass(MRenderPass* pRenderPass) override;
+    void DestroyRenderPass(MRenderPass* pRenderPass) override;
 
-    bool             GenerateFrameBuffer(MRenderPass* pRenderPass) override;
+    bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 
-    void             DestroyFrameBuffer(MRenderPass* pRenderPass) override;
+    void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
-    MIRenderCommand* CreateRenderCommand(const MString& strCommandName) override;
+    std::shared_ptr<MGraphicsPipeline>
+    FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass) override;
 
-    void             RecoveryRenderCommand(MIRenderCommand* pCommand) override;
+    IRenderCommand*              CreateRenderCommand(const MString& strCommandName) override;
 
-    bool             IsFinishedCommand(MIRenderCommand* pCommand) override;
+    void                         RecoveryRenderCommand(IRenderCommand* pCommand) override;
 
-    void             SubmitCommand(MIRenderCommand* pCommand) override;
+    bool                         IsFinishedCommand(IRenderCommand* pCommand) override;
 
-    void             Update() override;
+    void                         SubmitCommand(IRenderCommand* pCommand) override;
+
+    void                         Update() override;
 
 
     //physical interface.
-    VkInstance       GetVkInstance() const;
+    VkInstance                   GetVkInstance() const;
 
     const MVulkanPhysicalDevice* GetPhysicalDevice() const;
 
@@ -280,7 +283,7 @@ public:
 
     struct MVkFrameData {
         MVulkanObjectRecycleBin*           pRecycleBin;
-        std::vector<MVulkanRenderCommand*> vCommand;
+        std::vector<MRenderCommandVulkan*> vCommand;
     };
 
     MVulkanObjectRecycleBin*               m_recycleBin = nullptr;

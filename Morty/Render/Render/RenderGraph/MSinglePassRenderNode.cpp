@@ -12,7 +12,7 @@
 #include "Mesh/MVertex.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"

@@ -25,7 +25,7 @@
 #include "Math/Matrix.h"
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "Render/MDeferredRenderProgram.h"
 #include "Scene/MScene.h"
 #include "TaskGraph/MTaskGraph.h"
@@ -142,13 +142,12 @@ void MainEditor::DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer)
     m_sceneViewer.erase(pViewer);
 }
 
-void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
+void MainEditor::UpdateSceneViewer(IRenderCommand* pRenderCommand)
 {
     m_sceneTexture->SetFinalOutput(
             m_renderGraphView->GetFinalOutputNodeId(),
             m_renderGraphView->GetFinalOutputSlotId()
     );
-
 
     std::vector<MTexture*> vRenderTextures;
     for (const auto& pSceneViewer: m_sceneViewer)
@@ -157,8 +156,6 @@ void MainEditor::UpdateSceneViewer(MIRenderCommand* pRenderCommand)
 
         if (auto pTexture = pSceneViewer->GetFinalOutputTexture()) { vRenderTextures.emplace_back(pTexture.get()); }
     }
-
-    pRenderCommand->AddRenderToTextureBarrier(vRenderTextures, METextureBarrierStage::EPixelShaderSample);
 }
 
 void MainEditor::ShowMenu()
@@ -267,7 +264,7 @@ Vector4 MainEditor::GetCurrentWidgetSize() const
     return Vector4(v2RenderViewPos.x, v2RenderViewPos.y, v2RenderViewSize.x, v2RenderViewSize.y);
 }
 
-void MainEditor::OnRender(MIRenderCommand* pRenderCommand)
+void MainEditor::OnRender(IRenderCommand* pRenderCommand)
 {
     //update all scene viewer.
     UpdateSceneViewer(pRenderCommand);

@@ -7,7 +7,7 @@
 #include "Material/MMaterial.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Scene/MScene.h"
 
@@ -24,6 +24,7 @@
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Render/MeshRender/MSkyBoxRenderable.h"
 #include "Render/RenderGraph/MRenderGraph.h"
@@ -37,21 +38,17 @@ MORTY_CLASS_IMPLEMENT(MForwardRenderNode, ISinglePassRenderNode)
 
 void MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    auto            command  = pCommand->BeginRenderPass(&m_renderPass);
 
-    AutoSetTextureBarrier(pCommand);
+    const Vector2   v2LeftTop = info.f2ViewportLeftTop;
+    const Vector2   v2Size    = info.f2ViewportSize;
+    command.SetViewport({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
+    command.SetScissor({.x = 0.0f, .y = 0.0f, .width = v2Size.x, .height = v2Size.y});
 
-    pCommand->BeginRenderPass(&m_renderPass);
+    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(&command); }
 
-    const Vector2i v2LeftTop = info.f2ViewportLeftTop;
-    const Vector2i v2Size    = info.f2ViewportSize;
-    pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, v2Size.x, v2Size.y));
-
-
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(pCommand); }
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 void MForwardRenderNode::Render(const MRenderInfo& info)

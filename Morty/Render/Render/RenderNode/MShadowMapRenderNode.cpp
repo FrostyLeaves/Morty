@@ -6,7 +6,7 @@
 #include "Material/MMaterial.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Scene/MScene.h"
 
@@ -25,6 +25,7 @@
 #include "Utility/MBounds.h"
 
 #include "Utility/MGlobal.h"
+#include "RHI/Command/MRenderPassCmd.h"
 #include "Shadow/MShadowMapUtil.h"
 
 using namespace morty;
@@ -41,25 +42,20 @@ public:
 
 void MShadowMapRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
 {
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
     if (!pCommand) return;
 
-    AutoSetTextureBarrier(pCommand);
+    const auto&    shadowMap = m_renderPass.GetDepthTexture();
+    auto           command   = pCommand->BeginRenderPass(&m_renderPass);
+    const Vector2i v2Size    = shadowMap->GetSize2D();
 
-    const auto& pShadowmap = m_renderPass.GetDepthTexture();
+    command.SetViewportAndScissor(
+            {.x = 0.0f, .y = 0.0f, .width = static_cast<float>(v2Size.x), .height = static_cast<float>(v2Size.y)}
+    );
 
-    pCommand->BeginRenderPass(&m_renderPass);
+    for (IRenderable* renderable: vRenderable) { renderable->Render(&command); }
 
-    const Vector2i v2LeftTop = Vector2i(0, 0);
-    const Vector2i v2Size    = pShadowmap->GetSize2D();
-    pCommand->SetViewport(MViewportInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-    pCommand->SetScissor(MScissorInfo(v2LeftTop.x, v2LeftTop.y, v2Size.x, v2Size.y));
-
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(pCommand); }
-
-    pCommand->EndRenderPass();
-
-    //pCommand->AddRenderToTextureBarrier({ m_renderPass.GetDepthTexture().get() }, METextureBarrierStage::EPixelShaderSample);
+    pCommand->EndRenderPass(command);
 }
 
 void MShadowMapRenderNode::Render(const MRenderInfo& info)

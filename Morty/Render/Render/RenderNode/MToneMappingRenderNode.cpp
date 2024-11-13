@@ -6,7 +6,7 @@
 #include "MTransparentRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"

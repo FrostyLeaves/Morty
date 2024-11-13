@@ -9,7 +9,8 @@
 #include "Mesh/MMeshManager.h"
 #include "Model/MSkeleton.h"
 #include "Model/MSkeletonInstance.h"
-#include "RHI/MRenderCommand.h"
+#include "RHI/Command/MRenderPassCmd.h"
+#include "RHI/IRenderCommand.h"
 #include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
@@ -53,10 +54,6 @@ void MTransparentRenderNode::Release()
 
 void MTransparentRenderNode::Render(const MRenderInfo& info)
 {
-    auto pCommand = info.pPrimaryRenderCommand;
-
-    AutoSetTextureBarrier(pCommand);
-
     DrawPeel(info);
     DrawFill(info);
 }
@@ -166,24 +163,12 @@ void MTransparentRenderNode::ReleaseTexture()
 
 void MTransparentRenderNode::DrawPeel(const MRenderInfo& info)
 {
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
     if (!pCommand)
     {
         MORTY_ASSERT(pCommand);
         return;
     }
-
-    pCommand->AddRenderToTextureBarrier(
-            {
-                    GetOutputTexture(1).get(),
-                    GetOutputTexture(2).get(),
-                    GetOutputTexture(3).get(),
-                    GetOutputTexture(4).get(),
-                    GetOutputTexture(5).get(),
-                    GetOutputTexture(6).get(),
-            },
-            METextureBarrierStage::EPixelShaderWrite
-    );
 
     const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
@@ -196,31 +181,32 @@ void MTransparentRenderNode::DrawPeel(const MRenderInfo& info)
     indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDepthPeel));
     indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
 
-    pCommand->BeginRenderPass(&m_peelPass);
+    auto          command = pCommand->BeginRenderPass(&m_peelPass);
 
-    const Vector2i f2LeftTop = info.f2ViewportLeftTop;
-    const Vector2i f2Size    = info.f2ViewportSize;
-    pCommand->SetViewport(MViewportInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
-    pCommand->SetScissor(MScissorInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
+    const Vector2 f2LeftTop = info.f2ViewportLeftTop;
+    const Vector2 f2Size    = info.f2ViewportSize;
 
-    if (pCommand->SetUseMaterial(m_copyDepthMaterial)) { pCommand->DrawMesh(pMeshManager->GetScreenRect()); }
+    command.SetViewportAndScissor({.x = f2LeftTop.x, .y = f2LeftTop.y, .width = f2Size.x, .height = f2Size.y});
+
+    command.SetMaterial(m_copyDepthMaterial.get());
+    command.DrawMesh(pMeshManager->GetScreenRect());
 
     for (size_t nSubpassIdx = 1; nSubpassIdx < m_peelPass.m_subpass.size(); ++nSubpassIdx)
     {
-        pCommand->NextSubPass();
+        command.NextSubPass();
 
-        pCommand->PushShaderPropertyBlock(m_framePropertyBlock[nSubpassIdx % 2]);
-        indirectMesh.Render(pCommand);
+        command.PushShaderPropertyBlock(m_framePropertyBlock[nSubpassIdx % 2].get());
+        indirectMesh.Render(&command);
 
-        pCommand->PopShaderPropertyBlock();
+        command.PopShaderPropertyBlock();
     }
 
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 void MTransparentRenderNode::DrawFill(const MRenderInfo& info)
 {
-    MIRenderCommand* pCommand = info.pPrimaryRenderCommand;
+    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
     if (!pCommand)
     {
         MORTY_ASSERT(pCommand);
@@ -234,23 +220,18 @@ void MTransparentRenderNode::DrawFill(const MRenderInfo& info)
         return;
     }
 
-    pCommand->AddRenderToTextureBarrier(
-            {GetOutputTexture(1).get(), GetOutputTexture(2).get()},
-            METextureBarrierStage::EPixelShaderSample
-    );
+    auto          command = pCommand->BeginRenderPass(&m_fillPass);
 
-    pCommand->BeginRenderPass(&m_fillPass);
+    const Vector2 f2LeftTop = info.f2ViewportLeftTop;
+    const Vector2 f2Size    = info.f2ViewportSize;
+    command.SetViewport({.x = f2LeftTop.x, .y = f2LeftTop.y, .width = f2Size.x, .height = f2Size.y});
+    command.SetScissor({.x = 0.0f, .y = 0.0f, .width = f2Size.x, .height = f2Size.y});
 
-    const Vector2i f2LeftTop = info.f2ViewportLeftTop;
-    const Vector2i f2Size    = info.f2ViewportSize;
-    pCommand->SetViewport(MViewportInfo(f2LeftTop.x, f2LeftTop.y, f2Size.x, f2Size.y));
-    pCommand->SetScissor(MScissorInfo(0.0f, 0.0f, f2Size.x, f2Size.y));
+    command.SetMaterial(m_blendMaterial.get());
 
-    pCommand->SetUseMaterial(m_blendMaterial);
+    command.DrawMesh(pMeshManager->GetScreenRect());
 
-    pCommand->DrawMesh(pMeshManager->GetScreenRect());
-
-    pCommand->EndRenderPass();
+    pCommand->EndRenderPass(command);
 }
 
 void MTransparentRenderNode::BindInOutTexture()
