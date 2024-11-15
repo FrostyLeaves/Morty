@@ -49,6 +49,8 @@ flatbuffers::Offset<void> MRenderGraph::Serialize(flatbuffers::FlatBufferBuilder
     auto                     fbSuper = MTaskGraph::Serialize(fbb);
     fbs::MRenderGraphBuilder builder(fbb);
     builder.add_super(fbSuper.o);
+    builder.add_final_output_node_id(m_finalOutputNodeId);
+    builder.add_final_output_slot_id(m_finalOutputSlotId);
 
     return builder.Finish().Union();
 }
@@ -57,8 +59,10 @@ void MRenderGraph::Deserialize(const void* pBufferPointer)
 {
     const auto* fbRenderGraph = reinterpret_cast<const fbs::MRenderGraph*>(pBufferPointer);
     auto        fbSuper       = fbRenderGraph->super();
-
     MTaskGraph::Deserialize(fbSuper);
+
+    m_finalOutputNodeId = fbRenderGraph->final_output_node_id();
+    m_finalOutputSlotId = fbRenderGraph->final_output_slot_id();
 }
 
 void MRenderGraph::OnPreCompile() {}
@@ -80,4 +84,21 @@ MRenderTaskNode* MRenderGraph::FindRenderNode(const MStringId& nodeName) const
     }
 
     return nullptr;
+}
+
+void MRenderGraph::SetFinalOutput(size_t nNodeIdx, size_t nSlotIdx)
+{
+    m_finalOutputNodeId = nNodeIdx;
+    m_finalOutputSlotId = nSlotIdx;
+}
+
+MTexturePtr MRenderGraph::GetFinalOutput() const
+{
+    auto pNode = FindRenderNode(m_finalOutputNodeId);
+    if (pNode == nullptr) { return nullptr; }
+
+    auto pOutput = pNode->GetRenderOutput(m_finalOutputSlotId);
+    if (pOutput == nullptr) { return nullptr; }
+
+    return pOutput->GetRenderTexture();
 }

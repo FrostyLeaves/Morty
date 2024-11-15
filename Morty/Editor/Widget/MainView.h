@@ -21,7 +21,7 @@ class MainView : public BaseWidget
 public:
     MainView();
 
-    ~MainView() = default;
+    ~MainView() override = default;
 
     void Initialize(MainEditor* pMainEditor) override;
 
@@ -32,6 +32,8 @@ public:
 private:
     GuizmoWidget*  m_guizmoWidget  = nullptr;
     MessageWidget* m_messageWidget = nullptr;
+
+    int            m_textureIdx = 0;
 };
 
 }// namespace morty

@@ -41,9 +41,6 @@ protected:
     MTaskNode*       m_updateTask     = nullptr;
 
     static MString   m_defaultRenderGraphPath;
-
-    size_t           m_finalOutputNode;
-    size_t           m_finalOutputSlot;
 };
 
 }// namespace morty

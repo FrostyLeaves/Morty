@@ -108,19 +108,15 @@ void SceneViewer::UpdateTexture(IRenderCommand* pRenderCommand)
 
     m_renderProgram->Render(pRenderCommand);
 }
+
 void SceneViewer::SetFinalOutput(const size_t nodeId, const size_t nSlotId)
 {
-    m_finalOutputNode = nodeId;
-    m_finalOutputSlot = nSlotId;
+    auto pGraph = m_renderProgram->GetRenderGraph();
+    pGraph->SetFinalOutput(nodeId, nSlotId);
 }
 
 MTexturePtr SceneViewer::GetFinalOutputTexture() const
 {
-    auto pNode = m_renderProgram->GetRenderGraph()->FindRenderNode(m_finalOutputNode);
-    if (pNode == nullptr) { return nullptr; }
-
-    auto pOutput = pNode->GetRenderOutput(m_finalOutputSlot);
-    if (pOutput == nullptr) { return nullptr; }
-
-    return pOutput->GetRenderTexture();
+    auto pGraph = m_renderProgram->GetRenderGraph();
+    return pGraph->GetFinalOutput();
 }

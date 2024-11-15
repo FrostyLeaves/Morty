@@ -30,21 +30,21 @@ void MMaterialTemplate::SetMaterialType(const MEMaterialType& eType)
 
 void MMaterialTemplate::SetShaderMacro(const MShaderMacro& macro) { m_shaderProgram->SetShaderMacro(macro); }
 
-void MMaterialTemplate::SetShadingRate(const Vector2i n2ShadingRate) { m_shadingRate = n2ShadingRate; }
+void MMaterialTemplate::SetShadingRate(Vector2i n2ShadingRate) { m_shadingRate = n2ShadingRate; }
 
 void MMaterialTemplate::AddDefine(const MStringId& strKey, const MString& strValue)
 {
     m_shaderProgram->GetShaderMacro().AddUnionMacro(strKey, strValue);
 }
 
-bool MMaterialTemplate::LoadShader(std::shared_ptr<MResource> pResource)
+bool MMaterialTemplate::LoadShader(const std::shared_ptr<MResource>& pResource)
 {
     return m_shaderProgram->LoadShader(pResource);
 }
 
 bool MMaterialTemplate::LoadShader(const MString& strResource)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
     if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
     {
         return LoadShader(pResource);

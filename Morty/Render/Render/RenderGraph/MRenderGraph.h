@@ -39,6 +39,9 @@ public:
     [[nodiscard]] MRenderTaskNode* FindRenderNode(const MStringId& nodeName) const;
     [[nodiscard]] std::shared_ptr<MRenderGraphSetting> GetRenderGraphSetting() const { return m_renderGraphSetting; }
 
+    void                                               SetFinalOutput(size_t nNodeIdx, size_t nSlotIdx);
+    [[nodiscard]] MTexturePtr                          GetFinalOutput() const;
+
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
 
     [[nodiscard]] const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const
@@ -93,7 +96,9 @@ private:
     std::shared_ptr<MInstanceCulling>           m_voxelizerCullingResult = nullptr;
     std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding    = nullptr;
     MTexturePtr                                 m_vrsTexture             = nullptr;
-    std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable;
+    std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable          = {};
+    size_t                                      m_finalOutputNodeId      = 0;
+    size_t                                      m_finalOutputSlotId      = 0;
 };
 
 }// namespace morty

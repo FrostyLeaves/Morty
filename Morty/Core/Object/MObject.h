@@ -29,16 +29,13 @@ public:
     virtual ~MObject();
 
 public:
-    MObjectID      GetObjectID() { return m_unObjectID; }
+    [[nodiscard]] MObjectID GetObjectID() const { return m_unObjectID; }
 
-    MEngine*       GetEngine() { return m_engine; }
+    MEngine*                GetEngine() { return m_engine; }
+    MObjectSystem*          GetObjectSystem();
 
-    MObjectSystem* GetObjectSystem();
-
-
-    void           DeleteLater();
-
-    bool           GetDeleteMark() { return m_deleteMark; }
+    void                    DeleteLater();
+    [[nodiscard]] bool      GetDeleteMark() const { return m_deleteMark; }
 
 public:
     virtual void OnCreated(){};

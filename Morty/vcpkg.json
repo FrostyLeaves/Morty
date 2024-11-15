@@ -72,6 +72,9 @@
       "name": "rapidjson"
     },
     {
+      "name": "ryml"
+    },
+    {
       "name": "sdl2",
       "default-features": false,
       "features": [

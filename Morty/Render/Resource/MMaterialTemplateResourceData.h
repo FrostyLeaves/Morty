@@ -13,7 +13,7 @@
 namespace morty
 {
 
-struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData {
+struct MORTY_API MMaterialTemplateResourceData : public MTextResourceData {
     //RawData
     std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
 
@@ -21,9 +21,8 @@ struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData {
     MEMaterialType                                     eMaterialType;
     MECullMode                                         eCullMode;
 
-    flatbuffers::Offset<void>                          Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-
-    void                                               Deserialize(const void* pBufferPointer) override;
+    void                                               Serialize(std::vector<MByte>& output) const override;
+    void                                               Deserialize(const std::vector<MByte>& buffer) override;
 };
 
 

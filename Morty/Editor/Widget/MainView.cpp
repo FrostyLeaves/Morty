@@ -59,7 +59,12 @@ void MainView::Render()
 
     if (auto pTexture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
     {
-        ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v4RenderViewSize.z, v4RenderViewSize.w));
+        m_textureIdx = ImGui::SliderInt("索引", &m_textureIdx, 0, pTexture->GetLayer());
+        
+        ImGui::Image(
+                {pTexture, intptr_t(pTexture.get()), static_cast<size_t>(m_textureIdx)},
+                ImVec2(v4RenderViewSize.z, v4RenderViewSize.w)
+        );
     }
 
     ImGuizmo::SetRect(v4RenderViewSize.x, v4RenderViewSize.y, v4RenderViewSize.z, v4RenderViewSize.w);

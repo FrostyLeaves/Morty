@@ -29,6 +29,15 @@ std::vector<MByte> MFbResourceData::SaveBuffer() const
     return data;
 }
 
+void               MTextResourceData::LoadBuffer(const std::vector<MByte>& buffer) { Deserialize(buffer); }
+
+std::vector<MByte> MTextResourceData::SaveBuffer() const
+{
+    std::vector<MByte> output;
+    Serialize(output);
+    
+    return output;
+}
 
 MResource::MResource()
     : m_unResourceID(0)
@@ -57,14 +66,9 @@ MString MResource::GetSuffix(const MString& strPath)
 MString MResource::GetFolder(const MString& strPath)
 {
     MString strRegularPath = strPath;
-    for (MString::reverse_iterator iter = strRegularPath.rbegin();
-         iter != strRegularPath.rend();
-         ++iter)
+    for (MString::reverse_iterator iter = strRegularPath.rbegin(); iter != strRegularPath.rend(); ++iter)
     {
-        if (*iter == '\\' || *iter == '/')
-        {
-            return MString(strRegularPath.begin(), iter.base() - 1);
-        }
+        if (*iter == '\\' || *iter == '/') { return MString(strRegularPath.begin(), iter.base() - 1); }
     }
 
     return MString();
@@ -73,14 +77,9 @@ MString MResource::GetFolder(const MString& strPath)
 MString MResource::GetFileName(const MString& strPath)
 {
     MString strRegularPath = strPath;
-    for (MString::reverse_iterator iter = strRegularPath.rbegin();
-         iter != strRegularPath.rend();
-         ++iter)
+    for (MString::reverse_iterator iter = strRegularPath.rbegin(); iter != strRegularPath.rend(); ++iter)
     {
-        if (*iter == '\\' || *iter == '/')
-        {
-            return MString(iter.base(), strRegularPath.end());
-        }
+        if (*iter == '\\' || *iter == '/') { return MString(iter.base(), strRegularPath.end()); }
     }
 
     return strPath;
@@ -183,8 +182,7 @@ std::shared_ptr<MResource> MResourceRef::operator=(std::shared_ptr<MResource> pR
     return pResource;
 }
 
-flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb
-) const
+flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
     if (!m_resource) { return {}; }
 
@@ -197,13 +195,9 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
     return builder.Finish().Union();
 }
 
-void MResourceRef::Deserialize(
-        MResourceSystem* pResourceSystem,
-        const void*      pBufferPointer
-)
+void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer)
 {
-    const fbs::MResourceRef* fbData =
-            reinterpret_cast<const fbs::MResourceRef*>(pBufferPointer);
+    const fbs::MResourceRef* fbData = reinterpret_cast<const fbs::MResourceRef*>(pBufferPointer);
     if (!fbData) { return; }
 
     std::shared_ptr<MResource> pResource = nullptr;

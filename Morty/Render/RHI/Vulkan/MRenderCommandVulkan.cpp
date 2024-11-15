@@ -19,7 +19,7 @@ void                       MRenderCommandVulkan::SetViewport(const MSetViewportC
     vkViewport.x          = viewport->x;
     vkViewport.y          = viewport->y + viewport->height;
     vkViewport.width      = std::max(viewport->width, 1.0f);
-    vkViewport.height     = -std::max(viewport->height, 1.0f);
+    vkViewport.height     = -viewport->height;
     vkViewport.minDepth   = viewport->minDepth;
     vkViewport.maxDepth   = viewport->maxDepth;
 

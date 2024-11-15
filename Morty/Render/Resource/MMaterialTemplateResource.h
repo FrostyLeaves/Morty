@@ -18,11 +18,11 @@ class MORTY_API MMaterialTemplateResource : public MMaterialTemplate
 public:
     MORTY_CLASS(MMaterialTemplateResource);
 
-    std::shared_ptr<MMaterialTemplate> GetMaterial() const;
+    [[nodiscard]] std::shared_ptr<MMaterialTemplate> GetMaterial() const;
 
-    bool                               Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+    bool                                             Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-    bool                               SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool                                             SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 private:
     std::unique_ptr<MResourceData> m_resourceData = nullptr;

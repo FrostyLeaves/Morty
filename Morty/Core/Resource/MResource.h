@@ -42,7 +42,17 @@ public:
 
     void                              LoadBuffer(const std::vector<MByte>& buffer) override;
 
-    std::vector<MByte>                SaveBuffer() const override;
+    [[nodiscard]] std::vector<MByte>  SaveBuffer() const override;
+};
+
+class MORTY_API MTextResourceData : public MResourceData
+{
+public:
+    virtual void                     Serialize(std::vector<MByte>& output) const   = 0;
+    virtual void                     Deserialize(const std::vector<MByte>& buffer) = 0;
+
+    void                             LoadBuffer(const std::vector<MByte>& buffer) override;
+    [[nodiscard]] std::vector<MByte> SaveBuffer() const override;
 };
 
 class MORTY_API MResource : public MTypeClass

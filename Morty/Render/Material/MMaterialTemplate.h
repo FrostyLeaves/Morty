@@ -53,34 +53,34 @@ public:
 
     ~MMaterialTemplate() override = default;
 
-    void                                   SetCullMode(const MECullMode& eType);
+    void                         SetCullMode(const MECullMode& eType);
 
-    MECullMode                             GetCullMode() const { return m_cullMode; }
+    [[nodiscard]] MECullMode     GetCullMode() const { return m_cullMode; }
 
-    void                                   SetMaterialType(const MEMaterialType& eType);
+    void                         SetMaterialType(const MEMaterialType& eType);
 
-    MEMaterialType                         GetMaterialType() const { return m_materialType; }
+    [[nodiscard]] MEMaterialType GetMaterialType() const { return m_materialType; }
 
-    void                                   SetShaderMacro(const MShaderMacro& macro);
+    void                         SetShaderMacro(const MShaderMacro& macro);
 
-    MShaderMacro                           GetShaderMacro() const { return m_shaderProgram->GetShaderMacro(); }
+    [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_shaderProgram->GetShaderMacro(); }
 
-    void                                   AddDefine(const MStringId& strKey, const MString& strValue);
+    void                         AddDefine(const MStringId& strKey, const MString& strValue);
 
-    const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_shaderProgram; }
+    [[nodiscard]] const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_shaderProgram; }
 
-    bool     GetConservativeRasterizationEnable() const { return m_conservativeRasterizationEnable; }
+    bool GetConservativeRasterizationEnable() const { return m_conservativeRasterizationEnable; }
 
-    void     SetConservativeRasterizationEnable(bool bEnable) { m_conservativeRasterizationEnable = bEnable; }
+    void SetConservativeRasterizationEnable(bool bEnable) { m_conservativeRasterizationEnable = bEnable; }
 
-    void     SetShadingRate(const Vector2i n2ShadingRate);
+    void SetShadingRate(Vector2i n2ShadingRate);
 
-    Vector2i GetShadingRate() const { return m_shadingRate; }
+    [[nodiscard]] Vector2i GetShadingRate() const { return m_shadingRate; }
 
 
-    bool     LoadShader(std::shared_ptr<MResource> pResource);
+    bool                   LoadShader(const std::shared_ptr<MResource>& pResource);
 
-    bool     LoadShader(const MString& strResource);
+    bool                   LoadShader(const MString& strResource);
 
 
     static std::shared_ptr<MShaderPropertyBlock>

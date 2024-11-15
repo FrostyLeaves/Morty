@@ -5,6 +5,8 @@ namespace morty.fbs;
 table MRenderGraph
 {
     super: MTaskGraph;
+    final_output_node_id: uint;
+    final_output_slot_id: uint;
 }
 
 root_type MRenderGraph;
