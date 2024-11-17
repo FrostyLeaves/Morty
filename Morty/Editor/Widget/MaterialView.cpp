@@ -26,6 +26,7 @@
 
 #include "Main/MainEditor.h"
 #include "Resource/MMeshResourceUtil.h"
+#include "Utility/NotifyManager.h"
 #include "Utility/SelectionEntityManager.h"
 
 using namespace morty;
@@ -44,7 +45,7 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 
     m_material = pMaterial;
 
-    if (!m_material)
+    if (!m_material || !m_material->GetMaterialTemplate() || !m_material->GetShaderProgram())
     {
         pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
@@ -73,16 +74,13 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 
 void MaterialView::Render()
 {
-    if (MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity())
-    {
-        if (auto* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
-        {
-            SetMaterial(pMeshComponent->GetMaterialResource());
-        }
-    }
-
     if (m_material)
     {
+        m_propertyBase.BindEngine(GetEngine());
+
+        ImGui::Text("%s", m_material->GetResourcePath().c_str());
+        ImGui::Separator();
+
         if (MTexturePtr pTexture = m_sceneTexture->GetFinalOutputTexture())
         {
             float fImageSize = ImGui::GetContentRegionAvail().x;

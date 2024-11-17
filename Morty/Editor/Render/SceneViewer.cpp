@@ -57,7 +57,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
 
     std::vector<MByte> renderGraphBuffer;
     MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
-    //m_renderProgram->LoadGraph(renderGraphBuffer);
+    m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)
@@ -107,12 +107,6 @@ void SceneViewer::UpdateTexture(IRenderCommand* pRenderCommand)
     if (m_pauseUpdate) { return; }
 
     m_renderProgram->Render(pRenderCommand);
-}
-
-void SceneViewer::SetFinalOutput(const size_t nodeId, const size_t nSlotId)
-{
-    auto pGraph = m_renderProgram->GetRenderGraph();
-    pGraph->SetFinalOutput(nodeId, nSlotId);
 }
 
 MTexturePtr SceneViewer::GetFinalOutputTexture() const

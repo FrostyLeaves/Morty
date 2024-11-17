@@ -1,31 +1,32 @@
 #pragma once
 
 #include "Component/MCameraComponent.h"
-#include "Property/PropertyBase.h"
-#include <stdint.h>
+#include "MComponentProperty.h"
 
 namespace morty
 {
 
-class PropertyMCameraComponent : public PropertyBase
+class PropertyMCameraComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
-        if (MCameraComponent* pCameraComponent = pEntity->GetComponent<MCameraComponent>())
+        MORTY_UNUSED(editor);
+        
+        if (auto* pCameraComponent = pEntity->GetComponent<MCameraComponent>())
         {
-            if (ShowNodeBegin("CameraComponent"))
+            if (m_editProperty.ShowNodeBegin("CameraComponent"))
             {
-                ShowValueBegin("Type");
+                m_editProperty.ShowValueBegin("Type");
                 MECameraType eType     = pCameraComponent->GetCameraType();
                 size_t       nSelected = eType == MECameraType::EPerspective ? 0 : 1;
-                if (EditEnum({"Perspective", "Orthographic"}, nSelected))
+                if (m_editProperty.EditEnum({"Perspective", "Orthographic"}, nSelected))
                 {
                     pCameraComponent->SetCameraType(
                             nSelected == 0 ? MECameraType::EPerspective : MECameraType::EOrthographic
                     );
                 }
-                ShowValueEnd();
+                m_editProperty.ShowValueEnd();
 
                 if (MECameraType::EPerspective == eType)
                 {
@@ -38,7 +39,7 @@ public:
                     PROPERTY_VALUE_GET_SET_EDIT(pCameraComponent, "Height", float, GetHeight, SetHeight);
                 }
 
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }

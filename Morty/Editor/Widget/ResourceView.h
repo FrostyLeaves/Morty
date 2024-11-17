@@ -5,18 +5,31 @@
 namespace morty
 {
 
+class MType;
 class ResourceView : public BaseWidget
 {
 public:
     ResourceView();
 
-    ~ResourceView() = default;
+    ~ResourceView() override = default;
 
-    void Render() override;
+    void             Render() override;
 
-    void Initialize(MainEditor* pMainEditor) override;
+    void             DrawMenu();
 
-    void Release() override;
+    void             ProcessDialog();
+
+    void             Initialize(MainEditor* pMainEditor) override;
+
+    void             Release() override;
+
+    ImGuiWindowFlags GetWindowFlags() override { return BaseWidget::GetWindowFlags() | ImGuiWindowFlags_MenuBar; }
+
+private:
+    MString      m_createResourceDialogId;
+    MString      m_createResourcePath;
+    const MType* m_createResourceType = nullptr;
+    MResourceID  m_selectedResourceId = -1;
 };
 
 }// namespace morty

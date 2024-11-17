@@ -26,7 +26,6 @@ public:
     void                      SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
 
     [[nodiscard]] MTexturePtr GetFinalOutputTexture() const;
-    void                      SetFinalOutput(const size_t nodeId, const size_t nSlotId);
 
     [[nodiscard]] MScene*     GetScene() const { return m_scene; }
     [[nodiscard]] MViewport*  GetViewport() const { return m_renderViewport; }

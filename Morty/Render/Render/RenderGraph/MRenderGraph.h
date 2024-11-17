@@ -41,6 +41,8 @@ public:
 
     void                                               SetFinalOutput(size_t nNodeIdx, size_t nSlotIdx);
     [[nodiscard]] MTexturePtr                          GetFinalOutput() const;
+    [[nodiscard]] size_t                               GetFinalOutputNodeIdx() const { return m_finalOutputNodeId; }
+    [[nodiscard]] size_t                               GetFinalOutputSlotIdx() const { return m_finalOutputSlotId; }
 
     void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
 

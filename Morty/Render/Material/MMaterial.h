@@ -34,22 +34,25 @@ public:
 
     void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
 
+    [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }
 
-    MShaderMacro                 GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }
+    [[nodiscard]] MECullMode     GetCullMode() const { return m_materialTemplate->GetCullMode(); }
 
-    MECullMode                   GetCullMode() const { return m_materialTemplate->GetCullMode(); }
+    [[nodiscard]] MEMaterialType GetMaterialType() const { return m_materialTemplate->GetMaterialType(); }
 
-    MEMaterialType               GetMaterialType() const { return m_materialTemplate->GetMaterialType(); }
+    [[nodiscard]] bool           GetConservativeRasterizationEnable() const
+    {
+        return m_materialTemplate->GetConservativeRasterizationEnable();
+    }
 
-    bool GetConservativeRasterizationEnable() const { return m_materialTemplate->GetConservativeRasterizationEnable(); }
+    [[nodiscard]] Vector2i GetShadingRate() const { return m_materialTemplate->GetShadingRate(); }
 
-    Vector2i                                     GetShadingRate() const { return m_materialTemplate->GetShadingRate(); }
+    [[nodiscard]] const std::shared_ptr<MShaderProgram>&       GetShaderProgram() const;
 
-    const std::shared_ptr<MShaderProgram>&       GetShaderProgram() const;
+    [[nodiscard]] const std::shared_ptr<MShaderPropertyBlock>& GetMaterialPropertyBlock() const;
 
-    const std::shared_ptr<MShaderPropertyBlock>& GetMaterialPropertyBlock() const;
-
-    const std::shared_ptr<MMaterialTemplate>&    GetMaterialTemplate() const;
+    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>&    GetMaterialTemplate() const;
+    void ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
 
 public:
     void                              OnCreated() override;
@@ -59,9 +62,7 @@ public:
     static std::shared_ptr<MMaterial> CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate);
 
 #if MORTY_DEBUG
-
-    const char* GetDebugName() const;
-
+    [[nodiscard]] const char* GetDebugName() const;
 #endif
 
 protected:

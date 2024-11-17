@@ -15,9 +15,8 @@ class IniConfig;
 class BaseWidget
 {
 public:
-    BaseWidget() {}
-
-    virtual ~BaseWidget() {}
+    BaseWidget()          = default;
+    virtual ~BaseWidget() = default;
 
     virtual void             Render() = 0;
 

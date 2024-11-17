@@ -66,6 +66,8 @@ public:
 
     [[nodiscard]] morty::Vector4               GetCurrentWidgetSize() const;
 
+    template<class TYPE> TYPE*                 FindWidget() const;
+
 protected:
     void UpdateSceneViewer(IRenderCommand* pRenderCommand);
 
@@ -81,8 +83,6 @@ private:
     std::vector<BaseWidget*>               m_childView;
     std::set<std::shared_ptr<SceneViewer>> m_sceneViewer;
 
-    bool                                   m_showRenderView = false;
-
     Vector4                                m_renderViewSize = Vector4(0, 0, 32, 32);
 
     RenderGraphView*                       m_renderGraphView = nullptr;
@@ -94,5 +94,15 @@ private:
     static MStringId                       m_renderProgramName;
     static MString                         m_editorConfigFilePath;
 };
+
+template<class TYPE> TYPE* MainEditor::FindWidget() const
+{
+    for (auto widget: m_childView)
+    {
+        if (auto result = dynamic_cast<TYPE*>(widget)) { return result; }
+    }
+
+    return nullptr;
+}
 
 }// namespace morty

@@ -35,7 +35,7 @@ std::vector<MByte> MTextResourceData::SaveBuffer() const
 {
     std::vector<MByte> output;
     Serialize(output);
-    
+
     return output;
 }
 
@@ -98,24 +98,6 @@ MResourceSystem* MResource::GetResourceSystem()
 }
 
 std::shared_ptr<MResource> MResource::GetShared() const { return m_self.lock(); }
-
-void                       MResource::ReplaceFrom(std::shared_ptr<MResource> pResource)
-{
-    if (pResource->GetType() != GetType()) return;
-
-    std::vector<MResourceRef*> keeps = m_keeper;
-    m_keeper.clear();
-
-    for (MResourceRef* pKeeper: keeps)
-    {
-        //pKeeper->SetResource(pResource);
-
-        pKeeper->m_resource = pResource;
-        pResource->m_keeper.push_back(pKeeper);
-
-        if (pKeeper->m_funcReloadCallback) { pKeeper->m_funcReloadCallback(); }
-    }
-}
 
 #if MORTY_DEBUG
 

@@ -19,7 +19,7 @@ class MaterialView : public BaseWidget
 public:
     MaterialView();
 
-    ~MaterialView() = default;
+    ~MaterialView() override = default;
 
 public:
     void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);

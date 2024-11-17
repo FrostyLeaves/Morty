@@ -30,10 +30,11 @@ public:
     void Render() override;
 
 private:
-    GuizmoWidget*  m_guizmoWidget  = nullptr;
-    MessageWidget* m_messageWidget = nullptr;
+    void          DrawMessage();
 
-    int            m_textureIdx = 0;
+    GuizmoWidget* m_guizmoWidget = nullptr;
+
+    int           m_textureIdx = 0;
 };
 
 }// namespace morty

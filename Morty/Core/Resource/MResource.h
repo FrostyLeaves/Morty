@@ -19,7 +19,6 @@ class MResourceSystem;
 class MResourceRef;
 class MEngine;
 class MObject;
-enum class MEResourceType;
 
 class MORTY_API MResourceData
 {
@@ -101,8 +100,6 @@ public:
         MORTY_UNUSED(pResourceData);
         return false;
     }
-
-    void ReplaceFrom(std::shared_ptr<MResource> pResource);
 
     void OnReload();
 

@@ -33,6 +33,8 @@ MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
 void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
 {
+    UpdateProperty();
+
     auto* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
     if (!pMeshManager)
     {
@@ -64,9 +66,9 @@ void MDeferredLightingRenderNode::OnCreated()
 {
     Super::OnCreated();
 
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    const auto       pTemplate       = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
-    m_lightningMaterial              = MMaterial::CreateMaterial(pTemplate);
+    auto       pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    const auto pTemplate       = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
+    m_lightningMaterial        = MMaterial::CreateMaterial(pTemplate);
 }
 
 void MDeferredLightingRenderNode::Release()
@@ -81,6 +83,17 @@ void MDeferredLightingRenderNode::Release()
     }
 
     Super::Release();
+}
+
+void MDeferredLightingRenderNode::UpdateProperty()
+{
+    if (LightingMaterial != nullptr && m_lightningMaterial.get() != LightingMaterial->DynamicCast<MMaterial>())
+    {
+        m_lightningMaterial =
+                MMaterial::CreateMaterial(LightingMaterial->DynamicCast<MMaterial>()->GetMaterialTemplate());
+        
+        BindInOutTexture();
+    }
 }
 
 void MDeferredLightingRenderNode::BindInOutTexture()

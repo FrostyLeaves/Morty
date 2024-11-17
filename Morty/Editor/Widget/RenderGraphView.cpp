@@ -94,7 +94,7 @@ void RenderGraphView::DrawProperty()
             if (m_editNodeTable[renderNode->GetNodeID()])
             {
 
-                m_editNodeTable[renderNode->GetNodeID()]->EditRenderTaskNode(renderNode);
+                m_editNodeTable[renderNode->GetNodeID()]->EditRenderTaskNode(GetEngine(), renderNode);
             }
         }
     }
@@ -162,7 +162,8 @@ void RenderGraphView::DrawGraphView()
                 auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(pNode->GetOutput(nIdx));
                 SetupLinkStyle(pNodeOutput);
                 ImNodes::BeginOutputAttribute(GetOutputSlotId(pNodeOutput));
-                bool check = pNode->GetNodeID() == m_finalOutputNodeId && nIdx == m_finalOutputSlotId;
+                bool check = pNode->GetNodeID() == pRenderGraph->GetFinalOutputNodeIdx() &&
+                             nIdx == pRenderGraph->GetFinalOutputSlotIdx();
 
                 ImGui::SetCursorPosX(
                         ImGui::GetCursorPosX() + nodeWidth - ImGui::CalcTextSize(pNodeOutput->GetName().c_str()).x - 4
@@ -171,8 +172,7 @@ void RenderGraphView::DrawGraphView()
                 ImGui::SameLine(nodeWidth);
                 if (ImGui::Checkbox("", &check))
                 {
-                    m_finalOutputNodeId = pNode->GetNodeID();
-                    m_finalOutputSlotId = nIdx;
+                    pRenderGraph->SetFinalOutput(pNode->GetNodeID(), nIdx);
                     pRenderGraph->RequireCompile();
                 }
 
@@ -262,15 +262,7 @@ void RenderGraphView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initiali
 
 void RenderGraphView::Release() {}
 
-void RenderGraphView::SetRenderProgram(MIRenderProgram* pRenderProgram)
-{
-    m_renderProgram = pRenderProgram;
-
-    for (const auto& node: m_renderProgram->GetRenderGraph()->GetAllNodes())
-    {
-        if (node->DynamicCast<MDebugRenderNode>()) { m_finalOutputNodeId = node->GetNodeID(); }
-    }
-}
+void RenderGraphView::SetRenderProgram(MIRenderProgram* pRenderProgram) { m_renderProgram = pRenderProgram; }
 
 void RenderGraphView::DrawMenu()
 {

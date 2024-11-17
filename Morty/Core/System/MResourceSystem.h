@@ -49,19 +49,17 @@ public:
 
     std::unique_ptr<MResourceData>                LoadResourceData(const MString& strResourcePath);
 
-    void                                          UnloadResource(std::shared_ptr<MResource> pResource);
-
     void                                          SaveResource(std::shared_ptr<MResource> pResource);
 
     void SaveResource(const std::unique_ptr<MResourceData>& pResourceData, const MString& strOutputPath);
 
     void Reload(const MString& strResourcePath);
 
-    std::shared_ptr<MResourceLoader>                   CreateLoader(const MString& strResourcePath);
+    std::shared_ptr<MResourceLoader>                     CreateLoader(const MString& strResourcePath);
 
-    std::shared_ptr<MResource>                         FindResourceByID(const MResourceID& unID);
+    std::shared_ptr<MResource>                           FindResourceByID(const MResourceID& unID);
 
-    std::map<MResourceID, std::shared_ptr<MResource>>* GetAllResources() { return &m_resources; }
+    const std::map<MString, std::shared_ptr<MResource>>& GetAllResources() { return m_pathResources; }
 
     void MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath);
 

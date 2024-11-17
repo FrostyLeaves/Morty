@@ -2,6 +2,8 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "Math/Vector.h"
+#include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialTemplateResource.h"
 #include "Scene/MEntity.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MColor.h"
@@ -26,30 +28,26 @@ class MTexture;
 class PropertyBase
 {
 public:
-    PropertyBase() {}
+    virtual ~PropertyBase() = default;
 
-    virtual ~PropertyBase() {};
+    bool ShowNodeBegin(const MString& strNodeName);
 
-    virtual void EditEntity(MEntity* pObject) { MORTY_UNUSED(pObject); };
+    bool ShowNodeBeginWithEx(const MString& strNodeName);
 
-    bool         ShowNodeBegin(const MString& strNodeName);
+    void ShowNodeExBegin(const MString& strExID);
 
-    bool         ShowNodeBeginWithEx(const MString& strNodeName);
+    void ShowNodeExEnd();
 
-    void         ShowNodeExBegin(const MString& strExID);
+    void ShowNodeEnd();
 
-    void         ShowNodeExEnd();
+    void ShowValueBegin(const MString& strValueName);
 
-    void         ShowNodeEnd();
-
-    void         ShowValueBegin(const MString& strValueName);
-
-    void         ShowValueEnd();
+    void ShowValueEnd();
 
     //normal
-    bool         Editbool(bool& value);
+    bool Editbool(bool& value);
 
-    bool         Editbool(int& value);
+    bool Editbool(int& value);
 
     bool Editfloat(float& value, const float& fSpeed = 1.0f, const float& fMin = 0.0f, const float& fMax = 0.0f);
 
@@ -71,17 +69,21 @@ public:
 
     bool EditMString(MString& value);
 
+    bool EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& pMaterial);
+
     bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
 
     bool EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty);
 
-    void EditMResource(
-            const MString&                                            strDlgID,
-            const MString&                                            strResourceType,
-            const std::vector<MString>&                               vSuffixList,
-            std::shared_ptr<MResource>                                pDefaultResource,
-            const std::function<void(const MString& strNewFilePath)>& funcLoadResource
+    bool EditMResource(
+            const MString&              strDlgID,
+            const MString&              strResourceType,
+            const std::vector<MString>& vSuffixList,
+            std::shared_ptr<MResource>  pDefaultResource
     );
+
+    bool EditMMaterialTemplateResource(std::shared_ptr<MMaterialTemplateResource>& resource);
+    bool EditMMaterialResource(std::shared_ptr<MMaterialResource>& resource);
 
     void EditSaveMResource(
             const MString&              stringID,
@@ -101,37 +103,15 @@ public:
 
     template<typename TYPE> void SetTemporaryValue(const MString& strValueName, const TYPE& valuealue);
 
+    void                         BindEngine(MEngine* pEngine) { m_engine = pEngine; }
 
 private:
     static unsigned int                    m_unItemIDPool;
     static std::map<MString, unsigned int> m_itemID;
 
+    MEngine*                               m_engine = nullptr;
     std::map<MString, std::any>            m_temporaryValue;
 };
-
-#define PROPERTY_NODE_EDIT(NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC)                                                   \
-    if (ShowNodeBegin(KEY_NAME))                                                                                       \
-    {                                                                                                                  \
-        TYPE value = NODE->GET_FUNC();                                                                                 \
-        if (Edit##TYPE(value)) { NODE->SET_FUNC(value); }                                                              \
-        ShowNodeEnd();                                                                                                 \
-    }
-
-#define PROPERTY_VALUE_GET_SET_EDIT(NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC)                                          \
-    ShowValueBegin(KEY_NAME);                                                                                          \
-    {                                                                                                                  \
-        TYPE value = NODE->GET_FUNC();                                                                                 \
-        if (Edit##TYPE(value)) { NODE->SET_FUNC(value); }                                                              \
-        ShowValueEnd();                                                                                                \
-    }
-
-#define PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(NODE, KEY_NAME, TYPE, GET_FUNC, SET_FUNC, SPEED, MIN_VAR, MAX_VAR)           \
-    ShowValueBegin(KEY_NAME);                                                                                          \
-    {                                                                                                                  \
-        TYPE value = NODE->GET_FUNC();                                                                                 \
-        if (Edit##TYPE(value, SPEED, MIN_VAR, MAX_VAR)) { NODE->SET_FUNC(value); }                                     \
-        ShowValueEnd();                                                                                                \
-    }
 
 template<typename TYPE> TYPE PropertyBase::GetTemporaryValue(const MString& strValueName, const TYPE& defaultValue)
 {

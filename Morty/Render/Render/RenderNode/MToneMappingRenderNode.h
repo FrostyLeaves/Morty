@@ -9,18 +9,17 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MBasicPostProcessRenderNode.h"
-#include "Render/RenderGraph/MSinglePassRenderNode.h"
-
 #include "Basic/MCameraFrustum.h"
+#include "MBasicPostProcessRenderNode.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {
 
-class MORTY_API MToneMappingRenderNode : public MBasicPostProcessRenderNode
+REFL_RENDER_NODE_CLASS MToneMappingRenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MToneMappingRenderNode)
 

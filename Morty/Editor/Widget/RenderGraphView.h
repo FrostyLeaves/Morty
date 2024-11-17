@@ -20,18 +20,15 @@ public:
     explicit RenderGraphView(const MString& viewName);
     ~RenderGraphView() override = default;
 
-    void                 Render() override;
+    void             Render() override;
 
-    void                 Initialize(MainEditor* pMainEditor) override;
+    void             Initialize(MainEditor* pMainEditor) override;
 
-    void                 Release() override;
+    void             Release() override;
 
-    void                 SetRenderProgram(MIRenderProgram* pRenderProgram);
+    void             SetRenderProgram(MIRenderProgram* pRenderProgram);
 
-    ImGuiWindowFlags     GetWindowFlags() override { return BaseWidget::GetWindowFlags() | ImGuiWindowFlags_MenuBar; }
-
-    [[nodiscard]] size_t GetFinalOutputNodeId() const { return m_finalOutputNodeId; }
-    [[nodiscard]] size_t GetFinalOutputSlotId() const { return m_finalOutputSlotId; }
+    ImGuiWindowFlags GetWindowFlags() override { return BaseWidget::GetWindowFlags() | ImGuiWindowFlags_MenuBar; }
 
 
 protected:
@@ -61,9 +58,6 @@ private:
 
     std::string        m_saveToFilePathName;
     std::vector<MByte> m_saveBuffer;
-
-    size_t             m_finalOutputNodeId = 0;
-    uint32_t           m_finalOutputSlotId = 0;
 
     std::map<size_t, EditRenderTaskNodeBase*> m_editNodeTable;
 };

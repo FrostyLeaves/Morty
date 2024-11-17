@@ -28,8 +28,7 @@ public:
 
     ~MMortyFileFormat();
 
-    void
-    PushBackBody(void* pData, const size_t& unSize, const bool& bExternalMemory = true);
+    void                     PushBackBody(void* pData, const size_t& unSize, const bool& bExternalMemory = true);
 
     MString                  m_strHead;
     std::vector<MFormatBody> m_body;
@@ -45,18 +44,19 @@ public:
     virtual ~MFileHelper();
 
 public:
-    static bool MakeDir(MString strDirPath);
+    static bool    MakeDir(MString strDirPath);
 
-    static bool WriteString(const MString& strFilePath, const MString& strData);
+    static bool    IsExist(MStringView strFilePath);
 
-    static bool ReadString(const MString& strFilePath, MString& strData);
+    static bool    WriteString(const MString& strFilePath, const MString& strData);
 
-    static bool WriteData(const MString& strFilePath, const std::vector<MByte>& vData);
+    static bool    ReadString(const MString& strFilePath, MString& strData);
 
-    static bool ReadData(const MString& strFilePath, std::vector<MByte>& vData);
+    static bool    WriteData(const MString& strFilePath, const std::vector<MByte>& vData);
 
-    static bool
-    WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format);
+    static bool    ReadData(const MString& strFilePath, std::vector<MByte>& vData);
+
+    static bool    WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format);
 
     static bool    ReadFormatFile(const MString& strFilePath, MMortyFileFormat& format);
 

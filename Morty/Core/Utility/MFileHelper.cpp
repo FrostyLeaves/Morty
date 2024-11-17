@@ -54,6 +54,8 @@ bool MFileHelper::MakeDir(MString strDirPath)
     return true;
 }
 
+bool MFileHelper::IsExist(MStringView strFilePath) { return std::filesystem::exists(strFilePath); }
+
 bool MFileHelper::WriteString(const MString& strFilePath, const MString& strData)
 {
     std::ofstream file(strFilePath.c_str(), std::ios::out);
@@ -120,10 +122,7 @@ bool MFileHelper::ReadData(const MString& strFilePath, std::vector<MByte>& vData
     return true;
 }
 
-bool MFileHelper::WriteFormatFile(
-        const MString&          strFilePath,
-        const MMortyFileFormat& format
-)
+bool MFileHelper::WriteFormatFile(const MString& strFilePath, const MMortyFileFormat& format)
 {
     std::ofstream file(strFilePath.c_str(), std::ios::ate | std::ios::binary);
 
@@ -137,10 +136,7 @@ bool MFileHelper::WriteFormatFile(
 
     file.write(&format.m_strHead[0], nHeadSize);
 
-    for (uint32_t i = 0; i < format.m_body.size(); ++i)
-    {
-        file.write(format.m_body[i].pData, format.m_body[i].nSize);
-    }
+    for (uint32_t i = 0; i < format.m_body.size(); ++i) { file.write(format.m_body[i].pData, format.m_body[i].nSize); }
     file.close();
 
     return true;

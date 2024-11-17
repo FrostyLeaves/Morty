@@ -36,7 +36,7 @@ PropertyView::PropertyView()
 
 PropertyView::~PropertyView()
 {
-    for (PropertyBase* pPropertyBase: m_propertyList)
+    for (auto* pPropertyBase: m_propertyList)
     {
         if (pPropertyBase) delete pPropertyBase;
     }
@@ -79,19 +79,16 @@ void PropertyView::EditEntity(MEntity* pEntity)
 
     if (m_entity)
     {
-        for (PropertyBase* pPropertyBase: m_propertyList)
+        for (auto* pPropertyBase: m_propertyList)
         {
-            if (pPropertyBase) { pPropertyBase->EditEntity(m_entity); }
+            if (pPropertyBase) { pPropertyBase->EditEntity(m_mainEditor, m_entity); }
         }
     }
 }
 
 void PropertyView::UpdatePropertyList(MEntity* pEntity)
 {
-    for (PropertyBase* pPropertyBase: m_propertyList)
-    {
-        if (pPropertyBase) delete pPropertyBase;
-    }
+    for (auto* pPropertyBase: m_propertyList) { delete pPropertyBase; }
     m_propertyList.clear();
 
     auto vComponents = pEntity->GetComponents();

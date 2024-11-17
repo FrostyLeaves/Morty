@@ -144,11 +144,6 @@ void MainEditor::DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer)
 
 void MainEditor::UpdateSceneViewer(IRenderCommand* pRenderCommand)
 {
-    m_sceneTexture->SetFinalOutput(
-            m_renderGraphView->GetFinalOutputNodeId(),
-            m_renderGraphView->GetFinalOutputSlotId()
-    );
-
     std::vector<MTexture*> vRenderTextures;
     for (const auto& pSceneViewer: m_sceneViewer)
     {
@@ -182,8 +177,6 @@ void MainEditor::ShowMenu()
 
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("Render", "", &m_showRenderView)) {}
-
             for (BaseWidget* pView: m_childView)
             {
                 bool bVisible = pView->GetVisible();

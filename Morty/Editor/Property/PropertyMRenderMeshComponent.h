@@ -1,33 +1,32 @@
 #pragma once
 
 #include "Component/MRenderMeshComponent.h"
-#include "Property/PropertyBase.h"
-
 #include "Engine/MEngine.h"
+#include "MComponentProperty.h"
+#include "Main/MainEditor.h"
 #include "Material/MMaterial.h"
-#include "Scene/MEntity.h"
-#include "Utility/NotifyManager.h"
-#include "imgui.h"
-
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMaterialResourceData.h"
+#include "Scene/MEntity.h"
 #include "System/MResourceSystem.h"
-#include <stdint.h>
+#include "Utility/NotifyManager.h"
+#include "Widget/MaterialView.h"
 
 namespace morty
 {
 
-class PropertyMRenderMeshComponent : public PropertyBase
+class PropertyMRenderMeshComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
+        m_editProperty.BindEngine(pEntity->GetEngine());
 
-        if (MRenderMeshComponent* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
+        if (auto* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
         {
-            if (ShowNodeBegin("MeshComponent"))
+            if (m_editProperty.ShowNodeBegin("MeshComponent"))
             {
-                if (ShowNodeBegin("Model Mesh"))
+                if (m_editProperty.ShowNodeBegin("Model Mesh"))
                 {
                     PROPERTY_VALUE_GET_SET_EDIT(
                             pMeshComponent,
@@ -37,60 +36,50 @@ public:
                             SetGenerateDirLightShadow
                     );
 
-                    ShowNodeEnd();
+                    m_editProperty.ShowNodeEnd();
                 }
 
-                if (ShowNodeBegin("Material"))
+                if (m_editProperty.ShowNodeBegin("Material"))
                 {
-                    ShowValueBegin("Load");
+                    m_editProperty.ShowValueBegin("Load");
 
                     auto pMaterialResource = pMeshComponent->GetMaterialResource();
-                    EditMResource(
-                            "material_file_dlg",
-                            MMaterialResourceLoader::GetResourceTypeName(),
-                            MMaterialResourceLoader::GetSuffixList(),
-                            pMaterialResource,
-                            [pMeshComponent](const MString& strNewFilePath) {
-                                MResourceSystem* pResourceSystem =
-                                        pMeshComponent->GetEngine()->FindSystem<MResourceSystem>();
-                                if (std::shared_ptr<MMaterialResource> pMaterialResource =
-                                            MTypeClass::DynamicCast<MMaterialResource>(
-                                                    pResourceSystem->LoadResource(strNewFilePath)
-                                            ))
-                                {
-                                    pMeshComponent->SetMaterial(pMaterialResource);
-                                };
-                            }
-                    );
+                    if (m_editProperty.EditMResource(
+                                "material_file_dlg",
+                                MMaterialResourceLoader::GetResourceTypeName(),
+                                MMaterialResourceLoader::GetSuffixList(),
+                                pMaterialResource
+                        ))
+                    {
+                        if (pMaterialResource) { pMeshComponent->SetMaterial(pMaterialResource); };
+                    }
 
-                    ShowValueEnd();
+                    m_editProperty.ShowValueEnd();
 
-                    ShowValueBegin("Instance");
+                    m_editProperty.ShowValueBegin("Instance");
                     if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                     {
-                        int nResID = MGlobal::M_INVALID_INDEX;
                         if (pMeshComponent->GetMaterial())
                         {
-                            nResID = static_cast<int>(pMeshComponent->GetMaterial()->GetResourceID());
+                            editor->FindWidget<MaterialView>()->SetMaterial(pMeshComponent->GetMaterialResource());
                         }
-                        NotifyManager::GetInstance()->SendNotify("Edit Material", MVariant(nResID));
                     }
-                    ShowValueEnd();
+                    m_editProperty.ShowValueEnd();
 
 
-                    ShowNodeEnd();
+                    m_editProperty.ShowNodeEnd();
                 }
 
-                if (ShowNodeBegin("Render"))
+                if (m_editProperty.ShowNodeBegin("Render"))
                 {
-                    ShowValueBegin("ShadowType");
+                    m_editProperty.ShowValueBegin("ShadowType");
                     MRenderMeshComponent::MEShadowType eType     = pMeshComponent->GetShadowType();
-                    size_t                             nSelected = (size_t) eType;
-                    if (EditEnum({"None", "OnlyDirection", "AllLights"}, nSelected))
+                    auto                               nSelected = (size_t) eType;
+                    if (m_editProperty.EditEnum({"None", "OnlyDirection", "AllLights"}, nSelected))
                     {
                         pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType) nSelected);
                     }
-                    ShowValueEnd();
+                    m_editProperty.ShowValueEnd();
 
                     PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(
                             pMeshComponent,
@@ -104,10 +93,10 @@ public:
                     );
 
 
-                    ShowNodeEnd();
+                    m_editProperty.ShowNodeEnd();
                 }
 
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }

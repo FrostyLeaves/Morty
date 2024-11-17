@@ -1,23 +1,25 @@
 #pragma once
 
 #include "Component/MSceneComponent.h"
-#include "Property/PropertyBase.h"
+#include "MComponentProperty.h"
 
 namespace morty
 {
 
-class PropertyMSceneComponent : public PropertyBase
+class PropertyMSceneComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
-        if (MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>())
+        MORTY_UNUSED(editor);
+
+        if (auto* pSceneComponent = pEntity->GetComponent<MSceneComponent>())
         {
-            if (ShowNodeBegin("SceneComponent"))
+            if (m_editProperty.ShowNodeBegin("SceneComponent"))
             {
                 PROPERTY_NODE_EDIT(pSceneComponent, "Transform", MTransform, GetTransform, SetTransform);
                 PROPERTY_VALUE_GET_SET_EDIT(pSceneComponent, "Visible", bool, GetVisible, SetVisible);
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }

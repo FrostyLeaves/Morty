@@ -1,14 +1,14 @@
 #include "Property/PropertyBase.h"
-
+#include "Engine/MEngine.h"
+#include "ImGuiFileDialog.h"
 #include "Material/MMaterial.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialResourceData.h"
+#include "Resource/MMaterialTemplateResource.h"
+#include "Resource/MMaterialTemplateResourceData.h"
 #include "Resource/MTextureResource.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MTimer.h"
-
-#include "Engine/MEngine.h"
-#include "ImGuiFileDialog.h"
-#include "Resource/MMaterialResourceData.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
 
@@ -281,150 +281,158 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
     return bModified;
 }
 
-bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
+bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& pMaterial)
 {
     bool bModified = false;
 
-
-    if (std::shared_ptr<MMaterial> pResource = pMaterial)
     {
+        bool         bModify     = false;
+        MShaderMacro shaderMacro = pMaterial->GetShaderMacro();
+        float        fWidth      = ImGui::GetContentRegionAvail().x;
+        if (ShowNodeBeginWithEx("Macro"))
         {
-            ShowValueBegin("Save");
-            EditSaveMResource(
-                    "material_save_dlg",
-                    MMaterialResourceLoader::GetResourceTypeName(),
-                    MMaterialResourceLoader::GetSuffixList(),
-                    pMaterial
-            );
-            ShowValueEnd();
-        }
-
-        {
-            bool         bModify     = false;
-            MShaderMacro shaderMacro = pMaterial->GetShaderMacro();
-            float        fWidth      = ImGui::GetContentRegionAvail().x;
-            if (ShowNodeBeginWithEx("Macro"))
+            ShowNodeExBegin("Add Macro");
+            ImGui::SetNextItemWidth(fWidth * 0.7f);
+            static MString addKey;
+            EditMString(addKey);
+            ImGui::SameLine();
+            if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
             {
-                ShowNodeExBegin("Add Macro");
+                shaderMacro.AddUnionMacro(MStringId(addKey));
+                addKey  = "";
+                bModify = true;
+            }
+
+            ShowNodeExEnd();
+
+            for (auto iter = shaderMacro.m_macroParams.begin(); iter != shaderMacro.m_macroParams.end(); ++iter)
+            {
+                auto& pair = *iter;
+
+                ShowValueBegin(pair.first.ToString());
                 ImGui::SetNextItemWidth(fWidth * 0.7f);
-                static MString addKey = "";
-                EditMString(addKey);
+                EditMString(pair.second);
                 ImGui::SameLine();
-                if (ImGui::Button("+", ImVec2(fWidth * 0.3f, 0)))
+                if (ImGui::Button("Delete", ImVec2(fWidth * 0.3f, 0)))
                 {
-                    shaderMacro.AddUnionMacro(MStringId(addKey.c_str()));
-                    addKey  = "";
+                    iter    = shaderMacro.m_macroParams.erase(iter);
                     bModify = true;
                 }
-
-                ShowNodeExEnd();
-
-                for (auto iter = shaderMacro.m_macroParams.begin(); iter != shaderMacro.m_macroParams.end(); ++iter)
-                {
-                    auto& pair = *iter;
-
-                    ShowValueBegin(pair.first.ToString());
-                    ImGui::SetNextItemWidth(fWidth * 0.7f);
-                    EditMString(pair.second);
-                    ImGui::SameLine();
-                    if (ImGui::Button("Delete", ImVec2(fWidth * 0.3f, 0)))
-                    {
-                        iter    = shaderMacro.m_macroParams.erase(iter);
-                        bModify = true;
-                    }
-                    ShowValueEnd();
-                }
-
-                ShowNodeEnd();
-
-                if (bModify) { pMaterial->GetMaterialTemplate()->SetShaderMacro(shaderMacro); }
+                ShowValueEnd();
             }
-        }
 
-        {
-            ShowValueBegin("Shader");
-            if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
-            {
-                MString strResPathVS =
-                        pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex)->GetResourcePath();
-                pResource->GetResourceSystem()->Reload(strResPathVS);
+            ShowNodeEnd();
 
-                MString strResPathPS =
-                        pResource->GetShaderProgram()->GetShaderResource(MEShaderType::EPixel)->GetResourcePath();
-                pResource->GetResourceSystem()->Reload(strResPathPS);
-            }
-            ShowValueEnd();
-        }
-
-        {
-            ShowValueBegin("Cull");
-            size_t nCullType = static_cast<size_t>(pMaterial->GetCullMode());
-            if (EditEnum({"Wireframe", "CullNone", "CullBack", "ECullFront"}, nCullType))
-            {
-                pMaterial->GetMaterialTemplate()->SetCullMode(MECullMode(nCullType));
-            }
-            ShowValueEnd();
-        }
-
-        {
-            ShowValueBegin("Type");
-            size_t nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
-            if (EditEnum({"Default", "Transparent"}, nMaterialType))
-            {
-                pMaterial->GetMaterialTemplate()->SetMaterialType((MEMaterialType) nMaterialType);
-            }
-            ShowValueEnd();
-        }
-
-        bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
-
-        {
-            std::vector<std::shared_ptr<MShaderTextureParam>>& vParams =
-                    pMaterial->GetMaterialPropertyBlock()->m_textures;
-            for (unsigned int i = 0; i < vParams.size(); ++i)
-            {
-                if (const std::shared_ptr<MTextureResourceParam>& param =
-                            std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))
-                {
-
-                    MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
-
-                    ShowValueBegin(param->strName.ToString());
-                    std::shared_ptr<MTextureResource> pResource = param->GetTextureResource();
-
-                    if (auto pPreviewTexture = param->GetTexture())
-                    {
-                        const ImGuiStyle& style = ImGui::GetStyle();
-                        float             fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
-                        ShowTexture(pPreviewTexture, Vector2(fSize, fSize));
-                        if (ImGui::IsItemHovered())
-                        {
-                            ImGui::BeginTooltip();
-                            ShowTexture(pPreviewTexture, Vector2(128, 128));
-                            ImGui::EndTooltip();
-                        }
-                        ImGui::SameLine();
-                    }
-
-                    EditMResource(
-                            strDlgName,
-                            MTextureResourceLoader::GetResourceTypeName(),
-                            MTextureResourceLoader::GetSuffixList(),
-                            pResource,
-                            [&param, &pMaterial](const MString& strNewFilePath) {
-                                std::shared_ptr<MResource> pNewResource =
-                                        pMaterial->GetResourceSystem()->LoadResource(strNewFilePath);
-
-                                pMaterial->SetTexture(param->strName, pNewResource);
-                            }
-                    );
-
-                    ShowValueEnd();
-                }
-            }
+            if (bModify) { pMaterial->SetShaderMacro(shaderMacro); }
         }
     }
 
+    {
+        ShowValueBegin("Shader");
+        if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+        {
+            MString strResPathVS =
+                    pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex)->GetResourcePath();
+            pMaterial->GetResourceSystem()->Reload(strResPathVS);
+
+            MString strResPathPS =
+                    pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EPixel)->GetResourcePath();
+            pMaterial->GetResourceSystem()->Reload(strResPathPS);
+        }
+        ShowValueEnd();
+    }
+
+    {
+        ShowValueBegin("Cull");
+        auto nCullType = static_cast<size_t>(pMaterial->GetCullMode());
+        if (EditEnum({"Wireframe", "CullNone", "CullBack", "ECullFront"}, nCullType))
+        {
+            pMaterial->SetCullMode(MECullMode(nCullType));
+        }
+        ShowValueEnd();
+    }
+
+    {
+        ShowValueBegin("Type");
+        auto nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
+        if (EditEnum({"Default", "Transparent"}, nMaterialType))
+        {
+            pMaterial->SetMaterialType((MEMaterialType) nMaterialType);
+        }
+        ShowValueEnd();
+    }
+
+    return bModified;
+}
+
+bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
+{
+    bool bModified = false;
+    if (!pMaterial) { return false; }
+
+    {
+        ShowValueBegin("Save");
+        EditSaveMResource(
+                "material_save_dlg",
+                MMaterialResourceLoader::GetResourceTypeName(),
+                MMaterialResourceLoader::GetSuffixList(),
+                pMaterial
+        );
+        ShowValueEnd();
+    }
+
+    auto materialTemplate = MTypeClass::DynamicCast<MMaterialTemplateResource>(pMaterial->GetMaterialTemplate());
+    ShowValueBegin("Material Template");
+    if (EditMMaterialTemplateResource(materialTemplate))
+    {
+        pMaterial->ResetMaterialTemplate(materialTemplate);
+        bModified = true;
+    }
+    ShowValueEnd();
+
+    bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
+
+    {
+        std::vector<std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_textures;
+        for (unsigned int i = 0; i < vParams.size(); ++i)
+        {
+            if (const std::shared_ptr<MTextureResourceParam>& param =
+                        std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))
+            {
+
+                MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
+
+                ShowValueBegin(param->strName.ToString());
+                std::shared_ptr<MTextureResource> pTextureResource = param->GetTextureResource();
+
+                if (auto pPreviewTexture = param->GetTexture())
+                {
+                    const ImGuiStyle& style = ImGui::GetStyle();
+                    float             fSize = ImGui::GetFontSize() + style.FramePadding.y * 2;
+                    ShowTexture(pPreviewTexture, Vector2(fSize, fSize));
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::BeginTooltip();
+                        ShowTexture(pPreviewTexture, Vector2(128, 128));
+                        ImGui::EndTooltip();
+                    }
+                    ImGui::SameLine();
+                }
+
+                if (EditMResource(
+                            strDlgName,
+                            MTextureResourceLoader::GetResourceTypeName(),
+                            MTextureResourceLoader::GetSuffixList(),
+                            pTextureResource
+                    ))
+                {
+                    pMaterial->SetTexture(param->strName, pTextureResource);
+                }
+
+                ShowValueEnd();
+            }
+        }
+    }
 
     return bModified;
 }
@@ -444,25 +452,53 @@ bool PropertyBase::EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock
     return bModified;
 }
 
-void PropertyBase::EditMResource(
-        const MString&                                            strDlgID,
-        const MString&                                            strResourceType,
-        const std::vector<MString>&                               vSuffixList,
-        std::shared_ptr<MResource>                                pResource,
-        const std::function<void(const MString& strNewFilePath)>& funcLoadResource
+bool PropertyBase::EditMMaterialTemplateResource(std::shared_ptr<MMaterialTemplateResource>& resource)
+{
+    auto dlgId = std::to_string(reinterpret_cast<uint64_t>(resource.get()));
+
+    return EditMResource(
+            dlgId,
+            MMaterialTemplateResourceDataLoader::GetResourceTypeName(),
+            MMaterialTemplateResourceDataLoader::GetSuffixList(),
+            resource
+    );
+}
+
+bool PropertyBase::EditMMaterialResource(std::shared_ptr<MMaterialResource>& resource)
+{
+    auto dlgId = std::to_string(reinterpret_cast<uint64_t>(resource.get()));
+
+    return EditMResource(
+            dlgId,
+            MMaterialResourceLoader::GetResourceTypeName(),
+            MMaterialResourceLoader::GetSuffixList(),
+            resource
+    );
+}
+
+bool PropertyBase::EditMResource(
+        const MString&              strDlgID,
+        const MString&              strResourceType,
+        const std::vector<MString>& vSuffixList,
+        std::shared_ptr<MResource>  pResource
 )
 {
+    if (m_engine == nullptr) { return false; }
+
+    bool    modifyFlag     = false;
+    auto    resourceSystem = m_engine->FindSystem<MResourceSystem>();
+
     //".mvs\0.mps\0\0",
-    MString strSuffix = "";
+    MString strSuffix;
     for (const MString& suffix: vSuffixList) { strSuffix += "." + suffix + ","; }
-    strSuffix += "\0";
+    strSuffix += '\0';
 
     MString strButtonLabel;
     MString strResourcePathName;
     if (pResource)
     {
         strResourcePathName = pResource->GetResourcePath();
-        strButtonLabel      = pResource->GetFileName(strResourcePathName);
+        strButtonLabel      = MResource::GetFileName(strResourcePathName);
     }
     else { strButtonLabel = strResourcePathName = "null"; }
 
@@ -479,7 +515,7 @@ void PropertyBase::EditMResource(
                     strDlgID,
                     strResourceType,
                     strSuffix.c_str(),
-                    pResource->GetFolder(strResourcePathName),
+                    MResource::GetFolder(strResourcePathName),
                     strButtonLabel
             );
         else
@@ -488,16 +524,19 @@ void PropertyBase::EditMResource(
 
     if (ImGuiFileDialog::Instance()->Display(strDlgID))
     {
-        if (ImGuiFileDialog::Instance()->IsOk() == true)
+        if (ImGuiFileDialog::Instance()->IsOk())
         {
-            if (funcLoadResource)
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            if (MFileHelper::IsExist(filePathName))
             {
-                std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-                funcLoadResource(filePathName);
+                pResource  = resourceSystem->LoadResource(filePathName);
+                modifyFlag = true;
             }
         }
         ImGuiFileDialog::Instance()->Close();
     }
+
+    return modifyFlag;
 }
 
 void PropertyBase::EditSaveMResource(

@@ -27,8 +27,7 @@ std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
 {
     if (!MTypeClass::IsType(type, MResource::GetClassType())) { return nullptr; }
 
-    std::shared_ptr<MResource> pResource =
-            std::shared_ptr<MResource>(static_cast<MResource*>(MTypeClass::New(type)));
+    std::shared_ptr<MResource> pResource = std::shared_ptr<MResource>(static_cast<MResource*>(MTypeClass::New(type)));
     if (!pResource)
     {
         MORTY_ASSERT(pResource);
@@ -50,10 +49,7 @@ void MResourceSystem::SetSearchPath(const std::vector<MString>& vSearchPath)
 
     for (const MString& strPath: vSearchPath)
     {
-        if (!strPath.empty() && strPath.back() != '/')
-        {
-            m_searchPath.push_back(strPath + '/');
-        }
+        if (!strPath.empty() && strPath.back() != '/') { m_searchPath.push_back(strPath + '/'); }
         else { m_searchPath.push_back(strPath); }
     }
 }
@@ -70,8 +66,7 @@ MString MResourceSystem::GetFullPath(const MString& strRelativePath)
     return "";
 }
 
-std::shared_ptr<MResource>
-MResourceSystem::LoadResource(const MString& strResourcePath, bool bAsyncLoad)
+std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResourcePath, bool bAsyncLoad)
 {
     if (strResourcePath.empty()) { return nullptr; }
 
@@ -87,10 +82,7 @@ MResourceSystem::LoadResource(const MString& strResourcePath, bool bAsyncLoad)
     std::shared_ptr<MResource> pResource = CreateResource(pLoader->ResourceType());
     if (!pResource)
     {
-        GetEngine()->GetLogger()->Error(
-                "Create Resource failed: [path: {}]",
-                strResourcePath.c_str()
-        );
+        GetEngine()->GetLogger()->Error("Create Resource failed: [path: {}]", strResourcePath.c_str());
         return nullptr;
     }
 
@@ -109,18 +101,14 @@ MResourceSystem::LoadResource(const MString& strResourcePath, bool bAsyncLoad)
     {
         if (!pResource->Load(pLoader->LoadResource(strFullPath)))
         {
-            GetEngine()->GetLogger()->Error(
-                    "Load Resource failed: [path: {}]",
-                    pLoader->strResourcePath.c_str()
-            );
+            GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
         }
     }
 
     return pResource;
 }
 
-std::unique_ptr<MResourceData>
-MResourceSystem::LoadResourceData(const MString& strResourcePath)
+std::unique_ptr<MResourceData> MResourceSystem::LoadResourceData(const MString& strResourcePath)
 {
     const MString strFullPath = GetFullPath(strResourcePath);
     if (strFullPath.empty()) { return nullptr; }
@@ -129,21 +117,6 @@ MResourceSystem::LoadResourceData(const MString& strResourcePath)
     if (!pLoader) { return nullptr; }
 
     return pLoader->LoadResource(strFullPath);
-}
-
-void MResourceSystem::UnloadResource(std::shared_ptr<MResource> pResource)
-{
-    if (nullptr == pResource) return;
-
-    if (!pResource->GetResourcePath().empty())
-    {
-        m_pathResources.erase(pResource->GetResourcePath());
-    }
-
-    m_resources.erase(pResource->GetResourceID());
-
-    pResource->OnDelete();
-    pResource = nullptr;
 }
 
 void MResourceSystem::SaveResource(std::shared_ptr<MResource> pResource)
@@ -166,17 +139,13 @@ void MResourceSystem::SaveResource(std::shared_ptr<MResource> pResource)
     SaveResource(pResourceData, strResourcePath);
 }
 
-void MResourceSystem::SaveResource(
-        const std::unique_ptr<MResourceData>& pResourceData,
-        const MString&                        strOutputPath
-)
+void MResourceSystem::SaveResource(const std::unique_ptr<MResourceData>& pResourceData, const MString& strOutputPath)
 {
     std::vector<MByte> data = pResourceData->SaveBuffer();
     MFileHelper::WriteData(strOutputPath, data);
 }
 
-std::shared_ptr<MResourceLoader>
-MResourceSystem::CreateLoader(const MString& strResourcePath)
+std::shared_ptr<MResourceLoader> MResourceSystem::CreateLoader(const MString& strResourcePath)
 {
     const MString suffix     = MResource::GetSuffix(strResourcePath);
     const auto    findResult = m_resourceLoader.find(suffix);
@@ -188,8 +157,7 @@ MResourceSystem::CreateLoader(const MString& strResourcePath)
 
 void MResourceSystem::Reload(const MString& strResourcePath)
 {
-    const std::map<MString, std::shared_ptr<MResource>>::iterator iter =
-            m_pathResources.find(strResourcePath);
+    const std::map<MString, std::shared_ptr<MResource>>::iterator iter = m_pathResources.find(strResourcePath);
     if (iter != m_pathResources.end())
     {
         const MString strFullPath = GetFullPath(strResourcePath);
@@ -207,20 +175,17 @@ void MResourceSystem::Reload(const MString& strResourcePath)
 
 std::shared_ptr<MResource> MResourceSystem::FindResourceByID(const MResourceID& unID)
 {
-    std::map<MResourceID, std::shared_ptr<MResource>>::iterator iter =
-            m_resources.find(unID);
+    auto iter = m_resources.find(unID);
 
     if (iter == m_resources.end()) return nullptr;
 
     return iter->second;
 }
 
-void MResourceSystem::MoveTo(
-        std::shared_ptr<MResource> pResource,
-        const MString&             strTargetPath
-)
+void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath)
 {
     MString strOldPath = pResource->m_strResourcePath;
+    m_resources.erase(pResource->GetResourceID());
     m_pathResources.erase(strOldPath);
 
     std::shared_ptr<MResource> pTargetResource = m_pathResources[strTargetPath];
@@ -232,17 +197,11 @@ void MResourceSystem::MoveTo(
     {
         //Set As Memory Resource
         pTargetResource->m_strResourcePath = "";
-        for (MResourceRef* pKeeper: pTargetResource->m_keeper)
-        {
-            pKeeper->SetResource(pResource);
-        }
+        for (MResourceRef* pKeeper: pTargetResource->m_keeper) { pKeeper->SetResource(pResource); }
     }
 }
 
-void MResourceSystem::SaveTo(
-        std::shared_ptr<MResource> pResource,
-        const MString&             strTargetPath
-)
+void MResourceSystem::SaveTo(std::shared_ptr<MResource> pResource, const MString& strTargetPath)
 {
     std::unique_ptr<MResourceData> pResourceData = nullptr;
     pResource->SaveTo(pResourceData);

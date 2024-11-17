@@ -18,7 +18,8 @@
 
 namespace morty
 {
-
+class MResource;
+class MMaterialResource;
 REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MDeferredLightingRenderNode)
@@ -34,7 +35,11 @@ public:
 public:
     REFL_RENDER_NODE_PROPERTY bool EnableAO = false;
 
+    REFL_RENDER_NODE_PROPERTY std::shared_ptr<MMaterialResource> LightingMaterial = nullptr;
+
 protected:
+    void                               UpdateProperty();
+
     void                               BindInOutTexture() override;
 
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;

@@ -57,6 +57,8 @@
 
 #include <flatbuffers/buffer.h>
 #include <flatbuffers/flatbuffer_builder.h>
+#include <ryml/ryml.hpp>
+#include <ryml/ryml_std.hpp>
 
 #include "Utility/MMap.h"
 #include "Utility/MSpan.h"

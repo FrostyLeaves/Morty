@@ -44,6 +44,11 @@ const std::shared_ptr<MShaderPropertyBlock>& MMaterial::GetMaterialPropertyBlock
 
 const std::shared_ptr<MMaterialTemplate>&    MMaterial::GetMaterialTemplate() const { return m_materialTemplate; }
 
+void MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate)
+{
+    BindTemplate(newMaterialTemplate);
+}
+
 std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))

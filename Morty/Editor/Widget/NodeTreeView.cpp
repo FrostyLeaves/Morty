@@ -1,11 +1,12 @@
 #include "NodeTreeView.h"
-
+#include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
+#include "Main/MainEditor.h"
+#include "MaterialView.h"
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
-
 #include "Utility/SelectionEntityManager.h"
 #include "imgui.h"
 
@@ -24,7 +25,7 @@ void NodeTreeView::Render()
     auto vEntity = GetScene()->GetAllEntity();
     for (MEntity* pEntity: vEntity)
     {
-        MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+        auto* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
         if (!pSceneComponent || !pSceneComponent->GetParent())
         {
             //ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
@@ -34,10 +35,7 @@ void NodeTreeView::Render()
     }
 }
 
-void NodeTreeView::Initialize(MainEditor* pMainEditor)
-{
-    BaseWidget::Initialize(pMainEditor);
-}
+void NodeTreeView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(pMainEditor); }
 
 void NodeTreeView::Release() {}
 
@@ -46,19 +44,13 @@ void NodeTreeView::RenderNode(MEntity* pNode)
     if (!pNode) return;
 
     MScene*            pScene          = pNode->GetScene();
-    MSceneComponent*   pSceneComponent = pNode->GetComponent<MSceneComponent>();
+    auto*              pSceneComponent = pNode->GetComponent<MSceneComponent>();
 
 
-    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
-                                    ImGuiTreeNodeFlags_OpenOnDoubleClick |
-                                    ImGuiTreeNodeFlags_FramePadding;
-    if (!pSceneComponent || pSceneComponent->GetChildrenComponent().size() == 0)
-        node_flags |= ImGuiTreeNodeFlags_Leaf;
-    // 	else if (pNode->GetID() == m_unRootNodeID)
-    // 		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
-
-    if (SelectionEntityManager::GetInstance()->GetSelectedEntity() == pNode)
-        node_flags |= ImGuiTreeNodeFlags_Selected;
+    ImGuiTreeNodeFlags node_flags =
+            ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
+    if (!pSceneComponent || pSceneComponent->GetChildrenComponent().empty()) node_flags |= ImGuiTreeNodeFlags_Leaf;
+    if (SelectionEntityManager::GetInstance()->GetSelectedEntity() == pNode) node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
     bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, "%s", pNode->GetName().c_str());
@@ -68,10 +60,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
         ImGui::EndPopup();
     }
 
-    if (ImGui::IsItemClicked())
-    {
-        SelectionEntityManager::GetInstance()->SetSelectedEntity(pNode);
-    }
+    if (ImGui::IsItemClicked()) { SelectionEntityManager::GetInstance()->SetSelectedEntity(pNode); }
     if (bOpened)
     {
         if (pSceneComponent)

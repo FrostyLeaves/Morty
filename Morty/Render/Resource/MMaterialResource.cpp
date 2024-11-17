@@ -1,7 +1,7 @@
 ﻿#include "MMaterialResource.h"
 #include "MMaterialResourceData.h"
-#include "MMaterialTemplate_generated.h"
 #include "Utility/MFileHelper.h"
+#include "MMaterialTemplate_generated.h"
 
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
@@ -40,7 +40,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
         }
     }
 
-    pMaterialData->strTemplateResource = GetMaterialTemplate()->GetResourcePath();
+    if (auto pTemplate = GetMaterialTemplate()) { pMaterialData->strTemplateResource = pTemplate->GetResourcePath(); }
 
     pResourceData = std::move(pMaterialData);
     return true;

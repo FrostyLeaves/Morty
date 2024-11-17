@@ -8,15 +8,13 @@ using namespace morty;
 
 void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
 {
+    m_editProperty.BindEngine(pModelComponent->GetEngine());
 
-    MSkeletalAnimController* pController =
-            pModelComponent->GetSkeletalAnimationController();
-    auto pCurrentAnimResource =
-            pController ? pController->GetAnimationResource() : nullptr;
+    MSkeletalAnimController* pController          = pModelComponent->GetSkeletalAnimationController();
+    auto                     pCurrentAnimResource = pController ? pController->GetAnimationResource() : nullptr;
 
-    static auto ModelLoadFunc = [&pModelComponent](const MString& strNewFilePath) {
-        MSkeletalAnimController* pOldController =
-                pModelComponent->GetSkeletalAnimationController();
+    static auto              ModelLoadFunc = [&pModelComponent](const MString& strNewFilePath) {
+        MSkeletalAnimController*                pOldController = pModelComponent->GetSkeletalAnimationController();
         bool                                    bLoop    = false;
         float                                   fPercent = 0.0f;
         MIAnimController::MEAnimControllerState state    = MIAnimController::EStop;
@@ -27,8 +25,7 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
             state    = pOldController->GetState();
         }
         pModelComponent->PlayAnimation(strNewFilePath);
-        MSkeletalAnimController* pController =
-                pModelComponent->GetSkeletalAnimationController();
+        MSkeletalAnimController* pController = pModelComponent->GetSkeletalAnimationController();
 
         if (pOldController)
         {
@@ -38,27 +35,29 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
             if (MIAnimController::EPlay == state) pController->Play();
         }
     };
-    ShowValueBegin("Animation");
-    EditMResource(
-            "skelanim_file_dlg",
-            MSkeletalAnimationLoader::GetResourceTypeName(),
-            MSkeletalAnimationLoader::GetSuffixList(),
-            pCurrentAnimResource,
-            ModelLoadFunc
-    );
+    m_editProperty.ShowValueBegin("Animation");
+    if (m_editProperty.EditMResource(
+                "skelanim_file_dlg",
+                MSkeletalAnimationLoader::GetResourceTypeName(),
+                MSkeletalAnimationLoader::GetSuffixList(),
+                pCurrentAnimResource
+        ))
+    {
+        ModelLoadFunc(pCurrentAnimResource->GetResourcePath());
+    }
 
-    ShowValueEnd();
+    m_editProperty.ShowValueEnd();
 
     pController = pModelComponent->GetSkeletalAnimationController();
     if (pController)
     {
-        ShowValueBegin("Loop");
+        m_editProperty.ShowValueBegin("Loop");
         bool bLoop = pController->GetLoop();
-        if (Editbool(bLoop)) { pController->SetLoop(bLoop); }
-        ShowValueEnd();
+        if (m_editProperty.Editbool(bLoop)) { pController->SetLoop(bLoop); }
+        m_editProperty.ShowValueEnd();
 
 
-        ShowValueBegin("State");
+        m_editProperty.ShowValueBegin("State");
 
 
         float width = ImGui::GetContentRegionAvail().x;
@@ -83,6 +82,6 @@ void PropertyMModelComponent::EditAnimation(MModelComponent* pModelComponent)
             if (ImGui::Button("Play", ImVec2(width * 0.25f, 0.0f))) pController->Play();
         }
 
-        ShowValueEnd();
+        m_editProperty.ShowValueEnd();
     }
 }

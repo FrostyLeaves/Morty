@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Component/MDirectionalLightComponent.h"
-#include "Property/PropertyBase.h"
+#include "MComponentProperty.h"
 
 namespace morty
 {
 
-class PropertyMDirectionalLightComponent : public PropertyBase
+class PropertyMDirectionalLightComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
-        if (MDirectionalLightComponent* pDirectonalLightComponent = pEntity->GetComponent<MDirectionalLightComponent>())
+        MORTY_UNUSED(editor);
+
+        if (auto* pDirectonalLightComponent = pEntity->GetComponent<MDirectionalLightComponent>())
         {
-            if (ShowNodeBegin("DirLightComponent"))
+            if (m_editProperty.ShowNodeBegin("DirLightComponent"))
             {
                 PROPERTY_VALUE_GET_SET_EDIT(pDirectonalLightComponent, "Enable", bool, GetLightEnable, SetLightEnable);
                 PROPERTY_VALUE_GET_SET_EDIT(pDirectonalLightComponent, "Color", MColor, GetColor, SetColor);
@@ -35,7 +37,7 @@ public:
                         1000.0f
                 );
 
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }

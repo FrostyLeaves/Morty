@@ -1,23 +1,25 @@
 #pragma once
 
 #include "Component/MPointLightComponent.h"
-#include "Property/PropertyBase.h"
+#include "MComponentProperty.h"
 
 namespace morty
 {
 
-class PropertyMPointLightComponent : public PropertyBase
+class PropertyMPointLightComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
-        if (MPointLightComponent* pComponent = pEntity->GetComponent<MPointLightComponent>())
+        MORTY_UNUSED(editor);
+
+        if (auto* pComponent = pEntity->GetComponent<MPointLightComponent>())
         {
-            if (ShowNodeBegin("PointLightComponent"))
+            if (m_editProperty.ShowNodeBegin("PointLightComponent"))
             {
                 PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Color", MColor, GetColor, SetColor);
                 PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }

@@ -17,18 +17,18 @@ MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
 std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-
-    auto             pEdgeMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pToneMappingMat = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
+    
     std::shared_ptr<MResource> pVertexShader =
             pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
     std::shared_ptr<MResource> pPixelShader =
             pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
-    pEdgeMaterial->LoadShader(pVertexShader);
-    pEdgeMaterial->LoadShader(pPixelShader);
-    pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
+    pToneMappingMat->LoadShader(pVertexShader);
+    pToneMappingMat->LoadShader(pPixelShader);
+    pToneMappingMat->SetCullMode(MECullMode::ECullNone);
 
-    return MMaterial::CreateMaterial(pEdgeMaterial);
+    return MMaterial::CreateMaterial(pToneMappingMat);
 }
 
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()

@@ -1,23 +1,22 @@
 #pragma once
 
 #include "Component/MModelComponent.h"
-#include "Property/PropertyBase.h"
-
 #include "Engine/MEngine.h"
-
-#include "Utility/NotifyManager.h"
+#include "MComponentProperty.h"
 
 namespace morty
 {
 
-class PropertyMModelComponent : public PropertyBase
+class PropertyMModelComponent : public MComponentProperty
 {
 public:
-    virtual void EditEntity(MEntity* pEntity) override
+    void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
-        if (MModelComponent* pModelComponent = pEntity->GetComponent<MModelComponent>())
+        MORTY_UNUSED(editor);
+
+        if (auto* pModelComponent = pEntity->GetComponent<MModelComponent>())
         {
-            if (ShowNodeBegin("ModelComponent"))
+            if (m_editProperty.ShowNodeBegin("ModelComponent"))
             {
 
                 PROPERTY_VALUE_GET_SET_EDIT(
@@ -30,7 +29,7 @@ public:
 
                 EditAnimation(pModelComponent);
 
-                ShowNodeEnd();
+                m_editProperty.ShowNodeEnd();
             }
         }
     }
