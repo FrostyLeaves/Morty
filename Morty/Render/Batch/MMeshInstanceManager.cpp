@@ -134,7 +134,7 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 
 void MMeshInstanceManager::OnMaterialChanged(MComponent* pComponent)
 {
-    MRenderMeshComponent* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>();
+    auto* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>();
     if (!pMeshComponent) { return; }
 
     RemoveComponentFromGroup(pMeshComponent);
@@ -149,7 +149,7 @@ void MMeshInstanceManager::OnMaterialChanged(MComponent* pComponent)
 
 void MMeshInstanceManager::OnMeshChanged(MComponent* pComponent)
 {
-    if (MRenderMeshComponent* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
+    if (auto* pMeshComponent = pComponent->template DynamicCast<MRenderMeshComponent>())
     {
         //TODO remove it.
         GetEngine()->FindGlobalObject<MMeshManager>()->RegisterMesh(pMeshComponent->GetMesh());
@@ -168,7 +168,7 @@ void MMeshInstanceManager::OnRenderMeshChanged(MComponent* pComponent)
 
 void MMeshInstanceManager::OnSceneComponentChanged(MComponent* pComponent)
 {
-    if (MRenderMeshComponent* pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderMeshComponent>())
+    if (auto* pMeshComponent = pComponent->GetEntity()->GetComponent<MRenderMeshComponent>())
     {
         UpdateMeshInstance(pMeshComponent, MMaterialBatchGroup::CreateProxyFromComponent(pMeshComponent));
     }
@@ -196,7 +196,7 @@ std::vector<MMaterialBatchGroup*> MMeshInstanceManager::GetAllMaterialGroup() co
     return vRenderableGroup;
 }
 
-bool MMeshInstanceManager::IsRenderableMeshMaterial(MEMaterialType eType) const
+bool MMeshInstanceManager::IsRenderableMeshMaterial(MEMaterialType eType)
 {
     return eType == MEMaterialType::EDefault || eType == MEMaterialType::EDeferred || eType == MEMaterialType::ECustom;
 }
@@ -215,13 +215,13 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* pComponent)
         return;
     }
 
-    auto pRenderableGroup                = new MaterialGroup();
-    m_renderableMaterialGroup[pMaterial] = pRenderableGroup;
-    pRenderableGroup->materialGroup.Initialize(GetEngine(), pMaterial);
+    auto pRenderGroup                    = new MaterialGroup();
+    m_renderableMaterialGroup[pMaterial] = pRenderGroup;
+    pRenderGroup->materialGroup.Initialize(GetEngine(), pMaterial);
 
-    auto proxy                                             = MMaterialBatchGroup::CreateProxyFromComponent(pComponent);
-    pRenderableGroup->tWaitUpdateComponent[proxy.nProxyId] = proxy;
-    m_componentTable[pComponent]                           = pRenderableGroup;
+    auto proxy                                         = MMaterialBatchGroup::CreateProxyFromComponent(pComponent);
+    pRenderGroup->tWaitUpdateComponent[proxy.nProxyId] = proxy;
+    m_componentTable[pComponent]                       = pRenderGroup;
 }
 
 void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* pComponent)

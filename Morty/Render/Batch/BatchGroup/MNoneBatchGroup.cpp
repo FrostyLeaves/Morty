@@ -48,32 +48,33 @@ void MNoneBatchGroup::Release(MEngine* pEngine)
     m_shaderProgram       = nullptr;
 }
 
-bool MNoneBatchGroup::CanAddMeshInstance() const { return !m_instanceValid; }
+bool   MNoneBatchGroup::CanAddMeshInstance() const { return !m_instanceValid; }
 
-void MNoneBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
+size_t MNoneBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
     auto key = proxy.nProxyId;
     if (key == MGlobal::M_INVALID_UINDEX)
     {
         MORTY_ASSERT(key);
-        return;
+        return 0;
     }
 
     if (!m_transformParam)
     {
         MORTY_ASSERT(m_transformParam);
-        return;
+        return 0;
     }
 
     if (m_instanceValid)
     {
         MORTY_ASSERT(!m_instanceValid);
-        return;
+        return 0;
     }
 
     UpdateMeshInstance(proxy);
 
     m_instanceValid = true;
+    return 0;
 }
 
 void MNoneBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)

@@ -26,40 +26,40 @@ public:
     MORTY_INTERFACE(MMeshInstanceManager)
 
 public:
-    virtual void Initialize() override;
+    void                     Initialize() override;
 
-    virtual void Release() override;
+    void                     Release() override;
 
-    void         RenderUpdate(MTaskNode* pNode);
+    void                     RenderUpdate(MTaskNode* pNode);
 
-    MTaskNode*   GetUpdateTask() const { return m_updateTask; }
+    [[nodiscard]] MTaskNode* GetUpdateTask() const { return m_updateTask; }
 
 public:
-    void                              OnMaterialChanged(MComponent* pComponent);
+    void                                            OnMaterialChanged(MComponent* pComponent);
 
-    void                              OnMeshChanged(MComponent* pComponent);
+    void                                            OnMeshChanged(MComponent* pComponent);
 
-    void                              OnSceneComponentChanged(MComponent* pComponent);
+    void                                            OnSceneComponentChanged(MComponent* pComponent);
 
-    void                              OnRenderMeshChanged(MComponent* pComponent);
+    void                                            OnRenderMeshChanged(MComponent* pComponent);
 
-    void                              RemoveComponent(MRenderMeshComponent* pComponent);
+    void                                            RemoveComponent(MRenderMeshComponent* pComponent);
 
-    std::vector<MMaterialBatchGroup*> FindGroupFromMaterialType(MEMaterialType eType) const;
+    [[nodiscard]] std::vector<MMaterialBatchGroup*> FindGroupFromMaterialType(MEMaterialType eType) const;
 
-    std::vector<MMaterialBatchGroup*> GetAllMaterialGroup() const;
+    [[nodiscard]] std::vector<MMaterialBatchGroup*> GetAllMaterialGroup() const;
 
 
 protected:
-    bool IsRenderableMeshMaterial(MEMaterialType eType) const;
+    [[nodiscard]] static bool IsRenderableMeshMaterial(MEMaterialType eType);
 
-    void AddComponentToGroup(MRenderMeshComponent* pComponent);
+    void                      AddComponentToGroup(MRenderMeshComponent* pComponent);
 
-    void RemoveComponentFromGroup(MRenderMeshComponent* pComponent);
+    void                      RemoveComponentFromGroup(MRenderMeshComponent* pComponent);
 
-    void UpdateMeshInstance(MRenderMeshComponent* pComponent, MMeshInstanceRenderProxy proxy);
+    void                      UpdateMeshInstance(MRenderMeshComponent* pComponent, MMeshInstanceRenderProxy proxy);
 
-    void Clean();
+    void                      Clean();
 
 private:
     struct MaterialGroup {

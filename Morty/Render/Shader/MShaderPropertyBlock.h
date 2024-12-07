@@ -25,7 +25,7 @@ public:
 
     explicit MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey);
 
-    explicit MShaderPropertyBlock(const MShaderPropertyBlock& other);
+    MShaderPropertyBlock(const MShaderPropertyBlock& other);
 
     const MShaderPropertyBlock& operator=(const MShaderPropertyBlock& other) = delete;
 
@@ -110,15 +110,13 @@ public:
     }
 
 
-    void                                  GenerateBuffer(MIDevice* pDevice);
+    void                                                GenerateBuffer(MIDevice* pDevice);
 
-    void                                  DestroyBuffer(MIDevice* pDevice);
+    void                                                DestroyBuffer(MIDevice* pDevice);
 
-    std::shared_ptr<MShaderPropertyBlock> Clone() const;
-
-    std::shared_ptr<MShaderPropertyBlock> GetShared() const;
-
-    std::shared_ptr<MShaderProgram>       GetShaderProgram() const { return m_shaderProgram.lock(); }
+    [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> Clone() const;
+    [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> GetShared() const;
+    [[nodiscard]] std::shared_ptr<MShaderProgram>       GetShaderProgram() const { return m_shaderProgram.lock(); }
 
 public:
     std::vector<std::shared_ptr<MShaderConstantParam>> m_params;
@@ -193,7 +191,6 @@ template<typename TYPE> inline bool MShaderPropertyBlock::SetValue(const MString
         }
     }
 
-    MORTY_ASSERT(false);
     return false;
 }
 

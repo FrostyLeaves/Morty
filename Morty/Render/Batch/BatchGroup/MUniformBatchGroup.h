@@ -31,29 +31,31 @@ public:
     };
 
 public:
-    void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
+    void               Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
 
-    void Release(MEngine* pEngine) override;
+    void               Release(MEngine* pEngine) override;
 
-    bool CanAddMeshInstance() const override;
+    [[nodiscard]] bool CanAddMeshInstance() const override;
 
-    void AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
+    size_t             AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
-    void RemoveMeshInstance(MMeshInstanceKey key) override;
+    void               UpdateMaterialProperty(const MaterialPropertyUpdateProxy& proxy) override;
 
-    void UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
+    void               RemoveMeshInstance(MMeshInstanceKey key) override;
 
-    std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_shaderPropertyBlock; }
+    void               UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
-    MMeshInstanceRenderProxy*             FindMeshInstance(MMeshInstanceKey key) override;
+    [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_meshPropertyBlock; }
+
+    MMeshInstanceRenderProxy*                           FindMeshInstance(MMeshInstanceKey key) override;
 
     void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 
 private:
-    MEngine*                                                         m_engine              = nullptr;
-    std::shared_ptr<MShaderProgram>                                  m_shaderProgram       = nullptr;
-    std::shared_ptr<MShaderPropertyBlock>                            m_shaderPropertyBlock = nullptr;
-    std::shared_ptr<MShaderConstantParam>                            m_transformParam      = nullptr;
+    MEngine*                                                         m_engine            = nullptr;
+    std::shared_ptr<MShaderProgram>                                  m_shaderProgram     = nullptr;
+    std::shared_ptr<MShaderPropertyBlock>                            m_meshPropertyBlock = nullptr;
+    std::shared_ptr<MShaderConstantParam>                            m_transformParam    = nullptr;
     MRenderInstanceCache<MMeshInstanceKey, MMeshInstanceRenderProxy> m_instanceCache;
 
     std::vector<MTransformVariant>                                   m_transformArray;

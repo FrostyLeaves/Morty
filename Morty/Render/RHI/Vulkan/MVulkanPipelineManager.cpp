@@ -552,7 +552,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
         }
     }
 
-    MVertexShaderBuffer* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
+    auto* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
 
     VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
     inputStateInfo                                      = VkPipelineVertexInputStateCreateInfo{};

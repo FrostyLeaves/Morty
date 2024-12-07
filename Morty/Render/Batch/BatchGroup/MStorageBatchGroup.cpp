@@ -56,27 +56,27 @@ void MStorageBatchGroup::Release(MEngine* pEngine)
     m_transformBuffer.buffer.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-bool MStorageBatchGroup::CanAddMeshInstance() const { return true; }
+bool   MStorageBatchGroup::CanAddMeshInstance() const { return true; }
 
-void MStorageBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
+size_t MStorageBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
     auto key = proxy.nProxyId;
     if (key == MGlobal::M_INVALID_UINDEX)
     {
         MORTY_ASSERT(key != MGlobal::M_INVALID_UINDEX);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     if (!m_transformParam)
     {
         MORTY_ASSERT(m_transformParam);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     if (m_instanceCache.HasItem(key))
     {
         MORTY_ASSERT(false);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     const MRenderSystem* pRenderSystem        = m_engine->FindSystem<MRenderSystem>();
@@ -94,6 +94,8 @@ void MStorageBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
     m_transformArray[nCurrentIdx].size  = TransformStructSize;
 
     UpdateMeshInstance(proxy);
+
+    return nCurrentIdx;
 }
 
 void MStorageBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)

@@ -30,22 +30,31 @@ struct MORTY_API MMeshInstanceRenderProxy {
     MBoundsAABB          boundsWithTransform;
 };
 
+struct MORTY_API MaterialPropertyUpdateProxy {
+    MMeshInstanceKey   nProxyId;
+    MStringId          name;
+    std::vector<MByte> buffer;
+    size_t             offset;
+};
+
 class MORTY_API MInstanceBatchGroup
 {
 public:
     virtual ~MInstanceBatchGroup() = default;
 
-    virtual void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) = 0;
+    virtual void               Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) = 0;
 
-    virtual void Release(MEngine* pEngine) = 0;
+    virtual void               Release(MEngine* pEngine) = 0;
 
-    virtual bool CanAddMeshInstance() const = 0;
+    [[nodiscard]] virtual bool CanAddMeshInstance() const = 0;
 
-    virtual void AddMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;
+    virtual size_t             AddMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;
 
-    virtual void RemoveMeshInstance(MMeshInstanceKey key) = 0;
+    virtual void               RemoveMeshInstance(MMeshInstanceKey key) = 0;
 
-    virtual void UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;
+    virtual void               UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;
+
+    virtual void               UpdateMaterialProperty(const MaterialPropertyUpdateProxy& proxy) = 0;
 
     virtual std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const = 0;
 

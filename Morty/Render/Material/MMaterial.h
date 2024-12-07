@@ -29,8 +29,9 @@ public:
 
     ~MMaterial() override = default;
 
-
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
+
+    template<typename TYPE> void SetProperty(const MStringId& name, const TYPE& value);
 
     void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
 
@@ -69,14 +70,23 @@ protected:
     void BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate);
 
 private:
-    std::shared_ptr<MMaterialTemplate>    m_materialTemplate = nullptr;
+    std::shared_ptr<MMaterialTemplate>      m_materialTemplate = nullptr;
 
-    std::shared_ptr<MShaderPropertyBlock> m_shaderProperty;
+    std::shared_ptr<MShaderPropertyBlock>   m_shaderProperty;
+
+    std::unordered_map<MStringId, MVariant> m_materialProperty;
 };
 
 template<typename TYPE> void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
 {
     if (const auto pProperty = GetMaterialPropertyBlock()) { pProperty->SetValue(strName, value); }
+}
+
+template<typename TYPE> void MMaterial::SetProperty(const MStringId& name, const TYPE& value)
+{
+    auto property = m_materialProperty.at(name);
+    if (!property.IsType<TYPE>()) { return; }
+    property.SetValue(value);
 }
 
 }// namespace morty

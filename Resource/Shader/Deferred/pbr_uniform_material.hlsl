@@ -19,7 +19,7 @@ struct Material
 
 //Textures
 [[vk::binding(1,0)]]Texture2D u_mat_texAlbedo;
-[[vk::binding(2,0)]]Texture2D u_texNormal;
+[[vk::binding(2,0)]]Texture2D u_mat_texNormal;
 [[vk::binding(3,0)]]Texture2D u_mat_texMetallic;
 [[vk::binding(4,0)]]Texture2D u_mat_texRoughness;
 [[vk::binding(5,0)]]Texture2D u_mat_texAmbientOcc;

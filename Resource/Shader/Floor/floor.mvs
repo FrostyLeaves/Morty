@@ -1,5 +1,4 @@
 #include "../Internal/internal_uniform_global.hlsl"
-#include "../Internal/internal_uniform_model.hlsl"
 
 
 struct VS_OUT

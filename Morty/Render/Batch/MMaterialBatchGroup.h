@@ -34,12 +34,11 @@ public:
 
     void                                     RemoveMeshInstance(MMeshInstanceKey nProxyId);
 
-    bool                                     IsEmpty() const;
+    [[nodiscard]] bool                       IsEmpty() const;
 
-    std::shared_ptr<MMaterial>               GetMaterial() const { return m_material; }
+    [[nodiscard]] std::shared_ptr<MMaterial> GetMaterial() const { return m_material; }
 
-    const std::vector<MInstanceBatchGroup*>& GetInstanceBatchGroup() const { return m_batchGroup; }
-
+    [[nodiscard]] const std::vector<MInstanceBatchGroup*>& GetInstanceBatchGroup() const { return m_batchGroup; }
 
 public:
     std::shared_ptr<MMaterial>         m_material = nullptr;

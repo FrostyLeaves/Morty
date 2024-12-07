@@ -1,6 +1,5 @@
 #include "../Internal/internal_uniform_global.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "../Internal/internal_uniform_model.hlsl"
 #include "../Deferred/pbr_uniform_material.hlsl"
 #include "../Model/universal_vsout.hlsl"
 
@@ -72,7 +71,7 @@ PS_OUT PS_MAIN(VS_OUT input)
 
 
     float3 f3Normal = float3(0.0f, 0.0f, 1.0f);
-    f3Normal = u_texNormal.Sample(LinearSampler, uv).xyz;
+    f3Normal = u_mat_texNormal.Sample(LinearSampler, uv).xyz;
     f3Normal = (f3Normal * 2.0f) - 1.0f;
     f3Normal = mul(f3Normal, TBN);
     f3Normal = normalize(f3Normal);

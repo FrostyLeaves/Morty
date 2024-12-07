@@ -1,16 +1,15 @@
 #include "MMaterialBatchGroup.h"
 
-#include "Engine/MEngine.h"
-#include "Material/MMaterial.h"
-#include "Scene/MEntity.h"
-#include "System/MRenderSystem.h"
-
 #include "BatchGroup/MNoneBatchGroup.h"
 #include "BatchGroup/MStorageBatchGroup.h"
 #include "BatchGroup/MUniformBatchGroup.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
+#include "Engine/MEngine.h"
+#include "Material/MMaterial.h"
 #include "Mesh/MVertex.h"
+#include "Scene/MEntity.h"
+#include "System/MRenderSystem.h"
 
 using namespace morty;
 
@@ -29,7 +28,6 @@ public:
 
     static MInstanceBatchGroup* CreateBatchGroup(MMaterial* pMaterial);
 };
-
 
 void MMaterialBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
 {
@@ -54,7 +52,7 @@ MMeshInstanceRenderProxy MMaterialBatchGroup::CreateProxyFromComponent(MRenderMe
     proxy.bCullEnable = pComponent->GetSceneCullEnable();
     proxy.nProxyId    = static_cast<uint32_t>(pComponent->GetComponentID().nIdx);
     proxy.nSkeletonId = static_cast<uint32_t>(pComponent->GetAttachedModelComponentID().nIdx);
-    if (MSceneComponent* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>())
+    if (auto* pSceneComponent = pComponent->GetEntity()->GetComponent<MSceneComponent>())
     {
         proxy.worldTransform = pSceneComponent->GetWorldTransform();
     }
@@ -106,8 +104,8 @@ void MMaterialBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
         return;
     }
 
-    pMeshGroup->AddMeshInstance(proxy);
     m_meshInstanceTable[proxy.nProxyId] = nMeshGroupIdx;
+    size_t nIndexInGroup                = pMeshGroup->AddMeshInstance(proxy);
 }
 
 void MMaterialBatchGroup::RemoveMeshInstance(MMeshInstanceKey nProxyId)

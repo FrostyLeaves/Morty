@@ -18,27 +18,27 @@ void morty::MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MSh
     m_engine        = pEngine;
     m_shaderProgram = pShaderProgram;
 
-    if (m_shaderPropertyBlock)
+    if (m_meshPropertyBlock)
     {
         const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-        m_shaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
-        m_shaderPropertyBlock = nullptr;
-        m_transformParam      = nullptr;
+        m_meshPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+        m_meshPropertyBlock = nullptr;
+        m_transformParam    = nullptr;
     }
 
     MORTY_ASSERT(pShaderProgram);
 
-    m_shaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
-    if (m_shaderPropertyBlock)
+    m_meshPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
+    if (m_meshPropertyBlock)
     {
-        m_transformParam = m_shaderPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
+        m_transformParam = m_meshPropertyBlock->FindConstantParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
     }
 
     MORTY_ASSERT(m_transformParam);
 
-    MStruct&       meshMatrixCbuffer = m_transformParam->var.GetValue<MStruct>();
-    MVariantArray& arr = meshMatrixCbuffer.GetVariant<MVariantArray>(MShaderPropertyName::MESH_LOCAL_MATRIX);
-    m_maxInstanceNum   = arr.MemberNum();
+    MStruct& meshMatrixCbuffer = m_transformParam->var.GetValue<MStruct>();
+    auto&    arr               = meshMatrixCbuffer.GetVariant<MVariantArray>(MShaderPropertyName::MESH_LOCAL_MATRIX);
+    m_maxInstanceNum           = arr.MemberNum();
 
     m_transformArray.resize(m_maxInstanceNum);
     for (size_t nIdx = 0; nIdx < m_maxInstanceNum; ++nIdx)
@@ -53,51 +53,53 @@ void morty::MUniformBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MSh
 void MUniformBatchGroup::Release(MEngine* pEngine)
 {
     const MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
-    m_shaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
-    m_shaderPropertyBlock = nullptr;
-    m_transformParam      = nullptr;
-    m_shaderProgram       = nullptr;
-    m_currentInstanceNum  = 0;
-    m_maxInstanceNum      = 1;
+    m_meshPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+    m_meshPropertyBlock  = nullptr;
+    m_transformParam     = nullptr;
+    m_shaderProgram      = nullptr;
+    m_currentInstanceNum = 0;
+    m_maxInstanceNum     = 1;
 
     m_instanceCache = {};
 }
 
-bool MUniformBatchGroup::CanAddMeshInstance() const { return m_currentInstanceNum < m_maxInstanceNum; }
+bool   MUniformBatchGroup::CanAddMeshInstance() const { return m_currentInstanceNum < m_maxInstanceNum; }
 
-void MUniformBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
+size_t MUniformBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
     auto key = proxy.nProxyId;
 
     if (key == MGlobal::M_INVALID_UINDEX)
     {
         MORTY_ASSERT(key);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     if (!m_transformParam)
     {
         MORTY_ASSERT(m_transformParam);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     if (m_currentInstanceNum >= m_maxInstanceNum)
     {
         MORTY_ASSERT(m_currentInstanceNum < m_maxInstanceNum);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
     if (m_instanceCache.HasItem(key))
     {
         MORTY_ASSERT(false);
-        return;
+        return MGlobal::M_INVALID_UINDEX;
     }
 
-    m_instanceCache.AddItem(key, {});
+    size_t nCurrentIdx = m_instanceCache.AddItem(key, {});
     ++m_currentInstanceNum;
 
 
     UpdateMeshInstance(proxy);
+
+    return nCurrentIdx;
 }
 
 void MUniformBatchGroup::RemoveMeshInstance(MMeshInstanceKey key)
@@ -129,6 +131,13 @@ void MUniformBatchGroup::UpdateMeshInstance(const MMeshInstanceRenderProxy& prox
     m_transformParam->SetDirty();
 
     *pInstance = proxy;
+}
+
+void MUniformBatchGroup::UpdateMaterialProperty(const MaterialPropertyUpdateProxy& proxy)
+{
+    auto       key       = proxy.nProxyId;
+    const auto pInstance = m_instanceCache.FindItem(key);
+    if (nullptr == pInstance) { return; }
 }
 
 MMeshInstanceRenderProxy* MUniformBatchGroup::FindMeshInstance(MMeshInstanceKey key)

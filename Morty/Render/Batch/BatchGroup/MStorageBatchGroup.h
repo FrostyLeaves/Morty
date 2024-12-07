@@ -28,21 +28,24 @@ class MRenderMeshComponent;
 class MORTY_API MStorageBatchGroup : public MInstanceBatchGroup
 {
 public:
-    void Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
+    void               Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
 
-    void Release(MEngine* pEngine) override;
+    void               Release(MEngine* pEngine) override;
 
-    bool CanAddMeshInstance() const override;
+    [[nodiscard]] bool CanAddMeshInstance() const override;
 
-    void AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
+    size_t             AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
-    void RemoveMeshInstance(MMeshInstanceKey key) override;
+    void               RemoveMeshInstance(MMeshInstanceKey key) override;
 
-    void UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
+    void               UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
-    std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override { return m_shaderPropertyBlock; }
+    [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const override
+    {
+        return m_shaderPropertyBlock;
+    }
 
-    MMeshInstanceRenderProxy*             FindMeshInstance(MMeshInstanceKey key) override;
+    MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override;
 
     void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
 

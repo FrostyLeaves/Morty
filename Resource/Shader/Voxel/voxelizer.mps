@@ -1,5 +1,4 @@
 #include "../Internal/internal_uniform_global.hlsl"
-#include "../Internal/internal_uniform_model.hlsl"
 #include "../Internal/internal_functional.hlsl"
 #include "../Deferred/pbr_uniform_material.hlsl"
 #include "../Lighting/pbr_lighting.hlsl"

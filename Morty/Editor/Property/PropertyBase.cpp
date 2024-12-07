@@ -6,11 +6,13 @@
 #include "Resource/MMaterialResourceData.h"
 #include "Resource/MMaterialTemplateResource.h"
 #include "Resource/MMaterialTemplateResourceData.h"
+#include "Resource/MShaderResource.h"
 #include "Resource/MTextureResource.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MTimer.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
+
 
 using namespace morty;
 
@@ -327,17 +329,15 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
         }
     }
 
-    {
-        ShowValueBegin("Shader");
-        if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
-        {
-            MString strResPathVS =
-                    pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex)->GetResourcePath();
-            pMaterial->GetResourceSystem()->Reload(strResPathVS);
+    static const std::vector<MString> vShaders = {"vs", "ps", "cs", "gs"};
 
-            MString strResPathPS =
-                    pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EPixel)->GetResourcePath();
-            pMaterial->GetResourceSystem()->Reload(strResPathPS);
+    for (const auto& name: vShaders)
+    {
+        ShowValueBegin(name);
+        auto shader = pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex);
+        if (EditMResource(name, "Shader", MShaderResourceLoader::GetSuffixList(), shader))
+        {
+            pMaterial->GetShaderProgram()->LoadShader(shader);
         }
         ShowValueEnd();
     }
