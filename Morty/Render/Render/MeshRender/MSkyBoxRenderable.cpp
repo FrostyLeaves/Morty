@@ -14,7 +14,7 @@ using namespace morty;
 
 void MSkyBoxRenderable::SetMesh(MIMesh* pMesh) { m_mesh = pMesh; }
 
-void MSkyBoxRenderable::SetMaterial(const std::shared_ptr<MMaterial>& pMaterial) { m_material = pMaterial; }
+void MSkyBoxRenderable::SetMaterial(const MMaterialTemplatePtr& pMaterial) { m_material = pMaterial; }
 
 void MSkyBoxRenderable::SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter)
 {

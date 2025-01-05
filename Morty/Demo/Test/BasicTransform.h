@@ -20,13 +20,10 @@ void TRANSFORM_SPHERE_GENERATE(MEngine* pEngine, MScene* pScene)
     const auto       pTemplate         = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
     const auto       pDeferredMaterial = MMaterialResource::CreateMaterial(pTemplate);
     {
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_ALBEDO,
-                Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-        );
-        
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+
         std::shared_ptr<MResource> albedo    = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
         std::shared_ptr<MResource> normal    = pResourceSystem->LoadResource(MRenderModule::DefaultNormal);
         std::shared_ptr<MResource> roughness = pResourceSystem->LoadResource(MRenderModule::Default_R8_One);

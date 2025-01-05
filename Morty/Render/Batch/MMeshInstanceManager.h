@@ -68,11 +68,10 @@ private:
         std::set<MMeshInstanceKey>                           tWaitRemoveComponent;
     };
 
-    std::map<MRenderMeshComponent*, MaterialGroup*>      m_componentTable;
-    std::map<std::shared_ptr<MMaterial>, MaterialGroup*> m_renderableMaterialGroup;
+    std::map<MRenderMeshComponent*, MaterialGroup*>              m_componentTable;
+    std::map<std::shared_ptr<MMaterialTemplate>, MaterialGroup*> m_renderableMaterialGroup;
 
-
-    MTaskNode*                                           m_updateTask = nullptr;
+    MTaskNode*                                                   m_updateTask = nullptr;
 };
 
 }// namespace morty

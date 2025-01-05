@@ -20,13 +20,14 @@ class MORTY_API MShaderResourceData : public MResourceData
 {
 public:
     //RawData
-    MEShaderType       eShaderType;
-    MString            strShaderPath;
+    MEShaderType                     shaderType;
+    MString                          shaderPath;
+    MString                          entryName;
 
 
-    void               LoadBuffer(const std::vector<MByte>& buffer) override;
+    void                             LoadBuffer(const std::vector<MByte>& buffer) override;
 
-    std::vector<MByte> SaveBuffer() const override;
+    [[nodiscard]] std::vector<MByte> SaveBuffer() const override;
 };
 
 class MORTY_API MShaderResource : public MResource
@@ -39,17 +40,17 @@ public:
     ~MShaderResource() override = default;
 
 public:
-    MShader*     GetShaderByIndex(const int& nIndex);
+    MShader*                   GetShaderByIndex(const int& nIndex);
 
-    int          FindShaderByMacroParam(const MShaderMacro& macro);
+    int                        FindShaderByMacroParam(const MShaderMacro& macro);
 
-    MEShaderType GetShaderType() const;
+    [[nodiscard]] MEShaderType GetShaderType() const;
 
-    bool         Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+    bool                       Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-    bool         SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool                       SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
-    virtual void OnDelete() override;
+    void                       OnDelete() override;
 
 private:
     std::vector<MShader*>          m_shaders;
@@ -71,7 +72,7 @@ public:
         };
     }
 
-    const MType*                   ResourceType() const override;
+    [[nodiscard]] const MType*     ResourceType() const override;
 
     std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };

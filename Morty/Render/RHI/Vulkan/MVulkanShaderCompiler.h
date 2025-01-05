@@ -48,6 +48,7 @@ public:
 
     virtual bool CompileShader(
             const MString&         strShaderPath,
+            const MString&         strShaderEntry,
             const MEShaderType&    eShaderType,
             const MShaderMacro&    macro,
             std::vector<uint32_t>& vSpirv

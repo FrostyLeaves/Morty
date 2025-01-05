@@ -16,23 +16,28 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MColorGradingRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            MColorGradingRenderNode::ColorGradingOutput = MStringId("Color Grading Output");
+const MStringId      MColorGradingRenderNode::ColorGradingOutput = MStringId("Color Grading Output");
 
-void                       MColorGradingRenderNode::Release() { Super::Release(); }
+void                 MColorGradingRenderNode::Release() { Super::Release(); }
 
-std::shared_ptr<MMaterial> MColorGradingRenderNode::CreateMaterial()
+MMaterialTemplatePtr MColorGradingRenderNode::CreateMaterial()
 {
-    MResourceSystem*           pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto                       pMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
-    std::shared_ptr<MResource> pVertexShader =
-            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-    std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
-    pMaterial->LoadShader(pVertexShader);
-    pMaterial->LoadShader(pPixelShader);
-    pMaterial->SetCullMode(MECullMode::ECullNone);
+    auto pMaterial = pResourceSystem->FindResource<MMaterialTemplate>("Color Grading Material");
+    if (pMaterial == nullptr)
+    {
+        pMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
+        std::shared_ptr<MResource> pVertexShader =
+                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+        std::shared_ptr<MResource> pPixelShader =
+                pResourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
+        pMaterial->LoadShader(pVertexShader);
+        pMaterial->LoadShader(pPixelShader);
+        pMaterial->SetCullMode(MECullMode::ECullNone);
+    }
 
-    return MMaterial::CreateMaterial(pMaterial);
+    return pMaterial;
 }
 
 void MColorGradingRenderNode::RenderSetup(const MRenderInfo& info)

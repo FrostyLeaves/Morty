@@ -35,16 +35,16 @@ class MORTY_API MVoxelDebugRenderNode : public ISinglePassRenderNode
     void                                            Render(const MRenderInfo& info) override;
 
     void
-                               Render(const MRenderInfo&               info,
-                                      const MVoxelMapSetting&          voxelSetting,
-                                      const MBuffer*                   pVoxelizerBuffer,
-                                      const std::vector<IRenderable*>& vRenderable);
+                         Render(const MRenderInfo&               info,
+                                const MVoxelMapSetting&          voxelSetting,
+                                const MBuffer*                   pVoxelizerBuffer,
+                                const std::vector<IRenderable*>& vRenderable);
 
-    std::shared_ptr<MMaterial> GetVoxelDebugMaterial() const { return m_voxelDebugMaterial; }
+    MMaterialTemplatePtr GetVoxelDebugMaterial() const { return m_voxelDebugMaterial; }
 
-    const MBuffer*             GetVoxelDebugBuffer() const;
+    const MBuffer*       GetVoxelDebugBuffer() const;
 
-    MTexturePtr                GetVoxelGITexture() const;
+    MTexturePtr          GetVoxelGITexture() const;
 
 protected:
     void                                            InitializeBuffer();
@@ -62,7 +62,7 @@ protected:
     std::shared_ptr<IShaderPropertyUpdateDecorator> m_framePropertyUpdateDecorator = nullptr;
 
     MComputeDispatcher*                             m_voxelDebugIndirectGenerator = nullptr;
-    std::shared_ptr<MMaterial>                      m_voxelDebugMaterial          = nullptr;
+    MMaterialTemplatePtr                            m_voxelDebugMaterial          = nullptr;
     MBuffer                                         m_drawIndirectBuffer;
 
 

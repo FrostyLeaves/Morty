@@ -182,7 +182,7 @@ void MRenderModule::RegisterMaterial(MEngine* pEngine)
 
 
     const auto universal_vs = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-    const auto gbuffer_ps   = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
+    const auto gbuffer_ps   = pResourceSystem->LoadResource("Shader/Model/deferred_model_ps.mps");
     const auto frame_mat    = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FRAME_DEFAULT);
     frame_mat->SetCullMode(MECullMode::ECullBack);
     frame_mat->LoadShader(universal_vs);

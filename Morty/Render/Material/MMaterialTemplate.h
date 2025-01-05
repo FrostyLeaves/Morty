@@ -75,12 +75,23 @@ public:
 
     void SetShadingRate(Vector2i n2ShadingRate);
 
-    [[nodiscard]] Vector2i GetShadingRate() const { return m_shadingRate; }
+    [[nodiscard]] Vector2i                       GetShadingRate() const { return m_shadingRate; }
 
 
-    bool                   LoadShader(const std::shared_ptr<MResource>& pResource);
+    bool                                         LoadShader(const std::shared_ptr<MResource>& pResource);
 
-    bool                   LoadShader(const MString& strResource);
+    bool                                         LoadShader(const MString& strResource);
+
+    const std::shared_ptr<MShaderPropertyBlock>& GetMaterialPropertyBlock() const;
+    
+    MVariant                                     CreateMaterialVariant() const;
+
+    template<typename TYPE> void                 SetValue(const MStringId& strName, const TYPE& value)
+    {
+        GetMaterialPropertyBlock()->SetValue(strName, value);
+    }
+
+    void SetTexture(const MStringId& name, const MResourcePtr& texture);
 
 
     static std::shared_ptr<MShaderPropertyBlock>

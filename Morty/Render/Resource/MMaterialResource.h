@@ -18,7 +18,7 @@ class MORTY_API MMaterialResource : public MMaterial
 public:
     MORTY_CLASS(MMaterialResource);
 
-    std::shared_ptr<MMaterial>                GetMaterial() const;
+    [[nodiscard]] std::shared_ptr<MMaterial>  GetMaterial() const;
 
 
     static std::shared_ptr<MMaterialResource> CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate);

@@ -1,8 +1,8 @@
 #include "MMaterialBatchGroup.h"
 
-#include "BatchGroup/MNoneBatchGroup.h"
+#include <utility>
+
 #include "BatchGroup/MStorageBatchGroup.h"
-#include "BatchGroup/MUniformBatchGroup.h"
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
@@ -16,34 +16,17 @@ using namespace morty;
 class MORTY_API MMaterialBatchUtil
 {
 public:
-    enum MORTY_API TransformType
-    {
-        ENone          = 0,
-        EUniformArray  = 1,
-        EStorageBuffer = 2
-    };
-
-
-    static TransformType        GetMaterialBatchTransformType(MMaterial* pMaterial);
-
-    static MInstanceBatchGroup* CreateBatchGroup(MMaterial* pMaterial);
+    static MInstanceBatchGroup* CreateBatchGroup(MMaterialTemplate* pMaterial);
 };
 
-void MMaterialBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterial> pMaterial)
+void MMaterialBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterialTemplate> pMaterial)
 {
-    m_engine   = pEngine;
-    m_material = pMaterial;
+    m_engine           = pEngine;
+    m_materialTemplate = std::move(pMaterial);
+    m_batchGroup.Initialize(pEngine, m_materialTemplate);
 }
 
-void MMaterialBatchGroup::Release(MEngine* pEngine)
-{
-    for (auto pMeshGroup: m_batchGroup)
-    {
-        pMeshGroup->Release(pEngine);
-        delete pMeshGroup;
-    }
-    m_batchGroup.clear();
-}
+void                     MMaterialBatchGroup::Release(MEngine* pEngine) { m_batchGroup.Release(pEngine); }
 
 MMeshInstanceRenderProxy MMaterialBatchGroup::CreateProxyFromComponent(MRenderMeshComponent* pComponent)
 {
@@ -71,117 +54,32 @@ MMeshInstanceRenderProxy MMaterialBatchGroup::CreateProxyFromComponent(MRenderMe
 
 void MMaterialBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
-    const auto findResult = m_meshInstanceTable.find(proxy.nProxyId);
-    if (findResult != m_meshInstanceTable.end())
-    {
-        MORTY_ASSERT(false);
-        return;
-    }
-
-    size_t               nMeshGroupIdx = 0;
-    MInstanceBatchGroup* pMeshGroup    = nullptr;
-    for (size_t nIdx = 0; nIdx < m_batchGroup.size(); ++nIdx)
-    {
-        MInstanceBatchGroup* pCurrentGroup = m_batchGroup[nIdx];
-        if (pCurrentGroup->CanAddMeshInstance())
-        {
-            nMeshGroupIdx = nIdx;
-            pMeshGroup    = pCurrentGroup;
-            break;
-        }
-    }
-    if (pMeshGroup == nullptr)
-    {
-        pMeshGroup = MMaterialBatchUtil::CreateBatchGroup(m_material.get());
-        pMeshGroup->Initialize(m_engine, m_material->GetShaderProgram());
-        m_batchGroup.push_back(pMeshGroup);
-        nMeshGroupIdx = m_batchGroup.size() - 1;
-    }
-
-    if (!pMeshGroup->CanAddMeshInstance())
-    {
-        MORTY_ASSERT(false);
-        return;
-    }
-
-    m_meshInstanceTable[proxy.nProxyId] = nMeshGroupIdx;
-    size_t nIndexInGroup                = pMeshGroup->AddMeshInstance(proxy);
+    size_t nIndexInGroup = m_batchGroup.AddMeshInstance(proxy);
+    MORTY_UNUSED(nIndexInGroup);
 }
 
-void MMaterialBatchGroup::RemoveMeshInstance(MMeshInstanceKey nProxyId)
-{
-    const auto findResult = m_meshInstanceTable.find(nProxyId);
-    if (findResult == m_meshInstanceTable.end())
-    {
-        MORTY_ASSERT(false);
-        return;
-    }
-
-    size_t nIdx = findResult->second;
-    m_meshInstanceTable.erase(findResult);
-
-    if (nIdx >= m_batchGroup.size())
-    {
-        MORTY_ASSERT(nIdx < m_batchGroup.size());
-        return;
-    }
-
-    m_batchGroup[nIdx]->RemoveMeshInstance(nProxyId);
-}
+void MMaterialBatchGroup::RemoveMeshInstance(MMeshInstanceKey nProxyId) { m_batchGroup.RemoveMeshInstance(nProxyId); }
 
 void MMaterialBatchGroup::UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
-    const auto findResult = m_meshInstanceTable.find(proxy.nProxyId);
-    if (findResult == m_meshInstanceTable.end()) { return; }
-
-    if (proxy.nProxyId == MGlobal::M_INVALID_UINDEX)
-    {
-        MORTY_ASSERT(false);
-        return;
-    }
-
-    size_t nIdx = findResult->second;
-    m_batchGroup[nIdx]->UpdateMeshInstance(proxy);
+    m_batchGroup.UpdateMeshInstance(proxy);
 }
 
 void MMaterialBatchGroup::UpdateOrCreateMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
-    const auto findResult = m_meshInstanceTable.find(proxy.nProxyId);
-    if (findResult == m_meshInstanceTable.end())
+    if (m_batchGroup.HasMeshInstance(proxy))
     {
-        AddMeshInstance(proxy);
+        UpdateMeshInstance(proxy);
         return;
     }
 
-    UpdateMeshInstance(proxy);
+    AddMeshInstance(proxy);
 }
 
-bool                              MMaterialBatchGroup::IsEmpty() const { return m_meshInstanceTable.empty(); }
+bool                 MMaterialBatchGroup::IsEmpty() const { return m_batchGroup.IsEmpty(); }
 
-MMaterialBatchUtil::TransformType MMaterialBatchUtil::GetMaterialBatchTransformType(MMaterial* pMaterial)
+MInstanceBatchGroup* MMaterialBatchUtil::CreateBatchGroup(MMaterialTemplate* pMaterial)
 {
-    if (!pMaterial) { return TransformType::ENone; }
-
-    if (pMaterial->GetShaderMacro().HasMacro(MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM))
-    {
-        return TransformType::EUniformArray;
-    }
-    if (pMaterial->GetShaderMacro().HasMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE))
-    {
-        return TransformType::EStorageBuffer;
-    }
-
-    return TransformType::ENone;
-}
-
-MInstanceBatchGroup* MMaterialBatchUtil::CreateBatchGroup(MMaterial* pMaterial)
-{
-    auto type = GetMaterialBatchTransformType(pMaterial);
-
-    if (TransformType::EUniformArray == type) { return new MUniformBatchGroup(); }
-    if (TransformType::EStorageBuffer == type) { return new MStorageBatchGroup(); }
-    if (TransformType::ENone == type) { return new MNoneBatchGroup(); }
-
-    MORTY_ASSERT(false);
-    return nullptr;
+    MORTY_ASSERT((pMaterial->GetShaderMacro().HasMacro(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE)));
+    return new MStorageBatchGroup();
 }

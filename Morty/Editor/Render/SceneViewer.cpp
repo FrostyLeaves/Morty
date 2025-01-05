@@ -57,7 +57,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
 
     std::vector<MByte> renderGraphBuffer;
     MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
-    m_renderProgram->LoadGraph(renderGraphBuffer);
+    //m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)

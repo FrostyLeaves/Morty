@@ -37,25 +37,28 @@ public:
 
     virtual ~MShader() = default;
 
-    bool                CompileShader(MIDevice* pDevice);
+    bool                              CompileShader(MIDevice* pDevice);
 
-    void                CleanShader(MIDevice* pDevice);
+    void                              CleanShader(MIDevice* pDevice);
 
-    MEShaderType        GetType() const { return m_shaderType; }
+    [[nodiscard]] MEShaderType        GetType() const { return m_shaderType; }
 
-    const MShaderMacro& GetMacro() { return m_ShaderMacro; }
+    [[nodiscard]] const MShaderMacro& GetMacro() const { return m_shaderMacro; }
 
-    const MString&      GetShaderPath() { return m_strShaderPath; }
+    [[nodiscard]] const MString&      GetShaderPath() const { return m_shaderPath; }
 
-    void                SetBuffer(MShaderBuffer* pShaderBuffer) { m_shaderBuffer = pShaderBuffer; }
+    [[nodiscard]] const MString&      GetEntryName() const { return m_entryName; }
 
-    MShaderBuffer*      GetBuffer() { return m_shaderBuffer; }
+    void                              SetBuffer(MShaderBuffer* pShaderBuffer) { m_shaderBuffer = pShaderBuffer; }
+
+    MShaderBuffer*                    GetBuffer() { return m_shaderBuffer; }
 
 private:
     friend class MShaderResource;
 
-    MShaderMacro   m_ShaderMacro;
-    MString        m_strShaderPath;
+    MShaderMacro   m_shaderMacro;
+    MString        m_shaderPath;
+    MString        m_entryName;
     MEShaderType   m_shaderType   = MEShaderType::ENone;
     MShaderBuffer* m_shaderBuffer = nullptr;
 };

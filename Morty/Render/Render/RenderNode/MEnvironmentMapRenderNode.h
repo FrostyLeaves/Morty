@@ -61,18 +61,19 @@ protected:
     void ReleaseRenderPass();
 
 private:
-    bool                                    m_updateNextFrame;
+    bool                                               m_updateNextFrame;
 
-    std::shared_ptr<MMaterial>              m_DiffuseMaterial;
-    std::vector<std::shared_ptr<MMaterial>> m_specularMaterial;
+    MMaterialTemplatePtr                               m_DiffuseMaterial;
+    MMaterialTemplatePtr                               m_specularMaterial;
+    std::vector<std::shared_ptr<MShaderPropertyBlock>> m_specularBlock;
 
-    std::shared_ptr<MMeshResource>          m_cubeMesh;
+    std::shared_ptr<MMeshResource>                     m_cubeMesh;
 
-    MResourceRef                            m_DiffuseEnvironmentMap;
-    MResourceRef                            m_SpecularEnvironmentMap;
+    MResourceRef                                       m_DiffuseEnvironmentMap;
+    MResourceRef                                       m_SpecularEnvironmentMap;
 
-    MRenderPass                             m_DiffuseRenderPass;
-    std::vector<MRenderPass>                m_specularRenderPass;
+    MRenderPass                                        m_DiffuseRenderPass;
+    std::vector<MRenderPass>                           m_specularRenderPass;
 };
 
 }// namespace morty

@@ -1,6 +1,5 @@
 #include "../Internal/internal_uniform_global.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "../Internal/internal_mesh.hlsl"
 #include "../Voxel/voxel_function.hlsl"
 
 struct VS_OUT

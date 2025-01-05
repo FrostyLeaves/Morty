@@ -59,12 +59,9 @@ void SHADOW_MAP_TEST(MEngine* pEngine, MScene* pScene)
         pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, ao);
         pDeferredMaterial->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, height);
 
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
-        pDeferredMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_ALBEDO,
-                Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-        );
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+        pDeferredMaterial->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     MEntity* pFloorEntity = pScene->CreateEntity();

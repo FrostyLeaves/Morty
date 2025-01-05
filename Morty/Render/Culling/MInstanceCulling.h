@@ -24,7 +24,7 @@ class MORTY_API IMaterialFilter
 public:
     virtual ~IMaterialFilter() = default;
 
-    virtual bool Filter(const std::shared_ptr<MMaterial>& material) const = 0;
+    virtual bool Filter(const std::shared_ptr<MMaterialTemplate>& material) const = 0;
 };
 
 class MMaterialTypeFilter : public IMaterialFilter
@@ -34,7 +34,7 @@ public:
         : m_materialType(eMaterialType)
     {}
 
-    bool Filter(const std::shared_ptr<MMaterial>& material) const override;
+    bool Filter(const std::shared_ptr<MMaterialTemplate>& material) const override;
 
 private:
     MEMaterialType m_materialType;
@@ -47,7 +47,7 @@ public:
         : m_definedMacro(definedMacro)
     {}
 
-    bool Filter(const std::shared_ptr<MMaterial>& material) const override;
+    bool Filter(const std::shared_ptr<MMaterialTemplate>& material) const override;
 
 private:
     std::unordered_map<MStringId, bool> m_definedMacro;

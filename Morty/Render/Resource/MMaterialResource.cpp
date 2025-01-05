@@ -15,6 +15,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
     auto pMaterialData = std::make_unique<MMaterialResourceData>();
 
+    /* TODO Material Refactor
     if (const auto pMaterialProperty = GetMaterialPropertyBlock())
     {
         for (auto param: pMaterialProperty->m_params)
@@ -39,6 +40,7 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
             }
         }
     }
+     */
 
     if (auto pTemplate = GetMaterialTemplate()) { pMaterialData->strTemplateResource = pTemplate->GetResourcePath(); }
 
@@ -55,6 +57,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     const auto       pMaterialTemplate = pResourceSystem->LoadResource(pMaterialData->strTemplateResource);
     BindTemplate(MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate));
 
+    /* TODO Material Refactor
     const size_t nPropertyNum = pMaterialData->vProperty.size();
     for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
     {
@@ -76,6 +79,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
         const auto pTextureResource = pResourceSystem->LoadResource(fbTexture.value, true);
         SetTexture(MStringId(fbTexture.name.c_str()), pTextureResource);
     }
+     */
 
     m_resourceData = std::move(pResourceData);
     return true;

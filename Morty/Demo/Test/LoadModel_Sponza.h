@@ -1,45 +1,44 @@
+#include "Engine/MEngine.h"
 #include "MRenderModule.h"
 #include "Scene/MScene.h"
-#include "Engine/MEngine.h"
 
 #include "System/MEntitySystem.h"
 #include "System/MResourceSystem.h"
 
-#include "Component/MSceneComponent.h"
 #include "Component/MRenderMeshComponent.h"
+#include "Component/MSceneComponent.h"
 
-#include "Resource/MMeshResource.h"
-#include "Resource/MMaterialResource.h"
-#include "Widget/ModelConvertView.h"
 #include "Model/MTextureConverter.h"
+#include "Resource/MMaterialResource.h"
+#include "Resource/MMeshResource.h"
 #include "Resource/MReadableTextureResource.h"
 #include "Utility/MTimer.h"
+#include "Widget/ModelConvertView.h"
 
 using namespace morty;
 
 class MSponzaTextureDelegate : public MITextureDelegate
 {
 public:
+    MSponzaTextureDelegate(MEngine* pEngine)
+        : m_engine(pEngine)
+    {}
 
-    MSponzaTextureDelegate(MEngine *pEngine) : m_engine(pEngine)
-    { }
-
-    std::shared_ptr<MTextureResource> GetTexture(const MString &strFullPath, MEModelTextureUsage eUsage) override
+    std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) override
     {
-        MString strResourcePath = MFileHelper::ReplaceFileName(strFullPath,
-                MFileHelper::GetFileName(strFullPath) + "_usage_" + MStringUtil::ToString(static_cast<int>(eUsage)));
+        MString strResourcePath = MFileHelper::ReplaceFileName(
+                strFullPath,
+                MFileHelper::GetFileName(strFullPath) + "_usage_" + MStringUtil::ToString(static_cast<int>(eUsage))
+        );
 
-        if (m_textures.find(strResourcePath) != m_textures.end())
-        {
-            return m_textures[strResourcePath];
-        }
+        if (m_textures.find(strResourcePath) != m_textures.end()) { return m_textures[strResourcePath]; }
 
-        MResourceSystem *pResourceSystem = m_engine->FindSystem<MResourceSystem>();
+        MResourceSystem* pResourceSystem = m_engine->FindSystem<MResourceSystem>();
 
-        auto pResource = pResourceSystem->CreateResource<MReadableTextureResource>(strResourcePath);
+        auto             pResource = pResourceSystem->CreateResource<MReadableTextureResource>(strResourcePath);
         if (!pResource)
         {
-                    MORTY_ASSERT(pResource);
+            MORTY_ASSERT(pResource);
             return nullptr;
         }
 
@@ -52,12 +51,9 @@ public:
         MStringUtil::Replace(strAstcFullPath, ".png", ".astc");
         auto pTextureData = pResourceSystem->LoadResourceData(strAstcFullPath);
 #endif
-        if (pTextureData == nullptr)
-        {
-            pTextureData = pResourceSystem->LoadResourceData(strFullPath);
-        }
+        if (pTextureData == nullptr) { pTextureData = pResourceSystem->LoadResourceData(strFullPath); }
 
-                MORTY_ASSERT(pTextureData);
+        MORTY_ASSERT(pTextureData);
 
         pResource->Load(std::move(pTextureData));
         std::shared_ptr<MTextureResource> pTexture = MTypeClass::DynamicCast<MTextureResource>(pResource);
@@ -69,35 +65,34 @@ public:
 
 
 private:
+    std::map<MString, std::shared_ptr<MTextureResource>> m_textures;
 
-    std::map<MString, std::shared_ptr<MTextureResource> > m_textures;
-
-    MEngine *m_engine = nullptr;
+    MEngine*                                             m_engine = nullptr;
 };
 
 
 class MSpoonzaMaterialDelegate : public MIMaterialDelegate
 {
 public:
-    void PostProcess(MMaterial *pMaterial) override
+    void PostProcess(MMaterial* pMaterial) override
     {
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 2);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 1);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 2);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 1);
     }
 };
 
-void LoadSponzaEntity(const std::string &sourcePath, const std::string &name, MEngine *pEngine, MScene *pScene)
+void LoadSponzaEntity(const std::string& sourcePath, const std::string& name, MEngine* pEngine, MScene* pScene)
 {
-    MResourceSystem *pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-    MEntitySystem *pEntitySystem = pEngine->FindSystem<MEntitySystem>();
+    MResourceSystem*           pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+    MEntitySystem*             pEntitySystem   = pEngine->FindSystem<MEntitySystem>();
 
 
-    auto time = MTimer::GetCurTime();
+    auto                       time = MTimer::GetCurTime();
 
-    const auto outputDir = "./";
-    const auto outputName = name;
+    const auto                 outputDir  = "./";
+    const auto                 outputName = name;
 
-    const auto resourcePath = outputDir + outputName + "/" + name + ".entity";
+    const auto                 resourcePath = outputDir + outputName + "/" + name + ".entity";
 
     std::shared_ptr<MResource> pModelResource = pResourceSystem->LoadResource(resourcePath);
 
@@ -107,15 +102,15 @@ void LoadSponzaEntity(const std::string &sourcePath, const std::string &name, ME
 
     if (!pModelResource)
     {
-        MModelConverter convert(pEngine);
+        MModelConverter   convert(pEngine);
 
         MModelConvertInfo info;
-        info.eMaterialType = MModelConvertMaterialType::E_PBR_Deferred;
-        info.strOutputDir = outputDir;
-        info.strOutputName = outputName;
-        info.strResourcePath = sourcePath;
-        info.bImportCamera = false;
-        info.bImportLights = false;
+        info.eMaterialType    = MModelConvertMaterialType::E_PBR_Deferred;
+        info.strOutputDir     = outputDir;
+        info.strOutputName    = outputName;
+        info.strResourcePath  = sourcePath;
+        info.bImportCamera    = false;
+        info.bImportLights    = false;
         info.pTextureDelegate = std::make_shared<MSponzaTextureDelegate>(pEngine);
 
         convert.Convert(info);
@@ -128,20 +123,16 @@ void LoadSponzaEntity(const std::string &sourcePath, const std::string &name, ME
     {
         auto vEntity = pEntitySystem->LoadEntity(pScene, pModelResource);
 
-        for (MEntity *pEntity: vEntity)
+        for (MEntity* pEntity: vEntity)
         {
             pEntitySystem->FindAllComponentRecursively(pEntity, MRenderMeshComponent::GetClassType(), vMeshComponents);
-
         }
 
-        if (vEntity.size() > 0)
-        {
-            vEntity[0]->GetComponent<MSceneComponent>()->SetScale({10.0, 10.0, 10.0});
-        }
+        if (vEntity.size() > 0) { vEntity[0]->GetComponent<MSceneComponent>()->SetScale({10.0, 10.0, 10.0}); }
     }
 }
 
-void LOAD_MODEL_SPONZA_TEST(MEngine *pEngine, MScene *pScene)
+void LOAD_MODEL_SPONZA_TEST(MEngine* pEngine, MScene* pScene)
 {
     LoadSponzaEntity("./Model/Sponza/NewSponza_Main_glTF_002.gltf", "Sponza", pEngine, pScene);
     //LoadSponzaEntity("./Model/PKG_A_Curtains/NewSponza_Curtains_glTF.gltf", "Curtains", pEngine, pScene);

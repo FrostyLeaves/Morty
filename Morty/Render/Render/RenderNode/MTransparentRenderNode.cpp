@@ -65,20 +65,18 @@ void MTransparentRenderNode::InitializeMaterial()
 
 
     std::shared_ptr<MResource> pDPFPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_init.mps");
-    const auto                 pPeelTemplate  = pResourceSystem->CreateResource<MMaterialTemplate>();
-    pPeelTemplate->SetMaterialType(MEMaterialType::EDepthPeel);
-    pPeelTemplate->AddDefine(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    pPeelTemplate->LoadShader(pDPVSResource);
-    pPeelTemplate->LoadShader(pDPFPSResource);
-    m_copyDepthMaterial = MMaterial::CreateMaterial(pPeelTemplate);
+    m_copyDepthMaterial                       = pResourceSystem->CreateResource<MMaterialTemplate>();
+    m_copyDepthMaterial->SetMaterialType(MEMaterialType::EDepthPeel);
+    m_copyDepthMaterial->AddDefine(MRenderGlobal::MEN_TRANSPARENT, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+    m_copyDepthMaterial->LoadShader(pDPVSResource);
+    m_copyDepthMaterial->LoadShader(pDPFPSResource);
 
 
     std::shared_ptr<MResource> pDPBPSResource = pResourceSystem->LoadResource("Shader/Forward/depth_peel_blend.mps");
-    const auto                 pFillTemplate  = pResourceSystem->CreateResource<MMaterialTemplate>();
-    pFillTemplate->SetMaterialType(MEMaterialType::ETransparentBlend);
-    pFillTemplate->LoadShader(pDPVSResource);
-    pFillTemplate->LoadShader(pDPBPSResource);
-    m_blendMaterial = MMaterial::CreateMaterial(pFillTemplate);
+    m_blendMaterial                           = pResourceSystem->CreateResource<MMaterialTemplate>();
+    m_blendMaterial->SetMaterialType(MEMaterialType::ETransparentBlend);
+    m_blendMaterial->LoadShader(pDPVSResource);
+    m_blendMaterial->LoadShader(pDPBPSResource);
 
     auto pTransparentTemplate =
             pResourceSystem->LoadResource(MMaterialName::FORWARD_TRANSPARENT)->DynamicCast<MMaterialTemplateResource>();

@@ -30,37 +30,19 @@ public:
     ~MMaterial() override = default;
 
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
+    void                         SetTexture(const MStringId& name, const MResourcePtr& texture);
 
-    template<typename TYPE> void SetProperty(const MStringId& name, const TYPE& value);
+    [[nodiscard]] MEMaterialType GetMaterialType() const { return GetMaterialTemplate()->GetMaterialType(); }
 
-    void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
+    [[nodiscard]] const std::shared_ptr<MShaderProgram>&    GetShaderProgram() const;
 
-    [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }
-
-    [[nodiscard]] MECullMode     GetCullMode() const { return m_materialTemplate->GetCullMode(); }
-
-    [[nodiscard]] MEMaterialType GetMaterialType() const { return m_materialTemplate->GetMaterialType(); }
-
-    [[nodiscard]] bool           GetConservativeRasterizationEnable() const
-    {
-        return m_materialTemplate->GetConservativeRasterizationEnable();
-    }
-
-    [[nodiscard]] Vector2i GetShadingRate() const { return m_materialTemplate->GetShadingRate(); }
-
-    [[nodiscard]] const std::shared_ptr<MShaderProgram>&       GetShaderProgram() const;
-
-    [[nodiscard]] const std::shared_ptr<MShaderPropertyBlock>& GetMaterialPropertyBlock() const;
-
-    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>&    GetMaterialTemplate() const;
+    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>& GetMaterialTemplate() const;
     void ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
 
 public:
-    void                              OnCreated() override;
+    void OnCreated() override;
 
-    void                              OnDelete() override;
-
-    static std::shared_ptr<MMaterial> CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate);
+    void OnDelete() override;
 
 #if MORTY_DEBUG
     [[nodiscard]] const char* GetDebugName() const;
@@ -70,23 +52,17 @@ protected:
     void BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate);
 
 private:
-    std::shared_ptr<MMaterialTemplate>      m_materialTemplate = nullptr;
+    std::shared_ptr<MMaterialTemplate> m_materialTemplate = nullptr;
 
-    std::shared_ptr<MShaderPropertyBlock>   m_shaderProperty;
-
-    std::unordered_map<MStringId, MVariant> m_materialProperty;
+    MStruct                            m_variant;
 };
 
 template<typename TYPE> void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
 {
-    if (const auto pProperty = GetMaterialPropertyBlock()) { pProperty->SetValue(strName, value); }
-}
+    //TODO Material Refactor
 
-template<typename TYPE> void MMaterial::SetProperty(const MStringId& name, const TYPE& value)
-{
-    auto property = m_materialProperty.at(name);
-    if (!property.IsType<TYPE>()) { return; }
-    property.SetValue(value);
+    MORTY_UNUSED(strName);
+    MORTY_UNUSED(value);
 }
 
 }// namespace morty

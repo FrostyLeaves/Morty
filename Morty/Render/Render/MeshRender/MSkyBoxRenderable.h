@@ -25,7 +25,7 @@ class MORTY_API MSkyBoxRenderable : public IRenderable
 public:
     void SetMesh(MIMesh* pMesh);
 
-    void SetMaterial(const std::shared_ptr<MMaterial>& pMaterial);
+    void SetMaterial(const MMaterialTemplatePtr& pMaterial);
 
     void SetPropertyBlockAdapter(const std::vector<std::shared_ptr<IPropertyBlockAdapter>>& vAdapter);
 
@@ -33,7 +33,7 @@ public:
 
 private:
     MIMesh*                                             m_mesh     = nullptr;
-    std::shared_ptr<MMaterial>                          m_material = nullptr;
+    MMaterialTemplatePtr                                m_material = nullptr;
     std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_framePropertyAdapter;
 };
 

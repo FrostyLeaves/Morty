@@ -24,7 +24,7 @@ REFL_RENDER_NODE_CLASS MEdgeDetectionRenderNode : public MBasicPostProcessRender
 {
     MORTY_CLASS(MEdgeDetectionRenderNode)
 
-    std::shared_ptr<MMaterial> CreateMaterial() override;
+    MMaterialTemplatePtr CreateMaterial() override;
 
 protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;

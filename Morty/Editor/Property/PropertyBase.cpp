@@ -390,6 +390,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
     }
     ShowValueEnd();
 
+    /* TODO Material Refactor
     bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
 
     {
@@ -433,6 +434,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
             }
         }
     }
+    */
 
     return bModified;
 }

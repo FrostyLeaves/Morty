@@ -16,26 +16,30 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MHBAORenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            HbaoRadius       = MStringId("HBAO Radius");
-const MStringId            HbaoNearestScale = MStringId("HBAO Nearest Scale");
-const MStringId            HbaoOtherScale   = MStringId("HBAO Other Scale");
-const MStringId            HbaoNDotVBias    = MStringId("HBAO NDotV Bias");
+const MStringId      HbaoRadius       = MStringId("HBAO Radius");
+const MStringId      HbaoNearestScale = MStringId("HBAO Nearest Scale");
+const MStringId      HbaoOtherScale   = MStringId("HBAO Other Scale");
+const MStringId      HbaoNDotVBias    = MStringId("HBAO NDotV Bias");
 
-void                       MHBAORenderNode::Release() { Super::Release(); }
+void                 MHBAORenderNode::Release() { Super::Release(); }
 
-std::shared_ptr<MMaterial> MHBAORenderNode::CreateMaterial()
+MMaterialTemplatePtr MHBAORenderNode::CreateMaterial()
 {
-    MResourceSystem*           pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto                       pEdgeMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("HBAO Generator");
-    std::shared_ptr<MResource> pVertexShader =
-            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-    std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/AO/hbao.mps");
-    pEdgeMaterial->LoadShader(pVertexShader);
-    pEdgeMaterial->LoadShader(pPixelShader);
-    pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
+    auto pEdgeMaterial = pResourceSystem->FindResource<MMaterialTemplate>("HBAO Generator");
+    if (pEdgeMaterial == nullptr)
+    {
+        pEdgeMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("HBAO Generator");
+        std::shared_ptr<MResource> pVertexShader =
+                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+        std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/AO/hbao.mps");
+        pEdgeMaterial->LoadShader(pVertexShader);
+        pEdgeMaterial->LoadShader(pPixelShader);
+        pEdgeMaterial->SetCullMode(MECullMode::ECullNone);
+    }
 
-    return MMaterial::CreateMaterial(pEdgeMaterial);
+    return pEdgeMaterial;
 }
 
 void MHBAORenderNode::RenderSetup(const MRenderInfo& info)

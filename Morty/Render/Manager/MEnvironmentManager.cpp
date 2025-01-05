@@ -122,19 +122,24 @@ void MEnvironmentManager::UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent)
         return;
     }
 
-    m_skyBoxMaterial->SetTexture(MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX, pComponent->GetSkyBoxResource());
+    auto resource        = pComponent->GetSkyBoxResource();
+    auto textureResource = MTypeClass::DynamicCast<MTextureResource>(resource);
+    m_skyBoxMaterial->GetMaterialPropertyBlock()->SetTexture(
+            MShaderPropertyName::ENVIRONMENT_TEXTURE_SKYBOX,
+            textureResource->GetTextureTemplate()
+    );
 }
 
 bool MEnvironmentManager::HasEnvironmentComponent() const { return m_currentSkyBoxComponent != nullptr; }
 
-std::shared_ptr<MMaterial> MEnvironmentManager::GetMaterial() const { return m_skyBoxMaterial; }
+MMaterialTemplatePtr MEnvironmentManager::GetMaterial() const { return m_skyBoxMaterial; }
 
-void                       MEnvironmentManager::InitializeMaterial()
+void                 MEnvironmentManager::InitializeMaterial()
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    const auto       pTemplate = pResourceSystem->LoadResource(MMaterialName::SKY_BOX);
-    m_skyBoxMaterial           = MMaterial::CreateMaterial(pTemplate);
+    auto  resource   = pResourceSystem->LoadResource(MMaterialName::SKY_BOX);
+    m_skyBoxMaterial = MTypeClass::DynamicCast<MMaterialTemplate>(resource);
 }
 
 void MEnvironmentManager::ReleaseMaterial() { m_skyBoxMaterial = nullptr; }

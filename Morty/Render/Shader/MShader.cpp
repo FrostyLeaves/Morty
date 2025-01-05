@@ -6,7 +6,7 @@ using namespace morty;
 
 bool MShader::CompileShader(MIDevice* pDevice)
 {
-    if (false == pDevice->CompileShader(this)) return false;
+    if (!pDevice->CompileShader(this)) return false;
 
     return true;
 }

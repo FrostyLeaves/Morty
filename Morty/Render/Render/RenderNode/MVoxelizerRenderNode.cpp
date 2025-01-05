@@ -241,41 +241,36 @@ void MVoxelizerRenderNode::ReleaseBuffer()
 
 void MVoxelizerRenderNode::InitializeDispatcher()
 {
-    MResourceSystem*             pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto                       pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    std::shared_ptr<MResource>   voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
-    std::shared_ptr<MResource>   voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
-    std::shared_ptr<MResource>   voxelizerGS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mgs");
+    std::shared_ptr<MResource> voxelizerVS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mvs");
+    std::shared_ptr<MResource> voxelizerPS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mps");
+    std::shared_ptr<MResource> voxelizerGS = pResourceSystem->LoadResource("Shader/Voxel/voxelizer.mgs");
 
-    const std::vector<MStringId> defines = {
-            MRenderGlobal::DRAW_MESH_INSTANCING_NONE,
-            MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM,
+
+    auto                       pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialTemplate>();
+    pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
+    pVoxelizerMaterial->AddDefine(
             MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE,
-    };
-
-    for (const MStringId& key: defines)
-    {
-        auto pVoxelizerMaterial = pResourceSystem->CreateResource<MMaterialTemplate>();
-        pVoxelizerMaterial->SetCullMode(MECullMode::ECullNone);
-        pVoxelizerMaterial->AddDefine(key, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
+            MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG
+    );
 
 #ifdef MORTY_WIN
-        pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
-        pVoxelizerMaterial->AddDefine(
-                MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION,
-                MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG
-        );
-        pVoxelizerMaterial->LoadShader(voxelizerGS);
+    pVoxelizerMaterial->SetConservativeRasterizationEnable(true);
+    pVoxelizerMaterial->AddDefine(
+            MRenderGlobal::VOXELIZER_CONSERVATIVE_RASTERIZATION,
+            MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG
+    );
+    pVoxelizerMaterial->LoadShader(voxelizerGS);
 #endif
 
-        pVoxelizerMaterial->LoadShader(voxelizerVS);
-        pVoxelizerMaterial->LoadShader(voxelizerPS);
+    pVoxelizerMaterial->LoadShader(voxelizerVS);
+    pVoxelizerMaterial->LoadShader(voxelizerPS);
 
-        m_voxelizerMaterial[key] = MMaterial::CreateMaterial(pVoxelizerMaterial);
-    }
+    m_voxelizerMaterial = pVoxelizerMaterial;
 }
 
-void MVoxelizerRenderNode::ReleaseDispatcher() { m_voxelizerMaterial.clear(); }
+void MVoxelizerRenderNode::ReleaseDispatcher() { m_voxelizerMaterial = nullptr; }
 
 void MVoxelizerRenderNode::InitializeVoxelTextureDispatcher()
 {

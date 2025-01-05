@@ -5,7 +5,7 @@
 #include "../Model/universal_model_cbuffer.hlsl"
 #include "../Internal/internal_uniform_model.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "../Deferred/pbr_uniform_material.hlsl"
+#include "../Model/pbr_uniform_material.hlsl"
 #include "../Voxel/voxel_function.hlsl"
 
 

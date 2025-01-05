@@ -42,7 +42,7 @@ class MORTY_API MInstanceBatchGroup
 public:
     virtual ~MInstanceBatchGroup() = default;
 
-    virtual void               Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) = 0;
+    virtual void               Initialize(MEngine* pEngine, std::shared_ptr<MMaterialTemplate> pMaterialTemplate) = 0;
 
     virtual void               Release(MEngine* pEngine) = 0;
 
@@ -54,13 +54,11 @@ public:
 
     virtual void               UpdateMeshInstance(const MMeshInstanceRenderProxy& proxy) = 0;
 
-    virtual void               UpdateMaterialProperty(const MaterialPropertyUpdateProxy& proxy) = 0;
-
     virtual std::shared_ptr<MShaderPropertyBlock> GetMeshProperty() const = 0;
 
     virtual MMeshInstanceRenderProxy*             FindMeshInstance(MMeshInstanceKey key) = 0;
 
-    virtual void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) = 0;
+    virtual void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) const = 0;
 
     void         UpdateVisible(MMeshInstanceKey key, bool bVisible);
 };

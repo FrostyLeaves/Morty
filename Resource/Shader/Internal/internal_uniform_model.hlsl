@@ -2,7 +2,7 @@
 #define _M_INTERNAL_UNIFORM_MODEL_HLSL_
 
 #include "../Internal/internal_uniform_global.hlsl"
-#include "../Internal/internal_mesh.hlsl"
+#include "../Model/universal_model_vertex_define.hlsl"
 
 #if DRAW_MESH_INSTANCING_UNIFORM
 

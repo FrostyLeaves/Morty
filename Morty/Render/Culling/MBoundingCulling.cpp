@@ -43,8 +43,8 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
     vDrawIndirectData.clear();
     m_cullingInstanceGroup.clear();
 
-    auto createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial,
-                                  MInstanceBatchGroup*              pInstanceBatchGroup) {
+    auto createNewGroupFunc = [&](const std::shared_ptr<MMaterialTemplate>& pMaterial,
+                                  const MInstanceBatchGroup*                pInstanceBatchGroup) {
         const auto pMeshProperty = pInstanceBatchGroup->GetMeshProperty();
         pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, 0);
 
@@ -65,7 +65,7 @@ void MBoundingCulling::Culling(const std::vector<MMaterialBatchGroup*>& vInstanc
             continue;
         }
 
-        for (MInstanceBatchGroup* pInstanceGroup: pMaterialGroup->GetInstanceBatchGroup())
+        if (const MInstanceBatchGroup* pInstanceGroup = pMaterialGroup->GetInstanceBatchGroup())
         {
             createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
 

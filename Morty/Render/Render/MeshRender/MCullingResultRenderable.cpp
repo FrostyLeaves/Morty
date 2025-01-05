@@ -40,7 +40,7 @@ void MCullingResultRenderable::SetInstanceCulling(const std::shared_ptr<MInstanc
     m_cullingAdapter = pCullingAdapter;
 }
 
-std::shared_ptr<MMaterial> MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
+std::shared_ptr<MMaterialTemplate> MCullingResultRenderable::GetMaterial(const MMaterialCullingGroup& group) const
 {
     const auto& pMaterial = group.pMaterial;
     return pMaterial;
@@ -67,10 +67,10 @@ void MCullingResultRenderable::Render(MRenderPassCmd* pCommand)
 
         if (pMaterialFilter && !pMaterialFilter->Filter(group.pMaterial)) { continue; }
 
-        const auto& pMaterial = GetMaterial(group);
-        if (pMaterial == nullptr) { continue; }
+        const auto& pMaterialTemplate = GetMaterial(group);
+        if (pMaterialTemplate == nullptr) { continue; }
 
-        pCommand->SetGraphPipeline(pMaterial.get());
+        pCommand->SetGraphPipeline(pMaterialTemplate.get());
 
         for (auto& vPropertyBlock: m_framePropertyAdapter)
         {

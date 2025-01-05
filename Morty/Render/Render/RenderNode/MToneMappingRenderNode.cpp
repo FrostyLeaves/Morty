@@ -15,20 +15,24 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
-std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
+MMaterialTemplatePtr MToneMappingRenderNode::CreateMaterial()
 {
     auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    auto pToneMappingMat = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
-    
-    std::shared_ptr<MResource> pVertexShader =
-            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-    std::shared_ptr<MResource> pPixelShader =
-            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
-    pToneMappingMat->LoadShader(pVertexShader);
-    pToneMappingMat->LoadShader(pPixelShader);
-    pToneMappingMat->SetCullMode(MECullMode::ECullNone);
 
-    return MMaterial::CreateMaterial(pToneMappingMat);
+    auto pToneMappingMat = pResourceSystem->FindResource<MMaterialTemplate>("PostProcess Tone Mapping");
+    if (pToneMappingMat == nullptr)
+    {
+        pToneMappingMat = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Tone Mapping");
+        std::shared_ptr<MResource> pVertexShader =
+                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+        std::shared_ptr<MResource> pPixelShader =
+                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
+        pToneMappingMat->LoadShader(pVertexShader);
+        pToneMappingMat->LoadShader(pPixelShader);
+        pToneMappingMat->SetCullMode(MECullMode::ECullNone);
+    }
+
+    return pToneMappingMat;
 }
 
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()

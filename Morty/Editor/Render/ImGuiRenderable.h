@@ -60,7 +60,7 @@ private:
     MEngine*                                   m_engine;
 
     MMesh<ImDrawVert>                          m_Mesh;
-    std::shared_ptr<MMaterial>                 m_material;
+    MMaterialTemplatePtr                       m_material;
     MResourceRef                               m_FontTexture;
 
     std::map<ImGuiTexture, MImGuiTextureDest*> m_imGuiDrawTexture;

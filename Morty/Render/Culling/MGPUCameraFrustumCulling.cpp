@@ -111,8 +111,8 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
 
     std::vector<MMergeInstanceCullData> vInstanceCullingData;
 
-    auto                                createNewGroupFunc = [&](const std::shared_ptr<MMaterial>& pMaterial,
-                                  MInstanceBatchGroup*              pInstanceBatchGroup) {
+    auto                                createNewGroupFunc = [&](const std::shared_ptr<MMaterialTemplate>& pMaterial,
+                                  const MInstanceBatchGroup*                pInstanceBatchGroup) {
         size_t     nIndirectBeginIdx = vInstanceCullingData.size();
         const auto pMeshProperty     = pInstanceBatchGroup->GetMeshProperty();
         pMeshProperty->SetValue(MShaderPropertyName::MESH_INSTANCE_BEGIN_INDEX, nIndirectBeginIdx);
@@ -134,7 +134,7 @@ void MGPUCameraFrustumCulling::Culling(const std::vector<MMaterialBatchGroup*>& 
             continue;
         }
 
-        for (MInstanceBatchGroup* pInstanceGroup: pMaterialGroup->GetInstanceBatchGroup())
+        if (const MInstanceBatchGroup* pInstanceGroup = pMaterialGroup->GetInstanceBatchGroup())
         {
             createNewGroupFunc(pMaterialGroup->GetMaterial(), pInstanceGroup);
 

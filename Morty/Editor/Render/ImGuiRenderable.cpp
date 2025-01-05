@@ -97,15 +97,13 @@ void ImGuiRenderable::ReleaseFont() { m_FontTexture.SetResource(nullptr); }
 
 void ImGuiRenderable::InitializeMaterial()
 {
-    MResourceSystem* pResourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto* pResourceSystem = m_engine->FindSystem<MResourceSystem>();
 
-    auto             pTemplate = pResourceSystem->CreateResource<MMaterialTemplate>();
-    pTemplate->LoadShader("Shader/Imgui/imgui.mvs");
-    pTemplate->LoadShader("Shader/Imgui/imgui.mps");
-    pTemplate->SetMaterialType(MEMaterialType::EImGui);
-    pTemplate->SetCullMode(MECullMode::ECullNone);
-
-    m_material = MMaterial::CreateMaterial(pTemplate);
+    m_material = pResourceSystem->CreateResource<MMaterialTemplate>();
+    m_material->LoadShader("Shader/Imgui/imgui.mvs");
+    m_material->LoadShader("Shader/Imgui/imgui.mps");
+    m_material->SetMaterialType(MEMaterialType::EImGui);
+    m_material->SetCullMode(MECullMode::ECullNone);
 }
 
 void ImGuiRenderable::ReleaseMaterial()
@@ -115,7 +113,7 @@ void ImGuiRenderable::ReleaseMaterial()
 
 void ImGuiRenderable::ReleaseMesh()
 {
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
     m_Mesh.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
@@ -123,7 +121,7 @@ void ImGuiRenderable::Tick(const float& fDelta)
 {
     MORTY_UNUSED(fDelta);
 
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
     for (auto iter = m_imGuiDrawTexture.begin(); iter != m_imGuiDrawTexture.end();)
     {
         int& count = iter->second->nDestroyCount;

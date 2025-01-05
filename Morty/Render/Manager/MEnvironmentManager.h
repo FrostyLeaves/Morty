@@ -25,27 +25,27 @@ public:
     MORTY_CLASS(MEnvironmentManager)
 
 public:
-    void                       Initialize() override;
+    void                               Initialize() override;
 
-    void                       Release() override;
+    void                               Release() override;
 
-    std::set<const MType*>     RegisterComponentType() const override;
+    std::set<const MType*>             RegisterComponentType() const override;
 
-    void                       RegisterComponent(MComponent* pComponent) override;
+    void                               RegisterComponent(MComponent* pComponent) override;
 
-    void                       UnregisterComponent(MComponent* pComponent) override;
+    void                               UnregisterComponent(MComponent* pComponent) override;
 
-    void                       OnSkyBoxTextureChanged(MComponent* pComponent);
+    void                               OnSkyBoxTextureChanged(MComponent* pComponent);
 
-    void                       OnDiffuseEnvTextureChanged(MComponent* pComponent);
+    void                               OnDiffuseEnvTextureChanged(MComponent* pComponent);
 
-    void                       OnSpecularEnvTextureChanged(MComponent* pComponent);
+    void                               OnSpecularEnvTextureChanged(MComponent* pComponent);
 
-    void                       UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent);
+    void                               UpdateSkyBoxMaterial(MSkyBoxComponent* pComponent);
 
-    bool                       HasEnvironmentComponent() const;
+    bool                               HasEnvironmentComponent() const;
 
-    std::shared_ptr<MMaterial> GetMaterial() const;
+    [[nodiscard]] MMaterialTemplatePtr GetMaterial() const;
 
 protected:
     void InitializeMaterial();
@@ -56,7 +56,7 @@ private:
     MSkyBoxComponent*           m_currentSkyBoxComponent = nullptr;
 
     std::set<MSkyBoxComponent*> m_allSkyBoxComponent;
-    std::shared_ptr<MMaterial>  m_skyBoxMaterial = nullptr;
+    MMaterialTemplatePtr        m_skyBoxMaterial = nullptr;
     MResourceRef                m_materialResource;
 };
 

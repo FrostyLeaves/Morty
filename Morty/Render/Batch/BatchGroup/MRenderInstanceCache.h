@@ -21,7 +21,7 @@ public:
 
     void                          RemoveItem(const KEY_TYPE& key);
 
-    bool                          HasItem(const KEY_TYPE& key);
+    bool                          HasItem(const KEY_TYPE& key) const;
 
     size_t                        GetItemIdx(const KEY_TYPE& key);
 
@@ -70,7 +70,7 @@ inline void MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::RemoveItem(const KEY_TYP
 }
 
 template<typename KEY_TYPE, typename VALUE_TYPE>
-inline bool MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::HasItem(const KEY_TYPE& key)
+inline bool MRenderInstanceCache<KEY_TYPE, VALUE_TYPE>::HasItem(const KEY_TYPE& key) const
 {
     const auto findResult = m_table.find(key);
     return findResult != m_table.end();

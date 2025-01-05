@@ -10,7 +10,6 @@
 #include "MHBAORenderNode.h"
 #include "MVRSTextureRenderNode.h"
 #include "MVoxelizerRenderNode.h"
-#include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
 #include "Mesh/MVertex.h"
 #include "Model/MSkeleton.h"
@@ -19,7 +18,7 @@
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
-#include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialTemplateResource.h"
 #include "Scene/MScene.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -66,9 +65,13 @@ void MDeferredLightingRenderNode::OnCreated()
 {
     Super::OnCreated();
 
-    auto       pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    const auto pTemplate       = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
-    m_lightningMaterial        = MMaterial::CreateMaterial(pTemplate);
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resource        = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
+
+    if (auto templateResource = MTypeClass::DynamicCast<MMaterialTemplateResource>(resource))
+    {
+        m_lightningMaterial = templateResource->GetMaterial();
+    }
 }
 
 void MDeferredLightingRenderNode::Release()
@@ -87,11 +90,10 @@ void MDeferredLightingRenderNode::Release()
 
 void MDeferredLightingRenderNode::UpdateProperty()
 {
-    if (LightingMaterial != nullptr && m_lightningMaterial.get() != LightingMaterial->DynamicCast<MMaterial>())
+    if (LightingMaterial != nullptr && m_lightningMaterial.get() != LightingMaterial->DynamicCast<MMaterialTemplate>())
     {
-        m_lightningMaterial =
-                MMaterial::CreateMaterial(LightingMaterial->DynamicCast<MMaterial>()->GetMaterialTemplate());
-        
+        m_lightningMaterial = LightingMaterial;
+
         BindInOutTexture();
     }
 }

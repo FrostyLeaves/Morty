@@ -25,13 +25,14 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
     int  nSize = static_cast<int>(m_shaders.size());
     for (int i = 0; i < nSize; ++i)
     {
-        if (m_shaders[i]->m_ShaderMacro.Compare(macro)) return i;
+        if (m_shaders[i]->m_shaderMacro.Compare(macro)) return i;
     }
 
-    MShader* pNewShader         = new MShader();
-    pNewShader->m_shaderType    = pShaderData->eShaderType;
-    pNewShader->m_strShaderPath = pShaderData->strShaderPath;
-    pNewShader->m_ShaderMacro   = macro;
+    auto* pNewShader          = new MShader();
+    pNewShader->m_shaderType  = pShaderData->shaderType;
+    pNewShader->m_shaderPath  = pShaderData->shaderPath;
+    pNewShader->m_entryName   = pShaderData->entryName;
+    pNewShader->m_shaderMacro = macro;
     m_shaders.push_back(pNewShader);
 
     return static_cast<int>(m_shaders.size()) - 1;
@@ -39,23 +40,24 @@ int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
 
 MEShaderType MShaderResource::GetShaderType() const
 {
-    if (auto ptr = static_cast<MShaderResourceData*>(m_resourceData.get())) { return ptr->eShaderType; }
+    if (auto ptr = static_cast<MShaderResourceData*>(m_resourceData.get())) { return ptr->shaderType; }
 
     return MEShaderType::ENone;
 }
 
 bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    auto           pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
+    auto  pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
 
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
 
     for (MShader* pShader: m_shaders)
     {
         pShader->CleanShader(pRenderSystem->GetDevice());
 
-        pShader->m_strShaderPath = pShaderData->strShaderPath;
-        pShader->m_shaderType    = pShaderData->eShaderType;
+        pShader->m_shaderPath = pShaderData->shaderPath;
+        pShader->m_entryName  = pShaderData->entryName;
+        pShader->m_shaderType = pShaderData->shaderType;
     }
 
     m_resourceData = std::move(pResourceData);
@@ -71,7 +73,7 @@ bool MShaderResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 
 void MShaderResource::OnDelete()
 {
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
     MORTY_ASSERT(pRenderSystem);
 
     for (MShader* pShader: m_shaders)
@@ -102,12 +104,21 @@ std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString
             {MRenderGlobal::SUFFIX_GEOMETRY_SHADER, MEShaderType::EGeometry},
     };
 
+    static std::map<MString, MString> ShaderEntryTable = {
+            {MRenderGlobal::SUFFIX_VERTEX_SHADER, "VS_MAIN"},
+            {MRenderGlobal::SUFFIX_PIXEL_SHADER, "PS_MAIN"},
+            {MRenderGlobal::SUFFIX_COMPUTE_SHADER, "CS_MAIN"},
+            {MRenderGlobal::SUFFIX_GEOMETRY_SHADER, "GS_MAIN"},
+    };
+
+
     MORTY_ASSERT(ShaderSuffixTable.find(strPathSuffix) != ShaderSuffixTable.end());
 
-    pResourceData->eShaderType = ShaderSuffixTable[strPathSuffix];
+    pResourceData->shaderType = ShaderSuffixTable[strPathSuffix];
+    pResourceData->entryName  = ShaderEntryTable[strPathSuffix];
 
     //TODO load as buffer.
-    pResourceData->strShaderPath = svFullPath;
+    pResourceData->shaderPath = svFullPath;
     return pResourceData;
 }
 

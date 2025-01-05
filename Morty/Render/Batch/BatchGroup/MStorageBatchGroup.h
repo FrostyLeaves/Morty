@@ -28,11 +28,13 @@ class MRenderMeshComponent;
 class MORTY_API MStorageBatchGroup : public MInstanceBatchGroup
 {
 public:
-    void               Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram) override;
+    void               Initialize(MEngine* pEngine, std::shared_ptr<MMaterialTemplate> pMaterialTemplate) override;
 
     void               Release(MEngine* pEngine) override;
 
     [[nodiscard]] bool CanAddMeshInstance() const override;
+    [[nodiscard]] bool HasMeshInstance(const MMeshInstanceRenderProxy& proxy) const;
+    [[nodiscard]] bool IsEmpty() const;
 
     size_t             AddMeshInstance(const MMeshInstanceRenderProxy& proxy) override;
 
@@ -47,11 +49,11 @@ public:
 
     MMeshInstanceRenderProxy* FindMeshInstance(MMeshInstanceKey key) override;
 
-    void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) override;
+    void InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) const override;
 
 private:
     MEngine*                                                         m_engine              = nullptr;
-    std::shared_ptr<MShaderProgram>                                  m_shaderProgram       = nullptr;
+    std::shared_ptr<MMaterialTemplate>                               m_pMaterialTemplate   = nullptr;
     std::shared_ptr<MShaderPropertyBlock>                            m_shaderPropertyBlock = nullptr;
     std::shared_ptr<MShaderStorageParam>                             m_transformParam      = nullptr;
 

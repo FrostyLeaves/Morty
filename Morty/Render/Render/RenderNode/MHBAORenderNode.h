@@ -24,11 +24,11 @@ class MORTY_API MHBAORenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MHBAORenderNode)
 
-    void                       Release() override;
+    void                 Release() override;
 
-    std::shared_ptr<MMaterial> CreateMaterial() override;
+    MMaterialTemplatePtr CreateMaterial() override;
 
-    void                       RenderSetup(const MRenderInfo& info) override;
+    void                 RenderSetup(const MRenderInfo& info) override;
 
 public:
     REFL_RENDER_NODE_PROPERTY float HbaoRadius       = 2.0f;

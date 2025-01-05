@@ -86,6 +86,8 @@ using MSkeletonInstanceKey = size_t;
 using MTexturePtr          = std::shared_ptr<MTexture>;
 using MTextureArray        = std::vector<MTexturePtr>;
 using MMaterialPtr         = std::shared_ptr<MMaterial>;
+using MResourcePtr         = std::shared_ptr<class MResource>;
+using MMaterialTemplatePtr = std::shared_ptr<class MMaterialTemplate>;
 
 enum class MECameraType
 {

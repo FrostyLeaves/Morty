@@ -192,6 +192,7 @@ MVulkanShaderCompilerGlslang::~MVulkanShaderCompilerGlslang()
 
 bool MVulkanShaderCompilerGlslang::CompileShader(
         const MString&         strShaderPath,
+        const MString&         strShaderEntry,
         const MEShaderType&    eShaderType,
         const MShaderMacro&    macro,
         std::vector<uint32_t>& vSpirv
@@ -204,20 +205,7 @@ bool MVulkanShaderCompilerGlslang::CompileShader(
             {MEShaderType::EGeometry, EShLangGeometry},
     };
 
-    static std::map<MEShaderType, MString> ShaderEntryTable = {
-            {MEShaderType::EVertex, "VS_MAIN"},
-            {MEShaderType::EPixel, "PS_MAIN"},
-            {MEShaderType::ECompute, "CS_MAIN"},
-            {MEShaderType::EGeometry, "GS_MAIN"},
-    };
-
     if (ShaderTypeTable.find(eShaderType) == ShaderTypeTable.end())
-    {
-        MORTY_ASSERT(false);
-        return false;
-    }
-
-    if (ShaderEntryTable.find(eShaderType) == ShaderEntryTable.end())
     {
         MORTY_ASSERT(false);
         return false;
@@ -234,7 +222,7 @@ bool MVulkanShaderCompilerGlslang::CompileShader(
     const char* svShaderCode = strShaderCode.c_str();
     const char* svShaderPath = strShaderPath.c_str();
     shader.setStringsWithLengthsAndNames(&svShaderCode, NULL, &svShaderPath, 1);
-    shader.setEntryPoint(ShaderEntryTable[eShaderType].c_str());
+    shader.setEntryPoint(strShaderEntry.c_str());
 
     MPreamble UserPreamble;
     ConvertMacro(macro, UserPreamble);

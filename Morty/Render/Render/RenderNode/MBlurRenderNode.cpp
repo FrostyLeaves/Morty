@@ -11,14 +11,14 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MBlurRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId            BlurOffsetName    = MStringId("Gaussian Blur Offset");
-const MStringId            BlurDirectionName = MStringId("Gaussian Blur Vertical");
+const MStringId      BlurOffsetName    = MStringId("Gaussian Blur Offset");
+const MStringId      BlurDirectionName = MStringId("Gaussian Blur Vertical");
 
-std::shared_ptr<MMaterial> MBlurRenderNode::CreateMaterial()
+MMaterialTemplatePtr MBlurRenderNode::CreateMaterial()
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto             pBlurMaterial = pResourceSystem->FindResource<MMaterialTemplate>("blur");
+    auto pBlurMaterial = pResourceSystem->FindResource<MMaterialTemplate>("blur");
     if (pBlurMaterial == nullptr)
     {
         pBlurMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("blur");
@@ -30,7 +30,7 @@ std::shared_ptr<MMaterial> MBlurRenderNode::CreateMaterial()
         pBlurMaterial->SetCullMode(MECullMode::ECullNone);
     }
 
-    return MMaterial::CreateMaterial(pBlurMaterial);
+    return pBlurMaterial;
 }
 
 void MBlurRenderNode::RenderSetup(const MRenderInfo& info)
@@ -46,7 +46,7 @@ void MBlurRenderNode::RenderSetup(const MRenderInfo& info)
                 Vector2(bVertical ? 0 : (fOffset / info.f2ViewportSize.x),
                         bVertical ? (fOffset / info.f2ViewportSize.y) : 0);
 
-        m_material->SetValue(MShaderPropertyName::POSTPROCESS_BLUR_OFFSET, f2Offset);
+        m_material->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::POSTPROCESS_BLUR_OFFSET, f2Offset);
     }
 }
 

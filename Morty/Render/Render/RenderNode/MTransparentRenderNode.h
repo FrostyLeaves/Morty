@@ -40,7 +40,7 @@ public:
     void Render(const MRenderInfo& info) override;
 
     void Resize(Vector2i size) override;
-    
+
 protected:
     void                               InitializeMaterial();
     void                               ReleaseMaterial();
@@ -63,8 +63,8 @@ private:
     std::shared_ptr<MResource>                           m_whiteTexture = nullptr;
     std::shared_ptr<MResource>                           m_blackTexture = nullptr;
 
-    std::shared_ptr<MMaterial>                           m_copyDepthMaterial = nullptr;
-    std::shared_ptr<MMaterial>                           m_blendMaterial     = nullptr;
+    MMaterialTemplatePtr                                 m_copyDepthMaterial = nullptr;
+    MMaterialTemplatePtr                                 m_blendMaterial     = nullptr;
 
     std::array<std::shared_ptr<MShaderPropertyBlock>, 2> m_framePropertyBlock;
 

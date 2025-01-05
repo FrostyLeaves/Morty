@@ -84,3 +84,15 @@ MMaterialTemplate::CreateMaterialPropertyBlock(const std::shared_ptr<MShaderProg
 {
     return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->Clone();
 }
+const std::shared_ptr<MShaderPropertyBlock>& MMaterialTemplate::GetMaterialPropertyBlock() const
+{
+    return GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL];
+}
+
+void MMaterialTemplate::SetTexture(const MStringId& name, const MResourcePtr& texture)
+{
+    if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(texture))
+    {
+        GetMaterialPropertyBlock()->SetTexture(name, textureResource->GetTextureTemplate());
+    }
+}

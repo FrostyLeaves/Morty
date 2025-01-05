@@ -184,18 +184,18 @@ void MShadowMeshManager::AddToDeleteQueue(MRenderMeshComponent* pComponent)
 
 void MShadowMeshManager::InitializeMaterial()
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    auto             pTemplate       = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP);
-    auto             pMaterial       = MMaterial::CreateMaterial(pTemplate);
-    m_staticMaterial.SetResource(pMaterial);
+    auto* pResourceSystem   = GetEngine()->FindSystem<MResourceSystem>();
+    auto  pTemplateResource = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP);
+    auto  pTemplate         = MTypeClass::DynamicCast<MMaterialTemplate>(pTemplateResource);
+    m_staticMaterial.SetResource(pTemplate);
     m_batchMaterialGroup[MEMeshVertexType::Normal] = new MaterialGroup();
-    m_batchMaterialGroup[MEMeshVertexType::Normal]->materialGroup.Initialize(GetEngine(), pMaterial);
+    m_batchMaterialGroup[MEMeshVertexType::Normal]->materialGroup.Initialize(GetEngine(), pTemplate);
 
-    pTemplate = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP_SKELETON);
-    pMaterial = MMaterial::CreateMaterial(pTemplate);
-    m_animatedMaterial.SetResource(pMaterial);
+    pTemplateResource = pResourceSystem->LoadResource(MMaterialName::SHADOW_MAP_SKELETON);
+    pTemplate         = MTypeClass::DynamicCast<MMaterialTemplate>(pTemplateResource);
+    m_animatedMaterial.SetResource(pTemplate);
     m_batchMaterialGroup[MEMeshVertexType::Skeleton] = new MaterialGroup();
-    m_batchMaterialGroup[MEMeshVertexType::Skeleton]->materialGroup.Initialize(GetEngine(), pMaterial);
+    m_batchMaterialGroup[MEMeshVertexType::Skeleton]->materialGroup.Initialize(GetEngine(), pTemplate);
 
 
     m_materialGroup.push_back(&m_batchMaterialGroup[MEMeshVertexType::Normal]->materialGroup);

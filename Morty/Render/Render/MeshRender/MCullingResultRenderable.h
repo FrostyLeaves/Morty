@@ -35,7 +35,7 @@ public:
     void Render(MRenderPassCmd* pCommand) override;
 
     //override to use other material.
-    virtual std::shared_ptr<MMaterial> GetMaterial(const MMaterialCullingGroup& group) const;
+    virtual std::shared_ptr<MMaterialTemplate> GetMaterial(const MMaterialCullingGroup& group) const;
 
 private:
     std::vector<std::shared_ptr<IPropertyBlockAdapter>> m_framePropertyAdapter;

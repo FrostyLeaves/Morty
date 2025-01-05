@@ -39,54 +39,51 @@ public:
 
     void                                            Render(const MRenderInfo& info) override;
 
-    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void                        Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-    const std::unordered_map<MStringId, std::shared_ptr<MMaterial>>& GetVoxelizerMaterial() const
-    {
-        return m_voxelizerMaterial;
-    }
+    const MMaterialTemplatePtr& GetVoxelizerMaterial() const { return m_voxelizerMaterial; }
 
-    const MBuffer*   GetVoxelTableBuffer() const;
+    const MBuffer*              GetVoxelTableBuffer() const;
 
-    const MBuffer*   GetVoxelDebugBuffer() const;
+    const MBuffer*              GetVoxelDebugBuffer() const;
 
-    MTexturePtr      GetVoxelGITexture() const;
+    MTexturePtr                 GetVoxelGITexture() const;
 
-    MBoundsAABB      GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const;
+    MBoundsAABB                 GetVoxelizerBoundsAABB(uint32_t nClipmapIdx) const;
 
-    void             SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
+    void                        SetupVoxelSetting(const Vector3& f3CameraPosition, const uint32_t nClipmapIdx);
 
-    MVoxelMapSetting GetVoxelSetting() const { return m_voxelSetting; }
+    MVoxelMapSetting            GetVoxelSetting() const { return m_voxelSetting; }
 
 protected:
-    void                                                      InitializeBuffer();
+    void                                            InitializeBuffer();
 
-    void                                                      ReleaseBuffer();
+    void                                            ReleaseBuffer();
 
-    void                                                      InitializeDispatcher();
+    void                                            InitializeDispatcher();
 
-    void                                                      ReleaseDispatcher();
+    void                                            ReleaseDispatcher();
 
-    void                                                      InitializeVoxelTextureDispatcher();
+    void                                            InitializeVoxelTextureDispatcher();
 
-    void                                                      ReleaseVoxelTextureDispatcher();
+    void                                            ReleaseVoxelTextureDispatcher();
 
-    void                                                      InitializeRenderPass();
+    void                                            InitializeRenderPass();
 
-    std::vector<MRenderTaskInputDesc>                         InitInputDesc() override;
+    std::vector<MRenderTaskInputDesc>               InitInputDesc() override;
 
-    std::vector<MRenderTaskOutputDesc>                        InitOutputDesc() override;
+    std::vector<MRenderTaskOutputDesc>              InitOutputDesc() override;
 
 
-    MVoxelMapSetting                                          m_voxelSetting;
-    std::shared_ptr<IShaderPropertyUpdateDecorator>           m_framePropertyUpdateDecorator = nullptr;
+    MVoxelMapSetting                                m_voxelSetting;
+    std::shared_ptr<IShaderPropertyUpdateDecorator> m_framePropertyUpdateDecorator = nullptr;
 
-    MComputeDispatcher*                                       m_voxelTextureGenerator    = nullptr;
-    std::shared_ptr<MShaderConstantParam>                     m_voxelizerVoxelMapSetting = nullptr;
-    std::unordered_map<MStringId, std::shared_ptr<MMaterial>> m_voxelizerMaterial        = {};
-    MBuffer                                                   m_voxelizerBuffer;
+    MComputeDispatcher*                             m_voxelTextureGenerator    = nullptr;
+    std::shared_ptr<MShaderConstantParam>           m_voxelizerVoxelMapSetting = nullptr;
+    MMaterialTemplatePtr                            m_voxelizerMaterial        = nullptr;
+    MBuffer                                         m_voxelizerBuffer;
 
-    MTexturePtr                                               m_voxelGITexture = nullptr;
+    MTexturePtr                                     m_voxelGITexture = nullptr;
 };
 
 }// namespace morty

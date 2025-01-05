@@ -59,9 +59,9 @@ public:
 
     virtual void                                        Release(MEngine* pEngine);
 
-    virtual std::shared_ptr<MMaterial>                  LoadMaterial(MEngine* pEngine) const;
-    virtual void                                        BindMaterial(const std::shared_ptr<MMaterial>& pMaterial);
-    [[nodiscard]] std::shared_ptr<MMaterial>            GetMaterial() const { return m_material; }
+    virtual MMaterialTemplatePtr                        LoadMaterial(MEngine* pEngine) const;
+    virtual void                                        BindMaterial(const MMaterialTemplatePtr& pMaterial);
+    [[nodiscard]] MMaterialTemplatePtr                  GetMaterial() const { return m_material; }
     [[nodiscard]] std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const override;
 
 
@@ -74,7 +74,7 @@ public:
     std::shared_ptr<MShaderTextureParam> m_brdfMapTextureParam = nullptr;
 
 protected:
-    std::shared_ptr<MMaterial>                                   m_material            = nullptr;
+    MMaterialTemplatePtr                                         m_material            = nullptr;
     std::shared_ptr<MShaderPropertyBlock>                        m_shaderPropertyBlock = nullptr;
     std::vector<std::shared_ptr<IShaderPropertyUpdateDecorator>> m_propertyUpdateDecorator;
 };

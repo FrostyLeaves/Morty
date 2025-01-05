@@ -697,14 +697,11 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
     if (eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
     {
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_ALBEDO,
-                Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-        );
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 0);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
         pMaterial->SetTexture(
                 MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
                 pResourceSystem->LoadResource(MRenderModule::DefaultWhite)
@@ -729,14 +726,6 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
                 MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
                 pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
         );
-    }
-    else
-    {
-        std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-        for (size_t i = 0; i < pMaterial->GetMaterialPropertyBlock()->m_textures.size(); ++i)
-        {
-            pMaterial->SetTexture(pMaterial->GetMaterialPropertyBlock()->m_textures[i]->strName, pDefaultTexture);
-        }
     }
 
     if (nMaterialIdx >= pScene->mNumMaterials) return;
@@ -764,12 +753,12 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
 
         if (0.0f == fShininess) fShininess = 32.0f;
 
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, v3Ambient);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, v3Diffuse);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, v3Specular);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, fShininess);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_NORMAL_TEXTURE_ENABLE, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, v3Ambient);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, v3Diffuse);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, v3Specular);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_SHININESS, fShininess);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_NORMAL_TEXTURE_ENABLE, 0);
+        pMaterial->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
     }
 
     const std::map<aiTextureType, const MStringId&>* pTextureMapping = nullptr;
@@ -781,7 +770,8 @@ void MModelConverter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMa
                 //forward
                 {aiTextureType_DIFFUSE, MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE},
                 {aiTextureType_NORMALS, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
-                {aiTextureType_SPECULAR, MShaderPropertyName::MATERIAL_TEXTURE_SPECULAR}};
+                {aiTextureType_SPECULAR, MShaderPropertyName::MATERIAL_TEXTURE_SPECULAR}
+        };
 
         pTextureMapping = &ForwardTextureMapping;
     }

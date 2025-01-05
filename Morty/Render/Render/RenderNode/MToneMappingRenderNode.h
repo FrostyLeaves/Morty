@@ -23,7 +23,7 @@ REFL_RENDER_NODE_CLASS MToneMappingRenderNode : public MBasicPostProcessRenderNo
 {
     MORTY_CLASS(MToneMappingRenderNode)
 
-    std::shared_ptr<MMaterial> CreateMaterial() override;
+    MMaterialTemplatePtr CreateMaterial() override;
 
 protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;

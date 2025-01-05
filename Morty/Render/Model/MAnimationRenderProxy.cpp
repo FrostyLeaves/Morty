@@ -134,7 +134,7 @@ void MAnimationRenderGroup::Initialize(MEngine* pEngine)
     auto                       pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     std::shared_ptr<MResource> pMeshVSResource = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-    std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Deferred/deferred_gbuffer.mps");
+    std::shared_ptr<MResource> pMeshPSResource = pResourceSystem->LoadResource("Shader/Model/deferred_model_ps.mps");
 
     auto pShaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
     pShaderProgram->GetShaderMacro().AddUnionMacro(

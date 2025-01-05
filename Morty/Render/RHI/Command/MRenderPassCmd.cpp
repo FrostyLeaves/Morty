@@ -137,9 +137,9 @@ void MRenderPassCmd::DrawMesh(MIMesh* mesh, size_t nIndexOffset, size_t nIndexCo
 void MRenderPassCmd::DrawMesh(MIMesh* mesh) { DrawMesh(mesh, 0, mesh->GetIndicesNum(), 0); }
 
 
-void MRenderPassCmd::SetGraphPipeline(const MMaterial* material)
+void MRenderPassCmd::SetGraphPipeline(const MMaterialTemplate* materialTemplate)
 {
-    const auto pPipeline = m_device->FindOrCreateGraphicsPipeline(material->GetMaterialTemplate().get(), m_renderPass);
+    const auto pPipeline = m_device->FindOrCreateGraphicsPipeline(materialTemplate, m_renderPass);
     MORTY_ASSERT(nullptr != pPipeline);
     if (m_usingPipeline == pPipeline.get()) { return; }
     m_usingPipeline = pPipeline.get();
@@ -147,14 +147,29 @@ void MRenderPassCmd::SetGraphPipeline(const MMaterial* material)
     const auto pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
 
     SetGraphPipeline(pGraphicsPipeline.get(), m_subPassIdx);
+    SetShadingRate(materialTemplate->GetShadingRate(), {MEShadingRateCombinerOp::Max, MEShadingRateCombinerOp::Max});
 }
 
 void MRenderPassCmd::SetMaterial(const MMaterial* material)
 {
-    SetGraphPipeline(material);
+    const auto& pMaterialTemplate = material->GetMaterialTemplate();
+    if (nullptr == pMaterialTemplate) { return; }
 
-    auto propertyBlock = material->GetMaterialPropertyBlock().get();
-    SetShadingRate(material->GetShadingRate(), {MEShadingRateCombinerOp::Max, MEShadingRateCombinerOp::Max});
+    SetGraphPipeline(pMaterialTemplate.get());
+
+    auto propertyBlock = pMaterialTemplate->GetMaterialPropertyBlock().get();
+    SetShaderPropertyBlock(propertyBlock);
+
+    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderPropertyBlock(pPushedProperty); }
+}
+
+void MRenderPassCmd::SetMaterial(const MMaterialTemplate* pMaterialTemplate)
+{
+    if (nullptr == pMaterialTemplate) { return; }
+
+    SetGraphPipeline(pMaterialTemplate);
+
+    auto propertyBlock = pMaterialTemplate->GetMaterialPropertyBlock().get();
     SetShaderPropertyBlock(propertyBlock);
 
     for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderPropertyBlock(pPushedProperty); }

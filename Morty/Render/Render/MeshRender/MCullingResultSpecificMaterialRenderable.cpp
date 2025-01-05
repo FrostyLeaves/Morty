@@ -3,13 +3,8 @@
 
 using namespace morty;
 
-std::shared_ptr<MMaterial> MCullingResultSpecificMaterialRenderable::GetMaterial(const MMaterialCullingGroup& group
-) const
+MMaterialTemplatePtr MCullingResultSpecificMaterialRenderable::GetMaterial(const MMaterialCullingGroup& group) const
 {
-    for (const auto& [strDefinedKey, pMaterial]: m_materials)
-    {
-        if (group.pMaterial->GetShaderMacro().HasMacro(strDefinedKey)) { return pMaterial; }
-    }
-
-    return nullptr;
+    MORTY_UNUSED(group);
+    return m_material;
 }

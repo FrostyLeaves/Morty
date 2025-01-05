@@ -14,10 +14,10 @@ using namespace morty;
 
 constexpr size_t TransformStructSize = sizeof(MMeshInstanceTransform);
 
-void             MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MShaderProgram> pShaderProgram)
+void             MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_ptr<MMaterialTemplate> pMaterialTemplate)
 {
-    m_engine        = pEngine;
-    m_shaderProgram = pShaderProgram;
+    m_engine            = pEngine;
+    m_pMaterialTemplate = pMaterialTemplate;
     if (m_shaderPropertyBlock)
     {
         const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
@@ -26,12 +26,12 @@ void             MStorageBatchGroup::Initialize(MEngine* pEngine, std::shared_pt
         m_transformParam      = nullptr;
     }
 
-    MORTY_ASSERT(pShaderProgram);
+    MORTY_ASSERT(pMaterialTemplate);
 
-    m_shaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(pShaderProgram);
+    m_shaderPropertyBlock = MMaterialTemplate::CreateMeshPropertyBlock(m_pMaterialTemplate->GetShaderProgram());
     MORTY_ASSERT(m_shaderPropertyBlock);
 
-    m_transformParam = m_shaderPropertyBlock->FindStorageParam(MShaderPropertyName::CBUFFER_MESH_MATRIX);
+    m_transformParam = m_shaderPropertyBlock->FindStorageParam(MShaderPropertyName::MESH_LOCAL_MATRIX);
     MORTY_ASSERT(m_transformParam);
 
     m_transformBuffer.buffer.m_memoryType = MBuffer::MMemoryType::EHostVisible;
@@ -49,14 +49,21 @@ void MStorageBatchGroup::Release(MEngine* pEngine)
     m_shaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
     m_shaderPropertyBlock = nullptr;
     m_transformParam      = nullptr;
-    m_shaderProgram       = nullptr;
+    m_pMaterialTemplate   = nullptr;
     m_instanceCache       = {};
 
 
     m_transformBuffer.buffer.DestroyBuffer(pRenderSystem->GetDevice());
 }
 
-bool   MStorageBatchGroup::CanAddMeshInstance() const { return true; }
+bool MStorageBatchGroup::CanAddMeshInstance() const { return true; }
+
+bool MStorageBatchGroup::HasMeshInstance(const MMeshInstanceRenderProxy& proxy) const
+{
+    return m_instanceCache.HasItem(proxy.nProxyId);
+}
+
+bool   MStorageBatchGroup::IsEmpty() const { return m_instanceCache.GetItems().empty(); }
 
 size_t MStorageBatchGroup::AddMeshInstance(const MMeshInstanceRenderProxy& proxy)
 {
@@ -141,7 +148,7 @@ MMeshInstanceRenderProxy* MStorageBatchGroup::FindMeshInstance(MMeshInstanceKey 
     return result;
 }
 
-void MStorageBatchGroup::InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func)
+void MStorageBatchGroup::InstanceExecute(std::function<void(const MMeshInstanceRenderProxy&, size_t nIdx)> func) const
 {
     const auto& items = m_instanceCache.GetItems();
     for (size_t nIdx = 0; nIdx < items.size(); ++nIdx)

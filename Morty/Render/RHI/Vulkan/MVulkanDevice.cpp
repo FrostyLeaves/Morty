@@ -757,7 +757,13 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     if (!pShader) return false;
 
     std::vector<uint32_t> spirv;
-    m_ShaderCompiler->CompileShader(pShader->GetShaderPath(), pShader->GetType(), pShader->GetMacro(), spirv);
+    m_ShaderCompiler->CompileShader(
+            pShader->GetShaderPath(),
+            pShader->GetEntryName(),
+            pShader->GetType(),
+            pShader->GetMacro(),
+            spirv
+    );
 
     if (spirv.empty()) return false;
 
@@ -774,27 +780,12 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     VkPipelineShaderStageCreateInfo shaderStageInfo{};
     shaderStageInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageInfo.module = shaderModule;
+    shaderStageInfo.pName  = pShader->GetEntryName().c_str();
 
-    if (pShader->GetType() == MEShaderType::EVertex)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        shaderStageInfo.pName = "VS_MAIN";
-    }
-    else if (pShader->GetType() == MEShaderType::EPixel)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        shaderStageInfo.pName = "PS_MAIN";
-    }
-    else if (pShader->GetType() == MEShaderType::ECompute)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        shaderStageInfo.pName = "CS_MAIN";
-    }
-    else if (pShader->GetType() == MEShaderType::EGeometry)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-        shaderStageInfo.pName = "GS_MAIN";
-    }
+    if (pShader->GetType() == MEShaderType::EVertex) { shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT; }
+    else if (pShader->GetType() == MEShaderType::EPixel) { shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT; }
+    else if (pShader->GetType() == MEShaderType::ECompute) { shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT; }
+    else if (pShader->GetType() == MEShaderType::EGeometry) { shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT; }
     else { MORTY_ASSERT(false); }
 
     shaderStageInfo.pSpecializationInfo = nullptr;

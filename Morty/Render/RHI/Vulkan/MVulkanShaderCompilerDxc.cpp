@@ -74,6 +74,7 @@ MVulkanShaderCompilerDxc::MVulkanShaderCompilerDxc(MVulkanDevice* pDevice)
 
 bool MVulkanShaderCompilerDxc::CompileShader(
         const MString&         _strShaderPath,
+        const MString&         strShaderEntry,
         const MEShaderType&    eShaderType,
         const MShaderMacro&    macro,
         std::vector<uint32_t>& vSpirv
@@ -147,26 +148,12 @@ bool MVulkanShaderCompilerDxc::CompileShader(
         }
     }
 
-    if (MEShaderType::EVertex == eShaderType)
-    {
-        vCompArgs.push_back(L"-E VS_MAIN");
-        vCompArgs.push_back(L"-T vs_6_1");
-    }
-    else if (MEShaderType::EPixel == eShaderType)
-    {
-        vCompArgs.push_back(L"-E PS_MAIN");
-        vCompArgs.push_back(L"-T ps_6_1");
-    }
-    else if (MEShaderType::ECompute == eShaderType)
-    {
-        vCompArgs.push_back(L"-E CS_MAIN");
-        vCompArgs.push_back(L"-T cs_6_1");
-    }
-    else if (MEShaderType::EGeometry == eShaderType)
-    {
-        vCompArgs.push_back(L"-E GS_MAIN");
-        vCompArgs.push_back(L"-T gs_6_1");
-    }
+    vCompArgs.push_back(L"-E " + MStringUtil::ConvertToWString(strShaderEntry));
+
+    if (MEShaderType::EVertex == eShaderType) { vCompArgs.push_back(L"-T vs_6_1"); }
+    else if (MEShaderType::EPixel == eShaderType) { vCompArgs.push_back(L"-T ps_6_1"); }
+    else if (MEShaderType::ECompute == eShaderType) { vCompArgs.push_back(L"-T cs_6_1"); }
+    else if (MEShaderType::EGeometry == eShaderType) { vCompArgs.push_back(L"-T gs_6_1"); }
     else { MORTY_ASSERT(false); }
 
     //vCompArgs.push_back(L"-enable-templates");

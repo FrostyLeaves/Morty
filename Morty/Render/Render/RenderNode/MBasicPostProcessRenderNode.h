@@ -19,18 +19,18 @@ class MORTY_API MBasicPostProcessRenderNode : public ISinglePassRenderNode
 {
     MORTY_INTERFACE(MBasicPostProcessRenderNode)
 
-    void                               OnCreated() override;
+    void                         OnCreated() override;
 
-    void                               Release() override;
+    void                         Release() override;
 
-    void                               Render(const MRenderInfo& info) override;
+    void                         Render(const MRenderInfo& info) override;
 
-    virtual std::shared_ptr<MMaterial> CreateMaterial() = 0;
+    virtual MMaterialTemplatePtr CreateMaterial() = 0;
 
 protected:
-    void                       BindInOutTexture() override;
+    void                 BindInOutTexture() override;
 
-    std::shared_ptr<MMaterial> m_material = nullptr;
+    MMaterialTemplatePtr m_material = nullptr;
 };
 
 }// namespace morty

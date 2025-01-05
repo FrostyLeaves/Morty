@@ -14,11 +14,12 @@ class MIMesh;
 class MTexture;
 class MMaterial;
 class IRenderCommand;
+class MMaterialTemplate;
 class MSkeletonInstance;
 class MDebugMeshComponent;
 class MRenderMeshComponent;
 struct MMaterialCullingGroup {
-    std::shared_ptr<MMaterial>            pMaterial              = nullptr;
+    std::shared_ptr<MMaterialTemplate>    pMaterial              = nullptr;
     std::shared_ptr<MShaderPropertyBlock> pMeshTransformProperty = nullptr;
     size_t                                nIndirectBeginIdx      = 0;
     size_t                                nIndirectCount         = 0;

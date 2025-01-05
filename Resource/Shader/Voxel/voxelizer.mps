@@ -1,6 +1,6 @@
 #include "../Internal/internal_uniform_global.hlsl"
 #include "../Internal/internal_functional.hlsl"
-#include "../Deferred/pbr_uniform_material.hlsl"
+#include "../Model/pbr_uniform_material.hlsl"
 #include "../Lighting/pbr_lighting.hlsl"
 #include "../Voxel/voxel_function.hlsl"
 #include "../Model/universal_vsout.hlsl"

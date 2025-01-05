@@ -51,8 +51,10 @@ public:
     );
 
     void SetGraphPipeline(const MGraphicsPipeline* pipeline, size_t subPassIdx);
-    void SetGraphPipeline(const MMaterial* material);
+    void SetGraphPipeline(const MMaterialTemplate* materialTemplate);
     void SetMaterial(const MMaterial* material);
+    void SetMaterial(const MMaterialTemplate* materialTemplate);
+
 
     void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& block);
     void SetShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);

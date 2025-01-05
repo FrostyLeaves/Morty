@@ -1,3 +1,4 @@
+#include "../Model/universal_model_cbuffer.hlsl"
 #include "../Internal/internal_uniform_model.hlsl"
 
 struct VS_OUT

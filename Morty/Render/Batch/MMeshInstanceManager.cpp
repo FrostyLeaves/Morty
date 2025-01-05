@@ -101,7 +101,7 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
 {
     MORTY_UNUSED(pNode);
 
-    std::vector<std::shared_ptr<MMaterial>> vDeleteMaterials;
+    std::vector<std::shared_ptr<MMaterialTemplate>> vDeleteMaterials;
 
     for (auto& [material, group]: m_renderableMaterialGroup)
     {
@@ -205,8 +205,9 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* pComponent)
 {
     const auto pMaterial = pComponent->GetMaterial();
     if (nullptr == pMaterial) { return; }
+    const auto pMaterialTemplate = pMaterial->GetMaterialTemplate();
 
-    const auto findResult = m_renderableMaterialGroup.find(pMaterial);
+    const auto findResult = m_renderableMaterialGroup.find(pMaterialTemplate);
     if (findResult != m_renderableMaterialGroup.end())
     {
         auto proxy = MMaterialBatchGroup::CreateProxyFromComponent(pComponent);
@@ -215,9 +216,9 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* pComponent)
         return;
     }
 
-    auto pRenderGroup                    = new MaterialGroup();
-    m_renderableMaterialGroup[pMaterial] = pRenderGroup;
-    pRenderGroup->materialGroup.Initialize(GetEngine(), pMaterial);
+    auto pRenderGroup                            = new MaterialGroup();
+    m_renderableMaterialGroup[pMaterialTemplate] = pRenderGroup;
+    pRenderGroup->materialGroup.Initialize(GetEngine(), pMaterialTemplate);
 
     auto proxy                                         = MMaterialBatchGroup::CreateProxyFromComponent(pComponent);
     pRenderGroup->tWaitUpdateComponent[proxy.nProxyId] = proxy;

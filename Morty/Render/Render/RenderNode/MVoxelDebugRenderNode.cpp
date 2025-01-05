@@ -199,13 +199,11 @@ void MVoxelDebugRenderNode::InitializeDispatcher()
 
     std::shared_ptr<MResource> voxelDebugVS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mvs");
     std::shared_ptr<MResource> voxelDebugPS = pResourceSystem->LoadResource("Shader/Voxel/voxel_debug_view.mps");
-    auto pVoxelDebugTemplate = pResourceSystem->CreateResource<MMaterialTemplate>("Voxel Debug Material");
-    pVoxelDebugTemplate->SetCullMode(MECullMode::ECullBack);
-    pVoxelDebugTemplate->SetMaterialType(MEMaterialType::ECustom);
-    pVoxelDebugTemplate->LoadShader(voxelDebugVS);
-    pVoxelDebugTemplate->LoadShader(voxelDebugPS);
-
-    m_voxelDebugMaterial = MMaterial::CreateMaterial(pVoxelDebugTemplate);
+    m_voxelDebugMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("Voxel Debug Material");
+    m_voxelDebugMaterial->SetCullMode(MECullMode::ECullBack);
+    m_voxelDebugMaterial->SetMaterialType(MEMaterialType::ECustom);
+    m_voxelDebugMaterial->LoadShader(voxelDebugVS);
+    m_voxelDebugMaterial->LoadShader(voxelDebugPS);
 }
 
 void MVoxelDebugRenderNode::ReleaseDispatcher()

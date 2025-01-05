@@ -54,7 +54,7 @@ void MFrameShaderPropertyBlock::Initialize(MEngine* pEngine)
 
 void MFrameShaderPropertyBlock::Release(MEngine* pEngine)
 {
-    MRenderSystem* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
+    auto* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
     m_shaderPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
     m_shaderPropertyBlock = nullptr;
@@ -62,16 +62,16 @@ void MFrameShaderPropertyBlock::Release(MEngine* pEngine)
     m_material = nullptr;
 }
 
-
-std::shared_ptr<MMaterial> MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEngine) const
+MMaterialTemplatePtr MFrameShaderPropertyBlock::LoadMaterial(MEngine* pEngine) const
 {
-    MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
+    auto*      pResourceSystem = pEngine->FindSystem<MResourceSystem>();
 
-    const auto       pMaterialTemplate = pResourceSystem->LoadResource(MMaterialName::FRAME_DEFAULT);
-    return MMaterial::CreateMaterial(pMaterialTemplate);
+    const auto resource         = pResourceSystem->LoadResource(MMaterialName::FRAME_DEFAULT);
+    auto       templateResource = MTypeClass::DynamicCast<MMaterialTemplateResource>(resource);
+    return templateResource->GetMaterial();
 }
 
-void MFrameShaderPropertyBlock::BindMaterial(const std::shared_ptr<MMaterial>& pMaterial)
+void MFrameShaderPropertyBlock::BindMaterial(const MMaterialTemplatePtr& pMaterial)
 {
     m_shaderPropertyBlock = MMaterialTemplate::CreateFramePropertyBlock(pMaterial->GetShaderProgram());
 

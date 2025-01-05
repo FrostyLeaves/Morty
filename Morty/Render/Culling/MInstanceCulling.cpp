@@ -3,12 +3,12 @@
 
 using namespace morty;
 
-bool MMaterialTypeFilter::Filter(const std::shared_ptr<MMaterial>& material) const
+bool MMaterialTypeFilter::Filter(const std::shared_ptr<MMaterialTemplate>& material) const
 {
     return material->GetMaterialType() == m_materialType;
 }
 
-bool MMaterialMacroDefineFilter::Filter(const std::shared_ptr<MMaterial>& material) const
+bool MMaterialMacroDefineFilter::Filter(const std::shared_ptr<MMaterialTemplate>& material) const
 {
     for (const auto& [name, defined]: m_definedMacro)
     {
