@@ -60,7 +60,7 @@ int main()
     renderView.AppendContent(&editor);
 
     //create a scene.
-    MScene* pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
+    auto* pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
     editor.SetScene(pScene);
 
     ADD_DIRECTIONAL_LIGHT(&engine, pScene);

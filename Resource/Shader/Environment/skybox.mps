@@ -6,7 +6,7 @@ struct VS_OUT
     float3 uvw : UVW;
 };
 
-[[vk::binding(7,0)]]TextureCube u_texSkyBox;
+[[vk::binding(0,0)]]TextureCube u_texSkyBox;
 
 float4 PS_MAIN(VS_OUT input) : SV_Target
 {

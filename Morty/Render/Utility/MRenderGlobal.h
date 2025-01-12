@@ -47,6 +47,8 @@ public:
 
     static constexpr int      MESH_LOD_LEVEL_RANGE = 3;
 
+    static constexpr int      ATLAS_TEX_ARRAY_SIZE_DEFAULT = 64;
+
     static const char*        SUFFIX_VERTEX_SHADER;
     static const char*        SUFFIX_PIXEL_SHADER;
     static const char*        SUFFIX_COMPUTE_SHADER;
