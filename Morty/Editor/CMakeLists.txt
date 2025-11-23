@@ -86,4 +86,5 @@ else ()
 endif ()
 
 find_package(unofficial-inih CONFIG REQUIRED)
-target_link_libraries(Editor PRIVATE unofficial::inih::inih)
+target_link_libraries(Editor PRIVATE unofficial::inih::libinih)
+target_link_libraries(Editor PRIVATE unofficial::inih::inireader)

@@ -7,10 +7,12 @@
 #include "Engine/MEngine.h"
 #include "MVulkanPhysicalDevice.h"
 #include "Mesh/MMesh.h"
+#include "RHI/Vulkan/MBufferRHIVulkan.h"
 #include "RHI/Vulkan/MRenderCommandVulkan.h"
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
 #include "Resource/MResource.h"
 #include "Shader/MShaderParam.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "Utility/MFileHelper.h"
 #include "vulkan/vulkan_core.h"
 
@@ -26,7 +28,7 @@
 #ifdef MORTY_SHADER_COMPILER_DXC
 #include "MVulkanShaderCompilerDxc.h"
 #else
-#include "MVulkanShaderCompilerGlslang.h"
+#include "RHI/Shader/MVulkanShaderCompilerGlslang.h"
 #endif
 
 
@@ -65,7 +67,7 @@ const std::set<VkFormat> DepthStencilTextureFormat = {
 
 const VkImageLayout UndefinedImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-MVulkanDevice::MVulkanDevice()
+MVulkanDevice::     MVulkanDevice()
     : MIDevice()
     , m_ShaderReflector(this)
     , m_PipelineManager(this)
@@ -480,24 +482,28 @@ void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, c
 
 void MVulkanDevice::DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize)
 {
-    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType)
+    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType && pBuffer->m_bufferRHI)
     {
-        void* pMapMemory = nullptr;
-        vkMapMemory(m_vkDevice, pBuffer->m_vkDeviceMemory, 0, nSize, 0, &pMapMemory);
+        const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
+
+        void*       pMapMemory = nullptr;
+        vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, 0, nSize, 0, &pMapMemory);
         memcpy(outputData, pMapMemory, static_cast<size_t>(nSize));
-        vkUnmapMemory(m_vkDevice, pBuffer->m_vkDeviceMemory);
+        vkUnmapMemory(m_vkDevice, bufferRHI->vkDeviceMemory);
     }
     else { MORTY_ASSERT(false); }
 }
 
 void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)
 {
-    if (!pBuffer) { return; }
+    if (!pBuffer || !pBuffer->m_bufferRHI) { return; }
+    const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
 
-    GetRecycleBin()->DestroyBufferLater(pBuffer->m_vkBuffer);
-    GetRecycleBin()->DestroyDeviceMemoryLater(pBuffer->m_vkDeviceMemory);
+    GetRecycleBin()->DestroyBufferLater(bufferRHI->vkBuffer);
+    GetRecycleBin()->DestroyDeviceMemoryLater(bufferRHI->vkDeviceMemory);
 
     pBuffer->m_stageType = MBuffer::MStageType::EUnknow;
+    pBuffer->m_bufferRHI = nullptr;
 }
 
 void MVulkanDevice::UploadBuffer(
@@ -752,18 +758,42 @@ void MVulkanDevice::DestroyTexture(MTexture* pTexture)
     }
 }
 
+bool MVulkanDevice::CompileShaderHlsl(MShader* pShader, std::vector<uint32_t>& spirv)
+{
+    m_ShaderCompiler->CompileShader(
+            pShader->GetShaderPath(),
+            pShader->GetEntryName(),
+            pShader->GetShaderType(),
+            pShader->GetMacro(),
+            spirv
+    );
+
+    return true;
+}
+
+bool MVulkanDevice::CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& spirv)
+{
+    MSlangCompiler compiler;
+
+    compiler.SetShaderPath(pShader->GetShaderPath());
+
+    if (!compiler.Compile()) { return false; }
+
+    for (const auto& output: compiler.GetOutput())
+    {
+        if (output.name == pShader->GetEntryName()) { spirv = output.buffer; }
+    }
+
+    return true;
+}
+
 bool MVulkanDevice::CompileShader(MShader* pShader)
 {
     if (!pShader) return false;
 
     std::vector<uint32_t> spirv;
-    m_ShaderCompiler->CompileShader(
-            pShader->GetShaderPath(),
-            pShader->GetEntryName(),
-            pShader->GetType(),
-            pShader->GetMacro(),
-            spirv
-    );
+    if (pShader->GetLanguageType() == MEShaderLanguageType::Slang) { CompileShaderSlang(pShader, spirv); }
+    else { CompileShaderHlsl(pShader, spirv); }
 
     if (spirv.empty()) return false;
 
@@ -780,34 +810,44 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     VkPipelineShaderStageCreateInfo shaderStageInfo{};
     shaderStageInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageInfo.module = shaderModule;
-    shaderStageInfo.pName  = pShader->GetEntryName().c_str();
 
-    if (pShader->GetType() == MEShaderType::EVertex) { shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT; }
-    else if (pShader->GetType() == MEShaderType::EPixel) { shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT; }
-    else if (pShader->GetType() == MEShaderType::ECompute) { shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT; }
-    else if (pShader->GetType() == MEShaderType::EGeometry) { shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT; }
+    if (pShader->GetShaderType() == MEShaderType::EVertex) { shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT; }
+    else if (pShader->GetShaderType() == MEShaderType::EPixel) { shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT; }
+    else if (pShader->GetShaderType() == MEShaderType::ECompute)
+    {
+        shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+    else if (pShader->GetShaderType() == MEShaderType::EGeometry)
+    {
+        shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+    }
     else { MORTY_ASSERT(false); }
+
+
+    if (pShader->GetLanguageType() == MEShaderLanguageType::Slang) { shaderStageInfo.pName = "main"; }
+    else { shaderStageInfo.pName = pShader->GetEntryName().c_str(); }
+
 
     shaderStageInfo.pSpecializationInfo = nullptr;
 
     MShaderBuffer* pShaderBuffer = nullptr;
-    if (MEShaderType::EVertex == pShader->GetType())
+    if (MEShaderType::EVertex == pShader->GetShaderType())
     {
         auto* pBuffer = new MVertexShaderBuffer();
         m_ShaderReflector.GetVertexInputState(compiler, pBuffer);
         pShaderBuffer = pBuffer;
     }
-    else if (MEShaderType::EPixel == pShader->GetType())
+    else if (MEShaderType::EPixel == pShader->GetShaderType())
     {
         auto* pBuffer = new MPixelShaderBuffer();
         pShaderBuffer = pBuffer;
     }
-    else if (MEShaderType::ECompute == pShader->GetType())
+    else if (MEShaderType::ECompute == pShader->GetShaderType())
     {
         auto* pBuffer = new MComputeShaderBuffer();
         pShaderBuffer = pBuffer;
     }
-    else if (MEShaderType::EGeometry == pShader->GetType())
+    else if (MEShaderType::EGeometry == pShader->GetShaderType())
     {
         auto* pBuffer = new MGeometryShaderBuffer();
         pShaderBuffer = pBuffer;
@@ -823,6 +863,7 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     }
 
     pShader->SetBuffer(pShaderBuffer);
+
     return true;
 }
 
@@ -830,43 +871,112 @@ void MVulkanDevice::CleanShader(MShader* pShader)
 {
     if (!pShader) return;
 
-    MShaderBuffer* pBuffer = pShader->GetBuffer();
+    auto pBuffer = pShader->GetBuffer();
     if (!pBuffer) return;
 
     GetRecycleBin()->DestroyShaderModuleLater(pBuffer->m_vkShaderModule);
-
     delete pBuffer;
-    pShader->SetBuffer(nullptr);
 }
 
-bool MVulkanDevice::GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+void MVulkanDevice::UpdateShaderParam(MShaderConstantParam* param)
+{
+    if (VK_NULL_HANDLE == param->m_vkBuffer)
+    {
+        //m_device->DestroyShaderParamBuffer(param);
+        GenerateShaderParamBuffer(param);
+    }
+
+    //m_device->DestroyShaderParamBuffer(param);
+    //m_device->GenerateShaderParamBuffer(param);
+
+    MORTY_ASSERT(param->m_memoryMapping);
+
+    if (param->m_memoryMapping)
+    {
+        memcpy(param->m_memoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
+
+#ifndef MORTY_WIN
+        size_t nFlushMinSize = m_device->GetPhysicalDeviceProperties().limits.nonCoherentAtomSize;
+        size_t nOffset       = (param->m_unMemoryOffset / nFlushMinSize) * nFlushMinSize;
+        size_t nSize         = ((param->m_unMemoryOffset + param->m_unVkMemorySize) - nOffset);
+        nSize                = nSize % nFlushMinSize == 0 ? nSize : (nSize / nFlushMinSize + 1) * nFlushMinSize;
+
+        VkMappedMemoryRange memoryRange = {};
+        memoryRange.sType               = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        memoryRange.memory              = param->m_vkBufferMemory;
+        memoryRange.offset              = nOffset;
+        memoryRange.size                = nSize;
+        vkFlushMappedMemoryRanges(m_device->m_vkDevice, 1, &memoryRange);
+#endif
+    }
+}
+
+bool MVulkanDevice::SyncPropertyBlock(MShaderPropertyBlock* propertyBlock)
+{
+    bool bNeedAllocDescriptorSet = false;
+    for (const auto& pParam: propertyBlock->GetConstantParams())
+    {
+        if (pParam->bDirty)
+        {
+            UpdateShaderParam(pParam.get());
+            pParam->bDirty = false;
+        }
+    }
+
+    for (const auto& pParam: propertyBlock->GetTextureParams())
+    {
+        const auto pImageIdent =
+                pParam->GetTexture() ? pParam->GetTexture()->GetTextureRHI<MTextureRHIVulkan>()->vkImageView : nullptr;
+        if (pParam->bDirty || pParam->pImageIdent != pImageIdent)
+        {
+            bNeedAllocDescriptorSet = true;
+            pParam->bDirty          = false;
+            pParam->pImageIdent     = pImageIdent;
+        }
+    }
+
+    for (const auto& pParam: propertyBlock->GetStorageParams())
+    {
+        void* pStoreIdent = pParam->pBuffer->m_bufferRHI.get();
+        if (pParam->pImageIdent != pStoreIdent)
+        {
+            bNeedAllocDescriptorSet = true;
+            pParam->bDirty          = false;
+            pParam->pImageIdent     = pStoreIdent;
+        }
+    }
+
+    return bNeedAllocDescriptorSet;
+}
+
+bool MVulkanDevice::GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
 {
     if (!pPropertyBlock) return false;
 
     return true;
 }
 
-void MVulkanDevice::DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock)
+void MVulkanDevice::DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
 {
-    if (pPropertyBlock) { m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock.get()); }
+    if (pPropertyBlock) { m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock); }
 }
 
-bool MVulkanDevice::GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam)
+bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* param)
 {
-    if (!pParam) return false;
+    if (!param) return false;
 
-    if (VK_NULL_HANDLE != pParam->m_vkBuffer) DestroyShaderParamBuffer(pParam);
+    if (VK_NULL_HANDLE != param->m_vkBuffer) DestroyShaderParamBuffer(param);
 
 
-    return m_BufferPool.AllowBufferMemory(pParam);
+    return m_BufferPool.AllowBufferMemory(param);
 }
 
-void MVulkanDevice::DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam)
+void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* param)
 {
-    if (!pParam) return;
+    if (!param) return;
 
 
-    m_BufferPool.FreeBufferMemory(pParam);
+    m_BufferPool.FreeBufferMemory(param);
 }
 
 VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTarget& renderTarget)
@@ -1322,9 +1432,9 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
 }
 
 std::shared_ptr<MGraphicsPipeline>
-MVulkanDevice::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass)
+MVulkanDevice::FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass)
 {
-    return m_PipelineManager.FindOrCreateGraphicsPipeline(pMaterial, pRenderPass);
+    return m_PipelineManager.FindOrCreateGraphicsPipeline(materialPass, pRenderPass);
 }
 
 IRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName)
@@ -1423,7 +1533,7 @@ void MVulkanDevice::SubmitCommand(IRenderCommand* pCommand)
     if (!pRenderCommand) return;
 
     //submit command
-    auto funcSubmitWork = [=]() {
+    auto funcSubmitWork = [=, this]() {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -1659,8 +1769,12 @@ void MVulkanDevice::GenerateBuffer(
 #endif
 
     MORTY_ASSERT(vkDeviceMemory != VK_NULL_HANDLE);
-    pBuffer->m_vkBuffer       = vkBuffer;
-    pBuffer->m_vkDeviceMemory = vkDeviceMemory;
+    MORTY_ASSERT(!pBuffer->m_bufferRHI);
+
+    auto bufferRHI            = std::make_unique<MBufferRHIVulkan>();
+    bufferRHI->vkBuffer       = vkBuffer;
+    bufferRHI->vkDeviceMemory = vkDeviceMemory;
+    pBuffer->m_bufferRHI      = std::move(bufferRHI);
     pBuffer->m_stageType      = MBuffer::MStageType::ESynced;
 }
 
@@ -1672,7 +1786,8 @@ void MVulkanDevice::UploadBuffer(
         const size_t&   unDataSize
 )
 {
-    if (!pBuffer) { return; }
+    if (!pBuffer || !pBuffer->m_bufferRHI) { return; }
+    auto* bufferRHI = static_cast<MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
 
     if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType)
     {
@@ -1680,9 +1795,9 @@ void MVulkanDevice::UploadBuffer(
 
         size_t unMappingSize = (std::min)(unDataSize, pBuffer->GetSize() - unBeginOffset);
         void*  dataMapping   = nullptr;
-        vkMapMemory(m_vkDevice, pBuffer->m_vkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
+        vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
         memcpy(dataMapping, data, unMappingSize);
-        vkUnmapMemory(m_vkDevice, pBuffer->m_vkDeviceMemory);
+        vkUnmapMemory(m_vkDevice, bufferRHI->vkDeviceMemory);
 
         pBuffer->m_stageType = MBuffer::MStageType::ESynced;
     }
@@ -1704,7 +1819,7 @@ void MVulkanDevice::UploadBuffer(
         vkUnmapMemory(m_vkDevice, stagingBufferMemory);
 
         const VkBufferCopy region = {0, unBeginOffset, unDataSize};
-        CopyBuffer(stagingBuffer, pBuffer->m_vkBuffer, region, vkCommand);
+        CopyBuffer(stagingBuffer, bufferRHI->vkBuffer, region, vkCommand);
 
         DestroyBuffer(stagingBuffer, stagingBufferMemory);
     }
@@ -2246,7 +2361,6 @@ bool MVulkanDevice::InitLogicalDevice()
 
 bool MVulkanDevice::InitCommandPool()
 {
-
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = m_physicalDevice->m_graphicsFamilyIndex;

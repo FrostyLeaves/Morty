@@ -1,20 +1,22 @@
 #include "RHI/Vulkan/MVulkanPipelineManager.h"
 
 #include "Utility/MGlobal.h"
+
 #include "Basic/MBuffer.h"
+#include "MBufferRHIVulkan.h"
 #include "MVulkanPhysicalDevice.h"
+#include "Material/MMaterialPass.h"
 #include "RHI/MRenderPass.h"
 #include "vulkan/vulkan_core.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "Engine/MEngine.h"
-#include "RHI/Vulkan/MVulkanDevice.h"
-#include "Utility/MFunction.h"
-
 #include "Material/MComputeDispatcher.h"
 #include "Material/MMaterial.h"
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
+#include "RHI/Vulkan/MVulkanDevice.h"
+#include "System/MShaderProgramSystem.h"
 
 using namespace morty;
 
@@ -24,7 +26,7 @@ MVulkanPipelineManager::MVulkanPipelineManager(MVulkanDevice* pDevice)
 
 MVulkanPipelineManager::~MVulkanPipelineManager() {}
 
-void MVulkanPipelineManager::Release()
+void                     MVulkanPipelineManager::Release()
 {
     for (auto& pr: m_pipelineTable)
     {
@@ -42,9 +44,22 @@ void MVulkanPipelineManager::Release()
 }
 
 std::shared_ptr<MGraphicsPipeline>
-MVulkanPipelineManager::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass)
+MVulkanPipelineManager::FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass)
 {
-    MPipelineKey key(pMaterial->GetShaderProgram(), pRenderPass);
+    if (!materialPass)
+    {
+        MORTY_ASSERT(materialPass);
+        return nullptr;
+    }
+
+    auto shaderProgram = materialPass->GetShaderProgram();
+    if (!shaderProgram)
+    {
+        MORTY_ASSERT(shaderProgram);
+        return nullptr;
+    }
+
+    MPipelineKey key(shaderProgram, pRenderPass);
 
     auto         findResult = m_pipelineTable.find(key);
     if (findResult != m_pipelineTable.end())
@@ -52,27 +67,20 @@ MVulkanPipelineManager::FindOrCreateGraphicsPipeline(const MMaterialTemplate* pM
         return std::dynamic_pointer_cast<MGraphicsPipeline>(findResult->second);
     }
 
-    const std::shared_ptr<MShaderProgram>& pShaderProgram = pMaterial->GetShaderProgram();
-
-    if (!pShaderProgram)
-    {
-        MORTY_ASSERT(pShaderProgram);
-        return nullptr;
-    }
 
     std::shared_ptr<MGraphicsPipeline> pPipeline = std::make_shared<MGraphicsPipeline>();
     m_pipelineTable[key]                         = pPipeline;
 
     if (pRenderPass->m_subpass.empty())
     {
-        pPipeline->m_subpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, 0));
+        pPipeline->m_subpassPipeline.push_back(CreateGraphicsPipeline(pPipeline, materialPass, pRenderPass, 0));
         return pPipeline;
     }
 
     for (size_t nSubPassIdx = 0; nSubPassIdx < pRenderPass->m_subpass.size(); ++nSubPassIdx)
     {
         pPipeline->m_subpassPipeline.push_back(
-                CreateGraphicsPipeline(pPipeline, pMaterial, pRenderPass, static_cast<uint32_t>(nSubPassIdx))
+                CreateGraphicsPipeline(pPipeline, materialPass, pRenderPass, static_cast<uint32_t>(nSubPassIdx))
         );
     }
 
@@ -87,7 +95,7 @@ MVulkanPipelineManager::FindOrCreateComputePipeline(MComputeDispatcher* pCompute
     auto         findResult = m_pipelineTable.find(key);
     if (findResult != m_pipelineTable.end()) { return std::dynamic_pointer_cast<MComputePipeline>(findResult->second); }
 
-    const std::shared_ptr<MShaderProgram>& pShaderProgram = pComputeDispatcher->GetShaderProgram();
+    auto pShaderProgram = pComputeDispatcher->GetShaderProgram();
 
     if (!pShaderProgram)
     {
@@ -159,13 +167,13 @@ VkShaderStageFlags GetShaderStageFlags(MShaderProgram* program)
 }
 
 void MVulkanPipelineManager::GeneratePipelineLayout(
-        const std::shared_ptr<MPipeline>&      pPipeline,
-        const std::shared_ptr<MShaderProgram>& pShaderProgram
+        const std::shared_ptr<MPipeline>& pPipeline,
+        IShaderProgram*                   shaderProgram
 )
 {
     //const VkShaderStageFlags vkShaderStageFlags = GetShaderStageFlags(pShaderProgram.get());
     VkShaderStageFlags vkShaderStageFlags =
-            pShaderProgram->GetShader(MEShaderType::ECompute)
+            shaderProgram->GetShader(MEShaderType::ECompute)
                     ? (VK_SHADER_STAGE_COMPUTE_BIT)
                     : (VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_GEOMETRY_BIT);
 
@@ -174,9 +182,9 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
 
     for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
     {
-        std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = pShaderProgram->GetShaderPropertyBlocks()[unSetIdx];
+        std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = shaderProgram->GetShaderPropertyBlocks()[unSetIdx];
 
-        for (const std::shared_ptr<MShaderConstantParam>& param: pPropertyBlock->m_params)
+        for (const auto& param: pPropertyBlock->GetConstantParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -189,7 +197,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const std::shared_ptr<MShaderTextureParam>& param: pPropertyBlock->m_textures)
+        for (const auto& param: pPropertyBlock->GetTextureParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding = param->unBinding;
@@ -203,7 +211,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const std::shared_ptr<MShaderSampleParam>& param: pPropertyBlock->m_samples)
+        for (const auto& param: pPropertyBlock->GetSampleParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -219,7 +227,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const std::shared_ptr<MShaderStorageParam>& param: pPropertyBlock->m_storages)
+        for (const auto& param: pPropertyBlock->GetStorageParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -291,8 +299,57 @@ void MVulkanPipelineManager::DestroyComputePipeline(const std::shared_ptr<MCompu
     pComputePipeline->m_vkPipeline = nullptr;
 }
 
+VkBlendFactor ConvertBlendFactor(MEBlendFactor type)
+{
+    switch (type)
+    {
+        case MEBlendFactor::Zero: return VK_BLEND_FACTOR_ZERO;
+        case MEBlendFactor::One: return VK_BLEND_FACTOR_ONE;
+        case MEBlendFactor::SrcColor: return VK_BLEND_FACTOR_SRC_COLOR;
+        case MEBlendFactor::OneMinusSrcColor: return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        case MEBlendFactor::DstColor: return VK_BLEND_FACTOR_DST_COLOR;
+        case MEBlendFactor::OneMinusDstColor: return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        case MEBlendFactor::SrcAlpha: return VK_BLEND_FACTOR_SRC_ALPHA;
+        case MEBlendFactor::OneMinusSrcAlpha: return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        case MEBlendFactor::DstAlpha: return VK_BLEND_FACTOR_DST_ALPHA;
+        case MEBlendFactor::OneMinusDstAlpha: return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        default: MORTY_ASSERT(false);
+    }
+
+    return VK_BLEND_FACTOR_ZERO;
+}
+
+VkBlendOp ConvertBlendOp(MEBlendOp type)
+{
+    switch (type)
+    {
+        case MEBlendOp::Add: return VK_BLEND_OP_ADD;
+        case MEBlendOp::Subtract: return VK_BLEND_OP_SUBTRACT;
+        case MEBlendOp::ReverseSubtract: return VK_BLEND_OP_REVERSE_SUBTRACT;
+        case MEBlendOp::Min: return VK_BLEND_OP_MIN;
+        case MEBlendOp::Max: return VK_BLEND_OP_MAX;
+        default: MORTY_ASSERT(false);
+    }
+
+    return VK_BLEND_OP_ADD;
+}
+
+void ConvertBlendStage(VkPipelineColorBlendAttachmentState& result, MBlendState state)
+{
+    //Front
+    result.blendEnable = state.BlendEnable ? VK_TRUE : VK_FALSE;
+    result.colorWriteMask =
+            state.ColorWriteMask;// VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    result.dstColorBlendFactor = ConvertBlendFactor(state.DstColorBlend);
+    result.dstAlphaBlendFactor = ConvertBlendFactor(state.DstAlphaBlend);
+    result.srcColorBlendFactor = ConvertBlendFactor(state.SrcColorBlend);
+    result.srcAlphaBlendFactor = ConvertBlendFactor(state.SrcAlphaBlend);
+    result.colorBlendOp        = ConvertBlendOp(state.ColorBlendOp);
+    result.alphaBlendOp        = ConvertBlendOp(state.AlphaBlendOp);
+}
+
 void GetBlendStage(
-        const MMaterialTemplate*                          pMaterial,
+        const MMaterialPass*                              materialPass,
         const MRenderPass*                                pRenderPass,
         std::vector<VkPipelineColorBlendAttachmentState>& vBlendAttach,
         VkPipelineColorBlendStateCreateInfo&              blendInfo
@@ -303,125 +360,11 @@ void GetBlendStage(
     blendInfo.logicOpEnable = VK_FALSE;
     blendInfo.logicOp       = VK_LOGIC_OP_COPY;
 
-    MEMaterialType eType = pMaterial->GetMaterialType();
-
-    if (MEMaterialType::EDepthPeel == eType)
+    for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
     {
-        if (pRenderPass->m_renderTarget.backTargets.size() < 4) return;
-
-        vBlendAttach.resize(4);
-
-
-        {//Front
-            vBlendAttach[0].blendEnable    = VK_TRUE;
-            vBlendAttach[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            vBlendAttach[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-            vBlendAttach[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-            vBlendAttach[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            vBlendAttach[0].alphaBlendOp        = VK_BLEND_OP_ADD;
-        }
-        {//Back
-            vBlendAttach[1].blendEnable    = VK_TRUE;
-            vBlendAttach[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            vBlendAttach[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            vBlendAttach[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            vBlendAttach[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-            vBlendAttach[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[1].colorBlendOp        = VK_BLEND_OP_ADD;
-            vBlendAttach[1].alphaBlendOp        = VK_BLEND_OP_ADD;
-        }
-        {//Front Depth
-            vBlendAttach[2].blendEnable         = VK_TRUE;
-            vBlendAttach[2].colorWriteMask      = VK_COLOR_COMPONENT_R_BIT;
-            vBlendAttach[2].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[2].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[2].colorBlendOp        = VK_BLEND_OP_MIN;
-            vBlendAttach[2].alphaBlendOp        = VK_BLEND_OP_MIN;
-        }
-        {//Back Depth
-            vBlendAttach[3].blendEnable         = VK_TRUE;
-            vBlendAttach[3].colorWriteMask      = VK_COLOR_COMPONENT_R_BIT;
-            vBlendAttach[3].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[3].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[3].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[3].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            vBlendAttach[3].colorBlendOp        = VK_BLEND_OP_MAX;
-            vBlendAttach[3].alphaBlendOp        = VK_BLEND_OP_MAX;
-        }
-    }
-    else if (MEMaterialType::ETransparentBlend == eType)
-    {
-        for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
-        {
-            vBlendAttach.push_back({});
-            VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-            attachStage.blendEnable                          = VK_TRUE;
-            attachStage.colorWriteMask                       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-            attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.colorBlendOp        = VK_BLEND_OP_ADD;
-            attachStage.alphaBlendOp        = VK_BLEND_OP_MAX;
-        }
-    }
-    else if (MEMaterialType::EImGui == eType)
-    {
-        for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
-        {
-            vBlendAttach.push_back({});
-            VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-            attachStage.blendEnable                          = VK_TRUE;
-            attachStage.colorWriteMask                       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-            attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            attachStage.colorBlendOp        = VK_BLEND_OP_ADD;
-            attachStage.alphaBlendOp        = VK_BLEND_OP_ADD;
-        }
-    }
-    else if (MEMaterialType::ECustom == eType)
-    {
-        for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
-        {
-            vBlendAttach.push_back({});
-            VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-            attachStage.blendEnable                          = VK_TRUE;
-            attachStage.colorWriteMask                       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-            attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.colorBlendOp        = VK_BLEND_OP_ADD;
-            attachStage.alphaBlendOp        = VK_BLEND_OP_MAX;
-        }
-    }
-    else
-    {
-        for (uint32_t i = 0; i < pRenderPass->m_renderTarget.backTargets.size(); ++i)
-        {
-            vBlendAttach.push_back({});
-            VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
-            attachStage.blendEnable                          = VK_TRUE;
-            attachStage.colorWriteMask                       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            attachStage.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            attachStage.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            attachStage.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            attachStage.colorBlendOp        = VK_BLEND_OP_ADD;
-            attachStage.alphaBlendOp        = VK_BLEND_OP_ADD;
-        }
+        vBlendAttach.push_back({});
+        VkPipelineColorBlendAttachmentState& attachStage = vBlendAttach.back();
+        ConvertBlendStage(attachStage, materialPass->GetBlendState(i));
     }
 
     blendInfo.attachmentCount   = static_cast<uint32_t>(vBlendAttach.size());
@@ -467,20 +410,27 @@ void GetDepthStencilStage(const MRenderPass* pRenderPass, VkPipelineDepthStencil
 
 VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
         const std::shared_ptr<MPipeline>& pPipeline,
-        const MMaterialTemplate*          pMaterial,
+        const MMaterialPass*              materialPass,
         const MRenderPass*                pRenderPass,
         const uint32_t&                   nSubpassIdx
 )
 {
-    if (!pMaterial)
+    if (!materialPass)
     {
-        MORTY_ASSERT(pMaterial);
+        MORTY_ASSERT(materialPass);
+        return VK_NULL_HANDLE;
+    }
+
+    auto shaderProgram = materialPass->GetShaderProgram();
+    if (!shaderProgram)
+    {
+        MORTY_ASSERT(shaderProgram);
         return VK_NULL_HANDLE;
     }
 
     if (pPipeline->m_pipelineLayout.vkPipelineLayout == VK_NULL_HANDLE)
     {
-        GeneratePipelineLayout(pPipeline, pMaterial->GetShaderProgram());
+        GeneratePipelineLayout(pPipeline, shaderProgram);
     }
 
     VkPipelineLayout vkPipelineLayout = pPipeline->m_pipelineLayout.vkPipelineLayout;
@@ -491,7 +441,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
         return VK_NULL_HANDLE;
     }
 
-    MShader* pVertexShader = pMaterial->GetShaderProgram()->GetShader(MEShaderType::EVertex);
+    MShader* pVertexShader = shaderProgram->GetShader(MEShaderType::EVertex);
 
     if (nullptr == pVertexShader)
     {
@@ -503,12 +453,11 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
             {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_LINE_WIDTH};
 
     //variable rate shading
-    if (m_device->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading))
+    if (materialPass->GetEnableShadingRate() &&
+        m_device->GetDeviceFeatureSupport(MEDeviceFeature::EVariableRateShading) &&
+        m_device->GetPhysicalDevice()->m_vkShadingRateImageFeatures.pipelineFragmentShadingRate)
     {
-        if (m_device->GetPhysicalDevice()->m_vkShadingRateImageFeatures.pipelineFragmentShadingRate)
-        {
-            dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
-        }
+        dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
     }
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -537,22 +486,32 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
     viewportState.scissorCount                      = 1;
     viewportState.pScissors                         = &scissor;
 
+    MVertexShaderBuffer*                         pVertexShaderBuffer = nullptr;
 
     std::vector<VkPipelineShaderStageCreateInfo> vShaderStageCreateInfos;
     for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
     {
-        if (MShader* pShader = pMaterial->GetShaderProgram()->GetShader(MEShaderType(nIdx)))
+        const auto shaderType = MEShaderType(nIdx);
+        MStringId  entryName  = shaderProgram->GetEntryName(shaderType);
+        if (entryName.empty()) { continue; }
+
+        if (MShader* pShader = shaderProgram->GetShader(shaderType))
         {
-            if (nullptr == pShader->GetBuffer())
+            auto shaderBuffer = pShader->GetBuffer();
+            if (nullptr == shaderBuffer)
             {
                 MORTY_ASSERT(false);
                 return VK_NULL_HANDLE;
             }
-            vShaderStageCreateInfos.push_back(pShader->GetBuffer()->m_vkShaderStageInfo);
+
+            if (shaderType == MEShaderType::EVertex)
+            {
+                pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(shaderBuffer);
+            }
+
+            vShaderStageCreateInfos.push_back(shaderBuffer->m_vkShaderStageInfo);
         }
     }
-
-    auto* pVertexShaderBuffer = static_cast<MVertexShaderBuffer*>(pVertexShader->GetBuffer());
 
     VkPipelineVertexInputStateCreateInfo inputStateInfo = {};
     inputStateInfo                                      = VkPipelineVertexInputStateCreateInfo{};
@@ -579,7 +538,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
     conservativeRasterStateCI.conservativeRasterizationMode    = VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT;
     conservativeRasterStateCI.extraPrimitiveOverestimationSize = 0.0f;
 
-    if (pMaterial->GetConservativeRasterizationEnable())
+    if (materialPass->GetConservativeRasterizationEnable())
     {
         if (m_device->GetDeviceFeatureSupport(MEDeviceFeature::EConservativeRasterization))
         {
@@ -593,7 +552,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
         }
     }
 
-    switch (pMaterial->GetCullMode())
+    switch (materialPass->GetCullMode())
     {
         case MECullMode::ECullNone:
             rasterizationState.cullMode    = VK_CULL_MODE_NONE;
@@ -621,7 +580,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
     VkPipelineDepthStencilStateCreateInfo            depthStencilInfo = {};
 
     std::vector<VkPipelineColorBlendAttachmentState> vBlendAttach;
-    GetBlendStage(pMaterial, pRenderPass, vBlendAttach, blendInfo);
+    GetBlendStage(materialPass, pRenderPass, vBlendAttach, blendInfo);
 
     GetDepthStencilStage(pRenderPass, depthStencilInfo);
 
@@ -676,7 +635,7 @@ VkPipeline MVulkanPipelineManager::CreateGraphicsPipeline(
     m_device->SetDebugName(
             reinterpret_cast<uint64_t>(graphicsPipeline),
             VkObjectType::VK_OBJECT_TYPE_PIPELINE,
-            pMaterial->GetDebugName()
+            materialPass->GetDebugName()
     );
 #endif
 
@@ -699,7 +658,6 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(
         MORTY_ASSERT(vkPipelineLayout);
         return VK_NULL_HANDLE;
     }
-
 
     MShader* pComputeShader = pComputeDispatcher->GetComputeShader();
 
@@ -744,8 +702,6 @@ void MVulkanPipelineManager::AllocateShaderPropertyBlock(
         const MPipeline*      pPipeline
 )
 {
-    std::shared_ptr<MShaderProgram> pShaderProgram = pPropertyBlock->GetShaderProgram();
-
     if (pPropertyBlock->m_vkDescriptorSet)
     {
         m_device->GetRecycleBin()->DestroyDescriptorSetLater(pPropertyBlock->m_vkDescriptorSet);
@@ -794,11 +750,11 @@ void MVulkanPipelineManager::DestroyShaderPropertyBlockImpl(MShaderPropertyBlock
 }
 
 void MVulkanPipelineManager::BindConstantParam(
-        const std::shared_ptr<MShaderConstantParam> pParam,
-        VkWriteDescriptorSet&                       descriptorWrite
+        const MShaderConstantParam* pParam,
+        VkWriteDescriptorSet&       descriptorWrite
 )
 {
-    VkDescriptorBufferInfo& bufferInfo = pParam->m_vkBufferInfo;
+    const VkDescriptorBufferInfo& bufferInfo = pParam->m_vkBufferInfo;
     MORTY_ASSERT(VK_NULL_HANDLE != bufferInfo.buffer);
 
     descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -813,16 +769,13 @@ void MVulkanPipelineManager::BindConstantParam(
     descriptorWrite.pTexelBufferView = nullptr;// Optional
 }
 
-void MVulkanPipelineManager::BindTextureParam(
-        const std::shared_ptr<MShaderTextureParam> pParam,
-        VkWriteDescriptorSet&                      descriptorWrite
-)
+void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* param, VkWriteDescriptorSet& descriptorWrite)
 {
-    MTexturePtr pTexture = pParam->GetTexture();
+    MTexturePtr pTexture = param->GetTexture();
 
     if (!pTexture || pTexture->GetTextureRHI<MTextureRHIVulkan>()->vkImageView == VK_NULL_HANDLE)
     {
-        pTexture = GetDefaultTexture(pParam.get());
+        pTexture = GetDefaultTexture(param);
     }
 
     MORTY_ASSERT(pTexture);
@@ -830,7 +783,7 @@ void MVulkanPipelineManager::BindTextureParam(
     MORTY_ASSERT(textureRHI);
 
 
-    VkDescriptorImageInfo& imageInfo = pParam->m_vkImageInfo;
+    VkDescriptorImageInfo& imageInfo = param->m_vkImageInfo;
     imageInfo.imageView              = textureRHI->vkImageView;
     MORTY_ASSERT(textureRHI->vkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
 
@@ -845,10 +798,10 @@ void MVulkanPipelineManager::BindTextureParam(
     if (VK_NULL_HANDLE == imageInfo.sampler) { imageInfo.sampler = m_device->m_vkNearestSampler; }
 
     descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstBinding      = pParam->unBinding;
+    descriptorWrite.dstBinding      = param->unBinding;
     descriptorWrite.dstArrayElement = 0;
 
-    descriptorWrite.descriptorType  = pParam->m_vkDescriptorType;
+    descriptorWrite.descriptorType  = param->m_vkDescriptorType;
     descriptorWrite.descriptorCount = 1;
 
     descriptorWrite.pBufferInfo      = nullptr;
@@ -858,21 +811,19 @@ void MVulkanPipelineManager::BindTextureParam(
     //A VkDescripotrSet can only be updated once on per render. .
 }
 
-void MVulkanPipelineManager::BindStorageParam(
-        const std::shared_ptr<MShaderStorageParam> pParam,
-        VkWriteDescriptorSet&                      descriptorWrite
-)
+void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
-    const MBuffer* pBuffer = pParam->pBuffer;
+    const MBuffer* pBuffer   = pParam->pBuffer;
+    const auto*    bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
 
-    if (!pBuffer || !pBuffer->m_vkBuffer)
+    if (!pBuffer || !bufferRHI)
     {
-        MORTY_ASSERT(pBuffer && pBuffer->m_vkBuffer);
+        MORTY_ASSERT(pBuffer && bufferRHI);
         return;
     }
 
     VkDescriptorBufferInfo& bufferInfo = pParam->m_vkBufferInfo;
-    bufferInfo.buffer                  = pBuffer->m_vkBuffer;
+    bufferInfo.buffer                  = bufferRHI->vkBuffer;
     bufferInfo.offset                  = 0;
     bufferInfo.range                   = pBuffer->GetSize();
 

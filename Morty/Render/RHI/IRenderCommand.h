@@ -30,7 +30,7 @@ class MMaterialPipelineLayoutData;
 class MORTY_API IRenderCommand
 {
 public:
-    virtual ~IRenderCommand() = default;
+    virtual ~              IRenderCommand() = default;
 
     virtual void           RenderCommandBegin() = 0;
 
@@ -42,15 +42,16 @@ public:
 
     virtual bool           DispatchComputeJob(
                       MComputeDispatcher* pMaterial,
+                      const MStringId&    entryName,
                       const uint32_t&     nGroupX,
                       const uint32_t&     nGroupY,
                       const uint32_t&     nGroupZ
               ) = 0;
 
     virtual bool AddBufferMemoryBarrier(
-            const std::vector<const MBuffer*>& vBuffers,
-            MEBufferBarrierStage               srcStage,
-            MEBufferBarrierStage               dstStage
+            const std::vector<const MBufferRHI*>& vBuffers,
+            MEBufferBarrierStage                  srcStage,
+            MEBufferBarrierStage                  dstStage
     ) = 0;
 
     virtual bool DownloadTexture(
@@ -60,10 +61,6 @@ public:
     ) = 0;
 
     virtual bool         CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
-
-    virtual void         ResetBuffer(const MBuffer* pBuffer) = 0;
-
-    virtual void         UploadBuffer(MBuffer* pBuffer, const MByte* pData, size_t nSize) = 0;
 
     virtual bool         IsFinished() { return false; }
 

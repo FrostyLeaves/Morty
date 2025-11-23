@@ -24,13 +24,13 @@ class MORTY_API MColorGradingRenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MColorGradingRenderNode)
 
-    static const MStringId ColorGradingOutput;
+    static const MStringId     ColorGradingOutput;
 
-    void                   Release() override;
+    void                       Release() override;
 
-    MMaterialTemplatePtr   CreateMaterial() override;
+    std::shared_ptr<MMaterial> CreateMaterial() override;
 
-    void                   RenderSetup(const MRenderInfo& info) override;
+    void                       RenderSetup(const MRenderInfo& info) override;
 
 protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;

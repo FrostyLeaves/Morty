@@ -31,22 +31,22 @@ MRenderMeshComponent::MRenderMeshComponent()
 
 MRenderMeshComponent::~MRenderMeshComponent() {}
 
-void MRenderMeshComponent::Release() { Super::Release(); }
+void                   MRenderMeshComponent::Release() { Super::Release(); }
 
-void MRenderMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
+void                   MRenderMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 {
-    if (m_Material.GetResource() == pMaterial) return;
+    if (m_material.GetResource() == pMaterial) return;
 
-    m_Material = pMaterial;
+    m_material = pMaterial;
     SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
 }
 
 std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterialResource() const
 {
-    return m_Material.GetResource<MMaterialResource>();
+    return m_material.GetResource<MMaterialResource>();
 }
 
-std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial() { return m_Material.GetResource<MMaterial>(); }
+std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial() { return m_material.GetResource<MMaterial>(); }
 
 bool                       MRenderMeshComponent::SetMaterialPath(const MString& strPath)
 {
@@ -70,7 +70,7 @@ void MRenderMeshComponent::Load(std::shared_ptr<MResource> pResource)
 
     if (std::shared_ptr<MMeshResource> pMeshResource = MTypeClass::DynamicCast<MMeshResource>(pResource))
     {
-        m_Mesh.SetResource(pResource);
+        m_mesh.SetResource(pResource);
         SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
     }
 }
@@ -84,7 +84,7 @@ void MRenderMeshComponent::SetMeshResourcePath(const MString& strResourcePath)
 
 MIMesh* MRenderMeshComponent::GetMesh()
 {
-    std::shared_ptr<MMeshResource> pMeshResource = m_Mesh.GetResource<MMeshResource>();
+    std::shared_ptr<MMeshResource> pMeshResource = m_mesh.GetResource<MMeshResource>();
     if (!pMeshResource) return nullptr;
 
     return pMeshResource->GetMesh();
@@ -112,8 +112,8 @@ void MRenderMeshComponent::SetAttachedModelComponentID(MComponentID idx)
 flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)
 {
     auto                             fb_super    = Super::Serialize(fbb).o;
-    auto                             fb_material = m_Material.Serialize(fbb).o;
-    auto                             fb_mesh     = m_Mesh.Serialize(fbb).o;
+    auto                             fb_material = m_material.Serialize(fbb).o;
+    auto                             fb_mesh     = m_mesh.Serialize(fbb).o;
     fbs::MRenderMeshComponentBuilder builder(fbb);
 
     builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
@@ -134,9 +134,8 @@ void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
-    auto                             pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-
-    const fbs::MRenderMeshComponent* pComponent = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
+    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pComponent      = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
 
     Super::Deserialize(pComponent->super());
 

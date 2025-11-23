@@ -21,7 +21,7 @@ MResourceSystem::MResourceSystem()
     , m_searchPath({""})
 {}
 
-MResourceSystem::~MResourceSystem() {}
+MResourceSystem::~         MResourceSystem() {}
 
 std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
 {
@@ -74,7 +74,11 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
     if (iter != m_pathResources.end()) { return iter->second; }
 
     const MString strFullPath = GetFullPath(strResourcePath);
-    if (strFullPath.empty()) { return nullptr; }
+    if (strFullPath.empty())
+    {
+        GetEngine()->GetLogger()->Warning("Resource not found: [path: {}]", strResourcePath.c_str());
+        return nullptr;
+    }
 
     auto pLoader = CreateLoader(strResourcePath);
     if (!pLoader) { return nullptr; }

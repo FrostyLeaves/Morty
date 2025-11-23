@@ -6,13 +6,11 @@
 #include "Resource/MMaterialResourceData.h"
 #include "Resource/MMaterialTemplateResource.h"
 #include "Resource/MMaterialTemplateResourceData.h"
-#include "Resource/MShaderResource.h"
 #include "Resource/MTextureResource.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MTimer.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
-
 
 using namespace morty;
 
@@ -329,37 +327,34 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
         }
     }
 
-    static const std::vector<MString> vShaders = {"vs", "ps", "cs", "gs"};
-
-    for (const auto& name: vShaders)
     {
-        ShowValueBegin(name);
-        auto shader = pMaterial->GetShaderProgram()->GetShaderResource(MEShaderType::EVertex);
-        if (EditMResource(name, "Shader", MShaderResourceLoader::GetSuffixList(), shader))
+        ShowValueBegin("Shader");
+        if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
         {
-            pMaterial->GetShaderProgram()->LoadShader(shader);
+            MString strResPath =
+                    pMaterial->GetShaderResource()->GetResourcePath();
+            pMaterial->GetResourceSystem()->Reload(strResPath);
         }
         ShowValueEnd();
     }
 
+    for(const auto& pair : pMaterial->GetPasses())
     {
-        ShowValueBegin("Cull");
-        auto nCullType = static_cast<size_t>(pMaterial->GetCullMode());
-        if (EditEnum({"Wireframe", "CullNone", "CullBack", "ECullFront"}, nCullType))
-        {
-            pMaterial->SetCullMode(MECullMode(nCullType));
-        }
-        ShowValueEnd();
-    }
+        //pass name
+        ImGui::TextUnformatted(pair.first.ToString().c_str());
 
-    {
-        ShowValueBegin("Type");
-        auto nMaterialType = static_cast<size_t>(pMaterial->GetMaterialType());
-        if (EditEnum({"Default", "Transparent"}, nMaterialType))
+        if (auto pass = pair.second.get())
         {
-            pMaterial->SetMaterialType((MEMaterialType) nMaterialType);
+            {
+                ShowValueBegin("Cull");
+                auto nCullType = static_cast<size_t>(pass->GetCullMode());
+                if (EditEnum({"Wireframe", "CullNone", "CullBack", "ECullFront"}, nCullType))
+                {
+                    pass->SetCullMode(MECullMode(nCullType));
+                }
+                ShowValueEnd();
+            }
         }
-        ShowValueEnd();
     }
 
     return bModified;
@@ -381,7 +376,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
         ShowValueEnd();
     }
 
-    auto materialTemplate = MTypeClass::DynamicCast<MMaterialTemplateResource>(pMaterial->GetMaterialTemplate());
+    auto materialTemplate = MTypeClass::DynamicCast<MMaterialTemplateResource>(pMaterial->GetTemplate());
     ShowValueBegin("Material Template");
     if (EditMMaterialTemplateResource(materialTemplate))
     {
@@ -390,15 +385,13 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
     }
     ShowValueEnd();
 
-    /* TODO Material Refactor
     bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
 
     {
-        std::vector<std::shared_ptr<MShaderTextureParam>>& vParams = pMaterial->GetMaterialPropertyBlock()->m_textures;
+        auto& vParams = pMaterial->GetMaterialPropertyBlock()->GetTextureParams();
         for (unsigned int i = 0; i < vParams.size(); ++i)
         {
-            if (const std::shared_ptr<MTextureResourceParam>& param =
-                        std::dynamic_pointer_cast<MTextureResourceParam>(vParams[i]))
+            if (auto* param = dynamic_cast<MTextureResourceParam*>(vParams[i].get()))
             {
 
                 MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
@@ -434,15 +427,14 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
             }
         }
     }
-    */
 
     return bModified;
 }
 
-bool PropertyBase::EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty)
+bool PropertyBase::EditShaderProperty(MShaderPropertyBlock* pProperty)
 {
     bool bModified = false;
-    for (const auto& param: pProperty->m_params)
+    for (const auto& param: pProperty->GetConstantParams())
     {
         if (EditMVariant(param->strName.ToString(), param->var))
         {
@@ -568,7 +560,7 @@ void PropertyBase::EditSaveMResource(
 
         ImGui::SameLine();
 
-        MString btn_name = fmt::format("Save##_{}", reinterpret_cast<uint32_t>(ImGui::GetID(pResource.get())));
+        MString btn_name = fmt::format("Save##_{}", ImGui::GetID(pResource.get()));
 
         if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
         {

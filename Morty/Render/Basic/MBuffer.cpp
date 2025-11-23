@@ -4,9 +4,16 @@
 
 using namespace morty;
 
-MBuffer::MBuffer() {}
-
-MBuffer::~MBuffer() {}
+MBuffer::MBuffer(const MBuffer& other)
+{
+#if MORTY_DEBUG
+    m_strDebugName = other.m_strDebugName;
+#endif
+    m_unDataSize = other.m_unDataSize;
+    m_memoryType = other.m_memoryType;
+    m_usageType  = other.m_usageType;
+    m_stageType  = other.m_stageType;
+}
 
 MBuffer MBuffer::CreateBuffer(MMemoryType memory, uint32_t usage, const char* debugName)
 {
@@ -64,10 +71,7 @@ MBuffer MBuffer::CreateStorageBuffer(const char* debugName)
 
 const MBuffer& MBuffer::operator=(const MBuffer& other)
 {
-#if RENDER_GRAPHICS == MORTY_VULKAN
-    MORTY_ASSERT(m_vkBuffer == VK_NULL_HANDLE);
-    MORTY_ASSERT(m_vkDeviceMemory == VK_NULL_HANDLE);
-#endif
+    MORTY_ASSERT(m_bufferRHI == nullptr);
 
     m_memoryType = other.m_memoryType;
     m_usageType  = other.m_usageType;

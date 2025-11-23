@@ -13,7 +13,6 @@
 #include "MRenderTargetBindingWalker.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
-#include "Render/MeshRender/MIndirectIndexRenderable.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "TaskGraph/MTaskNodeOutput.h"
 #include "Utility/MStringId.h"
@@ -44,40 +43,6 @@ public:
     [[nodiscard]] size_t                               GetFinalOutputNodeIdx() const { return m_finalOutputNodeId; }
     [[nodiscard]] size_t                               GetFinalOutputSlotIdx() const { return m_finalOutputSlotId; }
 
-    void SetFrameProperty(const std::shared_ptr<IPropertyBlockAdapter>& pAdapter) { m_framePropertyAdapter = pAdapter; }
-
-    [[nodiscard]] const std::shared_ptr<IPropertyBlockAdapter>& GetFrameProperty() const
-    {
-        return m_framePropertyAdapter;
-    }
-
-    void SetCameraCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_cameraCullingResult = pAdapter; }
-
-    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetCameraCullingResult() const
-    {
-        return m_cameraCullingResult;
-    }
-
-    void SetShadowCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter) { m_shadowCullingResult = pAdapter; }
-
-    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetShadowCullingResult() const
-    {
-        return m_shadowCullingResult;
-    }
-
-    void SetVoxelizerCullingResult(const std::shared_ptr<MInstanceCulling>& pAdapter)
-    {
-        m_voxelizerCullingResult = pAdapter;
-    }
-
-    [[nodiscard]] const std::shared_ptr<MInstanceCulling>& GetVoxelizerCullingResult() const
-    {
-        return m_voxelizerCullingResult;
-    }
-
-    void                      SetTextureVRS(const MTexturePtr& pTexture) { m_vrsTexture = pTexture; }
-    [[nodiscard]] MTexturePtr GetTextureVRS() const { return m_vrsTexture; }
-
     void                      OnPreCompile() override;
     void                      OnPostCompile() override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
@@ -91,13 +56,7 @@ private:
 
     MEngine*                                    m_engine             = nullptr;
     std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting = nullptr;
-
-    std::shared_ptr<IPropertyBlockAdapter>      m_framePropertyAdapter   = nullptr;
-    std::shared_ptr<MInstanceCulling>           m_cameraCullingResult    = nullptr;
-    std::shared_ptr<MInstanceCulling>           m_shadowCullingResult    = nullptr;
-    std::shared_ptr<MInstanceCulling>           m_voxelizerCullingResult = nullptr;
     std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding    = nullptr;
-    MTexturePtr                                 m_vrsTexture             = nullptr;
     std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable          = {};
     size_t                                      m_finalOutputNodeId      = 0;
     size_t                                      m_finalOutputSlotId      = 0;

@@ -2,13 +2,10 @@
 
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Culling/MInstanceCulling.h"
 #include "Engine/MEngine.h"
-#include "MVRSTextureRenderNode.h"
 #include "Mesh/MMeshManager.h"
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Scene/MScene.h"
 
 #include "RHI/Command/MRenderPassCmd.h"
@@ -56,23 +53,10 @@ std::shared_ptr<IGBufferAdapter> MGBufferRenderNode::CreateGBuffer()
 
 void MGBufferRenderNode::Render(const MRenderInfo& info)
 {
-    const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+    MORTY_UNUSED(info);
     //Camera frustum culling.
 
-    //Render static mesh.
-    MCullingResultRenderable indirectMesh;
-    indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
-    indirectMesh.SetPropertyBlockAdapter({
-            GetRenderGraph()->GetFrameProperty(),
-    });
-
-    indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDeferred));
-    indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
-
-    Render(info,
-           {
-                   &indirectMesh,
-           });
+    //TODO
 }
 
 void MGBufferRenderNode::BindInOutTexture()

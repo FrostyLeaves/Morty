@@ -16,20 +16,24 @@ namespace morty
 class MStringId
 {
 public:
-    explicit MStringId() = default;
+    explicit                         MStringId() = default;
 
-    explicit MStringId(std::string_view strview);
+    explicit                         MStringId(std::string_view strview);
 
     bool                             operator==(const MStringId& other) const;
 
     bool                             operator<(const MStringId& other) const;
 
+    [[nodiscard]] bool               empty() const { return m_string == nullptr || m_string->empty(); }
+
     [[nodiscard]] size_t             Hash() const { return m_hash; }
 
     [[nodiscard]] const std::string& ToString() const { return *m_string; }
-    [[nodiscard]] const char*        c_str() const { return m_string->c_str(); }
+    [[nodiscard]] const char*        c_str() const { return m_string ? m_string->c_str() : ""; }
 
     [[nodiscard]] size_t             GetClashIndex() const;
+
+    static const MStringId           Empty;
 
 private:
     //read only

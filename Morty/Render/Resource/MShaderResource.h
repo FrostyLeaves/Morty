@@ -20,14 +20,13 @@ class MORTY_API MShaderResourceData : public MResourceData
 {
 public:
     //RawData
-    MEShaderType                     shaderType;
-    MString                          shaderPath;
-    MString                          entryName;
+    MEShaderLanguageType eLanguageType;
+    MString              strShaderPath;
 
 
-    void                             LoadBuffer(const std::vector<MByte>& buffer) override;
+    void                 LoadBuffer(const std::vector<MByte>& buffer) override;
 
-    [[nodiscard]] std::vector<MByte> SaveBuffer() const override;
+    std::vector<MByte>   SaveBuffer() const override;
 };
 
 class MORTY_API MShaderResource : public MResource
@@ -40,17 +39,15 @@ public:
     ~MShaderResource() override = default;
 
 public:
-    MShader*                   GetShaderByIndex(const int& nIndex);
+    MShader*     GetShaderByIndex(const int& nIndex);
 
-    int                        FindShaderByMacroParam(const MShaderMacro& macro);
+    int          FindShaderByMacroParam(const MStringId& entryName, MEShaderType shaderType, const MShaderMacro& macro);
 
-    [[nodiscard]] MEShaderType GetShaderType() const;
+    bool         Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-    bool                       Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+    bool         SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
-    bool                       SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
-
-    void                       OnDelete() override;
+    virtual void OnDelete() override;
 
 private:
     std::vector<MShader*>          m_shaders;
@@ -69,10 +66,12 @@ public:
                 MRenderGlobal::SUFFIX_PIXEL_SHADER,
                 MRenderGlobal::SUFFIX_COMPUTE_SHADER,
                 MRenderGlobal::SUFFIX_GEOMETRY_SHADER,
+                MRenderGlobal::SUFFIX_HLSL_SHADER,
+                MRenderGlobal::SUFFIX_SLANG_SHADER,
         };
     }
 
-    [[nodiscard]] const MType*     ResourceType() const override;
+    const MType*                   ResourceType() const override;
 
     std::unique_ptr<MResourceData> LoadResource(const MString& svFullPath) override;
 };

@@ -38,8 +38,8 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
             .height = static_cast<float>(n2Size.y)
     });
 
-    command.SetMaterial(m_material.get());
-    command.SetShaderPropertyBlock(GetRenderGraph()->GetFrameProperty()->GetPropertyBlock());
+    command.SetMaterial(m_material.get(), m_material->GetTemplate()->GetDefaultPass());
+    //command.SetShaderPropertyBlock(GetRenderGraph()->GetFrameProperty()->GetPropertyBlock());
     command.DrawMesh(pScreenMesh);
 
     pCommand->EndRenderPass(command);
@@ -47,7 +47,7 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
 
 void MBasicPostProcessRenderNode::BindInOutTexture()
 {
-    if (std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = m_material->GetMaterialPropertyBlock())
+    if (auto pPropertyBlock = m_material->GetMaterialPropertyBlock())
     {
         for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
         {

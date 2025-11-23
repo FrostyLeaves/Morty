@@ -10,6 +10,16 @@ const char* MRenderGlobal::SUFFIX_COMPUTE_SHADER = "mcs";
 
 const char* MRenderGlobal::SUFFIX_GEOMETRY_SHADER = "mgs";
 
+const char* MRenderGlobal::SUFFIX_SLANG_SHADER = "slang";
+
+const char* MRenderGlobal::SUFFIX_HLSL_SHADER = "hlsl";
+
+MStringId   MRenderGlobal::DEFAULT_PASS_NAME      = MStringId("Default");
+MStringId   MRenderGlobal::DEFAULT_VERTEX_ENTRY   = MStringId("VS_MAIN");
+MStringId   MRenderGlobal::DEFAULT_PIXEL_ENTRY    = MStringId("PS_MAIN");
+MStringId   MRenderGlobal::DEFAULT_COMPUTE_ENTRY  = MStringId("CS_MAIN");
+MStringId   MRenderGlobal::DEFAULT_GEOMETRY_ENTRY = MStringId("GS_MAIN");
+
 MStringId   MRenderGlobal::SHADER_SKELETON_ENABLE               = MStringId("SKELETON_ENABLE");
 MStringId   MRenderGlobal::DRAW_MESH_INSTANCING_NONE            = MStringId("DRAW_MESH_INSTANCING_NONE");
 MStringId   MRenderGlobal::DRAW_MESH_INSTANCING_UNIFORM         = MStringId("DRAW_MESH_INSTANCING_UNIFORM");

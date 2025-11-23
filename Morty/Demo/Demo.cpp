@@ -1,7 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
-#include "SDL.h"
-#include <fstream>
 
 #include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
@@ -22,15 +20,6 @@
 
 
 #include "System/MObjectSystem.h"
-#include "Test/BasicTransform.h"
-#include "Test/EnvironmentCubemap.h"
-#include "Test/Floor.h"
-#include "Test/GPUDrivenCulling.h"
-#include "Test/LoadModel.h"
-#include "Test/LoadModel_Sponza.h"
-#include "Test/Pbr.h"
-#include "Test/ShadowMap.h"
-#include "Test/VXGI.h"
 
 using namespace morty;
 
@@ -60,20 +49,8 @@ int main()
     renderView.AppendContent(&editor);
 
     //create a scene.
-    auto* pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
+    auto pScene = engine.FindSystem<MObjectSystem>()->CreateObject<MScene>();
     editor.SetScene(pScene);
-
-    ADD_DIRECTIONAL_LIGHT(&engine, pScene);
-    //CREATE_FLOOR_GRID(&engine, pScene);
-    //ENVIRONMENT_CUBEMAP_TEST(&engine, pScene);
-    SHADOW_MAP_TEST(&engine, pScene);
-    //PBR_SHPERE(&engine, pScene);
-    //LOAD_MODEL_ANIMATION_TEST(&engine, pScene);
-    //	LOAD_MODEL_TRANSLATION_TEST(&engine, pScene);
-    //LOAD_MODEL_SPONZA_TEST(&engine, pScene);
-    //GPU_DRIVEN_CULLING_TEST(&engine, pScene);
-    //	TRANSFORM_SPHERE_GENERATE(&engine, pScene);
-    //VXGI_TEST(&engine, pScene);
 
 
     //start run

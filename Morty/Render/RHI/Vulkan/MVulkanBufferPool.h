@@ -36,9 +36,9 @@ public:
 
     void     Release();
 
-    bool     AllowBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    bool     AllowBufferMemory(MShaderConstantParam* pParam);
 
-    void     FreeBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    void     FreeBufferMemory(MShaderConstantParam* pParam);
 
     bool     AllowReadBackBuffer(const uint32_t& unMemorySize, uint32_t& unBufferID, MemoryInfo& info);
 
@@ -53,13 +53,13 @@ public:
     VkBuffer GetReadBackBuffer() { return m_vkReadBackBuffer; }
 
 protected:
-    bool AllowUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    bool AllowUniformBufferMemory(MShaderConstantParam* pParam);
 
-    bool AllowDynamicUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    bool AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam);
 
-    void FreeUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    void FreeUniformBufferMemory(MShaderConstantParam* pParam);
 
-    void FreeDynamicUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam);
+    void FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam);
 
 
 private:
@@ -68,7 +68,7 @@ private:
     uint32_t                                                    m_unMinUboAlignment;
     uint32_t                                                    m_unDynamicUniformBufferMemorySize;
     MMemoryPool                                                 m_DynamicUniformMemoryPool;
-    std::map<std::shared_ptr<MShaderConstantParam>, MemoryInfo> m_dynamicUniformMemory;
+    std::map<MShaderConstantParam*, MemoryInfo> m_dynamicUniformMemory;
 
     VkBuffer                                                    m_vkDynamicUniformBuffer;
     VkDeviceMemory                                              m_vkDynamicUniformMemory;

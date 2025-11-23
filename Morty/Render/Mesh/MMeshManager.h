@@ -23,12 +23,9 @@ class MMeshManager : public MObject
     MORTY_CLASS(MMeshManager)
 public:
     explicit MMeshManager();
+    void     OnCreated() override;
+    void     OnDelete() override;
 
-    virtual void OnCreated() override;
-
-    virtual void OnDelete() override;
-
-public:
     struct MClusterData {
         MemoryInfo    indexInfo;
         MBoundsSphere boundsShpere;
@@ -43,26 +40,26 @@ public:
     };
 
 public:
-    bool             RegisterMesh(MIMesh* pMesh);
+    bool                           RegisterMesh(MIMesh* pMesh);
 
-    void             UnregisterMesh(MIMesh* pMesh);
+    void                           UnregisterMesh(MIMesh* pMesh);
 
-    bool             HasMesh(MIMesh* pMesh) const;
+    bool                           HasMesh(MIMesh* pMesh) const;
 
-    const MMeshData& FindMesh(MIMesh* pMesh) const;
+    const MMeshData&               FindMesh(MIMesh* pMesh) const;
 
-    MIMesh*          GetScreenRect() const;
+    [[nodiscard]] MIMesh*          GetScreenRect() const;
 
-    MIMesh*          GetSkyBox() const;
+    [[nodiscard]] MIMesh*          GetSkyBox() const;
 
-    const MMeshData& GetCubeMesh() const;
+    [[nodiscard]] const MMeshData& GetCubeMesh() const;
 
 public:
-    const MBuffer*                      GetVertexBuffer() const { return &m_vertexBuffer; }
+    [[nodiscard]] const MBuffer*                      GetVertexBuffer() const { return &m_vertexBuffer; }
 
-    const MBuffer*                      GetIndexBuffer() const { return &m_indexBuffer; }
+    [[nodiscard]] const MBuffer*                      GetIndexBuffer() const { return &m_indexBuffer; }
 
-    std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
+    [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
     void                                InitializeScreenRect();

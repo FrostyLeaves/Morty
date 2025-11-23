@@ -9,21 +9,20 @@
 #pragma once
 
 #include "Material/MMaterialTemplate.h"
+#include "Material/MMaterialPass.h"
 
 namespace morty
 {
 
 struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData {
     //RawData
-    std::array<MPath, size_t(MEShaderType::TOTAL_NUM)> vShaders;
+    MPath     shaderPath;
+    MShaderMacro                                           shaderMacro;
+    std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>> materialPasses;
 
-    MShaderMacro                                       shaderMacro;
-    MEMaterialType                                     eMaterialType;
-    MECullMode                                         eCullMode;
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
 
-    flatbuffers::Offset<void>                          Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-
-    void                                               Deserialize(const void* pBufferPointer) override;
+    void                      Deserialize(const void* pBufferPointer) override;
 };
 
 

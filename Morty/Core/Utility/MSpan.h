@@ -2,9 +2,10 @@
 
 #if __cplusplus >= 202002L
 #include <span>
-namespace morty
-{
-template<typename ElementType, std::size_t Extent> using MSpan = std::span<ElementType, Extent>;
+
+namespace morty {
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
+    using MSpan = std::span<ElementType, Extent>;
 }
 #else
 

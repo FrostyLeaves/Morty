@@ -16,20 +16,25 @@
 namespace morty
 {
 
-enum class MEShaderType
-{
-    EVertex   = 0,
-    EPixel    = 1,
-    ECompute  = 2,
-    EGeometry = 3,
 
-    TOTAL_NUM,
-    ENone = 0xffff,
+enum class MEShaderLanguageType
+{
+    HLSL = 0,
+    Slang,
+};
+
+struct MORTY_API MEntryNameGroup
+{
+    MEntryNameGroup()  = default;
+    ~MEntryNameGroup() = default;
+
+    std::array<MStringId, 4> array;
 };
 
 
 class MIDevice;
 class MShaderBuffer;
+
 class MORTY_API MShader
 {
 public:
@@ -37,30 +42,36 @@ public:
 
     virtual ~MShader() = default;
 
-    bool                              CompileShader(MIDevice* pDevice);
+    bool CompileShader(MIDevice* pDevice);
 
-    void                              CleanShader(MIDevice* pDevice);
+    void CleanShader(MIDevice* pDevice);
 
-    [[nodiscard]] MEShaderType        GetType() const { return m_shaderType; }
+    const MStringId& GetEntryName() const { return m_entryName; }
 
-    [[nodiscard]] const MShaderMacro& GetMacro() const { return m_shaderMacro; }
+    [[nodiscard]] MEShaderType GetShaderType() const { return m_shaderType; }
 
-    [[nodiscard]] const MString&      GetShaderPath() const { return m_shaderPath; }
+    [[nodiscard]] MEShaderLanguageType GetLanguageType() const { return m_languageType; }
 
-    [[nodiscard]] const MString&      GetEntryName() const { return m_entryName; }
+    const MShaderMacro& GetMacro() { return m_ShaderMacro; }
 
-    void                              SetBuffer(MShaderBuffer* pShaderBuffer) { m_shaderBuffer = pShaderBuffer; }
+    const MString& GetShaderPath() { return m_strShaderPath; }
 
-    MShaderBuffer*                    GetBuffer() { return m_shaderBuffer; }
+    void SetBuffer(MShaderBuffer* shaderBuffer);
+
+    [[nodiscard]] MShaderBuffer* GetBuffer() const;
+
+    [[nodiscard]] bool IsCompiled() const { return m_compiled; }
 
 private:
     friend class MShaderResource;
 
-    MShaderMacro   m_shaderMacro;
-    MString        m_shaderPath;
-    MString        m_entryName;
-    MEShaderType   m_shaderType   = MEShaderType::ENone;
-    MShaderBuffer* m_shaderBuffer = nullptr;
+    MShaderMacro         m_ShaderMacro;
+    MStringId            m_entryName;
+    MString              m_strShaderPath;
+    MEShaderType         m_shaderType   = MEShaderType::EVertex;
+    MEShaderLanguageType m_languageType = MEShaderLanguageType::HLSL;
+    MShaderBuffer*       m_shaderBuffer = nullptr;
+    bool                 m_compiled     = false;
 };
 
 }// namespace morty

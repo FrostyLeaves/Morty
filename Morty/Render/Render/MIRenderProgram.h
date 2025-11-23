@@ -27,18 +27,18 @@ struct MShaderConstantParam;
 class MORTY_API MIRenderProgram : public MObject
 {
 public:
-    MORTY_INTERFACE(MIRenderProgram);
+                             MORTY_INTERFACE(MIRenderProgram);
 
-    void                  SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
+    void                     SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
 
-    MViewport*            GetViewport() { return m_viewport; }
+    [[nodiscard]] MViewport* GetViewport() const { return m_viewport; }
 
-    virtual void          Render(IRenderCommand* pPrimaryCommand) = 0;
+    virtual void             Render(IRenderCommand* pPrimaryCommand) = 0;
 
-    virtual MRenderGraph* GetRenderGraph() = 0;
+    virtual MRenderGraph*    GetRenderGraph() = 0;
 
-    virtual void          LoadGraph(const std::vector<MByte>& buffer) = 0;
-    virtual void          SaveGraph(std::vector<MByte>& output)       = 0;
+    virtual void             LoadGraph(const std::vector<MByte>& buffer) = 0;
+    virtual void             SaveGraph(std::vector<MByte>& output)       = 0;
 
 private:
     MViewport* m_viewport = nullptr;

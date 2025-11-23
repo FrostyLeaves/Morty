@@ -11,26 +11,29 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MBlurRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId      BlurOffsetName    = MStringId("Gaussian Blur Offset");
-const MStringId      BlurDirectionName = MStringId("Gaussian Blur Vertical");
+const MStringId            BlurOffsetName    = MStringId("Gaussian Blur Offset");
+const MStringId            BlurDirectionName = MStringId("Gaussian Blur Vertical");
 
-MMaterialTemplatePtr MBlurRenderNode::CreateMaterial()
+std::shared_ptr<MMaterial> MBlurRenderNode::CreateMaterial()
 {
     auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     auto pBlurMaterial = pResourceSystem->FindResource<MMaterialTemplate>("blur");
+    
+    //TODO
+    /*
     if (pBlurMaterial == nullptr)
     {
         pBlurMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("blur");
         std::shared_ptr<MResource> pVertexShader =
                 pResourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mvs");
         std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mps");
-        pBlurMaterial->LoadShader(pVertexShader);
-        pBlurMaterial->LoadShader(pPixelShader);
+        pBlurMaterial->LoadShader(pVertexShader, MEShaderType::EVertex, MRenderGlobal::DEFAULT_VERTEX_ENTRY);
+        pBlurMaterial->LoadShader(pPixelShader, MEShaderType::EPixel, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
         pBlurMaterial->SetCullMode(MECullMode::ECullNone);
     }
-
-    return pBlurMaterial;
+    */
+    return MMaterial::CreateMaterial(pBlurMaterial);
 }
 
 void MBlurRenderNode::RenderSetup(const MRenderInfo& info)
@@ -46,7 +49,7 @@ void MBlurRenderNode::RenderSetup(const MRenderInfo& info)
                 Vector2(bVertical ? 0 : (fOffset / info.f2ViewportSize.x),
                         bVertical ? (fOffset / info.f2ViewportSize.y) : 0);
 
-        m_material->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::POSTPROCESS_BLUR_OFFSET, f2Offset);
+        m_material->SetValue(MShaderPropertyName::POSTPROCESS_BLUR_OFFSET, f2Offset);
     }
 }
 

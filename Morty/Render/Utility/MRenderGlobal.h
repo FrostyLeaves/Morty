@@ -16,6 +16,8 @@
 #include "RHI/Vulkan/MVulkanWrapper.h"
 #endif
 
+#include "Flatbuffer/MRenderGlobal_generated.h"
+
 #define GPU_CULLING_ENABLE  (false)
 #define MORTY_VXGI_ENABLE   (false)
 #define VRS_OPTIMIZE_ENABLE (false)
@@ -23,7 +25,6 @@
 namespace morty
 {
 class MTexture;
-class MMaterial;
 
 class MORTY_API MRenderGlobal
 {
@@ -47,12 +48,18 @@ public:
 
     static constexpr int      MESH_LOD_LEVEL_RANGE = 3;
 
-    static constexpr int      ATLAS_TEX_ARRAY_SIZE_DEFAULT = 64;
-
     static const char*        SUFFIX_VERTEX_SHADER;
     static const char*        SUFFIX_PIXEL_SHADER;
     static const char*        SUFFIX_COMPUTE_SHADER;
     static const char*        SUFFIX_GEOMETRY_SHADER;
+    static const char*        SUFFIX_SLANG_SHADER;
+    static const char*        SUFFIX_HLSL_SHADER;
+
+    static MStringId          DEFAULT_PASS_NAME;
+    static MStringId          DEFAULT_VERTEX_ENTRY;
+    static MStringId          DEFAULT_PIXEL_ENTRY;
+    static MStringId          DEFAULT_COMPUTE_ENTRY;
+    static MStringId          DEFAULT_GEOMETRY_ENTRY;
 
     static constexpr int      CASCADED_SHADOW_MAP_NUM  = 4;
     static constexpr int      VOXEL_GI_CLIP_MAP_NUM    = 6;
@@ -83,13 +90,17 @@ public:
     static constexpr int      THREAD_ID_SUBMIT = 3;
 };
 
+using MECullMode           = fbs::MECullMode;
+using MEDepthFunc          = fbs::MEDepthFunc;
+using MEShaderType         = fbs::MEShaderType;
+using MEBlendFactor        = fbs::MEBlendFactor;
+using MEBlendOp            = fbs::MEBlendOp;
+using MEStencilOp          = fbs::MEStencilOp;
 using MMeshInstanceKey     = size_t;
 using MSkeletonInstanceKey = size_t;
 using MTexturePtr          = std::shared_ptr<MTexture>;
 using MTextureArray        = std::vector<MTexturePtr>;
-using MMaterialPtr         = std::shared_ptr<MMaterial>;
-using MResourcePtr         = std::shared_ptr<class MResource>;
-using MMaterialTemplatePtr = std::shared_ptr<class MMaterialTemplate>;
+using MEntryNames          = std::array<MStringId, static_cast<int>(MEShaderType::TOTAL_NUM)>;
 
 enum class MECameraType
 {
@@ -133,6 +144,16 @@ struct MShadingRateType {
     static constexpr MByte Rate_4X2 = 9;
     static constexpr MByte Rate_4X4 = 10;
 };
+
+struct MShaderUsageMask {
+    static constexpr uint8_t Vertex   = 1 << static_cast<uint8_t>(MEShaderType::EVertex);
+    static constexpr uint8_t Pixel    = 1 << static_cast<uint8_t>(MEShaderType::EPixel);
+    static constexpr uint8_t Compute  = 1 << static_cast<uint8_t>(MEShaderType::ECompute);
+    static constexpr uint8_t Geometry = 1 << static_cast<uint8_t>(MEShaderType::EGeometry);
+};
+
+template<class VERTEX_TYPE> inline size_t             AttributeProtectMask() { return 0; }
+template<class VERTEX_TYPE> inline std::vector<float> SimplifyWeight() { return {}; }
 
 
 }// namespace morty

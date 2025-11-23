@@ -12,6 +12,7 @@
 #include "Resource/MResource.h"
 #include "Resource/MTextureResource.h"
 
+#include "IShaderProgram.h"
 #include "MShaderBuffer.h"
 #include "MShaderMacro.h"
 #include "Shader/MShader.h"
@@ -22,19 +23,17 @@ namespace morty
 
 struct MORTY_API MTextureResourceParam : public MShaderTextureParam {
 public:
-    MTextureResourceParam();
+                MTextureResourceParam();
 
-    MTextureResourceParam(const MShaderTextureParam& param);
+    explicit    MTextureResourceParam(const MShaderTextureParam& param);
+    void        SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
+    void        SetTexture(MTexturePtr pTexture) override;
+    MTexturePtr GetTexture() override;
 
-    void                                 SetTexture(MTexturePtr pTexture) override;
 
-    MTexturePtr                          GetTexture() override;
+    [[nodiscard]] std::unique_ptr<MShaderTextureParam> Clone() const override;
 
-    std::shared_ptr<MShaderTextureParam> Clone() const override;
-
-    void                                 SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
-
-    std::shared_ptr<MTextureResource>    GetTextureResource() const
+    [[nodiscard]] std::shared_ptr<MTextureResource>    GetTextureResource() const
     {
         return m_TextureRef.GetResource<MTextureResource>();
     }
@@ -45,96 +44,89 @@ private:
 
 class MShader;
 class MShaderResource;
-class MORTY_API MShaderProgram : public MTypeClass
+
+class MORTY_API MShaderProgram : public IShaderProgram
 {
-public:
-    enum class EUsage
-    {
-        EUnknow,
-        EGraphics,
-        ECompute,
-    };
 
 public:
     MORTY_CLASS(MShaderProgram)
 
-public:
     explicit MShaderProgram() = default;
-    explicit MShaderProgram(MEngine* pEngine, EUsage usage);
+    explicit MShaderProgram(
+            MEngine*                          pEngine,
+            EUsage                            usage,
+            const std::shared_ptr<MResource>& shader,
+            const MShaderMacro&               macro,
+            const MEntryNames&                entryNames,
+            uint8_t                           shaderMask
+    );
 
-    ~MShaderProgram() override = default;
+    ~                                        MShaderProgram() override;
 
-public:
-    static std::shared_ptr<MShaderProgram> MakeShared(MEngine* pEngine, EUsage usage);
-
-    void                                   InitializeShaderPropertyBlock();
-
-public:
-    bool                       LoadShader(const std::shared_ptr<MResource>& pResource);
-
-    std::shared_ptr<MResource> GetShaderResource(MEShaderType eType) const
+    [[nodiscard]] std::shared_ptr<MResource> GetShaderResource() const override
     {
-        return m_shaders[size_t(eType)].resource.GetResource();
+        return m_shaderResource.GetResource();
     }
 
-    MShader*      GetShader(MEShaderType eType) const { return m_shaders[size_t(eType)].pShader; }
+    [[nodiscard]] MShader*  GetShader(MEShaderType eType) override;
+    MShaderMacro&           GetShaderMacro() override { return m_shaderMacro; }
+    [[nodiscard]] MStringId GetEntryName(MEShaderType shaderTYpe) const override;
 
-    void          SetShaderMacro(const MShaderMacro& macro);
+    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
+                            GetShaderPropertyBlocks() override;
 
-    MShaderMacro& GetShaderMacro() { return m_ShaderMacro; }
+    [[nodiscard]] MHashCode GetHashCode() const override;
+    [[nodiscard]] bool      IsValid() const override;
 
-    const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
-    GetShaderPropertyBlocks() const
-    {
-        return m_shaderSets;
-    }
+private:
+    void        InitializeShaderPropertyBlock();
+    bool        LoadShader(const std::shared_ptr<MResource>& pResource);
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks()
-    {
-        return m_shaderSets;
-    }
+    void        UnloadShader();
 
-    EUsage GetUsage() const { return m_usage; }
-
-public:
-    std::shared_ptr<MShaderProgram> GetShared() const;
-
-    void                            BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
-
-    void                            UnbindShaderBuffer(const MEShaderType& eType);
-
-    void                            ClearShader();
-
-    static void                     CopyShaderParams(
-                                MEngine*                                           pEngine,
-                                const std::shared_ptr<MShaderPropertyBlock>&       target,
-                                const std::shared_ptr<const MShaderPropertyBlock>& source
-                        );
+    static void CopyShaderParams(
+            MEngine*                                           pEngine,
+            const std::shared_ptr<MShaderPropertyBlock>&       target,
+            const std::shared_ptr<const MShaderPropertyBlock>& source
+    );
 
     std::shared_ptr<MShaderPropertyBlock> AllocShaderPropertyBlock(size_t nSetIdx);
 
     void ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock);
 
 protected:
-    MEngine* GetEngine() const { return m_engine; }
+    [[nodiscard]] MEngine* GetEngine() const { return m_engine; }
+
+    void                   CompileShaderIfNeed();
+
+    void                   BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
+    void                   UnbindShaderBuffer(const MEShaderType& eType, MIDevice* device);
 
     std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
     std::set<std::shared_ptr<MShaderPropertyBlock>> m_shaderPropertyBlockInstance;
 
-    std::weak_ptr<MShaderProgram>                   m_selfPointer;
 
-
-    struct MShaderDesc {
-        MResourceRef resource   = {};
-        MShader*     pShader    = nullptr;
-        int          nShaderIdx = 0;
+    enum ShaderState
+    {
+        Unknow = 0,
+        Compiled,
+        Failed
     };
 
-    std::array<MShaderDesc, size_t(MEShaderType::TOTAL_NUM)> m_shaders;
+    struct CompiledShader {
+        MShader*    pShader    = nullptr;
+        int         nShaderIdx = 0;
+        ShaderState state      = ShaderState::Unknow;
+    };
 
-    MShaderMacro                                             m_ShaderMacro;
-    MEngine*                                                 m_engine = nullptr;
-    EUsage                                                   m_usage  = EUsage::EUnknow;
+    MResourceRef                                                 m_shaderResource;
+    MShaderMacro                                                 m_shaderMacro;
+    MEngine*                                                     m_engine = nullptr;
+    EUsage                                                       m_usage  = EUsage::EUnknow;
+    MEntryNames                                                  m_entryNames;
+    uint8_t                                                      m_shaderMask;
+
+    std::array<CompiledShader, (size_t) MEShaderType::TOTAL_NUM> m_compiledShaders;
 };
 
 }// namespace morty

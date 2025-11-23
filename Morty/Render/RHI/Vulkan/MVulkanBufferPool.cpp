@@ -71,7 +71,7 @@ void MVulkanBufferPool::Release()
     m_device->DestroyBuffer(m_vkReadBackBuffer, m_vkReadBackMemory);
 }
 
-bool MVulkanBufferPool::AllowBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+bool MVulkanBufferPool::AllowBufferMemory(MShaderConstantParam* pParam)
 {
     if (!pParam) return false;
 
@@ -83,7 +83,7 @@ bool MVulkanBufferPool::AllowBufferMemory(const std::shared_ptr<MShaderConstantP
     return false;
 }
 
-bool MVulkanBufferPool::AllowUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+bool MVulkanBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pParam)
 {
     uint32_t       unSize = static_cast<uint32_t>(pParam->var.GetSize());
 
@@ -123,7 +123,7 @@ bool MVulkanBufferPool::AllowUniformBufferMemory(const std::shared_ptr<MShaderCo
     return true;
 }
 
-bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam)
 {
     if (pParam->m_vkBuffer != VK_NULL_HANDLE)
     {
@@ -162,7 +162,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(const std::shared_ptr<MS
     return true;
 }
 
-void MVulkanBufferPool::FreeBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+void MVulkanBufferPool::FreeBufferMemory(MShaderConstantParam* pParam)
 {
     if (!pParam) return;
 
@@ -200,7 +200,7 @@ void   MVulkanBufferPool::FreeDynamicUniformMemory(MemoryInfo& info) { m_Dynamic
 
 size_t MVulkanBufferPool::GetDynamicUniformMemorySize() const { return m_DynamicUniformMemoryPool.GetMaxMemorySize(); }
 
-void   MVulkanBufferPool::FreeUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+void   MVulkanBufferPool::FreeUniformBufferMemory(MShaderConstantParam* pParam)
 {
     vkUnmapMemory(m_device->m_vkDevice, pParam->m_vkBufferMemory);
     pParam->m_memoryMapping = nullptr;
@@ -214,7 +214,7 @@ void   MVulkanBufferPool::FreeUniformBufferMemory(const std::shared_ptr<MShaderC
     pParam->m_vkBufferInfo   = {};
 }
 
-void MVulkanBufferPool::FreeDynamicUniformBufferMemory(const std::shared_ptr<MShaderConstantParam>& pParam)
+void MVulkanBufferPool::FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam)
 {
     auto findResult = m_dynamicUniformMemory.find(pParam);
     if (findResult != m_dynamicUniformMemory.end())

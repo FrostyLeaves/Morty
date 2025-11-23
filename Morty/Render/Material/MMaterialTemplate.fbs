@@ -1,36 +1,15 @@
 include "Resource/MResourceRef.fbs";
 include "Variant/MVariant.fbs";
 include "Shader/MShaderMacro.fbs";
+include "Material/MMaterialPass.fbs";
 
 namespace morty.fbs;
 
-enum MECullMode: byte
-{
-	EWireframe = 0,
-	ECullNone = 1,
-	ECullBack = 2,
-	ECullFront = 3,
-}
-
-enum MEMaterialType: byte
-{
-	EDefault = 0,
-	EDepthPeel = 1,
-	ETransparentBlend = 2,
-	EOutline = 3,
-	EImGui = 4,
-	EDeferred = 5,
-}
-
 table MMaterialTemplate
 {
-    vertex_resource: string;
-    pixel_resource: string;
-
-    rasterizer_type: MECullMode;
-    material_type: MEMaterialType;
-    
+    shader_resource: string;    
 	material_macro: MShaderMacro;
+    material_pass: [MMaterialPass];
 }
 
 root_type MMaterialTemplate;

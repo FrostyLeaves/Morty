@@ -5,6 +5,7 @@
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MFileHelper.h"
+#include "Utility/MUtils.h"
 
 using namespace morty;
 
@@ -146,6 +147,11 @@ void MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
 
     m_resource = pResource;
     if (m_resource) { m_resource->m_keeper.push_back(this); }
+}
+
+MHashCode MResourceRef::GetHashCode() const
+{
+    return MUtils::Hash(GetResourcePath());
 }
 
 const MResourceRef& MResourceRef::operator=(const MResourceRef& keeper)

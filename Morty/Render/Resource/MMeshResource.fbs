@@ -4,7 +4,8 @@ include "Math/Matrix.fbs";
 include "Utility/MBoundsOBB.fbs";
 include "Utility/MBoundsSphere.fbs";
 include "Model/MSkeleton.fbs";
-include "Resource/MResourceRef.fbs";
+include "Utility/MRenderGlobal.fbs";
+include "Mesh/MCluster.fbs";
 
 namespace morty.fbs;
 
@@ -23,6 +24,10 @@ table MMeshResource
 
     vertex: [byte];
     index: [uint];
+
+    cluster: [MCluster];
+    group: [MClusterGroup];
+    lod: [MSlice];
 }
 
 root_type MMeshResource;

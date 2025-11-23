@@ -30,8 +30,6 @@ public:
     void Render(const MRenderInfo& info) override;
     void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
-    [[nodiscard]] std::shared_ptr<IGetTextureAdapter> GetShadowMap() const;
-
 protected:
     void                               OnCreated() override;
 

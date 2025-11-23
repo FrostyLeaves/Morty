@@ -1,4 +1,5 @@
 import os
+import re
 import reflector_collector
 
 template_document_head = """#include "Render/RenderGraph/MRenderGraph.h"
@@ -68,11 +69,6 @@ class ReflectorAttr:
 class Collector(reflector_collector.Basic):
     
     m_node_table = {}
-
-    m_replace_table = {
-        "std::shared_ptr<MResource>": "MResource",
-        "std::shared_ptr<MMaterialResource>": "MMaterialResource",
-    }
     
     def __init__(self):
         reflector_collector.Basic.__init__(self)
@@ -80,6 +76,15 @@ class Collector(reflector_collector.Basic):
 
     def check_attr(self, attr_node) -> bool:
         return attr_node == "RenderNodeProperty"
+    
+    def process_property_type(self, property_type):
+        # std::shared_ptr<T>
+        shared_ptr_pattern = r'std::shared_ptr<MResource(.+)>'
+        match = re.match(shared_ptr_pattern, property_type)
+        if match:
+            # 提取尖括号内的类型
+            return 'MResource' + match.group(1)
+        return property_type
 
     def add_node(self, node, parent, _class_name):
 
@@ -92,8 +97,8 @@ class Collector(reflector_collector.Basic):
         property_name = parent.displayname
         property_type = parent.type.spelling
 
-        if property_type in self.m_replace_table:
-            property_type = self.m_replace_table[property_type]
+        # 使用正则表达式处理类型
+        property_type = self.process_property_type(property_type)
 
         self.m_node_table[_class_name].property_name.append(property_name)
         self.m_node_table[_class_name].property_type.append(property_type)

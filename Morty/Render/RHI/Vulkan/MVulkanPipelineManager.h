@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <utility>
+
 #include "Utility/MGlobal.h"
+#include "Shader/MShader.h"
 #include "Shader/MShaderParam.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -20,8 +23,9 @@
 namespace morty
 {
 
+class MMaterialPass;
 class MMaterialTemplate;
-class MShaderProgram;
+class IShaderProgram;
 class MVulkanDevice;
 class MShaderPropertyBlock;
 class MComputeDispatcher;
@@ -33,12 +37,12 @@ class MORTY_API MVulkanPipelineManager
 {
 public:
     struct MORTY_API MPipelineKey {
-        const std::shared_ptr<const MShaderProgram> pShaderProgram = nullptr;
-        const MRenderPass*                          pRenderPass    = nullptr;
+        const IShaderProgram* pShaderProgram = nullptr;
+        const MRenderPass*    pRenderPass    = nullptr;
 
-        MPipelineKey(const std::shared_ptr<const MShaderProgram> _pShaderProgram, const MRenderPass* _pRenderPass)
-            : pShaderProgram(_pShaderProgram)
-            , pRenderPass(_pRenderPass)
+                              MPipelineKey(const IShaderProgram* shaderProgram, const MRenderPass* renderPass)
+            : pShaderProgram(shaderProgram)
+            , pRenderPass(renderPass)
         {}
 
         bool operator==(const MPipelineKey& other) const
@@ -46,19 +50,14 @@ public:
             return pShaderProgram == other.pShaderProgram && pRenderPass == other.pRenderPass;
         }
 
-        bool operator==(const std::shared_ptr<MShaderProgram>& _pShaderProgram) const
-        {
-            return pShaderProgram == _pShaderProgram;
-        }
+        bool operator==(const IShaderProgram* _pShaderProgram) const { return pShaderProgram == _pShaderProgram; }
 
         bool operator==(const MRenderPass* _pRenderPass) const { return pRenderPass == _pRenderPass; }
 
         bool operator<(const MPipelineKey& other) const
         {
-            if (pShaderProgram < other.pShaderProgram) return true;
-            else if (pShaderProgram == other.pShaderProgram)
-                return pRenderPass < other.pRenderPass;
-            return false;
+            if (pShaderProgram != other.pShaderProgram) return pShaderProgram < other.pShaderProgram;
+            return pRenderPass < other.pRenderPass;
         }
     };
 
@@ -69,15 +68,15 @@ public:
 
 
 public:
-    MVulkanPipelineManager(MVulkanDevice* pDevice);
+             MVulkanPipelineManager(MVulkanDevice* pDevice);
 
     virtual ~MVulkanPipelineManager();
 
-    void Release();
+    void     Release();
 
 public:
     std::shared_ptr<MGraphicsPipeline>
-    FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass);
+    FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass);
 
     std::shared_ptr<MComputePipeline> FindOrCreateComputePipeline(MComputeDispatcher* pComputeDispatcher);
 
@@ -94,7 +93,7 @@ public:
 
     VkPipeline CreateGraphicsPipeline(
             const std::shared_ptr<MPipeline>& pPipeline,
-            const MMaterialTemplate*          pMaterial,
+            const MMaterialPass*              materialPass,
             const MRenderPass*                pRenderPass,
             const uint32_t&                   nSubpassIdx
     );
@@ -109,17 +108,13 @@ public:
     void DestroyShaderPropertyBlockImpl(MShaderPropertyBlock* pPropertyBlock) const;
 
 public:
-    void GeneratePipelineLayout(
-            const std::shared_ptr<MPipeline>&      pPipeline,
-            const std::shared_ptr<MShaderProgram>& pShaderProgram
-    );
+    void        GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, IShaderProgram* shaderProgram);
 
-    void
-    BindConstantParam(const std::shared_ptr<MShaderConstantParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void        BindConstantParam(const MShaderConstantParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    void BindTextureParam(const std::shared_ptr<MShaderTextureParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void        BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
-    void BindStorageParam(const std::shared_ptr<MShaderStorageParam> pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void        BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
     MTexturePtr GetDefaultTexture(MShaderTextureParam* pParam);
 
@@ -127,7 +122,6 @@ private:
     std::map<MPipelineKey, std::shared_ptr<MPipeline>>               m_pipelineTable;
 
     MVulkanDevice*                                                   m_device;
-
 
     std::map<std::pair<MESamplerFormat, METextureType>, MTexturePtr> m_defaultTexture;
 };

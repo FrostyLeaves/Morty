@@ -1,7 +1,7 @@
 #include "IniConfig.h"
 #include "Utility/MFileHelper.h"
 
-#include <ini.h>
+#include "ini.h"
 
 using namespace morty;
 

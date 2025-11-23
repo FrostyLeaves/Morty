@@ -19,7 +19,7 @@
 namespace morty
 {
 class MResource;
-class MMaterialTemplateResource;
+class MMaterialResource;
 REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNode
 {
     MORTY_CLASS(MDeferredLightingRenderNode)
@@ -35,7 +35,7 @@ public:
 public:
     REFL_RENDER_NODE_PROPERTY bool EnableAO = false;
 
-    REFL_RENDER_NODE_PROPERTY std::shared_ptr<MMaterialTemplateResource> LightingMaterial = nullptr;
+    REFL_RENDER_NODE_PROPERTY std::shared_ptr<MMaterialResource> LightingMaterial = nullptr;
 
 protected:
     void                               UpdateProperty();
@@ -48,7 +48,7 @@ protected:
 
 
 private:
-    MMaterialTemplatePtr m_lightningMaterial = nullptr;
+    std::shared_ptr<MMaterial> m_lightningMaterial = nullptr;
 };
 
 }// namespace morty

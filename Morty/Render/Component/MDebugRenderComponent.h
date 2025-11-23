@@ -25,17 +25,20 @@ public:
 };
 
 struct MDebugDrawLineVertex {
-    Vector3 v3Position;
+    Vector3                   v3Position;
+
+    static size_t             AttributeProtectMask() { return 0; }
+    static std::vector<float> SimplifyWeight() { return {}; }
 };
 
 class MORTY_API MDebugRenderComponent : public MComponent
 {
 public:
-    MORTY_CLASS(MDebugRenderComponent);
+                                 MORTY_CLASS(MDebugRenderComponent);
 
-    MDebugRenderComponent();
+                                 MDebugRenderComponent();
 
-    virtual ~MDebugRenderComponent();
+    virtual ~                    MDebugRenderComponent();
 
     MMesh<MDebugDrawLineVertex>& GetDrawLineMesh();
 

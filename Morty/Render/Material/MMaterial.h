@@ -13,8 +13,8 @@
 #include "Resource/MTextureResource.h"
 
 #include "Material/MMaterialTemplate.h"
+#include "Shader/IShaderProgram.h"
 #include "Shader/MShaderMacro.h"
-#include "Shader/MShaderProgram.h"
 #include "Shader/MShaderPropertyBlock.h"
 
 namespace morty
@@ -29,20 +29,24 @@ public:
 
     ~MMaterial() override = default;
 
+
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
-    void                         SetTexture(const MStringId& name, const MResourcePtr& texture);
 
-    [[nodiscard]] MEMaterialType GetMaterialType() const { return GetMaterialTemplate()->GetMaterialType(); }
+    void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
 
-    [[nodiscard]] const std::shared_ptr<MShaderProgram>&    GetShaderProgram() const;
+    [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }
 
-    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>& GetMaterialTemplate() const;
+    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>&    GetTemplate() const;
     void ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
 
-public:
-    void OnCreated() override;
+    MShaderPropertyBlock* GetMaterialPropertyBlock() const;
 
-    void OnDelete() override;
+public:
+    void                              OnCreated() override;
+
+    void                              OnDelete() override;
+
+    static std::shared_ptr<MMaterial> CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate);
 
 #if MORTY_DEBUG
     [[nodiscard]] const char* GetDebugName() const;
@@ -52,17 +56,13 @@ protected:
     void BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate);
 
 private:
-    std::shared_ptr<MMaterialTemplate> m_materialTemplate = nullptr;
-
-    MStruct                            m_variant;
+    std::shared_ptr<MMaterialTemplate>    m_materialTemplate = nullptr;
+    std::shared_ptr<MShaderPropertyBlock> m_materialPropertyBlock = nullptr;
 };
 
 template<typename TYPE> void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
 {
-    //TODO Material Refactor
-
-    MORTY_UNUSED(strName);
-    MORTY_UNUSED(value);
+    GetMaterialPropertyBlock()->SetValue(strName, value);
 }
 
 }// namespace morty

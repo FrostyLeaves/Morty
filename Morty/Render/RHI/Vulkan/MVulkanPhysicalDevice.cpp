@@ -79,7 +79,8 @@ std::vector<const char*> InstanceExtensions = {
         VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
 #endif
 
-        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
+};
 
 
 template<typename TYPE> void RegisterExtensionFeatures(void*& pExtensionFeatureList, TYPE& feature)
@@ -212,7 +213,7 @@ int MVulkanPhysicalDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyF
         }
     }
 
-    return MGlobal::M_INVALID_INDEX;
+    return MGlobal::M_INVALID_RESULT;
 }
 
 VkFormat MVulkanPhysicalDevice::FindSupportedFormat(
@@ -315,8 +316,9 @@ void MVulkanPhysicalDevice::InitDeviceFeature()
 {
     if constexpr (true)
     {
-        m_vkVulkan11Features.sType     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-        m_vkVulkan11Features.multiview = VK_TRUE;
+        m_vkVulkan11Features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        m_vkVulkan11Features.multiview            = VK_TRUE;
+        m_vkVulkan11Features.shaderDrawParameters = VK_TRUE;
         RegisterExtensionFeatures(m_vkExtensionFeaturesList, m_vkVulkan11Features);
     }
 
@@ -383,7 +385,7 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(
 
     if (VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT == messageSeverity)
     {
-        MVulkanPhysicalDevice* pVulkanInstance = static_cast<MVulkanPhysicalDevice*>(pUserData);
+        auto pVulkanInstance = static_cast<MVulkanPhysicalDevice*>(pUserData);
         pVulkanInstance->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
         MORTY_ASSERT(false);
     }
@@ -602,7 +604,6 @@ int MVulkanPhysicalDevice::FindQueueGraphicsFamilies(VkPhysicalDevice device) co
 
 int MVulkanPhysicalDevice::FindQueuePresentFamilies(VkSurfaceKHR surface) const
 {
-
     int      nPresentFamily = -1;
 
     uint32_t unQueueFamilyCount = 0;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Math/Vector.h>
 #include <memory>
 #include <stdint.h>
 
@@ -18,7 +19,7 @@ struct ImGuiTexture {
     intptr_t                         nTextureIdx = 0;
     size_t                           nArrayIdx   = 0;
 
-    ImGuiTexture() = default;
+                                     ImGuiTexture() = default;
 
     operator intptr_t() const { return nTextureIdx; }
 
@@ -26,11 +27,7 @@ struct ImGuiTexture {
         : nTextureIdx(intptr_t(tex))
     {}
 
-    ImGuiTexture(
-            std::shared_ptr<morty::MTexture> tex,
-            intptr_t                         nTextureIdx,
-            size_t                           arrIdx
-    )
+    ImGuiTexture(std::shared_ptr<morty::MTexture> tex, intptr_t nTextureIdx, size_t arrIdx)
         : pTexture(tex)
         , nTextureIdx(nTextureIdx)
         , nArrayIdx(arrIdx)

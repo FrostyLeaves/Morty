@@ -166,6 +166,5 @@ struct MORTY_API MShaderPropertyName {
 
 using MMeshInstanceKey     = size_t;
 using MSkeletonInstanceKey = size_t;
-using MMeshIndexInGroup    = size_t;
 
 }// namespace morty

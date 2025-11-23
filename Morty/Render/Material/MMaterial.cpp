@@ -12,33 +12,61 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
-const std::shared_ptr<MShaderProgram>& MMaterial::GetShaderProgram() const
+void MMaterial::SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pResource)
 {
-    return m_materialTemplate->GetShaderProgram();
+    if(auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
+    {
+        GetMaterialPropertyBlock()->SetTexture(strName, textureResource->GetTextureTemplate());
+    }
 }
 
-//const std::shared_ptr<MShaderPropertyBlock>& MMaterial::GetMaterialPropertyBlock() const { return m_shaderProperty; }
-
-const std::shared_ptr<MMaterialTemplate>& MMaterial::GetMaterialTemplate() const { return m_materialTemplate; }
+const std::shared_ptr<MMaterialTemplate>&    MMaterial::GetTemplate() const { return m_materialTemplate; }
 
 void MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate)
 {
     BindTemplate(newMaterialTemplate);
 }
 
+std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
+{
+    if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
+    {
+        auto pMaterial = std::make_shared<MMaterial>();
+        pMaterial->BindTemplate(pTemplate);
+
+        return pMaterial;
+    }
+
+    return nullptr;
+}
+
 void MMaterial::OnCreated() { Super::OnCreated(); }
 
-void MMaterial::OnDelete() { Super::OnDelete(); }
+void MMaterial::OnDelete()
+{
+    Super::OnDelete();
+}
 
 void MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
 {
+    if(m_materialTemplate == pTemplate)
+        return;
+    
     m_materialTemplate = pTemplate;
 
-    const auto pProperty = MMaterialTemplate::CreateMaterialPropertyBlock(pTemplate->GetShaderProgram());
+    if (m_materialTemplate)
+    {
+        m_materialPropertyBlock = m_materialTemplate->CreatePropertyBlock(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+    }
+    else
+    {
+        m_materialPropertyBlock = nullptr;
+    }
+    
 }
 
-void MMaterial::SetTexture(const MStringId& name, const MResourcePtr& texture)
+
+MShaderPropertyBlock* MMaterial::GetMaterialPropertyBlock() const
 {
-    MORTY_UNUSED(name);
-    MORTY_UNUSED(texture);
+    return m_materialPropertyBlock.get();
 }

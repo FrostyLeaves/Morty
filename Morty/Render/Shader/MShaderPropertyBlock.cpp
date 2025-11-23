@@ -21,7 +21,7 @@ MShaderPropertyBlock::MShaderPropertyBlock()
 #endif
 }
 
-MShaderPropertyBlock::MShaderPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey)
+MShaderPropertyBlock::MShaderPropertyBlock(IShaderProgram* pShaderProgram, const uint32_t& unKey)
     : m_params()
     , m_textures()
     , m_samples()
@@ -43,50 +43,48 @@ MShaderPropertyBlock::MShaderPropertyBlock(const MShaderPropertyBlock& other)
     m_samples.resize(m_samples.size());
     m_storages.resize(m_storages.size());
 
-    for (uint32_t i = 0; i < m_params.size(); ++i) m_params[i] = std::make_shared<MShaderConstantParam>(*m_params[i]);
+    for (auto& m_param: m_params) m_param = std::make_unique<MShaderConstantParam>(*m_param);
 
-    for (uint32_t i = 0; i < m_textures.size(); ++i)
-        m_textures[i] = std::make_shared<MShaderTextureParam>(*m_textures[i]);
+    for (auto& m_texture: m_textures) m_texture = std::make_unique<MShaderTextureParam>(*m_texture);
 
-    for (uint32_t i = 0; i < m_samples.size(); ++i) m_samples[i] = std::make_shared<MShaderSampleParam>(*m_samples[i]);
+    for (auto& m_sample: m_samples) m_sample = std::make_unique<MShaderSampleParam>(*m_sample);
 
-    for (uint32_t i = 0; i < m_storages.size(); ++i)
-        m_storages[i] = std::make_shared<MShaderStorageParam>(*m_storages[i]);
+    for (auto& m_storage: m_storages) m_storage = std::make_unique<MShaderStorageParam>(*m_storage);
 }
 
-std::shared_ptr<MShaderConstantParam> MShaderPropertyBlock::FindConstantParam(const MStringId& strParamName)
+MShaderConstantParam* MShaderPropertyBlock::FindConstantParam(const MStringId& strParamName)
 {
-    for (std::shared_ptr<MShaderConstantParam>& pParam: m_params)
+    for (const auto& pParam: m_params)
     {
-        if (pParam->strName == strParamName) return pParam;
+        if (pParam->strName == strParamName) return pParam.get();
     }
 
     return nullptr;
 }
 
-std::shared_ptr<MShaderStorageParam> MShaderPropertyBlock::FindStorageParam(const MStringId& strParamName)
+MShaderStorageParam* MShaderPropertyBlock::FindStorageParam(const MStringId& strParamName)
 {
-    for (std::shared_ptr<MShaderStorageParam>& pParam: m_storages)
+    for (const auto& pParam: m_storages)
     {
-        if (pParam->strName == strParamName) return pParam;
+        if (pParam->strName == strParamName) return pParam.get();
     }
 
     return nullptr;
 }
 
-std::shared_ptr<MShaderTextureParam> MShaderPropertyBlock::FindTextureParam(const MStringId& strParamName)
+MShaderTextureParam* MShaderPropertyBlock::FindTextureParam(const MStringId& strParamName)
 {
-    for (std::shared_ptr<MShaderTextureParam>& pParam: m_textures)
+    for (const auto& pParam: m_textures)
     {
-        if (pParam->strName == strParamName) return pParam;
+        if (pParam->strName == strParamName) return pParam.get();
     }
 
     return nullptr;
 }
 
-bool MShaderPropertyBlock::SetTexture(const MStringId& strName, MTexturePtr pTexture)
+bool MShaderPropertyBlock::SetTexture(const MStringId& strName, const MTexturePtr& pTexture)
 {
-    for (std::shared_ptr<MShaderTextureParam>& pParam: m_textures)
+    for (auto& pParam: m_textures)
     {
         if (pParam->strName == strName)
         {
@@ -100,17 +98,17 @@ bool MShaderPropertyBlock::SetTexture(const MStringId& strName, MTexturePtr pTex
 
 bool MShaderPropertyBlock::HasValue(const uint32_t& unBinding, const uint32_t& unSet)
 {
-    for (std::shared_ptr<MShaderConstantParam>& pParam: m_params)
+    for (auto& pParam: m_params)
     {
         if (pParam->unSet == unSet && pParam->unBinding == unBinding) return true;
     }
 
-    for (std::shared_ptr<MShaderTextureParam>& pParam: m_textures)
+    for (auto& pParam: m_textures)
     {
         if (pParam->unSet == unSet && pParam->unBinding == unBinding) return true;
     }
 
-    for (std::shared_ptr<MShaderSampleParam>& pParam: m_samples)
+    for (auto& pParam: m_samples)
     {
         if (pParam->unSet == unSet && pParam->unBinding == unBinding) return true;
     }
@@ -118,55 +116,34 @@ bool MShaderPropertyBlock::HasValue(const uint32_t& unBinding, const uint32_t& u
     return false;
 }
 
-void MShaderPropertyBlock::GenerateBuffer(MIDevice* pDevice) { pDevice->GenerateShaderPropertyBlock(GetShared()); }
+void MShaderPropertyBlock::GenerateBuffer(MIDevice* pDevice) { pDevice->GenerateShaderPropertyBlock(this); }
 
 void MShaderPropertyBlock::DestroyBuffer(MIDevice* pDevice)
 {
-    pDevice->DestroyShaderPropertyBlock(GetShared());
+    pDevice->DestroyShaderPropertyBlock(this);
 
-    for (std::shared_ptr<MShaderConstantParam>& pParam: m_params) { pDevice->DestroyShaderParamBuffer(pParam); }
+    for (auto& pParam: m_params) { pDevice->DestroyShaderParamBuffer(pParam.get()); }
 }
 
 std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::Clone() const
 {
-    std::shared_ptr<MShaderPropertyBlock> pPropertyBlock =
-            MShaderPropertyBlock::MakeShared(m_shaderProgram.lock(), m_unKey);
+    auto propertyBlock = std::make_shared<MShaderPropertyBlock>(m_shaderProgram, m_unKey);
 
-    pPropertyBlock->m_params.resize(m_params.size());
-    pPropertyBlock->m_textures.resize(m_textures.size());
-    pPropertyBlock->m_samples.resize(m_samples.size());
-    pPropertyBlock->m_storages.resize(m_storages.size());
+    propertyBlock->m_params.resize(m_params.size());
+    propertyBlock->m_textures.resize(m_textures.size());
+    propertyBlock->m_samples.resize(m_samples.size());
+    propertyBlock->m_storages.resize(m_storages.size());
 
     for (uint32_t i = 0; i < m_params.size(); ++i)
-        pPropertyBlock->m_params[i] = std::make_shared<MShaderConstantParam>(*m_params[i]);
+        propertyBlock->m_params[i] = std::make_unique<MShaderConstantParam>(*m_params[i]);
 
-    for (uint32_t i = 0; i < m_textures.size(); ++i) pPropertyBlock->m_textures[i] = m_textures[i]->Clone();
+    for (uint32_t i = 0; i < m_textures.size(); ++i) propertyBlock->m_textures[i] = m_textures[i]->Clone();
 
     for (uint32_t i = 0; i < m_samples.size(); ++i)
-        pPropertyBlock->m_samples[i] = std::make_shared<MShaderSampleParam>(*m_samples[i]);
+        propertyBlock->m_samples[i] = std::make_unique<MShaderSampleParam>(*m_samples[i]);
 
     for (uint32_t i = 0; i < m_storages.size(); ++i)
-        pPropertyBlock->m_storages[i] = std::make_shared<MShaderStorageParam>(*m_storages[i]);
+        propertyBlock->m_storages[i] = std::make_unique<MShaderStorageParam>(*m_storages[i]);
 
-    return pPropertyBlock;
-}
-
-std::shared_ptr<MShaderPropertyBlock> MShaderPropertyBlock::GetShared() const { return m_selfPointer.lock(); }
-
-std::shared_ptr<MShaderPropertyBlock>
-MShaderPropertyBlock::MakeShared(const std::shared_ptr<MShaderProgram>& pShaderProgram, const uint32_t& unKey)
-{
-    std::shared_ptr<MShaderPropertyBlock> pResult = std::make_shared<MShaderPropertyBlock>(pShaderProgram, unKey);
-    pResult->m_selfPointer                        = pResult;
-
-    return pResult;
-}
-
-std::shared_ptr<MShaderPropertyBlock>
-MShaderPropertyBlock::MakeShared(const std::shared_ptr<MShaderPropertyBlock>& other)
-{
-    std::shared_ptr<MShaderPropertyBlock> pResult = std::make_shared<MShaderPropertyBlock>(*other);
-    pResult->m_selfPointer                        = pResult;
-
-    return pResult;
+    return propertyBlock;
 }

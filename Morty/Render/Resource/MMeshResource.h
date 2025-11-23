@@ -34,7 +34,6 @@ public:
     MBoundsSphere             boundsSphere;
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
-
     void                      Deserialize(const void* pBufferPointer) override;
 };
 
@@ -44,9 +43,9 @@ public:
     MORTY_CLASS(MMeshResource);
 
 public:
-    MMeshResource();
+                         MMeshResource();
 
-    virtual ~MMeshResource();
+    virtual ~            MMeshResource();
 
     MEMeshVertexType     GetMeshVertexType() const;
 
@@ -60,14 +59,12 @@ public:
 
 
 public:
-    bool         Load(std::unique_ptr<MResourceData>&& pResourceData) override;
+    bool Load(std::unique_ptr<MResourceData>&& pResourceData) override;
 
-    virtual bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
+    bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
-    virtual void OnDelete() override;
+    void OnDelete() override;
 
-public:
-protected:
     void Clean();
 
     void ResetBounds();

@@ -21,7 +21,7 @@ MEngine::MEngine()
 
 MEngine::~MEngine() = default;
 
-bool MEngine::Initialize()
+bool      MEngine::Initialize()
 {
     m_threadPool.Initialize();
     m_mainTaskGraph = new MTaskGraph();
@@ -35,12 +35,7 @@ void MEngine::Release()
     //wait for all thread task finished.
     m_threadPool.Release();
 
-    for (auto& pSystem: m_systemArray)
-    {
-        pSystem->Release();
-        delete pSystem;
-        pSystem = nullptr;
-    }
+    for (auto& pSystem: m_systemArray) { pSystem->Release(); }
 
     m_systemTable.clear();
     m_systemArray.clear();
@@ -77,7 +72,7 @@ void MEngine::Update()
 
 void MEngine::Tick(const float& fDelta)
 {
-    for (MISystem* pSystem: m_systemArray) { pSystem->EngineTick(fDelta); }
+    for (auto& system: m_systemArray) { system->EngineTick(fDelta); }
 
     if (m_mainTaskGraph)
     {
@@ -86,18 +81,18 @@ void MEngine::Tick(const float& fDelta)
     }
 }
 
-void MEngine::RegisterSystem(MISystem* pSystem)
+void MEngine::RegisterSystem(const std::shared_ptr<MISystem>& system)
 {
-    if (FindSystem(pSystem->GetType()))
+    if (FindSystem(system->GetType()))
     {
-        MORTY_ASSERT(!FindSystem(pSystem->GetType()));
+        MORTY_ASSERT(!FindSystem(system->GetType()));
         return;
     }
 
-    pSystem->SetEngine(this);
-    pSystem->Initialize();
-    m_systemArray.push_back(pSystem);
-    m_systemTable[pSystem->GetType()] = m_systemArray.size() - 1;
+    system->SetEngine(this);
+    system->Initialize();
+    m_systemArray.push_back(system);
+    m_systemTable[system->GetType()] = m_systemArray.size() - 1;
 }
 
 void MEngine::RegisterGlobalObject(const MType* type)
@@ -111,8 +106,15 @@ void MEngine::RegisterGlobalObject(const MType* type)
 MISystem* MEngine::FindSystem(const MType* type)
 {
     auto find = m_systemTable.find(type);
-    if (find != m_systemTable.end()) { return m_systemArray[find->second]; }
+    if (find != m_systemTable.end()) { return m_systemArray[find->second].get(); }
     return nullptr;
+}
+
+std::shared_ptr<MISystem> MEngine::FindSystemShared(const MType* type)
+{
+    auto find = m_systemTable.find(type);
+    if (find != m_systemTable.end()) { return m_systemArray[find->second]; }
+    return {};
 }
 
 MObject* MEngine::FindGlobalObject(const MType* type)

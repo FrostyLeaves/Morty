@@ -112,10 +112,7 @@ MComponent* MScene::GetComponent(const MComponentID& id)
 {
     if (!id.IsValid()) return nullptr;
 
-    if (MIComponentGroup* pComponents = FindComponents(id.pComponentType))
-    {
-        return pComponents->FindComponent(id);
-    }
+    if (MIComponentGroup* pComponents = FindComponents(id.pComponentType)) { return pComponents->FindComponent(id); }
 
     return nullptr;
 }
@@ -132,10 +129,7 @@ void MScene::RegisterManager(const MType* pManagerType, IManager* pManager)
     m_manager[pManagerType] = pManager;
     pManager->SetScene(this);
 
-    for (const MType* type: pManager->RegisterComponentType())
-    {
-        m_componentRegister[type].push_back(pManager);
-    }
+    for (const MType* type: pManager->RegisterComponentType()) { m_componentRegister[type].push_back(pManager); }
 }
 
 void MScene::Tick(const float& fDelta)
@@ -143,9 +137,9 @@ void MScene::Tick(const float& fDelta)
     MEngine* pEngine = GetEngine();
     if (!pEngine) return;
 
-    auto& vSystem = pEngine->GetAllSystem();
+    auto& systemList = pEngine->GetAllSystem();
 
-    for (MISystem* pSystem: vSystem) { pSystem->SceneTick(this, fDelta); }
+    for (auto& system: systemList) { system->SceneTick(this, fDelta); }
 
     for (auto pr: m_manager) { pr.second->SceneTick(this, fDelta); }
 }
@@ -162,10 +156,7 @@ MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
     auto findRegister = m_componentRegister.find(pComponent->GetType());
     if (findRegister != m_componentRegister.end())
     {
-        for (IManager* pManager: findRegister->second)
-        {
-            pManager->RegisterComponent(pComponent);
-        }
+        for (IManager* pManager: findRegister->second) { pManager->RegisterComponent(pComponent); }
     }
 
     return pComponent;
@@ -173,10 +164,7 @@ MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
 
 MComponent* MScene::AddComponent(MEntity* entity, const MType* pComponentType)
 {
-    if (MIComponentGroup* pComponents = FindComponents(pComponentType))
-    {
-        return AddComponent(entity, pComponents);
-    }
+    if (MIComponentGroup* pComponents = FindComponents(pComponentType)) { return AddComponent(entity, pComponents); }
 
     return nullptr;
 }
@@ -215,10 +203,7 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
     auto findRegister = m_componentRegister.find(pComponentType);
     if (findRegister != m_componentRegister.end())
     {
-        for (IManager* pManager: findRegister->second)
-        {
-            pManager->UnregisterComponent(pComponent);
-        }
+        for (IManager* pManager: findRegister->second) { pManager->UnregisterComponent(pComponent); }
     }
     pComponents->RemoveComponent(pComponent->GetComponentID());
 }

@@ -8,39 +8,16 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
-#include "Object/MObject.h"
+#include "Utility/MRenderGlobal.h"
 #include "Resource/MTextureResource.h"
 
 #include "Shader/MShaderMacro.h"
 #include "Shader/MShaderProgram.h"
 #include "Shader/MShaderPropertyBlock.h"
+#include "MMaterialPass.h"
 
 namespace morty
 {
-
-enum class MECullMode
-{
-    EWireframe = 0,
-    ECullNone,
-    ECullBack,
-    ECullFront,
-
-    ERasterizerEnd
-};
-
-enum class MEMaterialType
-{
-    EDefault = 0,
-    EDepthPeel,
-    ETransparentBlend,
-    EOutline,
-    EImGui,
-    EDeferred,
-    ECustom,
-
-    EMaterialTypeEnd,
-};
 
 class MShader;
 class MShaderResource;
@@ -53,68 +30,36 @@ public:
 
     ~MMaterialTemplate() override = default;
 
-    void                         SetCullMode(const MECullMode& eType);
+    bool LoadShader(const std::shared_ptr<MResource>& pResource);
+    bool LoadShader(const MString& strResource);
+    std::shared_ptr<MResource> GetShaderResource() const { return m_shaderResource.GetResource(); }
 
-    [[nodiscard]] MECullMode     GetCullMode() const { return m_cullMode; }
+    MMaterialPass* SetPass(const MStringId& passName, const MStringId& vsEntryName, const MStringId& psEntryName);
+    [[nodiscard]] MMaterialPass* GetPass(const MStringId& passName) const;
+    [[nodiscard]] const std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>>& GetPasses() const { return m_passes; }
 
-    void                         SetMaterialType(const MEMaterialType& eType);
-
-    [[nodiscard]] MEMaterialType GetMaterialType() const { return m_materialType; }
-
-    void                         SetShaderMacro(const MShaderMacro& macro);
-
-    [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_shaderProgram->GetShaderMacro(); }
-
-    void                         AddDefine(const MStringId& strKey, const MString& strValue);
-
-    [[nodiscard]] const std::shared_ptr<MShaderProgram>& GetShaderProgram() const { return m_shaderProgram; }
-
-    bool GetConservativeRasterizationEnable() const { return m_conservativeRasterizationEnable; }
-
-    void SetConservativeRasterizationEnable(bool bEnable) { m_conservativeRasterizationEnable = bEnable; }
-
-    void SetShadingRate(Vector2i n2ShadingRate);
-
-    [[nodiscard]] Vector2i                       GetShadingRate() const { return m_shadingRate; }
-
-
-    bool                                         LoadShader(const std::shared_ptr<MResource>& pResource);
-
-    bool                                         LoadShader(const MString& strResource);
-
-    const std::shared_ptr<MShaderPropertyBlock>& GetMaterialPropertyBlock() const;
+    [[nodiscard]] MMaterialPass* GetDefaultPass() const;
     
-    MVariant                                     CreateMaterialVariant() const;
+    void SetShaderMacro(const MShaderMacro& macro) { m_shaderMacro = macro;SetDirty(); }
+    [[nodiscard]] const MShaderMacro& GetShaderMacro() const { return m_shaderMacro; }
 
-    template<typename TYPE> void                 SetValue(const MStringId& strName, const TYPE& value)
-    {
-        GetMaterialPropertyBlock()->SetValue(strName, value);
-    }
+    std::shared_ptr<MShaderPropertyBlock> CreatePropertyBlock(size_t setIdx) const;
 
-    void SetTexture(const MStringId& name, const MResourcePtr& texture);
-
-
-    static std::shared_ptr<MShaderPropertyBlock>
-    CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram);
-
-    static std::shared_ptr<MShaderPropertyBlock>
-    CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram);
-
-    static std::shared_ptr<MShaderPropertyBlock>
-    CreateMaterialPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram);
+    [[nodiscard]] MHashCode GetHashCode() const;
 
 public:
     void OnCreated() override;
 
     void OnDelete() override;
 
-private:
-    std::shared_ptr<MShaderProgram> m_shaderProgram = nullptr;
+    void SetDirty() { m_dirty = true; }
 
-    MEMaterialType                  m_materialType                    = MEMaterialType::EDefault;
-    MECullMode                      m_cullMode                        = MECullMode::ECullBack;
-    bool                            m_conservativeRasterizationEnable = false;
-    Vector2i                        m_shadingRate                     = {1, 1};
+protected:
+
+    bool m_dirty = true;
+    MShaderMacro   m_shaderMacro      = {};
+    MResourceRef m_shaderResource; // Shader resources
+    std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>> m_passes; // Material passes    
 };
 
 }// namespace morty

@@ -66,8 +66,9 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTargetWithVRS()
 {
     auto group = AutoBindTarget();
 
-    auto pVRSTexture  = GetRenderGraph()->GetTextureVRS();
-    group.shadingRate = {pVRSTexture, {false, MColor::Black_T}};
+    //TODO
+    //auto pVRSTexture  = GetRenderGraph()->GetTextureVRS();
+    //group.shadingRate = {pVRSTexture, {false, MColor::Black_T}};
 
     return group;
 }

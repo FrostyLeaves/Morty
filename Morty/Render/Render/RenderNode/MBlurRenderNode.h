@@ -18,13 +18,13 @@ class MORTY_API MBlurRenderNode : public MBasicPostProcessRenderNode
 {
     MORTY_CLASS(MBlurRenderNode)
 
-    void                 InitDirection(bool bVertical) { m_vertical = bVertical; }
+    void                       InitDirection(bool bVertical) { m_vertical = bVertical; }
 
-    MMaterialTemplatePtr CreateMaterial() override;
+    std::shared_ptr<MMaterial> CreateMaterial() override;
 
-    void                 RenderSetup(const MRenderInfo& info) override;
+    void                       RenderSetup(const MRenderInfo& info) override;
 
-    void                 RegisterSetting() override;
+    void                       RegisterSetting() override;
 
 protected:
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;

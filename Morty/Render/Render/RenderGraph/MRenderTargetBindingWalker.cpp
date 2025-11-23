@@ -19,9 +19,9 @@ class MRenderTargetCacheQueue
 {
 
 public:
-    static size_t Hash(const MRenderTaskOutputDesc& desc)
+    static MHashCode Hash(const MRenderTaskOutputDesc& desc)
     {
-        std::size_t res = 0;
+        MHashCode res = 0;
         if (desc.resizePolicy == MEResizePolicy::Fixed)
         {
             MUtils::HashCombine(res, desc.texture.n3Size.x);

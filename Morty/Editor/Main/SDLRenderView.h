@@ -11,7 +11,7 @@ struct ImGuiContext;
 namespace morty
 {
 
-class ImGuiRenderable;
+class ImGuiRenderer;
 class MNode;
 class MScene;
 class MInputEvent;
@@ -77,7 +77,7 @@ private:
     bool                            m_windowClosed    = false;
     SDL_Window*                     m_sDLWindow       = nullptr;
     MTaskNode*                      m_renderTask      = nullptr;
-    ImGuiRenderable*                m_imGuiRender     = nullptr;
+    ImGuiRenderer*                m_imGuiRender     = nullptr;
 
     std::vector<RenderViewContent*> m_content;
 

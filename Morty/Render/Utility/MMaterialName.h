@@ -14,24 +14,15 @@
 namespace morty
 {
 
-struct MORTY_API MMaterialName {
+struct MORTY_API MMaterialName
+{
     //Frame
     static MString FRAME_DEFAULT;
-
-    //Skybox
     static MString SKY_BOX;
 
     //Deferred
     static MString DEFERRED_LIGHTING;
     static MString DEFERRED_GBUFFER;
-    static MString DEFERRED_GBUFFER_SKELETON;
-
-    static MString FORWARD_TRANSPARENT;
-    static MString FORWARD_TRANSPARENT_SKELETON;
-
-    static MString SHADOW_MAP;
-
-    static MString SHADOW_MAP_SKELETON;
 };
 
 }// namespace morty

@@ -1,0 +1,68 @@
+implementing ModelModule;
+#include "Internal/PreDefine.slang"
+
+
+public struct ModelUtil
+{
+    public static float4 GetVertexPosition(VertexIn input, uint INSTANCE_ID)
+    {
+
+#if SKELETON_ENABLE
+
+        float4x4 matBoneTransform = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        float fWeight = 1.0f;
+        for (int i = 0; i < MBONES_PER_VERTEX; ++i)
+        {
+            matBoneTransform += u_vBonesMatrix[input.bonesID[i] + u_vBonesOffset[MESH_SKELETAL_IDX]] * input.bonesWeight[i];
+            fWeight = fWeight - input.bonesWeight[i];
+        }
+        matBoneTransform += float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) * fWeight;
+
+        float4 vertexPos = mul(float4(input.pos, 1.0f), matBoneTransform);
+
+#else
+
+        float4 vertexPos = float4(input.pos, 1.0f);
+
+#endif
+
+        return vertexPos;
+    }
+
+    public static VertexOut ComputeVertex(VertexIn input, CameraData mainCameraData, uint INSTANCE_ID)
+    {
+        VertexOut output;
+
+        StorageBatchMeshData model;
+
+        MeshData data = model.GetMeshData(INSTANCE_ID);
+
+        float4 positionCS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
+        float4 positionWS = mul(positionCS, data.u_matWorld);
+
+        output.pos = mul(positionWS, mainCameraData.viewMatrix);
+        output.uv = input.uv;
+        output.positionWS = positionWS.xyz;
+        output.depth = output.pos.z;
+
+        output.normal = normalize(mul(input.normal, data.u_matNormal));
+        output.tangent = normalize(mul(input.tangent, data.u_matNormal));
+        output.bitangent = normalize(cross(output.tangent, output.normal));
+
+        return output;
+    }
+
+    public static PixelData ComputePixelData(VertexOut input)
+    {
+        float3 T = normalize(input.tangent);
+        float3 B = normalize(input.bitangent);
+        float3 N = normalize(input.normal);
+
+        PixelData pixel;
+        pixel.positionWS = input.positionWS;
+        pixel.uv = input.uv;
+        pixel.TBN = float3x3(T, B, N);
+
+        return pixel;
+    }
+}

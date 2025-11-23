@@ -5,6 +5,7 @@
 
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
+#include "Flatbuffer/MMaterialPass_generated.h"
 
 using namespace morty;
 
@@ -15,16 +16,21 @@ bool MMaterialTemplateResource::SaveTo(std::unique_ptr<MResourceData>& pResource
 {
     auto pMaterialData = std::make_unique<MMaterialTemplateResourceData>();
 
-    pMaterialData->eMaterialType = GetMaterialType();
-    pMaterialData->eCullMode     = GetCullMode();
-    pMaterialData->shaderMacro   = GetShaderMacro();
+    pMaterialData->shaderMacro = GetShaderMacro();
+
+    // Save material passes
+    for (const auto& [passName, pass]: GetPasses())
+    {
+        if (pass)
+        {
+            auto passCopy                           = std::make_unique<MMaterialPass>(*pass);
+            pMaterialData->materialPasses[passName] = std::move(passCopy);
+        }
+    }
 
     for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
     {
-        if (const auto pResource = GetShaderProgram()->GetShaderResource(MEShaderType(nIdx)))
-        {
-            pMaterialData->vShaders[nIdx] = pResource->GetResourcePath();
-        }
+        if (const auto pResource = GetShaderResource()) { pMaterialData->shaderPath = pResource->GetResourcePath(); }
     }
 
     pResourceData = std::move(pMaterialData);
@@ -35,14 +41,13 @@ bool MMaterialTemplateResource::Load(std::unique_ptr<MResourceData>&& pResourceD
 {
     auto pMaterialData = static_cast<MMaterialTemplateResourceData*>(pResourceData.get());
 
-    SetMaterialType(pMaterialData->eMaterialType);
-    SetCullMode(pMaterialData->eCullMode);
-    SetCullMode(MECullMode::ECullNone);
     SetShaderMacro(pMaterialData->shaderMacro);
+    LoadShader(pMaterialData->shaderPath);
 
-    for (size_t nIdx = 0; nIdx < size_t(MEShaderType::TOTAL_NUM); ++nIdx)
+    // Move material passes from resource data
+    for (auto& [passName, pass]: pMaterialData->materialPasses)
     {
-        if (!pMaterialData->vShaders[nIdx].empty()) { LoadShader(pMaterialData->vShaders[nIdx]); }
+        m_passes[passName] = std::make_unique<MMaterialPass>(*pass);
     }
 
     m_resourceData = std::move(pResourceData);

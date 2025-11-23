@@ -12,12 +12,12 @@ MObjectSystem::MObjectSystem()
 
 MObjectSystem::~MObjectSystem() {}
 
-void MObjectSystem::InitObject(MObject* pObject)
+void            MObjectSystem::InitObject(MObject* pObject)
 {
-    pObject->m_unObjectID = m_objectDB->GetNewID();
-    pObject->m_engine     = GetEngine();
+    pObject->m_objectID = m_objectDB->GetNewID();
+    pObject->m_engine   = GetEngine();
 
-    m_objects[pObject->m_unObjectID] = pObject;
+    m_objects[pObject->m_objectID] = pObject;
 
     pObject->OnCreated();
 

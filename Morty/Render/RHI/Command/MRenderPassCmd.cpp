@@ -1,5 +1,6 @@
 #include "MRenderPassCmd.h"
 #include "Material/MMaterial.h"
+#include "Material/MMaterialPass.h"
 #include "Mesh/MMesh.h"
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/MPipeline.h"
@@ -25,8 +26,8 @@ void MRenderPassCmd::DrawMesh(
 )
 {
     m_commandQueue.emplace_back(new MDrawMeshCmd(
-            {.vertexBuffer = pVertexBuffer,
-             .indexBuffer  = pIndexBuffer,
+            {.vertexBuffer = pVertexBuffer->m_bufferRHI.get(),
+             .indexBuffer  = pIndexBuffer->m_bufferRHI.get(),
              .vertexOffset = static_cast<uint32_t>(nVertexOffset),
              .indexOffset  = static_cast<uint32_t>(nIndexOffset),
              .indexCount   = static_cast<uint32_t>(nIndexCount)}
@@ -42,9 +43,9 @@ void MRenderPassCmd::DrawIndexedIndirect(
 )
 {
     m_commandQueue.emplace_back(new MDrawIndexedIndirectCmd{
-            .vertexBuffer   = pVertexBuffer,
-            .indexBuffer    = pIndexBuffer,
-            .commandsBuffer = pCommandsBuffer,
+            .vertexBuffer   = pVertexBuffer->m_bufferRHI.get(),
+            .indexBuffer    = pIndexBuffer->m_bufferRHI.get(),
+            .commandsBuffer = pCommandsBuffer->m_bufferRHI.get(),
             .offset         = offset,
             .count          = count,
     });
@@ -63,11 +64,12 @@ void MRenderPassCmd::SetShaderPropertyBlock(const std::shared_ptr<MShaderPropert
     SetShaderPropertyBlock(block.get());
 }
 
-void MRenderPassCmd::SetShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
+void MRenderPassCmd::SetShaderPropertyBlock(MShaderPropertyBlock* propertyBlock)
 {
     m_commandQueue.emplace_back(new MSetShaderPropertyBlockCmd{
-            .pipeline = m_usingPipeline,
-            .property = pPropertyBlock,
+            .pipeline           = m_usingPipeline,
+            .property           = propertyBlock,
+            .allocDescriptorSet = m_device->SyncPropertyBlock(propertyBlock),
     });
 }
 
@@ -121,6 +123,7 @@ void MRenderPassCmd::SetShadingRate(Vector2i i2ShadingSize, const std::array<MES
 
 void MRenderPassCmd::DrawMesh(MIMesh* mesh, size_t nIndexOffset, size_t nIndexCount, size_t nVertexOffset)
 {
+    if (!m_usingPipeline) return;
     if (!mesh) return;
 
     MBuffer* pVertexBuffer = mesh->GetVertexBuffer();
@@ -137,9 +140,15 @@ void MRenderPassCmd::DrawMesh(MIMesh* mesh, size_t nIndexOffset, size_t nIndexCo
 void MRenderPassCmd::DrawMesh(MIMesh* mesh) { DrawMesh(mesh, 0, mesh->GetIndicesNum(), 0); }
 
 
-void MRenderPassCmd::SetGraphPipeline(const MMaterialTemplate* materialTemplate)
+void MRenderPassCmd::SetGraphPipeline(const MMaterialPass* pass)
 {
-    const auto pPipeline = m_device->FindOrCreateGraphicsPipeline(materialTemplate, m_renderPass);
+    if (pass == nullptr)
+    {
+        m_usingPipeline = nullptr;
+        return;
+    }
+
+    const auto pPipeline = m_device->FindOrCreateGraphicsPipeline(pass, m_renderPass);
     MORTY_ASSERT(nullptr != pPipeline);
     if (m_usingPipeline == pPipeline.get()) { return; }
     m_usingPipeline = pPipeline.get();
@@ -147,32 +156,26 @@ void MRenderPassCmd::SetGraphPipeline(const MMaterialTemplate* materialTemplate)
     const auto pGraphicsPipeline = std::dynamic_pointer_cast<MGraphicsPipeline>(pPipeline);
 
     SetGraphPipeline(pGraphicsPipeline.get(), m_subPassIdx);
-    SetShadingRate(materialTemplate->GetShadingRate(), {MEShadingRateCombinerOp::Max, MEShadingRateCombinerOp::Max});
+    //SetShadingRate(material->GetShadingRate(), {MEShadingRateCombinerOp::Max, MEShadingRateCombinerOp::Max});
 }
 
-void MRenderPassCmd::SetMaterial(const MMaterial* material)
+void MRenderPassCmd::SetMaterial(const MMaterial* material, const MMaterialPass* pass)
 {
-    const auto& pMaterialTemplate = material->GetMaterialTemplate();
-    if (nullptr == pMaterialTemplate) { return; }
+    SetGraphPipeline(pass);
+    if (!material || !pass) { return; }
 
-    SetGraphPipeline(pMaterialTemplate.get());
-
-    auto propertyBlock = pMaterialTemplate->GetMaterialPropertyBlock().get();
-    SetShaderPropertyBlock(propertyBlock);
+    if (auto propertyBlock = material->GetMaterialPropertyBlock()) { SetShaderPropertyBlock(propertyBlock); }
 
     for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderPropertyBlock(pPushedProperty); }
 }
 
-void MRenderPassCmd::SetMaterial(const MMaterialTemplate* pMaterialTemplate)
+void MRenderPassCmd::SetMaterial(const MMaterial* material, const MStringId& passName)
 {
-    if (nullptr == pMaterialTemplate) { return; }
+    if (!material) { return; }
 
-    SetGraphPipeline(pMaterialTemplate);
+    auto pass = material->GetTemplate()->GetPass(passName);
 
-    auto propertyBlock = pMaterialTemplate->GetMaterialPropertyBlock().get();
-    SetShaderPropertyBlock(propertyBlock);
-
-    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderPropertyBlock(pPushedProperty); }
+    SetMaterial(material, pass);
 }
 
 void MRenderPassCmd::UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size)

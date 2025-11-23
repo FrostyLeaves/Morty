@@ -60,7 +60,10 @@
       "name": "minizip"
     },
     {
-      "name": "poly2tri"
+      "name": "meshoptimizer"
+    },
+    {
+      "name": "pthread"
     },
     {
       "name": "pugixml"
@@ -80,6 +83,9 @@
       "features": [
         "vulkan"
       ]
+    },
+    {
+      "name": "shader-slang"
     },
     {
       "name": "spirv-cross",

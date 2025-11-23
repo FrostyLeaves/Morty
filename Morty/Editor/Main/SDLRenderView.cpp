@@ -1,6 +1,7 @@
 #include "SDLRenderView.h"
 
 #include "Utility/MGlobal.h"
+
 #include "SDL.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -26,7 +27,7 @@
 
 #include "Component/MRenderMeshComponent.h"
 #include "Render/ImGui/imnodes.h"
-#include "Render/ImGuiRenderable.h"
+#include "Render/ImGuiRenderer.h"
 
 #include "System/MInputSystem.h"
 #include "System/MRenderSystem.h"
@@ -70,7 +71,7 @@ void    SDLRenderView::Initialize(MEngine* pEngine)
     ImNodes::LoadCurrentEditorStateFromIniFile(m_imNodesSettingFileName.c_str());
 
 
-    m_imGuiRender = new ImGuiRenderable(pEngine);
+    m_imGuiRender = new ImGuiRenderer(pEngine);
     m_imGuiRender->Initialize();
 
     MTaskGraph* pMainGraph  = GetEngine()->GetMainGraph();

@@ -13,13 +13,13 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include "RHI/IRenderCommand.h"
+#include "RHI/Vulkan/MVulkanCommandExecuteTable.h"
 #include "RHI/Vulkan/MVulkanDevice.h"
 
 namespace morty
 {
-
-
 class MTexture;
+struct MBufferRHIVulkan;
 class MORTY_API MRenderCommandVulkan : public IRenderCommand
 {
     friend class MVulkanCommandExecuteTable;
@@ -27,7 +27,7 @@ class MORTY_API MRenderCommandVulkan : public IRenderCommand
 public:
     explicit MRenderCommandVulkan() = default;
 
-    ~MRenderCommandVulkan() override = default;
+    ~        MRenderCommandVulkan() override = default;
 
 public:
     void           RenderCommandBegin() override;
@@ -39,15 +39,16 @@ public:
 
     bool           DispatchComputeJob(
                       MComputeDispatcher* pComputeDispatcher,
+                      const MStringId&    entryName,
                       const uint32_t&     nGroupX,
                       const uint32_t&     nGroupY,
                       const uint32_t&     nGroupZ
               ) override;
 
     bool AddBufferMemoryBarrier(
-            const std::vector<const MBuffer*>& vBuffers,
-            MEBufferBarrierStage               srcStage,
-            MEBufferBarrierStage               dstStage
+            const std::vector<const MBufferRHI*>& vBuffers,
+            MEBufferBarrierStage                  srcStage,
+            MEBufferBarrierStage                  dstStage
     ) override;
 
     bool DownloadTexture(
@@ -58,13 +59,9 @@ public:
 
     bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
 
-    void ResetBuffer(const MBuffer* pBuffer) override;
-
-    void UploadBuffer(MBuffer* pBuffer, const MByte* pData, size_t nSize) override;
-
     void addFinishedCallback(std::function<void()> func) override;
 
-    void UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param);
+    void UpdateShaderParam(MShaderConstantParam* param);
 
     void SetTextureLayout(const std::vector<MTexture*>& vTextures, const std::vector<VkImageLayout>& newLayouts);
 
@@ -97,8 +94,8 @@ private:
 
 public:
     MVulkanDevice*                                     m_device     = nullptr;
-    const MBuffer*                                     pUsingVertex = nullptr;
-    const MBuffer*                                     pUsingIndex  = nullptr;
+    const MBufferRHIVulkan*                            pUsingVertex = nullptr;
+    const MBufferRHIVulkan*                            pUsingIndex  = nullptr;
 
     VkCommandBuffer                                    m_vkCommandBuffer = VK_NULL_HANDLE;
 
@@ -116,7 +113,7 @@ class MORTY_API MVulkanSecondaryRenderCommand : public MRenderCommandVulkan
 class MORTY_API MVulkanPrimaryRenderCommand : public MRenderCommandVulkan
 {
 public:
-    MVulkanPrimaryRenderCommand();
+                    MVulkanPrimaryRenderCommand();
 
     bool            IsFinished() override { return m_finished; }
 

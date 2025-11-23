@@ -3,7 +3,6 @@
 #include "Basic/MViewport.h"
 #include "Engine/MEngine.h"
 #include "MForwardRenderNode.h"
-#include "MTransparentRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
 #include "RHI/IRenderCommand.h"
@@ -15,24 +14,23 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
-MMaterialTemplatePtr MToneMappingRenderNode::CreateMaterial()
+std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 {
     auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto pToneMappingMat = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
 
-    auto pToneMappingMat = pResourceSystem->FindResource<MMaterialTemplate>("PostProcess Tone Mapping");
-    if (pToneMappingMat == nullptr)
-    {
-        pToneMappingMat = pResourceSystem->CreateResource<MMaterialTemplate>("PostProcess Tone Mapping");
-        std::shared_ptr<MResource> pVertexShader =
-                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-        std::shared_ptr<MResource> pPixelShader =
-                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
-        pToneMappingMat->LoadShader(pVertexShader);
-        pToneMappingMat->LoadShader(pPixelShader);
-        pToneMappingMat->SetCullMode(MECullMode::ECullNone);
-    }
-
-    return pToneMappingMat;
+    //TODO
+    /*
+    std::shared_ptr<MResource> pVertexShader =
+            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+    std::shared_ptr<MResource> pPixelShader =
+            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mps");
+    pToneMappingMat->LoadShader(pVertexShader, MEShaderType::EVertex, MRenderGlobal::DEFAULT_VERTEX_ENTRY);
+    pToneMappingMat->LoadShader(pPixelShader, MEShaderType::EPixel, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
+    pToneMappingMat->SetCullMode(MECullMode::ECullNone);
+    */
+    return MMaterial::CreateMaterial(pToneMappingMat);
+    
 }
 
 std::vector<MRenderTaskInputDesc> MToneMappingRenderNode::InitInputDesc()

@@ -24,15 +24,17 @@ public:
 
     void                      RemoveMacro(const MStringId& strKey);
 
-    bool                      HasMacro(const MStringId& strKey) const;
+    [[nodiscard]] bool        HasMacro(const MStringId& strKey) const;
 
-    MString                   GetMacro(const MStringId& strKey) const;
+    [[nodiscard]] MString     GetMacro(const MStringId& strKey) const;
 
     bool                      Compare(const MShaderMacro& macro);
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 
     void                      Deserialize(const void* pBufferPointer);
+
+    [[nodiscard]] MHashCode   GetHashCode() const;
 
 protected:
     friend class MMaterial;

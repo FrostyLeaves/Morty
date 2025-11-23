@@ -11,7 +11,6 @@
 #include "Utility/MGlobal.h"
 #include "Component/MComponent.h"
 
-#include "Material/MMaterialPropertyProxy.h"
 #include "Math/MMath.h"
 #include "Resource/MMeshResource.h"
 #include "Resource/MResource.h"
@@ -34,9 +33,9 @@ public:
     MORTY_CLASS(MRenderMeshComponent)
 
 public:
-    MRenderMeshComponent();
+             MRenderMeshComponent();
 
-    ~MRenderMeshComponent() override;
+    virtual ~MRenderMeshComponent();
 
 public:
     enum class MEShadowType
@@ -47,7 +46,7 @@ public:
     };
 
 public:
-    void                                             Release() override;
+    virtual void                                     Release() override;
 
     void                                             SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
 
@@ -61,50 +60,46 @@ public:
 
     void                                             SetMeshResourcePath(const MString& strResourcePath);
 
-    MString                                          GetMeshResourcePath() { return m_Mesh.GetResourcePath(); }
+    [[nodiscard]] MString                            GetMeshResourcePath() const { return m_mesh.GetResourcePath(); }
 
-    [[nodiscard]] MResourceRef                       GetMeshResource() const { return m_Mesh; }
-
-public:
-    MIMesh*                    GetMesh();
-
-    void                       SetShadowType(const MEShadowType& eType) { m_shadowType = eType; }
-
-    MEShadowType               GetShadowType() { return m_shadowType; }
-
-    void                       SetDetailLevel(const uint32_t& unLevel) { m_unDetailLevel = unLevel; }
-
-    [[nodiscard]] uint32_t     GetDetailLevel() const { return m_unDetailLevel; }
-
-    void                       SetGenerateDirLightShadow(const bool& bGenerate);
-
-    [[nodiscard]] bool         GetGenerateDirLightShadow() const { return m_generateDirLightShadow; }
-
-    void                       SetSceneCullEnable(bool bEnable);
-
-    [[nodiscard]] bool         GetSceneCullEnable() const { return m_sceneCullEnable; }
-
-
-    [[nodiscard]] MComponentID GetAttachedModelComponentID() const { return m_modelComponent; }
-
-    void                       SetAttachedModelComponentID(MComponentID idx);
+    [[nodiscard]] MResourceRef                       GetMeshResource() const { return m_mesh; }
 
 public:
-    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    MIMesh*      GetMesh();
 
-    void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    void         SetShadowType(const MEShadowType& eType) { m_shadowType = eType; }
 
-    void                      Deserialize(const void* pBufferPointer) override;
+    MEShadowType GetShadowType() { return m_shadowType; }
+
+    void         SetDetailLevel(const uint32_t& unLevel) { m_unDetailLevel = unLevel; }
+
+    uint32_t     GetDetailLevel() { return m_unDetailLevel; }
+
+    void         SetGenerateDirLightShadow(const bool& bGenerate);
+
+    bool         GetGenerateDirLightShadow() const { return m_generateDirLightShadow; }
+
+    void         SetSceneCullEnable(bool bEnable);
+
+    bool         GetSceneCullEnable() const { return m_sceneCullEnable; }
+
+
+    MComponentID GetAttachedModelComponentID() const { return m_modelComponent; }
+
+    void         SetAttachedModelComponentID(MComponentID idx);
 
 public:
-    MMaterialPropertyProxy m_materialProxy;
+    virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(flatbuffers::FlatBufferBuilder& fbb) override;
+
+    virtual void                      Deserialize(const void* pBufferPointer) override;
 
 protected:
-    MResourceRef m_Mesh;
-    MResourceRef m_Material;
+    MResourceRef m_mesh;
+    MResourceRef m_material;
     MEShadowType m_shadowType;
     uint32_t     m_unDetailLevel;
-
 
     MComponentID m_modelComponent;
 

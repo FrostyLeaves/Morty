@@ -3,7 +3,6 @@
 #include "Basic/MViewport.h"
 #include "Engine/MEngine.h"
 #include "MForwardRenderNode.h"
-#include "MTransparentRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
 #include "RHI/IRenderCommand.h"
@@ -16,28 +15,27 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MColorGradingRenderNode, MBasicPostProcessRenderNode)
 
-const MStringId      MColorGradingRenderNode::ColorGradingOutput = MStringId("Color Grading Output");
+const MStringId            MColorGradingRenderNode::ColorGradingOutput = MStringId("Color Grading Output");
 
-void                 MColorGradingRenderNode::Release() { Super::Release(); }
+void                       MColorGradingRenderNode::Release() { Super::Release(); }
 
-MMaterialTemplatePtr MColorGradingRenderNode::CreateMaterial()
+std::shared_ptr<MMaterial> MColorGradingRenderNode::CreateMaterial()
 {
-    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*           pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto pMaterial = pResourceSystem->FindResource<MMaterialTemplate>("Color Grading Material");
-    if (pMaterial == nullptr)
-    {
-        pMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
-        std::shared_ptr<MResource> pVertexShader =
-                pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-        std::shared_ptr<MResource> pPixelShader =
-                pResourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
-        pMaterial->LoadShader(pVertexShader);
-        pMaterial->LoadShader(pPixelShader);
-        pMaterial->SetCullMode(MECullMode::ECullNone);
-    }
+    auto                       pMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
 
-    return pMaterial;
+    //TODO
+    /*
+    std::shared_ptr<MResource> pVertexShader =
+            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+    std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
+    pMaterial->LoadShader(pVertexShader, MEShaderType::EVertex, MRenderGlobal::DEFAULT_VERTEX_ENTRY);
+    pMaterial->LoadShader(pPixelShader, MEShaderType::EPixel, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
+    pMaterial->SetCullMode(MECullMode::ECullNone);
+    */
+   
+    return MMaterial::CreateMaterial(pMaterial);
 }
 
 void MColorGradingRenderNode::RenderSetup(const MRenderInfo& info)

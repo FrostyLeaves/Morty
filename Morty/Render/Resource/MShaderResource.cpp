@@ -18,46 +18,43 @@ MShader* MShaderResource::GetShaderByIndex(const int& nIndex)
     return m_shaders[MMath::Clamp(nIndex, 0, nSize)];
 }
 
-int MShaderResource::FindShaderByMacroParam(const MShaderMacro& macro)
+int MShaderResource::FindShaderByMacroParam(
+        const MStringId&    entryName,
+        MEShaderType        shaderType,
+        const MShaderMacro& macro
+)
 {
     auto pShaderData = static_cast<MShaderResourceData*>(m_resourceData.get());
 
     int  nSize = static_cast<int>(m_shaders.size());
     for (int i = 0; i < nSize; ++i)
     {
-        if (m_shaders[i]->m_shaderMacro.Compare(macro)) return i;
+        if (m_shaders[i]->m_entryName == entryName && m_shaders[i]->m_ShaderMacro.Compare(macro)) return i;
     }
 
-    auto* pNewShader          = new MShader();
-    pNewShader->m_shaderType  = pShaderData->shaderType;
-    pNewShader->m_shaderPath  = pShaderData->shaderPath;
-    pNewShader->m_entryName   = pShaderData->entryName;
-    pNewShader->m_shaderMacro = macro;
+    auto* pNewShader            = new MShader();
+    pNewShader->m_entryName     = entryName;
+    pNewShader->m_ShaderMacro   = macro;
+    pNewShader->m_shaderType    = shaderType;
+    pNewShader->m_languageType  = pShaderData->eLanguageType;
+    pNewShader->m_strShaderPath = pShaderData->strShaderPath;
     m_shaders.push_back(pNewShader);
 
     return static_cast<int>(m_shaders.size()) - 1;
 }
 
-MEShaderType MShaderResource::GetShaderType() const
-{
-    if (auto ptr = static_cast<MShaderResourceData*>(m_resourceData.get())) { return ptr->shaderType; }
-
-    return MEShaderType::ENone;
-}
-
 bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    auto  pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
+    auto           pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
 
-    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
 
     for (MShader* pShader: m_shaders)
     {
         pShader->CleanShader(pRenderSystem->GetDevice());
 
-        pShader->m_shaderPath = pShaderData->shaderPath;
-        pShader->m_entryName  = pShaderData->entryName;
-        pShader->m_shaderType = pShaderData->shaderType;
+        pShader->m_strShaderPath = pShaderData->strShaderPath;
+        pShader->m_languageType  = pShaderData->eLanguageType;
     }
 
     m_resourceData = std::move(pResourceData);
@@ -73,7 +70,7 @@ bool MShaderResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 
 void MShaderResource::OnDelete()
 {
-    auto* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
     MORTY_ASSERT(pRenderSystem);
 
     for (MShader* pShader: m_shaders)
@@ -93,32 +90,25 @@ const MType*                   MShaderResourceLoader::ResourceType() const { ret
 
 std::unique_ptr<MResourceData> MShaderResourceLoader::LoadResource(const MString& svFullPath)
 {
-    std::unique_ptr<MShaderResourceData>   pResourceData = std::make_unique<MShaderResourceData>();
+    std::unique_ptr<MShaderResourceData>           pResourceData = std::make_unique<MShaderResourceData>();
 
-    const MString                          strPathSuffix = MResource::GetSuffix(svFullPath);
+    const MString                                  strPathSuffix = MResource::GetSuffix(svFullPath);
 
-    static std::map<MString, MEShaderType> ShaderSuffixTable = {
-            {MRenderGlobal::SUFFIX_VERTEX_SHADER, MEShaderType::EVertex},
-            {MRenderGlobal::SUFFIX_PIXEL_SHADER, MEShaderType::EPixel},
-            {MRenderGlobal::SUFFIX_COMPUTE_SHADER, MEShaderType::ECompute},
-            {MRenderGlobal::SUFFIX_GEOMETRY_SHADER, MEShaderType::EGeometry},
+    static std::map<MString, MEShaderLanguageType> ShaderSuffixTable = {
+            {MRenderGlobal::SUFFIX_VERTEX_SHADER, MEShaderLanguageType::HLSL},
+            {MRenderGlobal::SUFFIX_PIXEL_SHADER, MEShaderLanguageType::HLSL},
+            {MRenderGlobal::SUFFIX_COMPUTE_SHADER, MEShaderLanguageType::HLSL},
+            {MRenderGlobal::SUFFIX_GEOMETRY_SHADER, MEShaderLanguageType::HLSL},
+            {MRenderGlobal::SUFFIX_HLSL_SHADER, MEShaderLanguageType::HLSL},
+            {MRenderGlobal::SUFFIX_SLANG_SHADER, MEShaderLanguageType::Slang},
     };
-
-    static std::map<MString, MString> ShaderEntryTable = {
-            {MRenderGlobal::SUFFIX_VERTEX_SHADER, "VS_MAIN"},
-            {MRenderGlobal::SUFFIX_PIXEL_SHADER, "PS_MAIN"},
-            {MRenderGlobal::SUFFIX_COMPUTE_SHADER, "CS_MAIN"},
-            {MRenderGlobal::SUFFIX_GEOMETRY_SHADER, "GS_MAIN"},
-    };
-
 
     MORTY_ASSERT(ShaderSuffixTable.find(strPathSuffix) != ShaderSuffixTable.end());
 
-    pResourceData->shaderType = ShaderSuffixTable[strPathSuffix];
-    pResourceData->entryName  = ShaderEntryTable[strPathSuffix];
+    pResourceData->eLanguageType = ShaderSuffixTable[strPathSuffix];
 
     //TODO load as buffer.
-    pResourceData->shaderPath = svFullPath;
+    pResourceData->strShaderPath = svFullPath;
     return pResourceData;
 }
 

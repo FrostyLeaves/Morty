@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MVulkanShaderReflector.h"
+#include "RHI/Shader/MVulkanShaderReflector.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 

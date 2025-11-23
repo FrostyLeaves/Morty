@@ -18,6 +18,7 @@ namespace morty
 
 class MVertexBuffer;
 class MIMesh;
+class MMaterialPass;
 class MBuffer;
 class MTextureBuffer;
 class MRenderTextureBuffer;
@@ -30,6 +31,7 @@ struct MShaderConstantParam;
 class MGraphicsPipeline;
 class MMaterialTemplate;
 class MMaterial;
+class IShaderProgram;
 class MComputeDispatcher;
 class IRenderCommand;
 
@@ -70,13 +72,15 @@ public:
 
     virtual void CleanShader(MShader* pShader) = 0;
 
-    virtual bool GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
+    virtual bool SyncPropertyBlock(MShaderPropertyBlock* propertyBlock) = 0;
 
-    virtual void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) = 0;
+    virtual bool GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) = 0;
 
-    virtual bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;
+    virtual void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) = 0;
 
-    virtual void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) = 0;
+    virtual bool GenerateShaderParamBuffer(MShaderConstantParam* param) = 0;
+
+    virtual void DestroyShaderParamBuffer(MShaderConstantParam* param) = 0;
 
     virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 
@@ -87,7 +91,7 @@ public:
     virtual void DestroyFrameBuffer(MRenderPass* pRenderPass) = 0;
 
     virtual std::shared_ptr<MGraphicsPipeline>
-    FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass) = 0;
+    FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass) = 0;
 
     virtual IRenderCommand* CreateRenderCommand(const MString& strCommandName) = 0;
 

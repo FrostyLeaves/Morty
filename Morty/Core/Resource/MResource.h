@@ -139,6 +139,8 @@ public:
 
     std::shared_ptr<MResource> GetResource() const { return m_resource; }
 
+    [[nodiscard]] MHashCode GetHashCode() const;
+
     const MResourceRef&        operator=(const MResourceRef& keeper);
 
     std::shared_ptr<MResource> operator=(std::shared_ptr<MResource> pResource);

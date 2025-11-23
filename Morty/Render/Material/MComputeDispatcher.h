@@ -26,20 +26,17 @@ class MORTY_API MComputeDispatcher : public MObject
 public:
     MORTY_CLASS(MComputeDispatcher)
 
-    MComputeDispatcher() = default;
+             MComputeDispatcher() = default;
 
     virtual ~MComputeDispatcher() = default;
 
 public:
-    bool LoadComputeShader(std::shared_ptr<MResource> pResource);
+    bool LoadComputeShader(const std::shared_ptr<MResource>& resource, const MStringId& entryName);
 
-    bool LoadComputeShader(const MString& strResource);
+    bool LoadComputeShader(const MString& strResource, const MStringId& entryName);
 
 public:
-    std::shared_ptr<MResource> GetComputeShaderResource()
-    {
-        return m_shaderProgram->GetShaderResource(MEShaderType::ECompute);
-    }
+    std::shared_ptr<MResource> GetComputeShaderResource() { return m_shaderProgram->GetShaderResource(); }
 
     std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks()
     {
@@ -51,15 +48,15 @@ public:
         return GetShaderPropertyBlocks()[nSetIdx];
     }
 
-    MShader*                        GetComputeShader();
+    MShader*                      GetComputeShader();
 
-    MShaderMacro&                   GetShaderMacro() { return m_shaderProgram->GetShaderMacro(); }
+    const MShaderMacro&           GetShaderMacro() const { return m_shaderProgram->GetShaderMacro(); }
 
-    std::shared_ptr<MShaderProgram> GetShaderProgram() const { return m_shaderProgram; }
+    [[nodiscard]] MShaderProgram* GetShaderProgram() const { return m_shaderProgram.get(); }
 
-    void                            SetDispatcherID(const uint32_t& nID) { m_unDispatcherID = nID; }
+    void                          SetDispatcherID(const uint32_t& nID) { m_unDispatcherID = nID; }
 
-    uint32_t                        GetDispatcherID() const { return m_unDispatcherID; }
+    uint32_t                      GetDispatcherID() const { return m_unDispatcherID; }
 
 public:
     virtual void OnCreated() override;
@@ -68,7 +65,7 @@ public:
 
 
 private:
-    std::shared_ptr<MShaderProgram> m_shaderProgram  = nullptr;
+    std::unique_ptr<MShaderProgram> m_shaderProgram  = nullptr;
     uint32_t                        m_unDispatcherID = 0;
 
 public:

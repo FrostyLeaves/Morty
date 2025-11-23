@@ -1,0 +1,8 @@
+
+#ifndef MBONES_PER_VERTEX
+#define MBONES_PER_VERTEX 4
+#endif
+
+#ifndef SKELETON_ENABLE
+#define SKELETON_ENABLE 0
+#endif

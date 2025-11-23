@@ -5,6 +5,7 @@
 
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
+#include "Shader/MShaderProgram.h"
 
 using namespace morty;
 
@@ -15,10 +16,9 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
     auto pMaterialData = std::make_unique<MMaterialResourceData>();
 
-    /* TODO Material Refactor
     if (const auto pMaterialProperty = GetMaterialPropertyBlock())
     {
-        for (auto param: pMaterialProperty->m_params)
+        for (const auto& param: pMaterialProperty->GetConstantParams())
         {
             MMaterialResourceData::Property prop;
             prop.name  = param->strName.ToString();
@@ -26,9 +26,9 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
             pMaterialData->vProperty.push_back(prop);
         }
 
-        for (auto texture: pMaterialProperty->m_textures)
+        for (const auto& texture: pMaterialProperty->GetTextureParams())
         {
-            if (auto pTextureResourceParam = std::dynamic_pointer_cast<MTextureResourceParam>(texture))
+            if (auto pTextureResourceParam = dynamic_cast<MTextureResourceParam*>(texture.get()))
             {
                 if (auto pResource = pTextureResourceParam->GetTextureResource())
                 {
@@ -40,9 +40,8 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
             }
         }
     }
-     */
 
-    if (auto pTemplate = GetMaterialTemplate()) { pMaterialData->strTemplateResource = pTemplate->GetResourcePath(); }
+    if (auto pTemplate = GetTemplate()) { pMaterialData->strTemplateResource = pTemplate->GetResourcePath(); }
 
     pResourceData = std::move(pMaterialData);
     return true;
@@ -57,15 +56,13 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     const auto       pMaterialTemplate = pResourceSystem->LoadResource(pMaterialData->strTemplateResource);
     BindTemplate(MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate));
 
-    /* TODO Material Refactor
     const size_t nPropertyNum = pMaterialData->vProperty.size();
     for (size_t nIdx = 0; nIdx < nPropertyNum; ++nIdx)
     {
         const auto      fbProperty = pMaterialData->vProperty[nIdx];
         const MStringId strPropertyName(fbProperty.name.c_str());
 
-        if (std::shared_ptr<MShaderConstantParam> pConstantParam =
-                    GetMaterialPropertyBlock()->FindConstantParam(strPropertyName))
+        if (auto pConstantParam = GetMaterialPropertyBlock()->FindConstantParam(strPropertyName))
         {
             pConstantParam->var = MVariant::Clone(fbProperty.value);
             pConstantParam->SetDirty();
@@ -79,7 +76,6 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
         const auto pTextureResource = pResourceSystem->LoadResource(fbTexture.value, true);
         SetTexture(MStringId(fbTexture.name.c_str()), pTextureResource);
     }
-     */
 
     m_resourceData = std::move(pResourceData);
     return true;

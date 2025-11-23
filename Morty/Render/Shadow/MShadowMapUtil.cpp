@@ -11,7 +11,6 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 
-#include "Batch/BatchGroup/MInstanceBatchGroup.h"
 #include "Render/RenderGraph/MRenderCommon.h"
 #include "VXGI/MVoxelMapUtil.h"
 
@@ -29,8 +28,9 @@ public:
 
     bool Filter(const MMeshInstanceRenderProxy* instance) const override
     {
-        const MBoundsAABB& bounds = instance->boundsWithTransform;
-        if (MCameraFrustum::EOUTSIDE == m_frustum.ContainTest(bounds, m_direction)) { return false; }
+        MORTY_UNUSED(instance);
+        //const MBoundsAABB& bounds = instance->boundsWithTransform;
+        //if (MCameraFrustum::EOUTSIDE == m_frustum.ContainTest(bounds, m_direction)) { return false; }
 
         return true;
     }
@@ -50,12 +50,16 @@ public:
 
     bool Filter(const MMeshInstanceRenderProxy* instance) const override
     {
+        MORTY_UNUSED(instance);
+        /*
         const MBoundsSphere& bounds = instance->boundsWithTransform.ToSphere();
 
         const Vector3        proj =
                 m_direction.Projection(m_sphere.m_centerPoint - bounds.m_centerPoint) + bounds.m_centerPoint;
 
         return (proj - m_sphere.m_centerPoint).Length() < (m_sphere.m_radius + bounds.m_radius);
+        */
+        return true;
     }
 
 

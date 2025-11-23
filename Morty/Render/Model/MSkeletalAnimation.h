@@ -47,7 +47,7 @@ public:
 class MORTY_API MSkeletalAnimation : public MIAnimation
 {
 public:
-    MSkeletalAnimation();
+             MSkeletalAnimation();
 
     virtual ~MSkeletalAnimation();
 
@@ -84,6 +84,7 @@ protected:
 
 private:
     friend class MModelConverter;
+    friend class MModelImporter;
 
     std::vector<MSkeletalAnimNode> m_skeletalAnimNodes;
     MSkeleton*                     m_skeleton = nullptr;
@@ -99,7 +100,7 @@ class MSkeletalAnimationResource;
 class MORTY_API MSkeletalAnimController : public MIAnimController
 {
 public:
-    MSkeletalAnimController();
+             MSkeletalAnimController();
 
     virtual ~MSkeletalAnimController();
 

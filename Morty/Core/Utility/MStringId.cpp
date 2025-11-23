@@ -5,7 +5,9 @@ using namespace morty;
 
 thread_local static std::vector<std::string> ClashStringTable;
 
-MStringId::MStringId(std::string_view strview)
+const MStringId                              MStringId::Empty = MStringId();
+
+MStringId::                                  MStringId(std::string_view strview)
 {
     m_string = std::make_shared<MString>(strview);
 
@@ -30,6 +32,8 @@ bool MStringId::operator<(const MStringId& other) const
 
 size_t MStringId::GetClashIndex() const
 {
+    if (m_string == nullptr) { return 0; }
+
     const size_t nThreadId = MThreadPool::GetCurrentThreadIndex();
     MORTY_ASSERT(nThreadId < MGlobal::M_MAX_THREAD_NUM);
 

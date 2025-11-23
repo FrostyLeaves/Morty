@@ -27,12 +27,12 @@ bool MCoreModule::Register(MEngine* pEngine)
     pEngine->RegisterSystem<MEntitySystem>();
 
 
-    if (MObjectSystem* pObjectSystem = pEngine->RegisterSystem<MObjectSystem>())
+    if (auto* pObjectSystem = pEngine->RegisterSystem<MObjectSystem>())
     {
         pObjectSystem->RegisterPostCreateObject(MCoreModule::OnObjectPostCreate);
     }
 
-    if (MResourceSystem* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
+    if (auto* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
     {
 #ifdef MORTY_RESOURCE_PATH
         pResourceSystem->SetSearchPath({MORTY_RESOURCE_PATH});
@@ -42,7 +42,7 @@ bool MCoreModule::Register(MEngine* pEngine)
 
     pEngine->RegisterSystem<MResourceAsyncLoadSystem>();
 
-    if (MComponentSystem* pComponentSystem = pEngine->RegisterSystem<MComponentSystem>())
+    if (auto* pComponentSystem = pEngine->RegisterSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MSceneComponent>();
         pComponentSystem->RegisterComponent<MInputComponent>();
@@ -57,9 +57,6 @@ void MCoreModule::OnObjectPostCreate(MObject* pObject)
 
     if (pObject->GetType() == MScene::GetClassType())
     {
-        if (MScene* pScene = pObject->template DynamicCast<MScene>())
-        {
-            pScene->RegisterManager<MNotifyManager>();
-        }
+        if (auto* pScene = pObject->template DynamicCast<MScene>()) { pScene->RegisterManager<MNotifyManager>(); }
     }
 }

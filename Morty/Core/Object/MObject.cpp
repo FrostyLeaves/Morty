@@ -6,15 +6,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MObject, MTypeClass)
 
-MObject::MObject()
-    : m_unObjectID(0)
-    , m_engine(nullptr)
-    , m_deleteMark(false)
-{}
-
-MObject::~MObject() {}
-
-class MObjectSystem* MObject::GetObjectSystem()
+MObjectSystem* MObject::GetObjectSystem()
 {
     if (nullptr == m_engine) return nullptr;
 
@@ -32,6 +24,6 @@ void MObject::DeleteLater()
     {
         m_deleteMark = true;
 
-        GetObjectSystem()->RemoveObject(m_unObjectID);
+        GetObjectSystem()->RemoveObject(m_objectID);
     }
 }

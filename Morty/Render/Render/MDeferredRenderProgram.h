@@ -9,7 +9,6 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "Culling/MBoundingBoxCulling.h"
 #include "Render/RenderGraph/MRenderTargetBindingWalker.h"
 
 #include "MRenderInfo.h"
@@ -22,10 +21,6 @@
 #include "TaskGraph/MTaskNode.h"
 #include "Type/MType.h"
 #include "Utility/MBounds.h"
-
-#include "Culling/MCascadedShadowCulling.h"
-#include "Culling/MInstanceCulling.h"
-#include "MFrameShaderPropertyBlock.h"
 
 namespace morty
 {
@@ -42,6 +37,7 @@ class MRenderGraph;
 class IRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
+
 class MORTY_API MDeferredRenderProgram : public MIRenderProgram
 {
 public:
@@ -54,8 +50,8 @@ public:
 #endif
 
 public:
-    void          Render(IRenderCommand* pPrimaryCommand) override;
-    void          RenderSetup(IRenderCommand* pPrimaryCommand);
+    void Render(IRenderCommand* pPrimaryCommand) override;
+    void RenderSetup(IRenderCommand* pPrimaryCommand);
 
     MRenderGraph* GetRenderGraph() override { return m_renderGraph.get(); }
 
@@ -72,20 +68,12 @@ public:
     void InitializeTaskGraph();
     void ReleaseTaskGraph();
 
-
 protected:
-    MRenderInfo                                 m_renderInfo;
+    MRenderInfo m_renderInfo;
 
-    std::shared_ptr<MFrameShaderPropertyBlock>  m_framePropertyAdapter = nullptr;
+    uint32_t m_frameIndex = 0;
 
-    MCullingTaskNode<MCascadedShadowCulling>*   m_shadowCulling        = nullptr;
-    MCullingTaskNode<CameraFrustumCullingType>* m_cameraFrustumCulling = nullptr;
-    MCullingTaskNode<MBoundingBoxCulling>*      m_voxelizerCulling     = nullptr;
-
-    uint32_t                                    m_frameIndex = 0;
-
-    std::unique_ptr<MTaskGraph>                 m_cullingTask = nullptr;
-    std::unique_ptr<MRenderGraph>               m_renderGraph = nullptr;
+    std::unique_ptr<MRenderGraph> m_renderGraph = nullptr;
 };
 
 }// namespace morty

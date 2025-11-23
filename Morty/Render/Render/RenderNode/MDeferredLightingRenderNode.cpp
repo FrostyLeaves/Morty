@@ -6,10 +6,7 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
-#include "MHBAOBlurRenderNode.h"
-#include "MHBAORenderNode.h"
-#include "MVRSTextureRenderNode.h"
-#include "MVoxelizerRenderNode.h"
+#include "Material/MMaterial.h"
 #include "Mesh/MMeshManager.h"
 #include "Mesh/MVertex.h"
 #include "Model/MSkeleton.h"
@@ -18,7 +15,7 @@
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Render/RenderGraph/MRenderGraph.h"
-#include "Resource/MMaterialTemplateResource.h"
+#include "Resource/MMaterialResource.h"
 #include "Scene/MScene.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
@@ -33,6 +30,8 @@ MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
 {
     UpdateProperty();
+
+    if (!m_lightningMaterial) { return; }
 
     auto* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
     if (!pMeshManager)
@@ -52,27 +51,16 @@ void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
             {.x = 0.0f, .y = 0.0f, .width = static_cast<float>(n2Size.x), .height = static_cast<float>(n2Size.y)}
     );
 
-    command.SetMaterial(m_lightningMaterial.get());
-    auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
-    command.SetShaderPropertyBlock(pPropertyBlock);
+    command.SetMaterial(m_lightningMaterial.get(), m_lightningMaterial->GetTemplate()->GetDefaultPass());
+    //auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
+    //command.SetShaderPropertyBlock(pPropertyBlock);
 
     command.DrawMesh(pMeshManager->GetScreenRect());
 
     pCommand->EndRenderPass(command);
 }
 
-void MDeferredLightingRenderNode::OnCreated()
-{
-    Super::OnCreated();
-
-    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    auto resource        = pResourceSystem->LoadResource(MMaterialName::DEFERRED_LIGHTING);
-
-    if (auto templateResource = MTypeClass::DynamicCast<MMaterialTemplateResource>(resource))
-    {
-        m_lightningMaterial = templateResource->GetMaterial();
-    }
-}
+void MDeferredLightingRenderNode::OnCreated() { Super::OnCreated(); }
 
 void MDeferredLightingRenderNode::Release()
 {
@@ -90,11 +78,9 @@ void MDeferredLightingRenderNode::Release()
 
 void MDeferredLightingRenderNode::UpdateProperty()
 {
-    if (LightingMaterial != nullptr && m_lightningMaterial.get() != LightingMaterial->DynamicCast<MMaterialTemplate>())
+    if (LightingMaterial != nullptr && m_lightningMaterial.get() != LightingMaterial->DynamicCast<MMaterial>())
     {
-        m_lightningMaterial = LightingMaterial;
-
-        BindInOutTexture();
+        m_lightningMaterial = MMaterial::CreateMaterial(LightingMaterial->DynamicCast<MMaterial>()->GetTemplate());
     }
 }
 
@@ -102,7 +88,9 @@ void MDeferredLightingRenderNode::BindInOutTexture()
 {
     Super::AutoBindBarrierTexture();
 
-    if (std::shared_ptr<MShaderPropertyBlock> pParams = m_lightningMaterial->GetMaterialPropertyBlock())
+    if (!m_lightningMaterial) { return; }
+
+    if (auto pParams = m_lightningMaterial->GetMaterialPropertyBlock())
     {
         if (auto texture = GetInputTexture(0))
         {

@@ -3,7 +3,6 @@
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
 #include "Engine/MEngine.h"
-#include "MVRSTextureRenderNode.h"
 #include "Material/MMaterial.h"
 #include "Model/MSkeleton.h"
 #include "RHI/Abstract/MIDevice.h"
@@ -19,14 +18,10 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Component/MSkyBoxComponent.h"
-#include "Culling/MInstanceCulling.h"
-#include "Manager/MEnvironmentManager.h"
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
 #include "RHI/Command/MRenderPassCmd.h"
-#include "Render/MeshRender/MCullingResultRenderable.h"
-#include "Render/MeshRender/MSkyBoxRenderable.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/MBounds.h"
@@ -53,31 +48,7 @@ void MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRend
 
 void MForwardRenderNode::Render(const MRenderInfo& info)
 {
-
-    const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
-
-    //Render static mesh.
-    MCullingResultRenderable indirectMesh;
-    indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
-    indirectMesh.SetPropertyBlockAdapter({
-            GetRenderGraph()->GetFrameProperty(),
-    });
-    indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::EDefault));
-    indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
-
-    const MEnvironmentManager* pEnvironmentManager = info.pScene->GetManager<MEnvironmentManager>();
-    const auto                 pMaterial           = pEnvironmentManager->GetMaterial();
-
-    MSkyBoxRenderable          skyBox;
-    skyBox.SetMesh(pMeshManager->GetSkyBox());
-    skyBox.SetMaterial(pMaterial);
-    skyBox.SetPropertyBlockAdapter({GetRenderGraph()->GetFrameProperty()});
-
-    Render(info,
-           {
-                   &indirectMesh,
-                   &skyBox,
-           });
+    MORTY_UNUSED(info);
 }
 
 void MForwardRenderNode::BindInOutTexture()

@@ -45,14 +45,12 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
 
     m_material = pMaterial;
 
-    auto pMaterialTemplate = m_material->GetMaterial()->GetMaterialTemplate();
-
-    if (!m_material || !m_material->GetMaterialTemplate() || !m_material->GetShaderProgram())
+    if (!m_material || !m_material->GetTemplate())
     {
         pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
     }
-    else if (pMaterialTemplate->GetShaderMacro().GetMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
+    else if (m_material->GetShaderMacro().GetMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
     {
         pSceneSystem->SetVisible(m_staticSphereMeshNode, true);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);

@@ -32,6 +32,7 @@ private:
 
 template<typename T> inline T IniConfig::GetValue(const char* section, const char* name)
 {
+    MORTY_UNUSED(section, name);
     MORTY_ASSERT(false);
 
     return {};
@@ -40,6 +41,7 @@ template<typename T> inline T IniConfig::GetValue(const char* section, const cha
 template<typename T>
 inline void IniConfig::SetValue(const char* section, const char* name, const T& value)
 {
+    MORTY_UNUSED(section, name, value);
     MORTY_ASSERT(false);
 }
 

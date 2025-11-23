@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
-#include "MVulkanShaderReflector.h"
+#include "RHI/Shader/MVulkanShaderReflector.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -24,30 +24,32 @@
 #endif
 
 #include "Basic/MTexture.h"
+#include "RHI/Shader/MVulkanShaderCompiler.h"
 #include "RHI/Vulkan/MVulkanBufferPool.h"
 #include "RHI/Vulkan/MVulkanObjectRecycleBin.h"
 #include "RHI/Vulkan/MVulkanPipelineManager.h"
-#include "RHI/Vulkan/MVulkanShaderCompiler.h"
+#include "Slang/MSlangCompiler.h"
 
 namespace morty
 {
-
 class MBuffer;
+class IShaderProgram;
 class MRenderCommandVulkan;
 class MVulkanPrimaryRenderCommand;
 class MVulkanSecondaryRenderCommand;
+
 class MORTY_API MVulkanDevice : public MIDevice
 {
 public:
     explicit MVulkanDevice();
 
-    bool Initialize() override;
+    bool     Initialize() override;
 
-    void Release() override;
+    void     Release() override;
 
-    void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
+    void     GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
 
-    void DestroyBuffer(MBuffer* pBuffer) override;
+    void     DestroyBuffer(MBuffer* pBuffer) override;
 
     void
     UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
@@ -62,13 +64,15 @@ public:
 
     void CleanShader(MShader* pShader) override;
 
-    bool GenerateShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+    bool SyncPropertyBlock(MShaderPropertyBlock* propertyBlock) override;
 
-    void DestroyShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock) override;
+    bool GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) override;
 
-    bool GenerateShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
+    void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) override;
 
-    void DestroyShaderParamBuffer(const std::shared_ptr<MShaderConstantParam>& pParam) override;
+    bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) override;
+
+    void DestroyShaderParamBuffer(MShaderConstantParam* pParam) override;
 
     bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 
@@ -79,7 +83,7 @@ public:
     void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
     std::shared_ptr<MGraphicsPipeline>
-    FindOrCreateGraphicsPipeline(const MMaterialTemplate* pMaterial, const MRenderPass* pRenderPass) override;
+    FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass) override;
 
     IRenderCommand*              CreateRenderCommand(const MString& strCommandName) override;
 
@@ -174,6 +178,12 @@ public:
 
 
     std::tuple<VkImageView, Vector2i> CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget);
+
+    bool                              CompileShaderHlsl(MShader* pShader, std::vector<uint32_t>& spirv);
+
+    bool                              CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& spirv);
+
+    void                              UpdateShaderParam(MShaderConstantParam* param);
 
 protected:
     void CopyBuffer(
@@ -295,7 +305,6 @@ public:
 
     std::unique_ptr<MVulkanPhysicalDevice> m_physicalDevice = nullptr;
 };
-
 }// namespace morty
 
 #endif

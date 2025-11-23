@@ -78,3 +78,9 @@ void MIMesh::DestroyBuffer(MIDevice* pDevice)
     m_vertexBuffer.DestroyBuffer(pDevice);
     m_indexBuffer.DestroyBuffer(pDevice);
 }
+
+void MIMesh::Clean()
+{
+    ResizeVertices(0);
+    ResizeIndices(0, 1);
+}

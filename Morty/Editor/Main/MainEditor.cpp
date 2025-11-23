@@ -6,7 +6,6 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 
-#include "SDL.h"
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
@@ -34,7 +33,7 @@
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/MaterialView.h"
-#include "Widget/ModelConvertView.h"
+#include "Widget/ModelImportView.h"
 #include "Widget/NodeTreeView.h"
 #include "Widget/PropertyView.h"
 #include "Widget/RenderGraphView.h"
@@ -61,7 +60,7 @@ bool      MainEditor::Initialize(MEngine* pEngine)
     m_childView.push_back(new PropertyView());
     m_childView.push_back(new MaterialView());
     m_childView.push_back(new ResourceView());
-    m_childView.push_back(new ModelConvertView());
+    m_childView.push_back(new ModelImportView());
     m_childView.push_back(new MainView());
 
     auto pTaskGraphView = new TaskGraphView("Task Graph");
@@ -189,7 +188,7 @@ void MainEditor::ShowMenu()
 
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem("Convert model")) {}
+            if (ImGui::MenuItem("Import model")) {}
 
             if (ImGui::MenuItem("Load model")) {}
 

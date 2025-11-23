@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Utility/MRenderGlobal.h"
+#include "RHI/Abstract/MBufferRHI.h"
 
 namespace morty
 {
@@ -43,9 +44,10 @@ public:
 
 
 public:
-    MBuffer();
-
-    ~MBuffer();
+                   MBuffer() = default;
+                   MBuffer(const MBuffer& other);
+    const MBuffer& operator=(const MBuffer& other);
+    ~              MBuffer() = default;
 
     static MBuffer CreateBuffer(MMemoryType memory, uint32_t usage, const char* debugName = nullptr);
 
@@ -65,11 +67,6 @@ public:
 
 
 public:
-    MBuffer(const MBuffer& other) = default;
-
-    const MBuffer& operator=(const MBuffer& other);
-
-public:
     void   ReallocMemory(const size_t& unNewSize);
 
     size_t GetSize() const { return m_unDataSize; }
@@ -85,23 +82,18 @@ public:
     void   DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
 
 
-public:
-#if RENDER_GRAPHICS == MORTY_VULKAN
-    VkBuffer       m_vkBuffer       = VK_NULL_HANDLE;
-    VkDeviceMemory m_vkDeviceMemory = VK_NULL_HANDLE;
-#endif
 #if MORTY_DEBUG
-
     const char* GetDebugName() const { return m_strDebugName.c_str(); }
-
     MString     m_strDebugName;
 #endif
 
-    size_t      m_unDataSize = 0;
+    size_t                      m_unDataSize = 0;
+    MMemoryType                 m_memoryType = MMemoryType::EUnknow;
+    uint32_t                    m_usageType  = 0;
+    MStageType                  m_stageType  = MStageType::EUnknow;
 
-    MMemoryType m_memoryType = MMemoryType::EUnknow;
-    uint32_t    m_usageType  = 0;
-    MStageType  m_stageType  = MStageType::EUnknow;
+
+    std::unique_ptr<MBufferRHI> m_bufferRHI = nullptr;
 };
 
 }// namespace morty

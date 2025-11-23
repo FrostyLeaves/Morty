@@ -52,9 +52,9 @@ void MShaderTextureParam::SetTexture(MTexturePtr pTexture)
     }
 }
 
-std::shared_ptr<MShaderTextureParam> MShaderTextureParam::Clone() const
+std::unique_ptr<MShaderTextureParam> MShaderTextureParam::Clone() const
 {
-    return std::make_shared<MShaderTextureParam>(*this);
+    return std::make_unique<MShaderTextureParam>(*this);
 }
 
 MShaderSampleParam::MShaderSampleParam()

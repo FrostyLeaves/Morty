@@ -4,42 +4,22 @@
 #include "MMaterial.h"
 #include "Resource/MShaderResource.h"
 #include "Resource/MTextureResource.h"
-
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
+#include "System/MShaderProgramSystem.h"
+#include "Utility/MUtils.h"
 #include "Variant/MVariant.h"
 
 using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMaterialTemplate, MResource)
 
-void MMaterialTemplate::SetCullMode(const MECullMode& eType)
-{
-    if (m_cullMode == eType) return;
-
-    m_cullMode = eType;
-}
-
-void MMaterialTemplate::SetMaterialType(const MEMaterialType& eType)
-{
-    if (m_materialType == eType) return;
-
-    m_materialType = eType;
-}
-
-void MMaterialTemplate::SetShaderMacro(const MShaderMacro& macro) { m_shaderProgram->SetShaderMacro(macro); }
-
-void MMaterialTemplate::SetShadingRate(Vector2i n2ShadingRate) { m_shadingRate = n2ShadingRate; }
-
-void MMaterialTemplate::AddDefine(const MStringId& strKey, const MString& strValue)
-{
-    m_shaderProgram->GetShaderMacro().AddUnionMacro(strKey, strValue);
-}
-
 bool MMaterialTemplate::LoadShader(const std::shared_ptr<MResource>& pResource)
 {
-    return m_shaderProgram->LoadShader(pResource);
+    m_shaderResource.SetResource(std::dynamic_pointer_cast<MShaderResource>(pResource));
+    SetDirty();
+
+    return true;
 }
 
 bool MMaterialTemplate::LoadShader(const MString& strResource)
@@ -53,46 +33,56 @@ bool MMaterialTemplate::LoadShader(const MString& strResource)
     return false;
 }
 
-void MMaterialTemplate::OnCreated()
+MMaterialPass*
+MMaterialTemplate::SetPass(const MStringId& passName, const MStringId& vsEntryName, const MStringId& psEntryName)
 {
-    Super::OnCreated();
+    MMaterialPass* materialPass = nullptr;
 
-    m_shaderProgram = MShaderProgram::MakeShared(GetEngine(), MShaderProgram::EUsage::EGraphics);
-}
-
-void MMaterialTemplate::OnDelete()
-{
-    m_shaderProgram = nullptr;
-
-    Super::OnDelete();
-}
-
-std::shared_ptr<MShaderPropertyBlock>
-MMaterialTemplate::CreateFramePropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
-{
-    return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_FRAME]->Clone();
-}
-
-std::shared_ptr<MShaderPropertyBlock>
-MMaterialTemplate::CreateMeshPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
-{
-    return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MESH]->Clone();
-}
-
-std::shared_ptr<MShaderPropertyBlock>
-MMaterialTemplate::CreateMaterialPropertyBlock(const std::shared_ptr<MShaderProgram>& pShaderProgram)
-{
-    return pShaderProgram->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL]->Clone();
-}
-const std::shared_ptr<MShaderPropertyBlock>& MMaterialTemplate::GetMaterialPropertyBlock() const
-{
-    return GetShaderProgram()->GetShaderPropertyBlocks()[MRenderGlobal::SHADER_PARAM_SET_MATERIAL];
-}
-
-void MMaterialTemplate::SetTexture(const MStringId& name, const MResourcePtr& texture)
-{
-    if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(texture))
+    auto           findResult = m_passes.find(passName);
+    if (findResult == m_passes.end())
     {
-        GetMaterialPropertyBlock()->SetTexture(name, textureResource->GetTextureTemplate());
+        materialPass = (m_passes[passName] = std::make_unique<MMaterialPass>(this)).get();
     }
+    else { materialPass = findResult->second.get(); }
+
+    materialPass->SetEntry(vsEntryName, MEShaderType::EVertex);
+    materialPass->SetEntry(psEntryName, MEShaderType::EPixel);
+
+    return materialPass;
 }
+
+MMaterialPass* MMaterialTemplate::GetPass(const MStringId& passName) const
+{
+    auto findResult = m_passes.find(passName);
+    if (findResult != m_passes.end()) { return findResult->second.get(); }
+
+    return nullptr;
+}
+
+MMaterialPass* MMaterialTemplate::GetDefaultPass() const { return GetPass(MRenderGlobal::DEFAULT_PASS_NAME); }
+
+std::shared_ptr<MShaderPropertyBlock> MMaterialTemplate::CreatePropertyBlock(size_t setIdx) const
+{
+    if (GetDefaultPass() == nullptr) return nullptr;
+    auto shaderProgram = GetDefaultPass()->GetShaderProgram();
+    if (!shaderProgram) { return nullptr; }
+
+    auto propertyBlocks = shaderProgram->GetShaderPropertyBlocks();
+    if (setIdx >= propertyBlocks.size()) { return nullptr; }
+
+    return propertyBlocks[setIdx] ? propertyBlocks[setIdx]->Clone() : nullptr;
+}
+
+MHashCode MMaterialTemplate::GetHashCode() const
+{
+    MHashCode hash;
+
+    MUtils::HashCombine(hash, m_shaderMacro.GetHashCode());
+    MUtils::HashCombine(hash, m_shaderResource.GetHashCode());
+
+    return hash;
+}
+
+void MMaterialTemplate::OnCreated() { Super::OnCreated(); }
+
+void MMaterialTemplate::OnDelete() { Super::OnDelete(); }

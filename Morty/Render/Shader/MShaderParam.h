@@ -80,7 +80,7 @@ public:
 
     virtual MTexturePtr                          GetTexture() { return pTexture; }
 
-    virtual std::shared_ptr<MShaderTextureParam> Clone() const;
+    virtual std::unique_ptr<MShaderTextureParam> Clone() const;
 
 public:
     MTexturePtr     pTexture    = nullptr;

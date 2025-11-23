@@ -73,7 +73,7 @@ public:
 
     bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
 
-    bool EditShaderProperty(const std::shared_ptr<MShaderPropertyBlock>& pProperty);
+    bool EditShaderProperty(MShaderPropertyBlock* pProperty);
 
     bool EditMResource(
             const MString&              strDlgID,

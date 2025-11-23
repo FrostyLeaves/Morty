@@ -23,10 +23,13 @@ namespace morty
 struct MVertex {
     Vector3 position;
     Vector3 normal;
+    Vector2 texCoords;
     Vector3 tangent;
     Vector3 bitangent;
-    Vector2 texCoords;
 };
+
+template<> inline size_t             AttributeProtectMask<MVertex>() { return 3 << 6; }
+template<> inline std::vector<float> SimplifyWeight<MVertex>() { return {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f}; }
 
 //带骨骼顶点
 struct MVertexWithBones {
@@ -37,14 +40,17 @@ struct MVertexWithBones {
     }
     Vector3 position;
     Vector3 normal;
+    Vector2 texCoords;
     Vector3 tangent;
     Vector3 bitangent;
-    Vector2 texCoords;
-
 
     int     bonesID[MRenderGlobal::BONES_PER_VERTEX];
     float   bonesWeight[MRenderGlobal::BONES_PER_VERTEX];
 };
+
+template<> inline size_t             AttributeProtectMask<MVertexWithBones>() { return 3 << 6; }
+template<> inline std::vector<float> SimplifyWeight<MVertexWithBones>() { return {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f}; }
+
 
 struct MMeshInstanceTransform {
     Matrix4 transform;

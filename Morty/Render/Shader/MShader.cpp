@@ -8,7 +8,21 @@ bool MShader::CompileShader(MIDevice* pDevice)
 {
     if (!pDevice->CompileShader(this)) return false;
 
+    m_compiled = true;
     return true;
 }
 
-void MShader::CleanShader(MIDevice* pDevice) { pDevice->CleanShader(this); }
+void MShader::CleanShader(MIDevice* pDevice)
+{
+    pDevice->CleanShader(this);
+    m_shaderBuffer = nullptr;
+    m_compiled     = false;
+}
+
+void MShader::SetBuffer(MShaderBuffer* shaderBuffer)
+{
+    MORTY_ASSERT(m_shaderBuffer == nullptr);
+    m_shaderBuffer = shaderBuffer;
+}
+
+MShaderBuffer* MShader::GetBuffer() const { return m_shaderBuffer; }

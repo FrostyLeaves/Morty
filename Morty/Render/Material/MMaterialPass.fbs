@@ -1,0 +1,23 @@
+include "Resource/MResourceRef.fbs";
+include "Variant/MVariant.fbs";
+include "Shader/MShaderMacro.fbs";
+include "Utility/MRenderGlobal.fbs";
+
+namespace morty.fbs;
+
+table MMaterialPass
+{
+    pass_name: string;
+    conservative_rasterization: bool;
+    shading_rate_enable: bool;
+    shading_rate: Vector2;
+    cull_mode: MECullMode;
+
+    entry_names: [string];
+    blend_state: [MBlendState];
+    depth_stencil_state: MDepthStencilState;
+}
+
+root_type MMaterialPass;
+
+file_identifier "MFBS";

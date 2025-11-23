@@ -2,20 +2,17 @@
 
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
-#include "Batch/MMeshInstanceManager.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDirectionalLightComponent.h"
 #include "Component/MMoveControllerComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
-#include "Manager/MAnimationManager.h"
 #include "RHI/IRenderCommand.h"
 #include "Render/MIRenderProgram.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
-#include "Shadow/MShadowMeshManager.h"
 #include "System/MEntitySystem.h"
 #include "System/MObjectSystem.h"
 #include "System/MResourceSystem.h"
@@ -57,16 +54,16 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
 
     std::vector<MByte> renderGraphBuffer;
     MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
-    //m_renderProgram->LoadGraph(renderGraphBuffer);
+    m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)
     {
         m_updateTask->SetThreadType(METhreadType::ERenderThread);
 
-        GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
-        GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
-        GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
+        //GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
+        //GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
+        //GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
     }
 }
 

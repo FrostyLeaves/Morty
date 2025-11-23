@@ -1,10 +1,11 @@
 #include "MRenderCommandVulkan.h"
+
+#include "MBufferRHIVulkan.h"
 #include "MVulkanCommandExecuteTable.h"
 #include "MVulkanPhysicalDevice.h"
 #include "Material/MComputeDispatcher.h"
 #include "Material/MMaterial.h"
 #include "Mesh/MMesh.h"
-#include "Mesh/MVertexBuffer.h"
 #include "RHI/Command/MRenderPassCmd.h"
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
 
@@ -38,21 +39,23 @@ void MRenderCommandVulkan::SetScissor(const MSetScissorCmd* scissor) const
 
 void MRenderCommandVulkan::DrawMesh(const MDrawMeshCmd* cmd)
 {
-    MORTY_ASSERT(cmd->vertexBuffer && cmd->indexBuffer);
-    MORTY_ASSERT(cmd->vertexBuffer->m_vkBuffer != VK_NULL_HANDLE && cmd->indexBuffer->m_vkBuffer != VK_NULL_HANDLE);
+    auto vertex  = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
+    auto indices = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
 
-    if (pUsingVertex != cmd->vertexBuffer)
+    MORTY_ASSERT(vertex != VK_NULL_HANDLE && indices != VK_NULL_HANDLE);
+
+    if (pUsingVertex != vertex)
     {
-        const VkBuffer         vertexBuffers[] = {cmd->vertexBuffer->m_vkBuffer};
+        const VkBuffer         vertexBuffers[] = {vertex->vkBuffer};
         constexpr VkDeviceSize offsets[]       = {0};
         vkCmdBindVertexBuffers(m_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
-        pUsingVertex = cmd->vertexBuffer;
+        pUsingVertex = vertex;
     }
 
-    if (pUsingIndex != cmd->indexBuffer)
+    if (pUsingIndex != indices)
     {
-        vkCmdBindIndexBuffer(m_vkCommandBuffer, cmd->indexBuffer->m_vkBuffer, 0, VK_INDEX_TYPE_UINT32);
-        pUsingIndex = cmd->indexBuffer;
+        vkCmdBindIndexBuffer(m_vkCommandBuffer, indices->vkBuffer, 0, VK_INDEX_TYPE_UINT32);
+        pUsingIndex = indices;
     }
 
     vkCmdDrawIndexed(m_vkCommandBuffer, cmd->indexCount, 1, cmd->indexOffset, cmd->vertexOffset, 0);
@@ -62,25 +65,29 @@ void MRenderCommandVulkan::DrawMesh(const MDrawMeshCmd* cmd)
 
 void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cmd)
 {
-    if (pUsingVertex != cmd->vertexBuffer)
+    auto vertex   = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
+    auto indices  = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
+    auto commands = static_cast<const MBufferRHIVulkan*>(cmd->commandsBuffer);
+
+    if (pUsingVertex != vertex)
     {
-        const VkBuffer         vertexBuffers[] = {cmd->vertexBuffer->m_vkBuffer};
+        const VkBuffer         vertexBuffers[] = {vertex->vkBuffer};
         constexpr VkDeviceSize offsets[]       = {0};
         vkCmdBindVertexBuffers(m_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
-        pUsingVertex = cmd->vertexBuffer;
+        pUsingVertex = vertex;
     }
 
-    if (pUsingIndex != cmd->indexBuffer)
+    if (pUsingIndex != indices)
     {
-        vkCmdBindIndexBuffer(m_vkCommandBuffer, cmd->indexBuffer->m_vkBuffer, 0, VK_INDEX_TYPE_UINT32);
-        pUsingIndex = cmd->indexBuffer;
+        vkCmdBindIndexBuffer(m_vkCommandBuffer, indices->vkBuffer, 0, VK_INDEX_TYPE_UINT32);
+        pUsingIndex = indices;
     }
 
     if (m_device->MultiDrawIndirectSupport())
     {
         vkCmdDrawIndexedIndirect(
                 m_vkCommandBuffer,
-                cmd->commandsBuffer->m_vkBuffer,
+                commands->vkBuffer,
                 cmd->offset,
                 static_cast<uint32_t>(cmd->count),
                 sizeof(VkDrawIndexedIndirectCommand)
@@ -92,7 +99,7 @@ void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cm
         {
             vkCmdDrawIndexedIndirect(
                     m_vkCommandBuffer,
-                    cmd->commandsBuffer->m_vkBuffer,
+                    commands->vkBuffer,
                     cmd->offset + sizeof(VkDrawIndexedIndirectCommand) * nDrawIdx,
                     1,
                     sizeof(VkDrawIndexedIndirectCommand)
@@ -115,73 +122,41 @@ void MRenderCommandVulkan::SetGraphPipeline(const MSetGraphPipelineCmd* cmd)
 
 void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockCmd* cmd)
 {
-    auto pPropertyBlock = cmd->property;
-    auto pPipeline      = cmd->pipeline;
+    auto pPropertyBlock     = cmd->property;
+    auto pPipeline          = cmd->pipeline;
+    auto allocDescriptorSet = cmd->allocDescriptorSet;
 
-    bool bNeedAllocDescriptorSet = false;
-    for (const auto& pParam: pPropertyBlock->m_params)
-    {
-        if (pParam->bDirty)
-        {
-            UpdateShaderParam(pParam);
-            pParam->bDirty = false;
-        }
-    }
+    if (VK_NULL_HANDLE == pPropertyBlock->m_vkDescriptorSet) { allocDescriptorSet = true; }
 
-    for (const auto& pParam: pPropertyBlock->m_textures)
-    {
-        const auto pImageIdent =
-                pParam->GetTexture() ? pParam->GetTexture()->GetTextureRHI<MTextureRHIVulkan>()->vkImageView : nullptr;
-        if (pParam->bDirty || pParam->pImageIdent != pImageIdent)
-        {
-            bNeedAllocDescriptorSet = true;
-            pParam->bDirty          = false;
-            pParam->pImageIdent     = pImageIdent;
-        }
-    }
-
-    for (const auto& pParam: pPropertyBlock->m_storages)
-    {
-        const auto pStoreIdent = pParam->pBuffer->m_vkBuffer;
-        if (pParam->pImageIdent != pStoreIdent)
-        {
-            bNeedAllocDescriptorSet = true;
-            pParam->bDirty          = false;
-            pParam->pImageIdent     = pStoreIdent;
-        }
-    }
-
-    if (VK_NULL_HANDLE == pPropertyBlock->m_vkDescriptorSet) { bNeedAllocDescriptorSet = true; }
-
-    if (bNeedAllocDescriptorSet)
+    if (allocDescriptorSet)
     {
         //alloc a new descriptor set.
         m_device->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pPipeline);
 
         std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
-        for (const auto& pParam: pPropertyBlock->m_params)
+        for (const auto& param: pPropertyBlock->GetConstantParams())
         {
             // bind buffer to descriptor set.
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
-            m_device->m_PipelineManager.BindConstantParam(pParam, writeDescriptorSet);
+            m_device->m_PipelineManager.BindConstantParam(param.get(), writeDescriptorSet);
             writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
         }
 
-        for (const auto& pParam: pPropertyBlock->m_textures)
+        for (const auto& param: pPropertyBlock->GetTextureParams())
         {
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
-            m_device->m_PipelineManager.BindTextureParam(pParam, writeDescriptorSet);
+            m_device->m_PipelineManager.BindTextureParam(param.get(), writeDescriptorSet);
             writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
         }
 
-        for (const auto& pParam: pPropertyBlock->m_storages)
+        for (const auto& param: pPropertyBlock->GetStorageParams())
         {
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
-            m_device->m_PipelineManager.BindStorageParam(pParam, writeDescriptorSet);
+            m_device->m_PipelineManager.BindStorageParam(param.get(), writeDescriptorSet);
             writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
         }
 
@@ -198,7 +173,7 @@ void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockC
     MORTY_ASSERT(VK_NULL_HANDLE != pPropertyBlock->m_vkDescriptorSet);
 
     std::vector<uint32_t> vDynamicOffsets;
-    for (const auto& pParam: pPropertyBlock->m_params)
+    for (const auto& pParam: pPropertyBlock->GetConstantParams())
     {
         if (pParam->m_vkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
@@ -222,7 +197,7 @@ void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockC
 void MRenderCommandVulkan::AddBarrierForPixelSample(const MSetShaderPropertyBlockCmd* cmd)
 {
     std::vector<MTexture*> vTextures;
-    for (const auto& pParam: cmd->property->m_textures)
+    for (const auto& pParam: cmd->property->GetTextureParams())
     {
         if (auto pTexture = pParam->GetTexture().get()) { vTextures.emplace_back(pTexture); }
     }
@@ -369,11 +344,13 @@ void MRenderCommandVulkan::DrawMesh(
 
 bool MRenderCommandVulkan::DispatchComputeJob(
         MComputeDispatcher* pComputeDispatcher,
+        const MStringId&    entryName,
         const uint32_t&     nGroupX,
         const uint32_t&     nGroupY,
         const uint32_t&     nGroupZ
 )
 {
+    MORTY_UNUSED(entryName);
     if (nullptr == pComputeDispatcher)
     {
         MORTY_ASSERT(pComputeDispatcher);
@@ -395,8 +372,9 @@ bool MRenderCommandVulkan::DispatchComputeJob(
         for (const std::shared_ptr<MShaderPropertyBlock>& params: pComputeDispatcher->GetShaderPropertyBlocks())
         {
             MSetShaderPropertyBlockCmd cmd{
-                    .pipeline = pComputePipeline.get(),
-                    .property = params.get(),
+                    .pipeline           = pComputePipeline.get(),
+                    .property           = params.get(),
+                    .allocDescriptorSet = m_device->SyncPropertyBlock(params.get()),
             };
 
             SetShaderPropertyBlock(&cmd);
@@ -428,9 +406,9 @@ bool MRenderCommandVulkan::AddRenderToTextureBarrier(
 }
 
 bool MRenderCommandVulkan::AddBufferMemoryBarrier(
-        const std::vector<const MBuffer*>& vBuffers,
-        MEBufferBarrierStage               srcStage,
-        MEBufferBarrierStage               dstStage
+        const std::vector<const MBufferRHI*>& vBuffers,
+        MEBufferBarrierStage                  srcStage,
+        MEBufferBarrierStage                  dstStage
 )
 {
     const auto                         srcAccessMask       = GetBufferBarrierAccessFlag(srcStage);
@@ -441,8 +419,10 @@ bool MRenderCommandVulkan::AddBufferMemoryBarrier(
     const auto                         dstPipelineStage    = GetBufferBarrierPipelineStage(dstStage);
 
     std::vector<VkBufferMemoryBarrier> bufferBarriers;
-    for (const MBuffer* pBuffer: vBuffers)
+    for (const auto* buffer: vBuffers)
     {
+        const auto*           bufferRHI = static_cast<const MBufferRHIVulkan*>(buffer);
+
         VkBufferMemoryBarrier bufferBarrier;
         bufferBarrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
         bufferBarrier.pNext               = nullptr;
@@ -450,7 +430,7 @@ bool MRenderCommandVulkan::AddBufferMemoryBarrier(
         bufferBarrier.dstAccessMask       = dstAccessMask;
         bufferBarrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
         bufferBarrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
-        bufferBarrier.buffer              = pBuffer->m_vkBuffer;
+        bufferBarrier.buffer              = bufferRHI->vkBuffer;
         bufferBarrier.offset              = 0;
         bufferBarrier.size                = VK_WHOLE_SIZE;
         bufferBarriers.push_back(bufferBarrier);
@@ -544,14 +524,14 @@ void MRenderCommandVulkan::SetTextureLayout(
         auto textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
         if (textureRHI->vkTextureImage == VK_NULL_HANDLE) { continue; }
 
-        VkImageLayout oldLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        VkImageLayout oldLayout  = textureRHI->vkImageLayout;
         auto          findResult = m_textureLayout.find(pTexture);
         if (findResult != m_textureLayout.end()) oldLayout = findResult->second;
 
         if (oldLayout == newLayouts[nTexIdx]) continue;
 
         VkImageSubresourceRange subresourceRange;
-        subresourceRange.aspectMask     = m_device->GetAspectFlags(textureRHI->vkTextureFormat);
+        subresourceRange.aspectMask     = morty::MVulkanDevice::GetAspectFlags(textureRHI->vkTextureFormat);
         subresourceRange.baseMipLevel   = 0;
         subresourceRange.levelCount     = pTexture->GetMipmapLevel();
         subresourceRange.baseArrayLayer = 0;
@@ -625,7 +605,7 @@ bool MRenderCommandVulkan::DownloadTexture(
             unBufferWidth * unBufferHeight * unBufferDepth * MTexture::GetImageMemorySize(pTexture->GetFormat());
 
 
-    uint32_t   unMemoryID = MGlobal::M_INVALID_INDEX;
+    uint32_t   unMemoryID = MGlobal::M_INVALID_UINDEX;
     MemoryInfo memoryInfo;
     VkBuffer   readBackBuffer = m_device->m_BufferPool.GetReadBackBuffer();
     if (!m_device->m_BufferPool.AllowReadBackBuffer(unBufferSize, unMemoryID, memoryInfo)) { return false; }
@@ -657,7 +637,7 @@ bool MRenderCommandVulkan::DownloadTexture(
             &region
     );
 
-    m_renderFinishedCallback.push_back([=]() {
+    m_renderFinishedCallback.push_back([=, this]() {
         MByte* data = m_device->m_BufferPool.GetReadBackMemory();
         callback(data + memoryInfo.begin, Vector2(unBufferWidth, unBufferHeight));
 
@@ -706,58 +686,7 @@ bool MRenderCommandVulkan::CopyImageBuffer(MTexture* pSource, MTexture* pTarget)
     return true;
 }
 
-void MRenderCommandVulkan::ResetBuffer(const MBuffer* pBuffer)
-{
-    vkCmdFillBuffer(m_vkCommandBuffer, pBuffer->m_vkBuffer, 0, pBuffer->GetSize(), 0);
-}
-
-void MRenderCommandVulkan::UploadBuffer(MBuffer* pBuffer, const MByte* pData, const size_t nSize)
-{
-    MORTY_ASSERT(pBuffer);
-
-    if (pBuffer->GetSize() < nSize)
-    {
-        pBuffer->ReallocMemory(nSize);
-        m_device->DestroyBuffer(pBuffer);
-        m_device->GenerateBuffer(pBuffer, pData, nSize);
-    }
-    else if (nSize > 0) { m_device->UploadBuffer(pBuffer, 0, pData, nSize); }
-}
-
 void MRenderCommandVulkan::addFinishedCallback(std::function<void()> func) { m_renderFinishedCallback.push_back(func); }
-
-void MRenderCommandVulkan::UpdateShaderParam(std::shared_ptr<MShaderConstantParam> param)
-{
-    if (VK_NULL_HANDLE == param->m_vkBuffer)
-    {
-        //m_device->DestroyShaderParamBuffer(param);
-        m_device->GenerateShaderParamBuffer(param);
-    }
-
-    //m_device->DestroyShaderParamBuffer(param);
-    //m_device->GenerateShaderParamBuffer(param);
-
-    MORTY_ASSERT(param->m_memoryMapping);
-
-    if (param->m_memoryMapping)
-    {
-        memcpy(param->m_memoryMapping + param->m_unMemoryOffset, param->var.GetData(), param->var.GetSize());
-
-#ifndef MORTY_WIN
-        size_t nFlushMinSize = m_device->GetPhysicalDeviceProperties().limits.nonCoherentAtomSize;
-        size_t nOffset       = (param->m_unMemoryOffset / nFlushMinSize) * nFlushMinSize;
-        size_t nSize         = ((param->m_unMemoryOffset + param->m_unVkMemorySize) - nOffset);
-        nSize                = nSize % nFlushMinSize == 0 ? nSize : (nSize / nFlushMinSize + 1) * nFlushMinSize;
-
-        VkMappedMemoryRange memoryRange = {};
-        memoryRange.sType               = VkStructureType::VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        memoryRange.memory              = param->m_vkBufferMemory;
-        memoryRange.offset              = nOffset;
-        memoryRange.size                = nSize;
-        vkFlushMappedMemoryRanges(m_device->m_vkDevice, 1, &memoryRange);
-#endif
-    }
-}
 
 MVulkanPrimaryRenderCommand::MVulkanPrimaryRenderCommand()
     : MRenderCommandVulkan()

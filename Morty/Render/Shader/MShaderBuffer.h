@@ -9,11 +9,11 @@
 #pragma once
 
 #include "Utility/MRenderGlobal.h"
-#include "Shader/MShaderPropertyBlock.h"
 
 namespace morty
 {
 
+class MShaderPropertyBlock;
 class MORTY_API MShaderBuffer
 {
 public:

@@ -22,34 +22,24 @@ class MObjectSystem;
 class MORTY_API MObject : public MTypeClass
 {
 public:
-    MORTY_CLASS(MObject);
+                            MORTY_CLASS(MObject);
 
-    MObject();
-
-    virtual ~MObject();
-
-public:
-    [[nodiscard]] MObjectID GetObjectID() const { return m_unObjectID; }
-
-    MEngine*                GetEngine() { return m_engine; }
+                            MObject()          = default;
+    ~                       MObject() override = default;
+    [[nodiscard]] MObjectID GetObjectID() const { return m_objectID; }
+    [[nodiscard]] MEngine*  GetEngine() const { return m_engine; }
     MObjectSystem*          GetObjectSystem();
-
     void                    DeleteLater();
     [[nodiscard]] bool      GetDeleteMark() const { return m_deleteMark; }
-
-public:
-    virtual void OnCreated(){};
-
-    virtual void OnDelete(){};
+    virtual void            OnCreated(){};
+    virtual void            OnDelete(){};
 
 protected:
     friend class MObjectSystem;
 
-    MObjectID m_unObjectID;
-    MEngine*  m_engine;
-
-private:
-    bool m_deleteMark;
+    MObjectID m_objectID   = 0;
+    MEngine*  m_engine     = nullptr;
+    bool      m_deleteMark = false;
 };
 
 }// namespace morty

@@ -32,9 +32,9 @@ public:
         MORTY_ASSERT(pOwner);
     }
 
-    const MBuffer* GetVertexBuffer() const override { return pOwner->GetVertexBuffer(); }
+    [[nodiscard]] const MBuffer* GetVertexBuffer() const override { return pOwner->GetVertexBuffer(); }
 
-    const MBuffer* GetIndexBuffer() const override { return pOwner->GetIndexBuffer(); }
+    [[nodiscard]] const MBuffer* GetIndexBuffer() const override { return pOwner->GetIndexBuffer(); }
 
 private:
     const MMeshManager* pOwner = nullptr;
@@ -287,6 +287,7 @@ bool MMeshManager::RegisterMesh(MIMesh* pMesh)
         return false;
     }
 
+    //alloc index memory
     MemoryInfo indexMemoryInfo;
     if (!m_indexMemoryPool.AllowMemory(unRoundIndexNum * pMesh->GetIndexStructSize(), indexMemoryInfo))
     {

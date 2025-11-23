@@ -1,10 +1,12 @@
 ﻿#include "MShaderMacro.h"
 
-#include "Flatbuffer/MShaderMacro_generated.h"
 #include "Mesh/MVertex.h"
 #include "Utility/MFunction.h"
+#include "Flatbuffer/MShaderMacro_generated.h"
 
 #include "Utility/MRenderGlobal.h"
+
+#include "Utility/MUtils.h"
 
 using namespace morty;
 
@@ -75,6 +77,7 @@ MString MShaderMacro::GetMacro(const MStringId& strKey) const
 
 bool MShaderMacro::Compare(const MShaderMacro& macro)
 {
+    if (m_macroParams.size() != macro.m_macroParams.size()) { return false; }
     if (m_macroParams != macro.m_macroParams) { return false; }
 
     return true;
@@ -116,4 +119,23 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
             m_macroParams[MStringId(pair->key()->c_str())] = pair->value()->c_str();
         }
     }
+}
+
+MHashCode MShaderMacro::GetHashCode() const
+{
+    MHashCode hash;
+
+    for(const auto& pair : m_macroParams)
+    {
+        MUtils::HashCombine(hash, pair.first.Hash());
+        MUtils::HashCombine(hash, pair.second);
+    }
+
+    for(const auto& pair : m_mortyMacroParams)
+    {
+        MUtils::HashCombine(hash, pair.first.Hash());
+        MUtils::HashCombine(hash, pair.second);
+    }
+
+    return hash;
 }

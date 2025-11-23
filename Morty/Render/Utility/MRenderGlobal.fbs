@@ -1,0 +1,129 @@
+include "Resource/MResourceRef.fbs";
+include "Variant/MVariant.fbs";
+include "Shader/MShaderMacro.fbs";
+
+namespace morty.fbs;
+
+enum MECullMode: byte
+{
+	EWireframe = 0,
+	ECullNone = 1,
+	ECullBack = 2,
+	ECullFront = 3,
+}
+
+enum MEBlendFactor: byte
+{
+    Zero = 0,
+    One,
+    SrcColor,
+    OneMinusSrcColor,
+    DstColor,
+    OneMinusDstColor,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    DstAlpha,
+    OneMinusDstAlpha,
+    ConstantColor,
+    OneMinusConstantColor,
+    ConstantAlpha,
+    OneMinusConstantAlpha,
+
+    BlendFactorEnd
+}
+
+enum MEBlendOp: byte
+{
+    Add = 0,
+    Subtract,
+    ReverseSubtract,
+    Min,
+    Max,
+
+    BlendOpEnd
+}
+
+enum MEDepthFunc: byte
+{
+    Never = 0,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always,
+
+    DepthFuncEnd
+}
+
+enum MEStencilOp: byte
+{
+    Keep = 0,
+    Zero,
+    Replace,
+    Increment,
+    IncrementWrap,
+    Decrement,
+    DecrementWrap,
+    Invert,
+
+    StencilOpEnd
+}
+
+enum MEMaterialType: byte
+{
+	EDefault = 0,
+	EDepthPeel = 1,
+	ETransparentBlend = 2,
+	EOutline = 3,
+	EImGui = 4,
+	EDeferred = 5,
+}
+
+enum MEShaderType: byte
+{
+    EVertex   = 0,
+    EPixel    = 1,
+    ECompute  = 2,
+    EGeometry = 3,
+
+    TOTAL_NUM
+}
+
+table MBlendState
+{
+    blend_enable: bool = true;
+    src_color_blend: MEBlendFactor = One;
+    dst_color_blend: MEBlendFactor = Zero;
+    color_blend_op: MEBlendOp = Add;
+    src_alpha_blend: MEBlendFactor = One;
+    dst_alpha_blend: MEBlendFactor = Zero;
+    alpha_blend_op: MEBlendOp = Add;
+    color_write_mask: uint32 = 0xF;
+}
+
+table MDepthStencilState
+{
+    depth_test: bool = true;
+    depth_write: bool = true;
+    depth_func: MEDepthFunc = Less;
+    front_depth_fail: MEStencilOp = Keep;
+    back_depth_fail: MEStencilOp = Keep;
+
+    stencil_test: bool = false;
+    stencil_read_mask: uint8 = 0xFF;
+    stencil_write_mask: uint8 = 0xFF;
+
+    front_stencil_ref: uint32 = 0;
+    front_stencil_func: MEDepthFunc = Always;
+    front_stencil_fail: MEStencilOp = Keep;
+    front_stencil_pass: MEStencilOp = Keep;
+
+    back_stencil_ref: uint32 = 0;
+    back_stencil_func: MEDepthFunc = Always;
+    back_stencil_fail: MEStencilOp = Keep;
+    back_stencil_pass: MEStencilOp = Keep;
+}
+
+file_identifier "MFBS";

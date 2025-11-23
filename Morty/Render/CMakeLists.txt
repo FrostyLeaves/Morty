@@ -114,6 +114,22 @@ else ()
     message(FATAL_ERROR "Stb not found.")
 endif ()
 
+find_package(slang CONFIG REQUIRED)
+if (slang_FOUND)
+    target_link_libraries(Render PRIVATE slang::slang)
+else ()
+    message(FATAL_ERROR "slang not found.")
+endif ()
+
+
+find_package(meshoptimizer CONFIG REQUIRED)
+if (meshoptimizer_FOUND)
+    target_link_libraries(Render PRIVATE meshoptimizer::meshoptimizer)
+else ()
+    message(FATAL_ERROR "meshoptimizer not found.")
+endif ()
+
+
 target_link_libraries(Render PUBLIC Core)
 
 generate_flatbuffers_header(Render)

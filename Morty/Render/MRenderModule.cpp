@@ -1,5 +1,4 @@
 #include "MRenderModule.h"
-#include "Batch/MMeshInstanceManager.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDebugRenderComponent.h"
 #include "Component/MDirectionalLightComponent.h"
@@ -9,8 +8,6 @@
 #include "Component/MSkyBoxComponent.h"
 #include "Component/MSpotLightComponent.h"
 #include "Engine/MEngine.h"
-#include "Manager/MAnimationManager.h"
-#include "Manager/MEnvironmentManager.h"
 #include "Mesh/MMeshManager.h"
 #include "Module/MCoreNotify.h"
 #include "Resource/MEntityResource.h"
@@ -25,13 +22,13 @@
 #include "Resource/MTextureResourceUtil.h"
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
-#include "Shadow/MShadowMeshManager.h"
 #include "System/MComponentSystem.h"
 #include "System/MModelSystem.h"
 #include "System/MNotifyManager.h"
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
+#include "System/MShaderProgramSystem.h"
 #include "System/MSkyBoxSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
@@ -55,6 +52,7 @@ bool          MRenderModule::Register(MEngine* pEngine)
 
     pEngine->RegisterSystem<MModelSystem>();
     pEngine->RegisterSystem<MSkyBoxSystem>();
+    pEngine->RegisterSystem<MShaderProgramSystem>();
 
     MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>();
 
@@ -124,7 +122,7 @@ bool          MRenderModule::Register(MEngine* pEngine)
 
     pEngine->RegisterGlobalObject<MMeshManager>();
 
-    if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
+    if (auto pComponentSystem = pEngine->FindSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MModelComponent>();
         pComponentSystem->RegisterComponent<MCameraComponent>();
@@ -154,92 +152,25 @@ bool          MRenderModule::Register(MEngine* pEngine)
 
 void MRenderModule::OnObjectPostCreate(MObject* pObject)
 {
+    MORTY_UNUSED(pObject);
+    /*
     if (!pObject) { return; }
 
     if (pObject->GetType() == MScene::GetClassType())
     {
         if (MScene* pScene = pObject->template DynamicCast<MScene>())
         {
-            pScene->RegisterManager<MMeshInstanceManager>();
-            pScene->RegisterManager<MEnvironmentManager>();
-            pScene->RegisterManager<MShadowMeshManager>();
-            pScene->RegisterManager<MAnimationManager>();
+            //pScene->RegisterManager<MMeshInstanceManager>();
+            //pScene->RegisterManager<MEnvironmentManager>();
+            //pScene->RegisterManager<MShadowMeshManager>();
+            //pScene->RegisterManager<MAnimationManager>();
         }
     }
+    */
 }
 
 void MRenderModule::RegisterMaterial(MEngine* pEngine)
 {
     MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
     MORTY_ASSERT(pResourceSystem);
-
-    const auto skybox_vs  = pResourceSystem->LoadResource("Shader/Environment/skybox.mvs");
-    const auto skybox_ps  = pResourceSystem->LoadResource("Shader/Environment/skybox.mps");
-    const auto skybox_mat = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::SKY_BOX);
-    skybox_mat->SetCullMode(MECullMode::ECullNone);
-    skybox_mat->LoadShader(skybox_vs);
-    skybox_mat->LoadShader(skybox_ps);
-
-
-    const auto universal_vs = pResourceSystem->LoadResource("Shader/Model/universal_model.mvs");
-    const auto gbuffer_ps   = pResourceSystem->LoadResource("Shader/Model/deferred_model_ps.mps");
-    const auto frame_mat    = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FRAME_DEFAULT);
-    frame_mat->SetCullMode(MECullMode::ECullBack);
-    frame_mat->LoadShader(universal_vs);
-    frame_mat->LoadShader(gbuffer_ps);
-
-    const auto basic_ps = pResourceSystem->LoadResource("Shader/Forward/basic_lighting.mps");
-    const auto basic_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FORWARD_TRANSPARENT);
-    basic_mat->SetCullMode(MECullMode::ECullNone);
-    basic_mat->SetMaterialType(MEMaterialType::EDepthPeel);
-    basic_mat->LoadShader(universal_vs);
-    basic_mat->LoadShader(basic_ps);
-
-    const auto basic_ske_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::FORWARD_TRANSPARENT_SKELETON);
-    basic_ske_mat->AddDefine(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    basic_ske_mat->SetCullMode(MECullMode::ECullNone);
-    basic_ske_mat->SetMaterialType(MEMaterialType::EDepthPeel);
-    basic_ske_mat->LoadShader(universal_vs);
-    basic_ske_mat->LoadShader(gbuffer_ps);
-
-    const auto gbuffer_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::DEFERRED_GBUFFER);
-    gbuffer_mat->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    gbuffer_mat->LoadShader(universal_vs);
-    gbuffer_mat->LoadShader(gbuffer_ps);
-    gbuffer_mat->SetMaterialType(MEMaterialType::EDeferred);
-
-    const auto gbuffer_ske_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::DEFERRED_GBUFFER_SKELETON);
-    gbuffer_ske_mat->AddDefine(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    gbuffer_ske_mat->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    gbuffer_ske_mat->LoadShader(universal_vs);
-    gbuffer_ske_mat->LoadShader(gbuffer_ps);
-    gbuffer_ske_mat->SetMaterialType(MEMaterialType::EDeferred);
-
-    const auto deferred_vs = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mvs");
-    const auto deferred_ps = pResourceSystem->LoadResource("Shader/Deferred/deferred_lighting.mps");
-    const auto deferred_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::DEFERRED_LIGHTING);
-    deferred_mat->LoadShader(deferred_vs);
-    deferred_mat->LoadShader(deferred_ps);
-
-
-    const auto shadowmap_vs  = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mvs");
-    const auto shadowmap_ps  = pResourceSystem->LoadResource("Shader/Shadow/shadowmap.mps");
-    const auto shadowmap_mat = pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::SHADOW_MAP);
-    shadowmap_mat->SetCullMode(MECullMode::ECullNone);
-    shadowmap_mat->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    shadowmap_mat->LoadShader(shadowmap_vs);
-    shadowmap_mat->LoadShader(shadowmap_ps);
-
-    const auto shadowmap_ske_mat =
-            pResourceSystem->CreateResource<MMaterialTemplateResource>(MMaterialName::SHADOW_MAP_SKELETON);
-    shadowmap_ske_mat->SetCullMode(MECullMode::ECullNone);
-    shadowmap_ske_mat->AddDefine(MRenderGlobal::DRAW_MESH_INSTANCING_STORAGE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    shadowmap_ske_mat->AddDefine(MRenderGlobal::SHADER_SKELETON_ENABLE, MRenderGlobal::SHADER_DEFINE_ENABLE_FLAG);
-    shadowmap_ske_mat->LoadShader(shadowmap_vs);
-    shadowmap_ske_mat->LoadShader(shadowmap_ps);
 }

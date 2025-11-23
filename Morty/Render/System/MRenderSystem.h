@@ -46,12 +46,15 @@ public:
 
 
 public:
+
     void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& v2Size);
 
     void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
     static MCameraFrustum
     GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
+
+    
 
     static Matrix4 GetCameraViewMatrix(MSceneComponent* pSceneComponent);
 

@@ -8,7 +8,6 @@
 #include "System/MRenderSystem.h"
 
 #include "Component/MSkyBoxComponent.h"
-#include "Render/RenderNode/MEnvironmentMapRenderNode.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 
@@ -25,6 +24,8 @@ MSkyBoxSystem::~MSkyBoxSystem() {}
 
 void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
 {
+    MORTY_UNUSED(pSkyBoxComponent);
+    /*
     if (!pSkyBoxComponent) return;
 
     MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -53,6 +54,7 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
     pCommand->RenderCommandEnd();
 
     pDevice->SubmitCommand(pCommand);
+    */
 }
 
 void MSkyBoxSystem::GenerateEnvironmentTexture(MSkyBoxComponent* pComponent)

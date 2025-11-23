@@ -13,13 +13,14 @@ class MIDevice;
 class MBuffer;
 class MPipeline;
 class MMaterial;
+class MMaterialPass;
 class MGraphicsPipeline;
 
 class MRenderPassCmd
 {
 public:
-    explicit MRenderPassCmd(MIDevice* device, MRenderPass* renderPass);
-    ~MRenderPassCmd();
+    explicit                   MRenderPassCmd(MIDevice* device, MRenderPass* renderPass);
+    ~                          MRenderPassCmd();
 
     [[nodiscard]] MRenderPass* GetRenderPass() const { return m_renderPass; }
 
@@ -51,10 +52,10 @@ public:
     );
 
     void SetGraphPipeline(const MGraphicsPipeline* pipeline, size_t subPassIdx);
-    void SetGraphPipeline(const MMaterialTemplate* materialTemplate);
-    void SetMaterial(const MMaterial* material);
-    void SetMaterial(const MMaterialTemplate* materialTemplate);
+    void SetGraphPipeline(const MMaterialPass* pass);
 
+    void SetMaterial(const MMaterial* material, const MStringId& passName);
+    void SetMaterial(const MMaterial* material, const MMaterialPass* pass);
 
     void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& block);
     void SetShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);

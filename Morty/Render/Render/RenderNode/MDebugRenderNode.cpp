@@ -20,12 +20,10 @@
 #include "Component/MRenderMeshComponent.h"
 #include "Component/MSceneComponent.h"
 #include "Component/MSkyBoxComponent.h"
-#include "Culling/MInstanceCulling.h"
 #include "Mesh/MVertex.h"
 
 #include "Mesh/MMeshManager.h"
 #include "RHI/Command/MRenderPassCmd.h"
-#include "Render/MeshRender/MCullingResultRenderable.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/MBounds.h"
@@ -36,6 +34,8 @@ MORTY_CLASS_IMPLEMENT(MDebugRenderNode, ISinglePassRenderNode)
 
 void MDebugRenderNode::Render(const MRenderInfo& info)
 {
+    MORTY_UNUSED(info);
+    /*
     //Current viewport.
     const MMeshManager*      pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
 
@@ -47,6 +47,8 @@ void MDebugRenderNode::Render(const MRenderInfo& info)
     indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
 
     Render(info, {&indirectMesh});
+
+    */
 }
 
 void MDebugRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
