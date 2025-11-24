@@ -114,6 +114,10 @@ else ()
     message(FATAL_ERROR "ryml not found.")
 endif ()
 
+
+find_package(CLI11 CONFIG REQUIRED)
+target_link_libraries(Core PRIVATE CLI11::CLI11)
+
 target_include_directories(Core
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}

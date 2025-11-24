@@ -5,6 +5,19 @@
 using namespace morty;
 
 
+void MClusterBuilder::Generate(MIMesh* mesh)
+{
+    BuildCluster(mesh);
+
+    mesh->ResizeIndices(m_indices.size(), 1);
+    memcpy(mesh->GetIndices(), m_indices.data(), m_indices.size() * sizeof(uint32_t));
+    
+    mesh->GetClusters() = m_allClusters;
+    mesh->GetClusterGroup() = m_allGroups;
+    mesh->GetClusterLodData() = m_lods;
+
+}
+
 std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
         MIMesh*                          mesh,
         const std::vector<MClusterData>& clusters,
@@ -168,7 +181,7 @@ MClusterBuilder::Clusterize(MIMesh* mesh, uint32_t* indicesData, uint32_t indice
     std::vector<meshopt_Meshlet> meshlets(max_meshlets);
     std::vector<unsigned int>    meshlet_vertices(indicesNum);
     // note: in v0.25 or prior, use indices.size() + max_meshlets * 3
-    std::vector<unsigned char>   meshlet_triangles(indicesNum);
+    std::vector<unsigned char>   meshlet_triangles(indicesNum + max_meshlets * 3);
 
     size_t                       meshlet_count = meshopt_buildMeshlets(
             meshlets.data(),
@@ -371,6 +384,11 @@ void MClusterBuilder::BuildCluster(MIMesh* mesh)
     auto                       vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
     auto                       indicesData      = mesh->GetIndices();
     auto                       indicesNum       = static_cast<size_t>(mesh->GetIndicesNum());
+
+    if(vertexData == nullptr || vertexNum == 0 || indicesData == nullptr || indicesNum == 0)
+    {
+        return;
+    }
 
     std::vector<unsigned char> locks(vertexNum);
     std::vector<unsigned int>  remap(vertexNum);

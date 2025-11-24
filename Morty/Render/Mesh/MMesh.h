@@ -99,8 +99,8 @@ public:
         if (m_vertexBuffer.GetSize() < nSize * sizeof(VERTEX_TYPE))
         {
             m_vertexBuffer.ReallocMemory(nSize * sizeof(VERTEX_TYPE));
-            m_vertexData.resize(nSize * sizeof(VERTEX_TYPE));
         }
+        m_vertexData.resize(nSize * sizeof(VERTEX_TYPE));
     }
 
     void ResizeVertices(const uint32_t& nSize) override
@@ -108,8 +108,8 @@ public:
         if (m_vertexBuffer.GetSize() < nSize * sizeof(VERTEX_TYPE))
         {
             m_vertexBuffer.ReallocMemory(nSize * sizeof(VERTEX_TYPE));
-            m_vertexData.resize(nSize * sizeof(VERTEX_TYPE));
         }
+        m_vertexData.resize(nSize * sizeof(VERTEX_TYPE));
     }
 
     VERTEX_TYPE*         GetVertices() { return reinterpret_cast<VERTEX_TYPE*>(m_vertexData.data()); }

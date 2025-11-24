@@ -15,7 +15,7 @@ class MClusterBuilder
 {
 
 public:
-    void BuildCluster(MIMesh* mesh);
+    void Generate(MIMesh* mesh);
 
 private:
     struct MClusterData {
@@ -68,10 +68,11 @@ private:
             const MClusterBounds&            simplified
     );
 
+    void BuildCluster(MIMesh* mesh);
     std::vector<MClusterData>    Clusterize(MIMesh* mesh, uint32_t* indices, uint32_t indicesNum);
 
     const size_t                 MaxVertices  = 64;
-    const size_t                 MaxTriangles = 126;// note: in v0.25 or prior, max_triangles needs to be divisible by 4
+    const size_t                 MaxTriangles = 128;// note: in v0.25 or prior, max_triangles needs to be divisible by 4
     const float                  ConeWeight   = 0.0f;
     const bool                   OptimizeBounds             = true;
     const bool                   AttributeProtectMask       = true;

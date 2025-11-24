@@ -35,8 +35,8 @@ void     MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSi
     if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
     {
         m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
-        m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
     }
+    m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
 }
 
 void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
@@ -44,8 +44,8 @@ void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
     if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
     {
         m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
-        m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
     }
+    m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
 }
 
 void MIMesh::SetDirty()

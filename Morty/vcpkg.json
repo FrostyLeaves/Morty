@@ -7,6 +7,10 @@
       "default-features": false
     },
     {
+      "name": "cli11",
+      "default-features": false
+    },
+    {
       "name": "crossguid",
       "default-features": false
     },

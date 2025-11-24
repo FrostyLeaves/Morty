@@ -3,29 +3,26 @@
 
 #include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
-
 #include "MRenderModule.h"
 #include "Module/MCoreModule.h"
 #include "Module/MEditorModule.h"
-
 #include "System/MEntitySystem.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
+#include "System/MObjectSystem.h"
 #include "Scene/MScene.h"
 
 #ifdef MORTY_WIN
 #undef main
 #endif
 
-
-#include "System/MObjectSystem.h"
+#include <CLI/CLI.hpp>
+#include <iostream>
+#include <thread>
 
 using namespace morty;
 
-int main()
-{
-    setvbuf(stdout, NULL, _IONBF, 0);
+void RunEditor() {
 
     //initialize
     MEngine engine;
@@ -70,6 +67,47 @@ int main()
 
     //release engine
     engine.Release();
+}
+
+int main(int argc, char **argv) {
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    CLI::App app{"Morty Engine CLI"};
+    app.require_subcommand(0, 1);
+
+    // Editor command
+    auto editor_cmd = app.add_subcommand("editor", "Start the Morty editor");
+    editor_cmd->callback([]() {
+        std::cout << "Starting Morty Editor...\n";
+        RunEditor();
+    });
+
+    // Import subcommand
+    auto import_cmd = app.add_subcommand("import", "Import resources");
+
+    // Import model command
+    std::string model_input_path;
+    std::string model_output_path;
+    auto import_model_cmd = import_cmd->add_subcommand("model", "Import a model file");
+    import_model_cmd->add_option("input", model_input_path, "Input model file")
+        ->required()
+        ->check(CLI::ExistingFile);
+    import_model_cmd->add_option("output", model_output_path, "Output path")
+        ->required();
+    import_model_cmd->callback([&]() {
+        std::cout << "Import model: " << model_input_path << "\n"
+                  << "Output to: " << model_output_path << "\n";
+        // TODO: Implement model import
+    });
+
+    import_cmd->require_subcommand(1);
+
+    // Parse command line arguments
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        return app.exit(e);
+    }
 
     return 0;
 }
