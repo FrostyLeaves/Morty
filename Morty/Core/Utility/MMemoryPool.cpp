@@ -15,7 +15,7 @@ MMemoryPool::MMemoryPool(const size_t& unPoolSize)
 
 MMemoryPool::~MMemoryPool() {}
 
-bool MMemoryPool::AllowMemory(const size_t& unVariantSize, MemoryInfo& info)
+bool MMemoryPool::AllocMemory(const size_t& unVariantSize, MemoryInfo& info)
 {
     auto biggestIter = m_freeMemory.begin();
     auto bestIter    = m_freeMemory.end();
@@ -47,10 +47,7 @@ bool MMemoryPool::AllowMemory(const size_t& unVariantSize, MemoryInfo& info)
         bestIter->begin += unVariantSize;
         bestIter->size -= unVariantSize;
     }
-    else
-    {
-        return false;
-    }
+    else { return false; }
 
     return true;
 }
@@ -102,10 +99,7 @@ void MMemoryPool::FreeMemory(const MemoryInfo& info)
             findResult->begin = info.begin;
             findResult->size += info.size;
         }
-        else
-        {
-            m_freeMemory.insert(findResult, info);
-        }
+        else { m_freeMemory.insert(findResult, info); }
     }
 }
 

@@ -136,7 +136,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pP
 
     MemoryInfo allowInfo;
 
-    if (!m_DynamicUniformMemoryPool.AllowMemory(unVariantSize, allowInfo))
+    if (!m_DynamicUniformMemoryPool.AllocMemory(unVariantSize, allowInfo))
     {
         MORTY_ASSERT(false);
         m_DynamicUniformMemoryPool.FreeMemory(allowInfo);
@@ -176,7 +176,7 @@ void MVulkanBufferPool::FreeBufferMemory(MShaderConstantParam* pParam)
 
 bool MVulkanBufferPool::AllowReadBackBuffer(const uint32_t& unMemorySize, uint32_t& unBufferID, MemoryInfo& info)
 {
-    if (m_ReadBackMemoryPool.AllowMemory(unMemorySize, info))
+    if (m_ReadBackMemoryPool.AllocMemory(unMemorySize, info))
     {
         unBufferID                   = m_ReadBackIDPool.GetNewID();
         m_readBackMemory[unBufferID] = info;

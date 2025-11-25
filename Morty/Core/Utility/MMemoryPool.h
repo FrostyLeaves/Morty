@@ -31,7 +31,7 @@ public:
     virtual ~MMemoryPool();
 
 public:
-    bool   AllowMemory(const size_t& unSize, MemoryInfo& info);
+    bool   AllocMemory(const size_t& unSize, MemoryInfo& info);
 
     void   FreeMemory(const MemoryInfo& info);
 

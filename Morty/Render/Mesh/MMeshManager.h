@@ -2,6 +2,7 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MBuffer.h"
+#include "Mesh/MCluster.h"
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
 #include "Utility/MBounds.h"
@@ -50,10 +51,14 @@ public:
         uint32_t rootClusterCount  = 0;
     };
 
+    struct MClusterGroupData {
+        bool       valid = false;
+        MemoryInfo vertexMemoryInfo;
+        MemoryInfo indexMemoryInfo;
+    };
+
     struct MMeshData {
-        std::vector<MCluster>        clusters;
-        std::vector<MClusterGroup>   groups;
-        std::vector<MClusterLodData> lods;
+        std::vector<size_t> clusterGroupIDs;
     };
 
 public:
@@ -67,37 +72,44 @@ public:
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
-    size_t                                   LoadClusterPage(size_t idx, const MClusterGroup& group);
-    void                                     UnregisterClusterMesh(const size_t& clusterIdx);
+    size_t                                       RegisterClusterGroup(const MClusterGroup& group);
+    void                                         UnregisterClusterGroup(const size_t& groupIdx);
 
-    void                                     InitializeScreenRect();
-    void                                     ReleaseScreenRect();
+    void                                         LoadClusterPage(size_t groupIdx, const MClusterPage& page);
+    void                                         UnloadClusterPage(const size_t& groupIdx);
 
-    size_t                                   RoundIndexSize(size_t nIndexSize);
+    void                                         InitializeScreenRect();
+    void                                         ReleaseScreenRect();
 
-    void                                     UploadBuffer(MIMesh* pMesh);
+    size_t                                       RoundIndexSize(size_t nIndexSize);
 
-    void                                     UploadBufferTask(MTaskNode* pNode);
+    void                                         UploadPageData(size_t groupIdx, const MClusterPage& page);
 
-    const size_t                             MeshVertexStructSize;
+    void                                         UploadBufferTask(MTaskNode* pNode);
 
-    MBuffer                                  m_vertexBuffer;
-    MMemoryPool                              m_vertexMemoryPool;
+    const size_t                                 MeshVertexStructSize;
 
-    MBuffer                                  m_indexBuffer;
-    MMemoryPool                              m_indexMemoryPool;
+    MBuffer                                      m_vertexBuffer;
+    MMemoryPool                                  m_vertexMemoryPool;
 
-    std::unordered_map<MIMesh*, size_t>      m_meshTable;
-    std::vector<MMeshData>                   m_meshDatas;
-    MRepeatIDPool<size_t>                    m_meshDataIDPool;
+    MBuffer                                      m_indexBuffer;
+    MMemoryPool                                  m_indexMemoryPool;
 
-    std::unique_ptr<MIMesh>                  m_screenRect = nullptr;
+    std::unordered_map<MIMesh*, size_t>          m_meshTable;
+    std::vector<MMeshData>                       m_meshDatas;
+    MRepeatIDPool<size_t>                        m_meshDataIDPool;
+
+    std::unique_ptr<MIMesh>                      m_screenRect = nullptr;
+
+
+    std::vector<MClusterGroupData>               m_clusterGroupDatas;
+    MRepeatIDPool<size_t>                        m_clusterGroupDataIDPool;
 
 
     // render thread.
-    std::mutex                               m_uploadMutex;
-    std::vector<std::pair<MCluster, size_t>> m_uploadQueue;
-    std::shared_ptr<MMeshBufferAdapter>      m_meshBufferAdapter = nullptr;
+    std::mutex                                   m_uploadMutex;
+    std::vector<std::pair<size_t, MClusterPage>> m_uploadPageQueue;
+    std::shared_ptr<MMeshBufferAdapter>          m_meshBufferAdapter = nullptr;
 };
 
 }// namespace morty

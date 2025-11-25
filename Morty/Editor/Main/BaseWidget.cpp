@@ -6,13 +6,11 @@ using namespace morty;
 
 void BaseWidget::Initialize(MainEditor* pMainEditor) { m_mainEditor = pMainEditor; }
 
-void BaseWidget::SaveConfig(IniConfig* pConfig)
-{
-    pConfig->SetValue<bool>(GetName().c_str(), "Visible", m_visiable);
-}
+void BaseWidget::SaveConfig(IniConfig* pConfig) { pConfig->SetValue<bool>(GetName().c_str(), "Visible", m_visiable); }
 
 void BaseWidget::LoadConfig(IniConfig* pConfig)
 {
+    if (!pConfig) return;
     m_visiable = pConfig->GetValue<bool>(GetName().c_str(), "Visible");
 }
 
