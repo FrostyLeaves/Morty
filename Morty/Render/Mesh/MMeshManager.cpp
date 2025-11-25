@@ -63,8 +63,6 @@ void MMeshManager::OnCreated()
     m_indexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
 
     InitializeScreenRect();
-    InitializeSkyBox();
-    InitializeCube();
 
     auto* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_UPLOAD_MESH_UPDATE);
     pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
@@ -73,9 +71,7 @@ void MMeshManager::OnCreated()
 
 void MMeshManager::OnDelete()
 {
-    ReleaseSkyBox();
     ReleaseScreenRect();
-    ReleaseCube();
 
     const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -84,6 +80,48 @@ void MMeshManager::OnDelete()
 
 
     Super::OnDelete();
+}
+
+size_t MMeshManager::RegisterClusterMesh(const MClusterPage& page)
+{
+    auto id = m_clusterIDPool.GetNewID();
+    if (id >= m_clusters.size()) { m_clusters.resize(id + 1); }
+
+    MClusterData data;
+    data.vertexMemoryInfo = vertexMemoryInfo;
+    data.indexMemoryInfo  = indexMemoryInfo;
+    data.bounds           = cluster.bounds;
+
+    m_clusters[id] = data;
+
+    {
+        std::lock_guard lock(m_uploadMutex);
+        m_uploadQueue.push_back(std::make_pair(cluster, id));
+    }
+
+    return id;
+}
+
+void MMeshManager::UnregisterClusterMesh(const size_t& clusterIdx)
+{
+    const auto& clusterData = m_clusters[clusterIdx];
+    m_vertexMemoryPool.FreeMemory(clusterData.vertexMemoryInfo);
+    m_indexMemoryPool.FreeMemory(clusterData.indexMemoryInfo);
+
+    MORTY_ASSERT(clusterIdx < m_clusters.size());
+    m_clusterIDPool.RecoveryID(clusterIdx);
+
+    {
+        std::lock_guard lock(m_uploadMutex);
+        m_uploadQueue.erase(
+                std::remove_if(
+                        m_uploadQueue.begin(),
+                        m_uploadQueue.end(),
+                        [clusterIdx](const auto& pair) { return pair.second == clusterIdx; }
+                ),
+                m_uploadQueue.end()
+        );
+    }
 }
 
 void MMeshManager::InitializeScreenRect()
@@ -120,49 +158,6 @@ void MMeshManager::ReleaseScreenRect()
     m_screenRect = nullptr;
 }
 
-void MMeshManager::InitializeSkyBox()
-{
-    m_skyBox = std::make_unique<MMesh<Vector3>>(true);
-    m_skyBox->ResizeVertices(8);
-    m_skyBox->ResizeIndices(12, 3);
-
-    Vector3* vVertices = (Vector3*) m_skyBox->GetVertices();
-    vVertices[0]       = Vector3(-1.0, -1.0, 1.0);
-    vVertices[1]       = Vector3(-1.0, 1.0, 1.0);
-    vVertices[2]       = Vector3(1.0, 1.0, 1.0);
-    vVertices[3]       = Vector3(1.0, -1.0, 1.0);
-    vVertices[4]       = Vector3(-1.0, -1.0, -1.0);
-    vVertices[5]       = Vector3(-1.0, 1.0, -1.0);
-    vVertices[6]       = Vector3(1.0, 1.0, -1.0);
-    vVertices[7]       = Vector3(1.0, -1.0, -1.0);
-
-    const uint32_t indices[] = {
-            3, 2, 6, 3, 6, 7,//right
-            0, 1, 5, 0, 5, 4,//left
-            5, 1, 2, 5, 2, 6,//top
-            4, 0, 3, 4, 3, 7,//bottom
-            0, 1, 2, 0, 2, 3,//front
-            4, 5, 6, 4, 6, 7,//back
-    };
-
-    memcpy(m_skyBox->GetIndices(), indices, sizeof(indices));
-}
-
-void MMeshManager::ReleaseSkyBox()
-{
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    m_skyBox->DestroyBuffer(pRenderSystem->GetDevice());
-    m_skyBox = nullptr;
-}
-
-void MMeshManager::InitializeCube()
-{
-    m_cubeMesh = MMeshUtil::CreateCube(MEMeshVertexType::Normal);
-    RegisterMesh(m_cubeMesh.get());
-}
-
-void   MMeshManager::ReleaseCube() { UnregisterMesh(m_cubeMesh.get()); }
-
 size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
 {
     return size_t((unIndexNum / ClusterSize) + (unIndexNum % ClusterSize ? 1 : 0)) * ClusterSize;
@@ -197,7 +192,10 @@ void MMeshManager::UploadBuffer(MIMesh* pMesh)
     {
         vertexInfo.begin = vertexMemoryInfo.begin + (unVertexStructSize - vertexMemoryInfo.begin % unVertexStructSize);
     }
-    else { vertexInfo.begin = vertexMemoryInfo.begin; }
+    else
+    {
+        vertexInfo.begin = vertexMemoryInfo.begin;
+    }
     vertexInfo.size = unVertexSize;
     MORTY_ASSERT(vertexInfo.begin % unVertexStructSize == 0);
     const size_t              nNewVertexIndexBegin = vertexInfo.begin / unVertexStructSize;
@@ -214,7 +212,7 @@ void MMeshManager::UploadBuffer(MIMesh* pMesh)
 
         for (uint32_t nIndexInCluster = 0; nIndexInCluster < ClusterSize; ++nIndexInCluster)
         {
-            const uint32_t originIndex = vIndexData[(std::min)(nCurrentIndex + nIndexInCluster, unIndexNum - 1)];
+            const uint32_t originIndex = vIndexData[(std::min) (nCurrentIndex + nIndexInCluster, unIndexNum - 1)];
             const uint32_t globalIndex = static_cast<uint32_t>(nNewVertexIndexBegin + originIndex);
             vRedirectIndex[nCurrentIndex + nIndexInCluster] = globalIndex;
             boundsVertex[nIndexInCluster]                   = vVertex[originIndex].position;
@@ -260,91 +258,45 @@ void MMeshManager::UploadBufferTask(MTaskNode* pNode)
     for (MIMesh* pMesh: vUploadQueue) { UploadBuffer(pMesh); }
 }
 
-bool MMeshManager::RegisterMesh(MIMesh* pMesh)
+bool MMeshManager::RegisterMesh(MIMesh* mesh)
 {
-    if (!pMesh) { return false; }
+    if (!mesh) { return false; }
 
-    if (m_meshTable.find(pMesh) != m_meshTable.end()) { return true; }
+    if (m_meshTable.find(mesh) != m_meshTable.end()) { return true; }
 
-    const size_t unVertexSize       = pMesh->GetVerticesSize();
-    const size_t unIndexNum         = pMesh->GetIndicesNum();
-    const size_t unVertexStructSize = pMesh->GetVertexStructSize();
-    const size_t unRoundIndexNum    = RoundIndexSize(unIndexNum);
+    auto id = m_meshTable[mesh] = m_meshDataIDPool.GetNewID();
 
-    size_t       unAllocVertexMemory = unVertexSize;
-    unAllocVertexMemory += unVertexStructSize;
-    if (unAllocVertexMemory % VertexAllocByteAlignment)
-    {
-        unAllocVertexMemory = (unAllocVertexMemory / VertexAllocByteAlignment + 1) * VertexAllocByteAlignment;
-    }
+    if (m_meshDatas.size() <= id) { m_meshDatas.resize(id + 1); }
 
+    auto& meshData = m_meshDatas[id] = MMeshData();
 
-    //alloc vertex memory
-    MemoryInfo vertexMemoryInfo;
-    if (!m_vertexMemoryPool.AllowMemory(unAllocVertexMemory, vertexMemoryInfo))
-    {
-        MORTY_ASSERT(false);
-        return false;
-    }
-
-    //alloc index memory
-    MemoryInfo indexMemoryInfo;
-    if (!m_indexMemoryPool.AllowMemory(unRoundIndexNum * pMesh->GetIndexStructSize(), indexMemoryInfo))
-    {
-        MORTY_ASSERT(false);
-
-        m_vertexMemoryPool.FreeMemory(vertexMemoryInfo);
-        return false;
-    }
-
-    MMeshData& meshMergeData       = m_meshTable[pMesh];
-    meshMergeData.vertexMemoryInfo = vertexMemoryInfo;
-    meshMergeData.indexMemoryInfo  = indexMemoryInfo;
-
-    {
-        std::lock_guard lock(m_uploadMutex);
-        m_uploadQueue.push_back(pMesh);
-    }
+    meshData.clusters = mesh->GetClusters();
+    meshData.groups   = mesh->GetClusterGroup();
+    meshData.lods     = mesh->GetClusterLodData();
 
     return true;
 }
 
-void MMeshManager::UnregisterMesh(MIMesh* pMesh)
+void MMeshManager::UnregisterMesh(MIMesh* mesh)
 {
-    if (!pMesh)
+    if (!mesh)
     {
-        MORTY_ASSERT(pMesh);
+        MORTY_ASSERT(mesh);
         return;
     }
 
-    auto findResult = m_meshTable.find(pMesh);
+    auto findResult = m_meshTable.find(mesh);
     if (findResult == m_meshTable.end())
     {
         MORTY_ASSERT(findResult != m_meshTable.end());
         return;
     }
 
-    MMeshData& meshData = findResult->second;
-    m_vertexMemoryPool.FreeMemory(meshData.vertexMemoryInfo);
-    m_indexMemoryPool.FreeMemory(meshData.indexMemoryInfo);
-
     m_meshTable.erase(findResult);
 }
 
-bool MMeshManager::HasMesh(MIMesh* pMesh) const { return m_meshTable.find(pMesh) != m_meshTable.end(); }
+bool    MMeshManager::HasMesh(MIMesh* pMesh) const { return m_meshTable.find(pMesh) != m_meshTable.end(); }
 
-const MMeshManager::MMeshData& MMeshManager::FindMesh(MIMesh* pMesh) const
-{
-    auto findResult = m_meshTable.find(pMesh);
-    if (findResult == m_meshTable.end())
-    {
-        static MMeshData InvalidData;
-        return InvalidData;
-    }
-
-    return findResult->second;
-}
-
-MIMesh*                             MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
+MIMesh* MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
 
 std::shared_ptr<MMeshBufferAdapter> MMeshManager::GetMeshBuffer() const { return m_meshBufferAdapter; }

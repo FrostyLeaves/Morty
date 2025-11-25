@@ -26,12 +26,19 @@ struct MClusterBounds {
 };
 
 struct MCluster {
-    int32_t                   group         = -1;
-    int32_t                   refined       = -1;
+    int32_t                   group         = MGlobal::M_INVALID_RESULT;
+    int32_t                   refined       = MGlobal::M_INVALID_RESULT;
+    uint32_t                  indicesOffset = 0;//offset in MClusterGroup index array
+    uint32_t                  indicesNum    = 0;//number of indices in MClusterGroup index array
     MClusterBounds            bounds;
 
-    std::vector<MByte>      vertexData;
-    std::vector<uint32_t>   indexData;
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+    void                      Deserialize(const void* pBufferPointer);
+};
+
+struct MClusterPage {
+    std::vector<MByte>        vertexData;
+    std::vector<uint32_t>     indexData;
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const void* pBufferPointer);

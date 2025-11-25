@@ -28,6 +28,7 @@ table MMeshResource
     cluster: [MCluster];
     group: [MClusterGroup];
     lod: [MSlice];
+    pages: [MClusterPage];
 }
 
 root_type MMeshResource;

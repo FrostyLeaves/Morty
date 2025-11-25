@@ -14,23 +14,20 @@ namespace morty
 class MClusterBuilder
 {
 public:
+    struct InputData {
+        float*             vertexData;
+        uint32_t           vertexNum;
+        uint32_t           vertexStride;
 
-	struct InputData
-	{
-		float* vertexData;
-		uint32_t vertexNum;
-		uint32_t vertexStride;
+        uint32_t*          indexData;
+        uint32_t           indexNum;
 
-		uint32_t* indexData;
-		uint32_t indexNum;
-
-		size_t attributeProtectMask;
-		std::vector<float> simplifyWeight;
-	};
+        size_t             attributeProtectMask;
+        std::vector<float> simplifyWeight;
+    };
 
 
-
-	void Generate(MIMesh* mesh);
+    void Generate(MIMesh* mesh);
 
 private:
     struct MClusterData {
@@ -42,7 +39,7 @@ private:
     };
 
     std::vector<std::vector<int>> PartitionCluster(
-            const InputData& input,
+            const InputData&                 input,
             const std::vector<MClusterData>& clusters,
             const std::vector<int>&          pending,
             const std::vector<unsigned int>& remap
@@ -60,7 +57,7 @@ private:
     MClusterBounds BoundsMerge(const std::vector<MClusterData>& clusters, const std::vector<int>& group);
 
     void           SimplifyFallback(
-                      const InputData& input,
+                      const InputData&                  input,
                       std::vector<unsigned int>&        lod,
                       const std::vector<unsigned int>&  indices,
                       const std::vector<unsigned char>& locks,
@@ -69,7 +66,7 @@ private:
               );
 
     std::vector<unsigned int> Simplify(
-            const InputData& input,
+            const InputData&                  input,
             const std::vector<unsigned int>&  indices,
             const std::vector<unsigned char>& locks,
             size_t                            target_count,
@@ -77,20 +74,21 @@ private:
     );
 
     int32_t OutputGroup(
-            const InputData& input,
+            const InputData&                 input,
             const std::vector<MClusterData>& clusters,
             const std::vector<int>&          group,
             const MClusterBounds&            simplified
     );
 
     void ExtractClusterData(
-            const InputData& input,
-            const std::vector<uint32_t>& clusterIndices,
-            std::vector<MByte>& outVertexData,
-            std::vector<uint32_t>& outIndexData
+            const InputData&                 input,
+            const std::vector<MClusterData>& clusters,
+            std::vector<MByte>&              outVertexData,
+            std::vector<uint32_t>&           outIndexData,
+            std::vector<uint32_t>&           outClusterIndices
     );
 
-    void BuildCluster(const InputData& input);
+    void                         BuildCluster(const InputData& input);
     std::vector<MClusterData>    Clusterize(const InputData& input);
 
     const size_t                 MaxVertices  = 64;
@@ -112,6 +110,7 @@ private:
     std::vector<MCluster>        m_allClusters;
     std::vector<MClusterGroup>   m_allGroups;
     std::vector<MClusterLodData> m_lods;
+    std::vector<MClusterPage>    m_clusterPages;
 };
 
 }// namespace morty

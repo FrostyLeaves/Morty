@@ -24,35 +24,39 @@ class MMaterial;
 class MORTY_API MIMesh
 {
 public:
-    explicit                                MIMesh(const bool& nDynamicMesh = false);
+    explicit MIMesh(const bool& nDynamicMesh = false);
 
-    virtual ~                               MIMesh();
+    virtual ~MIMesh();
 
-    void                                    SetDirty();
-    void                                    GenerateBuffer(MIDevice* pDevice);
-    void                                    UploadBuffer(MIDevice* pDevice);
-    void                                    DestroyBuffer(MIDevice* pDevice);
-    void                                    Clean();
+    void                                           SetDirty();
+    void                                           GenerateBuffer(MIDevice* pDevice);
+    void                                           UploadBuffer(MIDevice* pDevice);
+    void                                           DestroyBuffer(MIDevice* pDevice);
+    void                                           Clean();
 
-    MBuffer*                                GetVertexBuffer() { return &m_vertexBuffer; }
-    MBuffer*                                GetIndexBuffer() { return &m_indexBuffer; }
-    [[nodiscard]] const MByte*              GetVertices() const { return m_vertexData.data(); }
-    [[nodiscard]] MByte*                    GetVertices() { return m_vertexData.data(); }
-    [[nodiscard]] const std::vector<MByte>& GetVerticesVector() const { return m_vertexData; }
+    MBuffer*                                       GetVertexBuffer() { return &m_vertexBuffer; }
+    MBuffer*                                       GetIndexBuffer() { return &m_indexBuffer; }
+    [[nodiscard]] const MByte*                     GetVertices() const { return m_vertexData.data(); }
+    [[nodiscard]] MByte*                           GetVertices() { return m_vertexData.data(); }
+    [[nodiscard]] const std::vector<MByte>&        GetVerticesVector() const { return m_vertexData; }
     [[nodiscard]] const std::vector<MIndicesType>& GetIndicesVector() const { return m_indexData; }
-    [[nodiscard]] const MIndicesType*              GetIndices() const { return reinterpret_cast<const MIndicesType*>(m_indexData.data()); }
-    MIndicesType*                                   GetIndices() { return reinterpret_cast<MIndicesType*>(m_indexData.data()); }
-    [[nodiscard]] static uint32_t              GetIndexStructSize() { return sizeof(MIndicesType); }
-    [[nodiscard]] uint32_t                      GetVerticesNum() const;
-    [[nodiscard]] uint32_t                      GetIndicesNum() const;
-    [[nodiscard]] uint32_t                      GetVerticesSize() const { return static_cast<uint32_t>(m_vertexBuffer.GetSize()); }
-    [[nodiscard]] uint32_t                      GetIndicesSize() const { return static_cast<uint32_t>(m_indexBuffer.GetSize()); }
-    void                                        CreateIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
-    void                                        ResizeIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
+    [[nodiscard]] const MIndicesType*              GetIndices() const
+    {
+        return reinterpret_cast<const MIndicesType*>(m_indexData.data());
+    }
+    MIndicesType*                 GetIndices() { return reinterpret_cast<MIndicesType*>(m_indexData.data()); }
+    [[nodiscard]] static uint32_t GetIndexStructSize() { return sizeof(MIndicesType); }
+    [[nodiscard]] uint32_t        GetVerticesNum() const;
+    [[nodiscard]] uint32_t        GetIndicesNum() const;
+    [[nodiscard]] uint32_t        GetVerticesSize() const { return static_cast<uint32_t>(m_vertexBuffer.GetSize()); }
+    [[nodiscard]] uint32_t        GetIndicesSize() const { return static_cast<uint32_t>(m_indexBuffer.GetSize()); }
+    void                          CreateIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
+    void                          ResizeIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
     [[nodiscard]] const std::vector<MCluster>& GetClusters() const { return m_clusters; }
     std::vector<MCluster>&                     GetClusters() { return m_clusters; }
     std::vector<MClusterGroup>&                GetClusterGroup() { return m_groups; }
     std::vector<MClusterLodData>&              GetClusterLodData() { return m_lods; }
+    std::vector<MClusterPage>&                 GetClusterPages() { return m_clusterPages; }
 
     [[nodiscard]] virtual size_t               GetAttributeProtectMask() const           = 0;
     [[nodiscard]] virtual std::vector<float>   GetSimplifyWeight() const                 = 0;
@@ -71,6 +75,7 @@ protected:
     std::vector<MCluster>        m_clusters;
     std::vector<MClusterGroup>   m_groups;
     std::vector<MClusterLodData> m_lods;
+    std::vector<MClusterPage>    m_clusterPages;
 };
 
 template<class VERTEX_TYPE> class MORTY_API MMesh : public MIMesh
@@ -80,7 +85,7 @@ public:
         : MIMesh(nDynamicMesh)
     {}
 
-    ~                     MMesh() override {}
+    ~MMesh() override {}
 
     [[nodiscard]] MIMesh* Clone(const bool& bDynamic = false) const override
     {

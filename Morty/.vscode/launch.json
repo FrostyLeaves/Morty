@@ -2,18 +2,31 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Debug",
+            "name": "Launch Editor",
             "type": "lldb",
             "request": "launch",
-            // Resolved by CMake Tools:
             "program": "${command:cmake.launchTargetPath}",
-            "args": [],
+            "args": ["editor"],
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "CMake: build",
-            "osx": {
-                "type": "cppdbg",
-                "MIMode": "lldb",
-            }
+            "preLaunchTask": "CMake: build"
+        },
+        {
+            "name": "Launch Editor with Scene",
+            "type": "lldb", 
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": ["editor", "--scene", "assets/scenes/default.scene"],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "CMake: build"
+        },
+        {
+            "name": "Import Model",
+            "type": "lldb",
+            "request": "launch", 
+            "program": "${command:cmake.launchTargetPath}",
+            "args": ["import", "model", "assets/models/test.fbx", "assets/models/test.mesh"],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "CMake: build"
         }
     ]
 }

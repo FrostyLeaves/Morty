@@ -33,7 +33,7 @@ public:
 public:
     bool   AllowMemory(const size_t& unSize, MemoryInfo& info);
 
-    void   FreeMemory(MemoryInfo& info);
+    void   FreeMemory(const MemoryInfo& info);
 
     void   ResizeMemory(const size_t& nPoolSize);
 

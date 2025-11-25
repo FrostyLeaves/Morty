@@ -17,12 +17,17 @@ table MClusterBounds
 
 table MCluster
 {
-    vertex: [byte];
-    index: [uint];
-
     group: int;
     refined: int;
+    indices_offset: uint;
+    indices_num: uint;
     bounds: MClusterBounds;
+}
+
+table MClusterPage
+{
+    vertex: [byte];
+    index: [uint];
 }
 
 table MClusterGroup

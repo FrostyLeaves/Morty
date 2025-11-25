@@ -9,24 +9,24 @@ using namespace morty;
 void MClusterBuilder::Generate(MIMesh* mesh)
 {
     InputData input;
-    input.vertexData   = reinterpret_cast<float*>(mesh->GetVertices());
-    input.vertexNum    = mesh->GetVerticesNum();
-    input.vertexStride = mesh->GetVertexStructSize();
-    input.indexData    = mesh->GetIndices();
-    input.indexNum     = mesh->GetIndicesNum();
+    input.vertexData           = reinterpret_cast<float*>(mesh->GetVertices());
+    input.vertexNum            = mesh->GetVerticesNum();
+    input.vertexStride         = mesh->GetVertexStructSize();
+    input.indexData            = mesh->GetIndices();
+    input.indexNum             = mesh->GetIndicesNum();
     input.attributeProtectMask = mesh->GetAttributeProtectMask();
-    input.simplifyWeight = mesh->GetSimplifyWeight();
+    input.simplifyWeight       = mesh->GetSimplifyWeight();
 
     BuildCluster(input);
 
-    mesh->GetClusters() = m_allClusters;
-    mesh->GetClusterGroup() = m_allGroups;
+    mesh->GetClusters()       = m_allClusters;
+    mesh->GetClusterGroup()   = m_allGroups;
     mesh->GetClusterLodData() = m_lods;
-
+    mesh->GetClusterPages()   = m_clusterPages;
 }
 
 std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
-        const InputData& input,
+        const InputData&                 input,
         const std::vector<MClusterData>& clusters,
         const std::vector<int>&          pending,
         const std::vector<unsigned int>& remap
@@ -140,24 +140,30 @@ void MClusterBuilder::LockBoundary(
 }
 
 void MClusterBuilder::ExtractClusterData(
-        const InputData& input,
-        const std::vector<uint32_t>& clusterIndices,
-        std::vector<MByte>& outVertexData,
-        std::vector<uint32_t>& outIndexData
+        const InputData&                 input,
+        const std::vector<MClusterData>& clusters,
+        std::vector<MByte>&              outVertexData,
+        std::vector<uint32_t>&           outIndexData,
+        std::vector<uint32_t>&           outClusterIndices
 )
 {
     // Extract unique vertices used by this cluster and remap indices
-    std::vector<uint32_t> uniqueVertices;
+    std::vector<uint32_t>                  uniqueVertices;
     std::unordered_map<uint32_t, uint32_t> vertexRemap;
-
-    for (uint32_t idx : clusterIndices)
+    size_t                                 indicesNum = 0;
+    for (const auto& cluster: clusters)
     {
-        if (vertexRemap.find(idx) == vertexRemap.end())
+        for (uint32_t idx: cluster.indices)
         {
-            uint32_t newIdx = uniqueVertices.size();
-            vertexRemap[idx] = newIdx;
-            uniqueVertices.push_back(idx);
+            if (vertexRemap.find(idx) == vertexRemap.end())
+            {
+                uint32_t newIdx  = uniqueVertices.size();
+                vertexRemap[idx] = newIdx;
+                uniqueVertices.push_back(idx);
+            }
         }
+
+        indicesNum += cluster.indices.size();
     }
 
     // Copy vertex data
@@ -166,21 +172,32 @@ void MClusterBuilder::ExtractClusterData(
     for (size_t v = 0; v < uniqueVertices.size(); ++v)
     {
         const MByte* srcVertex = reinterpret_cast<const MByte*>(input.vertexData) + uniqueVertices[v] * vertexSize;
-        MByte* dstVertex = outVertexData.data() + v * vertexSize;
+        MByte*       dstVertex = outVertexData.data() + v * vertexSize;
         memcpy(dstVertex, srcVertex, vertexSize);
     }
 
     // Remap and copy index data
     outIndexData.clear();
-    outIndexData.reserve(clusterIndices.size());
-    for (uint32_t idx : clusterIndices)
+    outIndexData.reserve(indicesNum);
+    outClusterIndices.resize(clusters.size());
+    uint32_t indexOffset = 0;
+    for (size_t idx = 0; idx < clusters.size(); ++idx)
     {
-        outIndexData.push_back(vertexRemap[idx]);
+        const auto& cluster    = clusters[idx];
+        outClusterIndices[idx] = indexOffset;
+
+        for (uint32_t index: cluster.indices)
+        {
+            MORTY_ASSERT(vertexRemap.find(index) != vertexRemap.end());
+            outIndexData.push_back(vertexRemap[index]);
+        }
+
+        indexOffset += static_cast<uint32_t>(cluster.indices.size());
     }
 }
 
 int32_t MClusterBuilder::OutputGroup(
-        const InputData& input,
+        const InputData&                 input,
         const std::vector<MClusterData>& clusters,
         const std::vector<int>&          clusterInGroup,
         const MClusterBounds&            simplified
@@ -188,26 +205,38 @@ int32_t MClusterBuilder::OutputGroup(
 {
     int32_t groupId = m_allGroups.size();
     m_allGroups.push_back({});
+    m_clusterPages.push_back({});
 
     MClusterGroup& group = m_allGroups[groupId];
     group.clusterOffset  = m_allClusters.size();
     group.clusterNum     = clusterInGroup.size();
     group.bounds         = simplified;
 
+    std::vector<uint32_t> clusterIndices(clusterInGroup.size());
+    // Extract cluster's independent vertex and index data
+    ExtractClusterData(
+            input,
+            clusters,
+            m_clusterPages[groupId].vertexData,
+            m_clusterPages[groupId].indexData,
+            clusterIndices
+    );
+
     auto outputClusters = std::vector<MCluster>(clusterInGroup.size());
     for (size_t i = 0; i < clusterInGroup.size(); ++i)
     {
-        const auto& cluster  = clusters[clusterInGroup[i]];
-        auto&       output = outputClusters[i];
+        const auto& cluster = clusters[clusterInGroup[i]];
+        auto&       output  = outputClusters[i];
 
-        output.refined       = cluster.refined;
-        output.group         = groupId;
-        output.bounds        = (OptimizeBounds && cluster.refined != -1)
-                                       ? BoundsCompute(input, cluster.indices.data(), cluster.indices.size(), cluster.bounds.error)
-                                       : cluster.bounds;
+        output.refined = cluster.refined;
+        output.group   = groupId;
+        output.bounds =
+                (OptimizeBounds && cluster.refined != -1)
+                        ? BoundsCompute(input, cluster.indices.data(), cluster.indices.size(), cluster.bounds.error)
+                        : cluster.bounds;
 
-        // Extract cluster's independent vertex and index data
-        ExtractClusterData(input, cluster.indices, output.vertexData, output.indexData);
+        output.indicesOffset = clusterIndices[i];
+        output.indicesNum    = static_cast<uint32_t>(cluster.indices.size());
     }
 
     m_allClusters.insert(m_allClusters.end(), outputClusters.begin(), outputClusters.end());
@@ -215,8 +244,7 @@ int32_t MClusterBuilder::OutputGroup(
     return groupId;
 }
 
-std::vector<MClusterBuilder::MClusterData>
-MClusterBuilder::Clusterize(const InputData& input)
+std::vector<MClusterBuilder::MClusterData> MClusterBuilder::Clusterize(const InputData& input)
 {
     size_t                       max_meshlets = meshopt_buildMeshletsBound(input.indexNum, MaxVertices, MaxTriangles);
     std::vector<meshopt_Meshlet> meshlets(max_meshlets);
@@ -271,7 +299,8 @@ MClusterBuilder::Clusterize(const InputData& input)
 MClusterBounds
 MClusterBuilder::BoundsCompute(const InputData& input, const uint32_t* indices, uint32_t indicesNum, float error)
 {
-    meshopt_Bounds bounds = meshopt_computeClusterBounds(indices, indicesNum, input.vertexData, input.vertexNum, input.vertexStride);
+    meshopt_Bounds bounds =
+            meshopt_computeClusterBounds(indices, indicesNum, input.vertexData, input.vertexNum, input.vertexStride);
 
     return MClusterBounds(Vector3(bounds.center[0], bounds.center[1], bounds.center[2]), bounds.radius, error);
 }
@@ -305,7 +334,7 @@ MClusterBounds MClusterBuilder::BoundsMerge(const std::vector<MClusterData>& clu
 }
 
 void MClusterBuilder::SimplifyFallback(
-        const InputData& input,
+        const InputData&                  input,
         std::vector<unsigned int>&        lod,
         const std::vector<unsigned int>&  indices,
         const std::vector<unsigned char>& locks,
@@ -361,7 +390,7 @@ void MClusterBuilder::SimplifyFallback(
 }
 
 std::vector<unsigned int> MClusterBuilder::Simplify(
-        const InputData& input,
+        const InputData&                  input,
         const std::vector<unsigned int>&  indices,
         const std::vector<unsigned char>& locks,
         size_t                            target_count,
@@ -405,7 +434,7 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
 
 void MClusterBuilder::BuildCluster(const InputData& input)
 {
-    if(input.vertexData == nullptr || input.vertexNum == 0 || input.indexData == nullptr || input.indexNum == 0)
+    if (input.vertexData == nullptr || input.vertexNum == 0 || input.indexData == nullptr || input.indexNum == 0)
     {
         return;
     }
@@ -426,7 +455,8 @@ void MClusterBuilder::BuildCluster(const InputData& input)
 
             for (size_t attributeIdx = 0; attributeIdx < max_attributes; ++attributeIdx)
                 if (r != i && (input.attributeProtectMask & (1u << attributeIdx)) &&
-                    input.vertexData[i * max_attributes + attributeIdx] != input.vertexData[r * max_attributes + attributeIdx])
+                    input.vertexData[i * max_attributes + attributeIdx] !=
+                            input.vertexData[r * max_attributes + attributeIdx])
                     locks[i] |= meshopt_SimplifyVertex_Protect;
         }
     }
@@ -492,9 +522,9 @@ void MClusterBuilder::BuildCluster(const InputData& input)
             // discard clusters from the group - they won't be used anymore
             for (size_t j = 0; j < groups[i].size(); ++j) clusters[groups[i][j]].indices = std::vector<unsigned int>();
 
-            InputData simplifiedInput = input;
-            simplifiedInput.indexData = simplified.data();
-            simplifiedInput.indexNum  = static_cast<uint32_t>(simplified.size());
+            InputData simplifiedInput       = input;
+            simplifiedInput.indexData       = simplified.data();
+            simplifiedInput.indexNum        = static_cast<uint32_t>(simplified.size());
             std::vector<MClusterData> split = Clusterize(simplifiedInput);
 
             for (auto& cluster: split)

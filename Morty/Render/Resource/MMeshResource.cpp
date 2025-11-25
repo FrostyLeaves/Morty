@@ -88,6 +88,8 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
     std::vector<flatbuffers::Offset<morty::fbs::MCluster>>      fbClusterArray(pMesh->GetClusters().size());
     std::vector<flatbuffers::Offset<morty::fbs::MClusterGroup>> fbGroupArray(pMesh->GetClusterGroup().size());
     std::vector<flatbuffers::Offset<morty::fbs::MSlice>>        fbLodArray(pMesh->GetClusterLodData().size());
+    std::vector<flatbuffers::Offset<morty::fbs::MClusterPage>>  fbPageArray(pMesh->GetClusterPages().size());
+
     std::transform(
             pMesh->GetClusters().begin(),
             pMesh->GetClusters().end(),
@@ -106,10 +108,17 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
             fbLodArray.begin(),
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
+    std::transform(
+            pMesh->GetClusterPages().begin(),
+            pMesh->GetClusterPages().end(),
+            fbPageArray.begin(),
+            [&fbb](const auto& item) { return item.Serialize(fbb).o; }
+    );
 
     const auto                fbClusters = fbb.CreateVector(fbClusterArray);
     const auto                fbGroups   = fbb.CreateVector(fbGroupArray);
     const auto                fbLods     = fbb.CreateVector(fbLodArray);
+    const auto                fbPages    = fbb.CreateVector(fbPageArray);
 
     fbs::MMeshResourceBuilder builder(fbb);
 
@@ -121,6 +130,7 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
     builder.add_cluster(fbClusters.o);
     builder.add_group(fbGroups.o);
     builder.add_lod(fbLods.o);
+    builder.add_pages(fbPages.o);
 
     return builder.Finish().Union();
 }
@@ -165,9 +175,17 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
         return lod;
     });
 
+    std::vector<MClusterPage> pages(fbData->pages()->size());
+    std::transform(fbData->pages()->begin(), fbData->pages()->end(), pages.begin(), [](const auto& item) {
+        MClusterPage page{};
+        page.Deserialize(item);
+        return page;
+    });
+
     pMesh->GetClusters()       = std::move(clusters);
     pMesh->GetClusterGroup()   = std::move(groups);
     pMesh->GetClusterLodData() = std::move(lods);
+    pMesh->GetClusterPages()   = std::move(pages);
 }
 
 bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)

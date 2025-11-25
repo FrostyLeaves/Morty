@@ -2,5 +2,12 @@
     "terminal.integrated.defaultProfile.osx": "zsh",
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/../Build"
-    ]
+    ],
+    "editor.formatOnSave": true,
+    "C_Cpp.clang_format_style": "file",
+    "C_Cpp.clang_format_fallbackStyle": "WebKit",
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    }
 }
