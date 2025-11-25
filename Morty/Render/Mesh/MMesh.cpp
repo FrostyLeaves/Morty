@@ -28,24 +28,24 @@ uint32_t MIMesh::GetVerticesNum() const
     return static_cast<uint32_t>(m_vertexBuffer.GetSize() / GetVertexStructSize());
 }
 
-uint32_t MIMesh::GetIndicesNum() const { return static_cast<uint32_t>(m_indexBuffer.GetSize() / sizeof(uint32_t)); }
+uint32_t MIMesh::GetIndicesNum() const { return static_cast<uint32_t>(m_indexData.size()); }
 
 void     MIMesh::CreateIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-    if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
+    if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(MIndicesType))
     {
-        m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
+        m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(MIndicesType));
     }
-    m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
+    m_indexData.resize(unSize * unIndexSize);
 }
 
 void MIMesh::ResizeIndices(const uint32_t& unSize, const uint32_t& unIndexSize)
 {
-    if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(uint32_t))
+    if (m_indexBuffer.GetSize() < unSize * unIndexSize * sizeof(MIndicesType))
     {
-        m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(uint32_t));
+        m_indexBuffer.ReallocMemory(unSize * unIndexSize * sizeof(MIndicesType));
     }
-    m_indexData.resize(unSize * unIndexSize * sizeof(uint32_t));
+    m_indexData.resize(unSize * unIndexSize);
 }
 
 void MIMesh::SetDirty()
@@ -64,13 +64,13 @@ void MIMesh::SetDirty()
 void MIMesh::GenerateBuffer(MIDevice* pDevice)
 {
     m_vertexBuffer.GenerateBuffer(pDevice, m_vertexData.data(), m_vertexData.size());
-    m_indexBuffer.GenerateBuffer(pDevice, m_indexData.data(), m_indexData.size());
+    m_indexBuffer.GenerateBuffer(pDevice, reinterpret_cast<MByte*>(m_indexData.data()), m_indexData.size() * sizeof(MIndicesType));
 }
 
 void MIMesh::UploadBuffer(MIDevice* pDevice)
 {
     m_vertexBuffer.UploadBuffer(pDevice, m_vertexData.data(), m_vertexData.size());
-    m_indexBuffer.UploadBuffer(pDevice, m_indexData.data(), m_indexData.size());
+    m_indexBuffer.UploadBuffer(pDevice, reinterpret_cast<MByte*>(m_indexData.data()), m_indexData.size() * sizeof(MIndicesType));
 }
 
 void MIMesh::DestroyBuffer(MIDevice* pDevice)

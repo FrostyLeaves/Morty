@@ -39,16 +39,16 @@ public:
     [[nodiscard]] const MByte*              GetVertices() const { return m_vertexData.data(); }
     [[nodiscard]] MByte*                    GetVertices() { return m_vertexData.data(); }
     [[nodiscard]] const std::vector<MByte>& GetVerticesVector() const { return m_vertexData; }
-    [[nodiscard]] const std::vector<MByte>& GetIndicesVector() const { return m_indexData; }
-    [[nodiscard]] const uint32_t* GetIndices() const { return reinterpret_cast<const uint32_t*>(m_indexData.data()); }
-    uint32_t*                     GetIndices() { return reinterpret_cast<uint32_t*>(m_indexData.data()); }
-    [[nodiscard]] static uint32_t GetIndexStructSize() { return sizeof(uint32_t); }
-    [[nodiscard]] uint32_t        GetVerticesNum() const;
-    [[nodiscard]] uint32_t        GetIndicesNum() const;
-    [[nodiscard]] uint32_t        GetVerticesSize() const { return static_cast<uint32_t>(m_vertexBuffer.GetSize()); }
-    [[nodiscard]] uint32_t        GetIndicesSize() const { return static_cast<uint32_t>(m_indexBuffer.GetSize()); }
-    void                          CreateIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
-    void                          ResizeIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
+    [[nodiscard]] const std::vector<MIndicesType>& GetIndicesVector() const { return m_indexData; }
+    [[nodiscard]] const MIndicesType*              GetIndices() const { return reinterpret_cast<const MIndicesType*>(m_indexData.data()); }
+    MIndicesType*                                   GetIndices() { return reinterpret_cast<MIndicesType*>(m_indexData.data()); }
+    [[nodiscard]] static uint32_t              GetIndexStructSize() { return sizeof(MIndicesType); }
+    [[nodiscard]] uint32_t                      GetVerticesNum() const;
+    [[nodiscard]] uint32_t                      GetIndicesNum() const;
+    [[nodiscard]] uint32_t                      GetVerticesSize() const { return static_cast<uint32_t>(m_vertexBuffer.GetSize()); }
+    [[nodiscard]] uint32_t                      GetIndicesSize() const { return static_cast<uint32_t>(m_indexBuffer.GetSize()); }
+    void                                        CreateIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
+    void                                        ResizeIndices(const uint32_t& nSize, const uint32_t& nIndexSize);
     [[nodiscard]] const std::vector<MCluster>& GetClusters() const { return m_clusters; }
     std::vector<MCluster>&                     GetClusters() { return m_clusters; }
     std::vector<MClusterGroup>&                GetClusterGroup() { return m_groups; }
@@ -67,7 +67,7 @@ protected:
     MBuffer                      m_indexBuffer;
 
     std::vector<MByte>           m_vertexData;
-    std::vector<MByte>           m_indexData;
+    std::vector<MIndicesType>    m_indexData;
     std::vector<MCluster>        m_clusters;
     std::vector<MClusterGroup>   m_groups;
     std::vector<MClusterLodData> m_lods;

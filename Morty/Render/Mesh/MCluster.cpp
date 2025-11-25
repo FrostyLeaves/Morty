@@ -25,13 +25,15 @@ void MClusterBounds::Deserialize(const void* pBufferPointer)
 
 flatbuffers::Offset<void> MCluster::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
-    auto                 fbBounds = bounds.Serialize(fbb);
+    auto fbBounds = bounds.Serialize(fbb);
+    auto fbVertex = fbb.CreateVector(reinterpret_cast<const int8_t*>(vertexData.data()), vertexData.size());
+    auto fbIndex  = fbb.CreateVector(indexData);
 
     fbs::MClusterBuilder builder(fbb);
     builder.add_bounds(fbBounds.o);
     builder.add_group(group);
-    builder.add_indices_offset(indicesOffset);
-    builder.add_indices_num(indicesNum);
+    builder.add_vertex(fbVertex);
+    builder.add_index(fbIndex);
     builder.add_refined(refined);
 
     return builder.Finish().Union();
@@ -41,10 +43,18 @@ void MCluster::Deserialize(const void* pBufferPointer)
 {
     const auto* fbData = reinterpret_cast<const fbs::MCluster*>(pBufferPointer);
     bounds.Deserialize(fbData->bounds());
-    group         = fbData->group();
-    indicesOffset = fbData->indices_offset();
-    indicesNum    = fbData->indices_num();
-    refined       = fbData->refined();
+    group   = fbData->group();
+    refined = fbData->refined();
+
+    if (fbData->vertex())
+    {
+        const auto* data = reinterpret_cast<const MByte*>(fbData->vertex()->data());
+        vertexData.assign(data, data + fbData->vertex()->size());
+    }
+    if (fbData->index())
+    {
+        indexData.assign(fbData->index()->begin(), fbData->index()->end());
+    }
 }
 
 flatbuffers::Offset<void> MClusterGroup::Serialize(flatbuffers::FlatBufferBuilder& fbb) const

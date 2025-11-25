@@ -1,17 +1,24 @@
 #include "MClusterBuilder.h"
 
 #include "meshoptimizer.h"
+#include <unordered_map>
 
 using namespace morty;
 
 
 void MClusterBuilder::Generate(MIMesh* mesh)
 {
-    BuildCluster(mesh);
+    InputData input;
+    input.vertexData   = reinterpret_cast<float*>(mesh->GetVertices());
+    input.vertexNum    = mesh->GetVerticesNum();
+    input.vertexStride = mesh->GetVertexStructSize();
+    input.indexData    = mesh->GetIndices();
+    input.indexNum     = mesh->GetIndicesNum();
+    input.attributeProtectMask = mesh->GetAttributeProtectMask();
+    input.simplifyWeight = mesh->GetSimplifyWeight();
 
-    mesh->ResizeIndices(m_indices.size(), 1);
-    memcpy(mesh->GetIndices(), m_indices.data(), m_indices.size() * sizeof(uint32_t));
-    
+    BuildCluster(input);
+
     mesh->GetClusters() = m_allClusters;
     mesh->GetClusterGroup() = m_allGroups;
     mesh->GetClusterLodData() = m_lods;
@@ -19,7 +26,7 @@ void MClusterBuilder::Generate(MIMesh* mesh)
 }
 
 std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
-        MIMesh*                          mesh,
+        const InputData& input,
         const std::vector<MClusterData>& clusters,
         const std::vector<int>&          pending,
         const std::vector<unsigned int>& remap
@@ -51,9 +58,9 @@ std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
             cluster_indices.size(),
             cluster_counts.data(),
             cluster_counts.size(),
-            reinterpret_cast<const float*>(mesh->GetVertices()),
+            input.vertexData,
             remap.size(),
-            mesh->GetVertexStructSize(),
+            input.vertexStride,
             PartitionSize
     );
 
@@ -132,14 +139,53 @@ void MClusterBuilder::LockBoundary(
     }
 }
 
+void MClusterBuilder::ExtractClusterData(
+        const InputData& input,
+        const std::vector<uint32_t>& clusterIndices,
+        std::vector<MByte>& outVertexData,
+        std::vector<uint32_t>& outIndexData
+)
+{
+    // Extract unique vertices used by this cluster and remap indices
+    std::vector<uint32_t> uniqueVertices;
+    std::unordered_map<uint32_t, uint32_t> vertexRemap;
+
+    for (uint32_t idx : clusterIndices)
+    {
+        if (vertexRemap.find(idx) == vertexRemap.end())
+        {
+            uint32_t newIdx = uniqueVertices.size();
+            vertexRemap[idx] = newIdx;
+            uniqueVertices.push_back(idx);
+        }
+    }
+
+    // Copy vertex data
+    const uint32_t vertexSize = input.vertexStride;
+    outVertexData.resize(uniqueVertices.size() * vertexSize);
+    for (size_t v = 0; v < uniqueVertices.size(); ++v)
+    {
+        const MByte* srcVertex = reinterpret_cast<const MByte*>(input.vertexData) + uniqueVertices[v] * vertexSize;
+        MByte* dstVertex = outVertexData.data() + v * vertexSize;
+        memcpy(dstVertex, srcVertex, vertexSize);
+    }
+
+    // Remap and copy index data
+    outIndexData.clear();
+    outIndexData.reserve(clusterIndices.size());
+    for (uint32_t idx : clusterIndices)
+    {
+        outIndexData.push_back(vertexRemap[idx]);
+    }
+}
+
 int32_t MClusterBuilder::OutputGroup(
-        const MIMesh*                    mesh,
+        const InputData& input,
         const std::vector<MClusterData>& clusters,
         const std::vector<int>&          clusterInGroup,
         const MClusterBounds&            simplified
 )
 {
-
     int32_t groupId = m_allGroups.size();
     m_allGroups.push_back({});
 
@@ -151,18 +197,17 @@ int32_t MClusterBuilder::OutputGroup(
     auto outputClusters = std::vector<MCluster>(clusterInGroup.size());
     for (size_t i = 0; i < clusterInGroup.size(); ++i)
     {
-        const auto& input  = clusters[clusterInGroup[i]];
+        const auto& cluster  = clusters[clusterInGroup[i]];
         auto&       output = outputClusters[i];
 
-        output.indicesOffset = m_indices.size();
-        output.indicesNum    = input.indices.size();
-        output.refined       = input.refined;
+        output.refined       = cluster.refined;
         output.group         = groupId;
-        output.bounds        = (OptimizeBounds && input.refined != -1)
-                                       ? BoundsCompute(mesh, input.indices.data(), input.indices.size(), input.bounds.error)
-                                       : input.bounds;
+        output.bounds        = (OptimizeBounds && cluster.refined != -1)
+                                       ? BoundsCompute(input, cluster.indices.data(), cluster.indices.size(), cluster.bounds.error)
+                                       : cluster.bounds;
 
-        m_indices.insert(m_indices.end(), input.indices.begin(), input.indices.end());
+        // Extract cluster's independent vertex and index data
+        ExtractClusterData(input, cluster.indices, output.vertexData, output.indexData);
     }
 
     m_allClusters.insert(m_allClusters.end(), outputClusters.begin(), outputClusters.end());
@@ -171,27 +216,23 @@ int32_t MClusterBuilder::OutputGroup(
 }
 
 std::vector<MClusterBuilder::MClusterData>
-MClusterBuilder::Clusterize(MIMesh* mesh, uint32_t* indicesData, uint32_t indicesNum)
+MClusterBuilder::Clusterize(const InputData& input)
 {
-    auto                         vertexData       = reinterpret_cast<const float*>(mesh->GetVertices());
-    auto                         vertexNum        = static_cast<size_t>(mesh->GetVerticesNum());
-    auto                         vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
-
-    size_t                       max_meshlets = meshopt_buildMeshletsBound(indicesNum, MaxVertices, MaxTriangles);
+    size_t                       max_meshlets = meshopt_buildMeshletsBound(input.indexNum, MaxVertices, MaxTriangles);
     std::vector<meshopt_Meshlet> meshlets(max_meshlets);
-    std::vector<unsigned int>    meshlet_vertices(indicesNum);
+    std::vector<unsigned int>    meshlet_vertices(input.indexNum);
     // note: in v0.25 or prior, use indices.size() + max_meshlets * 3
-    std::vector<unsigned char>   meshlet_triangles(indicesNum + max_meshlets * 3);
+    std::vector<unsigned char>   meshlet_triangles(input.indexNum + max_meshlets * 3);
 
     size_t                       meshlet_count = meshopt_buildMeshlets(
             meshlets.data(),
             meshlet_vertices.data(),
             meshlet_triangles.data(),
-            indicesData,
-            indicesNum,
-            vertexData,
-            vertexNum,
-            vertexStructSize,
+            input.indexData,
+            input.indexNum,
+            input.vertexData,
+            input.vertexNum,
+            input.vertexStride,
             MaxVertices,
             MaxTriangles,
             ConeWeight
@@ -228,13 +269,9 @@ MClusterBuilder::Clusterize(MIMesh* mesh, uint32_t* indicesData, uint32_t indice
 }
 
 MClusterBounds
-MClusterBuilder::BoundsCompute(const MIMesh* mesh, const uint32_t* indices, uint32_t indicesNum, float error)
+MClusterBuilder::BoundsCompute(const InputData& input, const uint32_t* indices, uint32_t indicesNum, float error)
 {
-    auto           vertexData       = reinterpret_cast<const float*>(mesh->GetVertices());
-    auto           vertexNum        = static_cast<size_t>(mesh->GetVerticesNum());
-    auto           vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
-
-    meshopt_Bounds bounds = meshopt_computeClusterBounds(indices, indicesNum, vertexData, vertexNum, vertexStructSize);
+    meshopt_Bounds bounds = meshopt_computeClusterBounds(indices, indicesNum, input.vertexData, input.vertexNum, input.vertexStride);
 
     return MClusterBounds(Vector3(bounds.center[0], bounds.center[1], bounds.center[2]), bounds.radius, error);
 }
@@ -268,7 +305,7 @@ MClusterBounds MClusterBuilder::BoundsMerge(const std::vector<MClusterData>& clu
 }
 
 void MClusterBuilder::SimplifyFallback(
-        const MIMesh*                     mesh,
+        const InputData& input,
         std::vector<unsigned int>&        lod,
         const std::vector<unsigned int>&  indices,
         const std::vector<unsigned char>& locks,
@@ -281,28 +318,22 @@ void MClusterBuilder::SimplifyFallback(
         unsigned int id;
     };
 
-    auto                       vertexData       = reinterpret_cast<const float*>(mesh->GetVertices());
-    auto                       vertexNum        = static_cast<size_t>(mesh->GetVerticesNum());
-    auto                       vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
-    auto                       simplifyWeight   = mesh->GetSimplifyWeight();
-
-
     std::vector<SloppyVertex>  subset(indices.size());
     std::vector<unsigned char> subset_locks(indices.size());
 
     lod.resize(indices.size());
 
-    size_t positions_stride = vertexStructSize / sizeof(float);
+    size_t positions_stride = input.vertexStride / sizeof(float);
 
     // deindex the mesh subset to avoid calling simplifySloppy on the entire vertex buffer (which is prohibitively expensive without sparsity)
     for (size_t i = 0; i < indices.size(); ++i)
     {
         unsigned int v = indices[i];
-        MORTY_ASSERT(v < vertexNum);
+        MORTY_ASSERT(v < input.vertexNum);
 
-        subset[i].x  = vertexData[v * positions_stride + 0];
-        subset[i].y  = vertexData[v * positions_stride + 1];
-        subset[i].z  = vertexData[v * positions_stride + 2];
+        subset[i].x  = input.vertexData[v * positions_stride + 0];
+        subset[i].y  = input.vertexData[v * positions_stride + 1];
+        subset[i].z  = input.vertexData[v * positions_stride + 2];
         subset[i].id = v;
 
         subset_locks[i] = locks[v];
@@ -330,7 +361,7 @@ void MClusterBuilder::SimplifyFallback(
 }
 
 std::vector<unsigned int> MClusterBuilder::Simplify(
-        const MIMesh*                     mesh,
+        const InputData& input,
         const std::vector<unsigned int>&  indices,
         const std::vector<unsigned char>& locks,
         size_t                            target_count,
@@ -338,11 +369,6 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
 )
 {
     if (target_count > indices.size()) return indices;
-
-    auto                      vertexData       = reinterpret_cast<const float*>(mesh->GetVertices());
-    auto                      vertexNum        = static_cast<size_t>(mesh->GetVerticesNum());
-    auto                      vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
-    auto                      simplifyWeight   = mesh->GetSimplifyWeight();
 
     std::vector<unsigned int> lod(indices.size());
 
@@ -353,13 +379,13 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
             &lod[0],
             &indices[0],
             indices.size(),
-            vertexData,
-            vertexNum,
-            vertexStructSize,
-            vertexData,
-            vertexStructSize,
-            simplifyWeight.data(),
-            simplifyWeight.size(),
+            input.vertexData,
+            input.vertexNum,
+            input.vertexStride,
+            input.vertexData,
+            input.vertexStride,
+            input.simplifyWeight.data(),
+            input.simplifyWeight.size(),
             &locks[0],
             target_count,
             FLT_MAX,
@@ -370,53 +396,46 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
     // while it's possible to call simplifySloppy directly, it doesn't support sparsity or absolute error, so we need to do some extra work
     if (lod.size() > target_count && SimplifyFallbackSloppy)
     {
-        SimplifyFallback(mesh, lod, indices, locks, target_count, error);
+        SimplifyFallback(input, lod, indices, locks, target_count, error);
         *error *= SimplifyErrorFactorSloppy;// scale error up to account for appearance degradation
     }
 
     return lod;
 }
 
-void MClusterBuilder::BuildCluster(MIMesh* mesh)
+void MClusterBuilder::BuildCluster(const InputData& input)
 {
-    auto                       vertexData       = reinterpret_cast<const float*>(mesh->GetVertices());
-    auto                       vertexNum        = static_cast<size_t>(mesh->GetVerticesNum());
-    auto                       vertexStructSize = static_cast<size_t>(mesh->GetVertexStructSize());
-    auto                       indicesData      = mesh->GetIndices();
-    auto                       indicesNum       = static_cast<size_t>(mesh->GetIndicesNum());
-
-    if(vertexData == nullptr || vertexNum == 0 || indicesData == nullptr || indicesNum == 0)
+    if(input.vertexData == nullptr || input.vertexNum == 0 || input.indexData == nullptr || input.indexNum == 0)
     {
         return;
     }
 
-    std::vector<unsigned char> locks(vertexNum);
-    std::vector<unsigned int>  remap(vertexNum);
+    std::vector<unsigned char> locks(input.vertexNum);
+    std::vector<unsigned int>  remap(input.vertexNum);
 
-    meshopt_generatePositionRemap(&remap[0], vertexData, vertexNum, vertexStructSize);
+    meshopt_generatePositionRemap(&remap[0], input.vertexData, input.vertexNum, input.vertexStride);
 
     // set up protect bits on UV seams for permissive mode
     if (AttributeProtectMask)
     {
-        size_t max_attributes = vertexStructSize / sizeof(float);
+        size_t max_attributes = input.vertexStride / sizeof(float);
 
-        for (size_t i = 0; i < vertexNum; ++i)
+        for (size_t i = 0; i < input.vertexNum; ++i)
         {
             unsigned int r = remap[i];// canonical vertex with the same position
 
             for (size_t attributeIdx = 0; attributeIdx < max_attributes; ++attributeIdx)
-                if (r != i && (mesh->GetAttributeProtectMask() & (1u << attributeIdx)) &&
-                    vertexData[i * max_attributes + attributeIdx] != vertexData[r * max_attributes + attributeIdx])
+                if (r != i && (input.attributeProtectMask & (1u << attributeIdx)) &&
+                    input.vertexData[i * max_attributes + attributeIdx] != input.vertexData[r * max_attributes + attributeIdx])
                     locks[i] |= meshopt_SimplifyVertex_Protect;
         }
     }
 
-
-    auto clusters = Clusterize(mesh, indicesData, indicesNum);
+    auto clusters = Clusterize(input);
 
     for (auto& cluster: clusters)
     {
-        cluster.bounds = BoundsCompute(mesh, cluster.indices.data(), cluster.indices.size(), 0.0f);
+        cluster.bounds = BoundsCompute(input, cluster.indices.data(), cluster.indices.size(), 0.0f);
     }
 
 
@@ -426,7 +445,7 @@ void MClusterBuilder::BuildCluster(MIMesh* mesh)
     // merge and simplify clusters until we can't merge anymore
     while (pending.size() > 1)
     {
-        std::vector<std::vector<int>> groups = PartitionCluster(mesh, clusters, pending, remap);
+        std::vector<std::vector<int>> groups = PartitionCluster(input, clusters, pending, remap);
         pending.clear();
 
         m_lods.push_back(
@@ -455,11 +474,11 @@ void MClusterBuilder::BuildCluster(MIMesh* mesh)
             auto                      groupBounds = BoundsMerge(clusters, groups[i]);
 
             float                     error      = 0.f;
-            std::vector<unsigned int> simplified = Simplify(mesh, merged, locks, target_size, &error);
+            std::vector<unsigned int> simplified = Simplify(input, merged, locks, target_size, &error);
             if (simplified.size() > size_t(merged.size() * SimplifyThreshold))
             {
                 groupBounds.error = FLT_MAX;// terminal group, won't simplify further
-                OutputGroup(mesh, clusters, groups[i], groupBounds);
+                OutputGroup(input, clusters, groups[i], groupBounds);
                 continue;// simplification is stuck; abandon the merge
             }
 
@@ -468,12 +487,15 @@ void MClusterBuilder::BuildCluster(MIMesh* mesh)
                                 error * SimplifyErrorMergeAdditive;
 
             // output the new group with all clusters; the resulting id will be recorded in new clusters as clodCluster::refined
-            auto refined = OutputGroup(mesh, clusters, groups[i], groupBounds);
+            auto refined = OutputGroup(input, clusters, groups[i], groupBounds);
 
             // discard clusters from the group - they won't be used anymore
             for (size_t j = 0; j < groups[i].size(); ++j) clusters[groups[i][j]].indices = std::vector<unsigned int>();
 
-            std::vector<MClusterData> split = Clusterize(mesh, simplified.data(), simplified.size());
+            InputData simplifiedInput = input;
+            simplifiedInput.indexData = simplified.data();
+            simplifiedInput.indexNum  = static_cast<uint32_t>(simplified.size());
+            std::vector<MClusterData> split = Clusterize(simplifiedInput);
 
             for (auto& cluster: split)
             {
@@ -500,6 +522,6 @@ void MClusterBuilder::BuildCluster(MIMesh* mesh)
         auto        bounds = cluster.bounds;
         bounds.error       = FLT_MAX;// terminal group, won't simplify further
 
-        OutputGroup(mesh, clusters, pending, bounds);
+        OutputGroup(input, clusters, pending, bounds);
     }
 }

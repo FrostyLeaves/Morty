@@ -17,8 +17,9 @@ table MClusterBounds
 
 table MCluster
 {
-    indices_offset: uint;
-    indices_num: uint;
+    vertex: [byte];
+    index: [uint];
+
     group: int;
     refined: int;
     bounds: MClusterBounds;

@@ -13,9 +13,24 @@ namespace morty
 
 class MClusterBuilder
 {
-
 public:
-    void Generate(MIMesh* mesh);
+
+	struct InputData
+	{
+		float* vertexData;
+		uint32_t vertexNum;
+		uint32_t vertexStride;
+
+		uint32_t* indexData;
+		uint32_t indexNum;
+
+		size_t attributeProtectMask;
+		std::vector<float> simplifyWeight;
+	};
+
+
+
+	void Generate(MIMesh* mesh);
 
 private:
     struct MClusterData {
@@ -27,7 +42,7 @@ private:
     };
 
     std::vector<std::vector<int>> PartitionCluster(
-            MIMesh*                          mesh,
+            const InputData& input,
             const std::vector<MClusterData>& clusters,
             const std::vector<int>&          pending,
             const std::vector<unsigned int>& remap
@@ -40,12 +55,12 @@ private:
             const std::vector<unsigned int>&     remap
     );
 
-    MClusterBounds BoundsCompute(const MIMesh* mesh, const uint32_t* indices, uint32_t indicesNum, float error);
+    MClusterBounds BoundsCompute(const InputData& input, const uint32_t* indices, uint32_t indicesNum, float error);
 
     MClusterBounds BoundsMerge(const std::vector<MClusterData>& clusters, const std::vector<int>& group);
 
     void           SimplifyFallback(
-                      const MIMesh*                     mesh,
+                      const InputData& input,
                       std::vector<unsigned int>&        lod,
                       const std::vector<unsigned int>&  indices,
                       const std::vector<unsigned char>& locks,
@@ -54,7 +69,7 @@ private:
               );
 
     std::vector<unsigned int> Simplify(
-            const MIMesh*                     mesh,
+            const InputData& input,
             const std::vector<unsigned int>&  indices,
             const std::vector<unsigned char>& locks,
             size_t                            target_count,
@@ -62,14 +77,21 @@ private:
     );
 
     int32_t OutputGroup(
-            const MIMesh*                    mesh,
+            const InputData& input,
             const std::vector<MClusterData>& clusters,
             const std::vector<int>&          group,
             const MClusterBounds&            simplified
     );
 
-    void BuildCluster(MIMesh* mesh);
-    std::vector<MClusterData>    Clusterize(MIMesh* mesh, uint32_t* indices, uint32_t indicesNum);
+    void ExtractClusterData(
+            const InputData& input,
+            const std::vector<uint32_t>& clusterIndices,
+            std::vector<MByte>& outVertexData,
+            std::vector<uint32_t>& outIndexData
+    );
+
+    void BuildCluster(const InputData& input);
+    std::vector<MClusterData>    Clusterize(const InputData& input);
 
     const size_t                 MaxVertices  = 64;
     const size_t                 MaxTriangles = 128;// note: in v0.25 or prior, max_triangles needs to be divisible by 4
@@ -87,7 +109,6 @@ private:
     const float                  SimplifyErrorMergeAdditive = 0.0f;
 
 
-    std::vector<uint32_t>        m_indices;
     std::vector<MCluster>        m_allClusters;
     std::vector<MClusterGroup>   m_allGroups;
     std::vector<MClusterLodData> m_lods;

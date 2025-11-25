@@ -132,7 +132,7 @@ void MRenderPassCmd::DrawMesh(MIMesh* mesh, size_t nIndexOffset, size_t nIndexCo
     if (!pVertexBuffer || !pIndexBuffer) { return; }
 
     UpdateBuffer(pVertexBuffer, mesh->GetVerticesVector().data(), mesh->GetVerticesVector().size());
-    UpdateBuffer(pIndexBuffer, mesh->GetIndicesVector().data(), mesh->GetIndicesVector().size());
+    UpdateBuffer(pIndexBuffer, reinterpret_cast<const MByte*>(mesh->GetIndicesVector().data()), mesh->GetIndicesVector().size() * mesh->GetIndexStructSize());
 
     DrawMesh(pVertexBuffer, pIndexBuffer, nVertexOffset, nIndexOffset, nIndexCount);
 }

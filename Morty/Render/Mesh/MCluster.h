@@ -26,11 +26,12 @@ struct MClusterBounds {
 };
 
 struct MCluster {
-    uint32_t                  indicesOffset = 0;
-    uint32_t                  indicesNum    = 0;
     int32_t                   group         = -1;
     int32_t                   refined       = -1;
     MClusterBounds            bounds;
+
+    std::vector<MByte>      vertexData;
+    std::vector<uint32_t>   indexData;
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const void* pBufferPointer);

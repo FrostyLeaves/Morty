@@ -50,10 +50,6 @@ public:
 
     [[nodiscard]] MIMesh*          GetScreenRect() const;
 
-    [[nodiscard]] MIMesh*          GetSkyBox() const;
-
-    [[nodiscard]] const MMeshData& GetCubeMesh() const;
-
 public:
     [[nodiscard]] const MBuffer*                      GetVertexBuffer() const { return &m_vertexBuffer; }
 
@@ -91,8 +87,6 @@ private:
     std::map<MIMesh*, MMeshData>        m_meshTable;
 
     std::unique_ptr<MIMesh>             m_screenRect = nullptr;
-    std::unique_ptr<MIMesh>             m_skyBox     = nullptr;
-    std::unique_ptr<MIMesh>             m_cubeMesh   = nullptr;
 
 
     // render thread.

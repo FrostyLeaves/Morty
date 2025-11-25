@@ -194,13 +194,15 @@ TEST_SUITE("MClusterBuilder") {
         SUBCASE("Cluster indices are valid") {
             builder.Generate(mesh);
 
-            const auto* indices = mesh->GetIndices();
-            uint32_t vertexCount = mesh->GetVerticesNum();
-
             for (const auto& cluster : mesh->GetClusters()) {
-                for (uint32_t i = 0; i < cluster.indicesNum; ++i) {
-                    uint32_t idx = indices[cluster.indicesOffset + i];
-                    CHECK(idx < vertexCount);
+                // Each cluster should have its own vertex and index data
+                CHECK(cluster.indexData.size() > 0);
+                CHECK(cluster.vertexData.size() > 0);
+
+                // All indices should be valid within cluster's vertex data
+                uint32_t clusterVertexCount = cluster.vertexData.size() / mesh->GetVertexStructSize();
+                for (uint32_t idx : cluster.indexData) {
+                    CHECK(idx < clusterVertexCount);
                 }
             }
         }
@@ -213,10 +215,11 @@ TEST_SUITE("MClusterBuilder") {
             for (const auto& group : mesh->GetClusterGroup()) {
                 CHECK(group.clusterOffset + group.clusterNum <= clusters.size());
 
-                // Verify all clusters in group reference this group
+                // Verify all clusters in group have data
                 for (uint32_t i = 0; i < group.clusterNum; ++i) {
                     const auto& cluster = clusters[group.clusterOffset + i];
-                    CHECK(cluster.indicesNum > 0);
+                    CHECK(cluster.indexData.size() > 0);
+                    CHECK(cluster.vertexData.size() > 0);
                 }
             }
         }

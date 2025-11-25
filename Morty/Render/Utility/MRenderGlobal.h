@@ -101,6 +101,7 @@ using MSkeletonInstanceKey = size_t;
 using MTexturePtr          = std::shared_ptr<MTexture>;
 using MTextureArray        = std::vector<MTexturePtr>;
 using MEntryNames          = std::array<MStringId, static_cast<int>(MEShaderType::TOTAL_NUM)>;
+using MIndicesType         = uint32_t;
 
 enum class MECameraType
 {

@@ -347,8 +347,4 @@ const MMeshManager::MMeshData& MMeshManager::FindMesh(MIMesh* pMesh) const
 
 MIMesh*                             MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
 
-MIMesh*                             MMeshManager::GetSkyBox() const { return m_skyBox.get(); }
-
-const MMeshManager::MMeshData&      MMeshManager::GetCubeMesh() const { return FindMesh(m_cubeMesh.get()); }
-
 std::shared_ptr<MMeshBufferAdapter> MMeshManager::GetMeshBuffer() const { return m_meshBufferAdapter; }
