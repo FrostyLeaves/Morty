@@ -49,6 +49,9 @@ public:
     const fbs::Vector2* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                Deserialize(const void* pBufferPointer);
 
+    YAML::Node          SerializeYaml() const;
+    void                DeserializeYaml(const YAML::Node& node);
+
 public:
     union
     {
@@ -111,6 +114,9 @@ public:
     const fbs::Vector3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                Deserialize(const void* pBufferPointer);
 
+    YAML::Node          SerializeYaml() const;
+    void                DeserializeYaml(const YAML::Node& node);
+
 public:
     union
     {
@@ -141,6 +147,9 @@ public:
     explicit Vector2i(uint32_t x, uint32_t y);
     explicit Vector2i(size_t x, size_t y);
     explicit Vector2i(float x, float y);
+
+    YAML::Node SerializeYaml() const;
+    void       DeserializeYaml(const YAML::Node& node);
 
 public:
     union
@@ -211,6 +220,9 @@ public:
 public:
     const fbs::Vector4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                Deserialize(const void* pBufferPointer);
+
+    YAML::Node          SerializeYaml() const;
+    void                DeserializeYaml(const YAML::Node& node);
 
 public:
     union

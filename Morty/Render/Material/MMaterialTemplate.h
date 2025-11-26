@@ -11,10 +11,11 @@
 #include "Utility/MRenderGlobal.h"
 #include "Resource/MTextureResource.h"
 
+#include "MMaterialPass.h"
 #include "Shader/MShaderMacro.h"
 #include "Shader/MShaderProgram.h"
 #include "Shader/MShaderPropertyBlock.h"
-#include "MMaterialPass.h"
+
 
 namespace morty
 {
@@ -30,22 +31,29 @@ public:
 
     ~MMaterialTemplate() override = default;
 
-    bool LoadShader(const std::shared_ptr<MResource>& pResource);
-    bool LoadShader(const MString& strResource);
+    bool                       LoadShader(const std::shared_ptr<MResource>& pResource);
+    bool                       LoadShader(const MString& strResource);
     std::shared_ptr<MResource> GetShaderResource() const { return m_shaderResource.GetResource(); }
 
     MMaterialPass* SetPass(const MStringId& passName, const MStringId& vsEntryName, const MStringId& psEntryName);
     [[nodiscard]] MMaterialPass* GetPass(const MStringId& passName) const;
-    [[nodiscard]] const std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>>& GetPasses() const { return m_passes; }
+    [[nodiscard]] const std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>>& GetPasses() const
+    {
+        return m_passes;
+    }
 
     [[nodiscard]] MMaterialPass* GetDefaultPass() const;
-    
-    void SetShaderMacro(const MShaderMacro& macro) { m_shaderMacro = macro;SetDirty(); }
-    [[nodiscard]] const MShaderMacro& GetShaderMacro() const { return m_shaderMacro; }
+
+    void                         SetShaderMacro(const MShaderMacro& macro)
+    {
+        m_shaderMacro = macro;
+        SetDirty();
+    }
+    [[nodiscard]] const MShaderMacro&     GetShaderMacro() const { return m_shaderMacro; }
 
     std::shared_ptr<MShaderPropertyBlock> CreatePropertyBlock(size_t setIdx) const;
 
-    [[nodiscard]] MHashCode GetHashCode() const;
+    [[nodiscard]] MHashCode               GetHashCode() const;
 
 public:
     void OnCreated() override;
@@ -55,11 +63,10 @@ public:
     void SetDirty() { m_dirty = true; }
 
 protected:
-
-    bool m_dirty = true;
-    MShaderMacro   m_shaderMacro      = {};
-    MResourceRef m_shaderResource; // Shader resources
-    std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>> m_passes; // Material passes    
+    bool                                                          m_dirty       = true;
+    MShaderMacro                                                  m_shaderMacro = {};
+    MResourceRef                                                  m_shaderResource;// Shader resources
+    std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>> m_passes;        // Material passes
 };
 
 }// namespace morty

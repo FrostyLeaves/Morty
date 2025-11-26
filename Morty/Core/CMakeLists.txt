@@ -107,11 +107,11 @@ else ()
     message(FATAL_ERROR "tracy not found.")
 endif ()
 
-find_package(ryml CONFIG REQUIRED)
-if (ryml_FOUND)
-    target_link_libraries(Core PUBLIC ryml::ryml)
+find_package(yaml-cpp CONFIG REQUIRED)
+if (yaml-cpp_FOUND)
+    target_link_libraries(Core PUBLIC yaml-cpp::yaml-cpp)
 else ()
-    message(FATAL_ERROR "ryml not found.")
+    message(FATAL_ERROR "yaml-cpp not found.")
 endif ()
 
 

@@ -22,13 +22,14 @@ class MORTY_API MShaderPropertyBlock final
 {
 public:
     friend class MShaderProgram;
-    explicit                    MShaderPropertyBlock();
 
-    ~                           MShaderPropertyBlock() = default;
+    explicit MShaderPropertyBlock();
 
-    explicit                    MShaderPropertyBlock(IShaderProgram* pShaderProgram, const uint32_t& unKey);
+    ~MShaderPropertyBlock() = default;
 
-                                MShaderPropertyBlock(const MShaderPropertyBlock& other);
+    explicit MShaderPropertyBlock(IShaderProgram* pShaderProgram, const uint32_t& unKey);
+
+    MShaderPropertyBlock(const MShaderPropertyBlock& other);
 
     const MShaderPropertyBlock& operator=(const MShaderPropertyBlock& other) = delete;
 
@@ -201,7 +202,6 @@ template<typename TYPE> inline bool MShaderPropertyBlock::SetValue(const MString
         }
     }
 
-    MORTY_ASSERT(false);
     return false;
 }
 

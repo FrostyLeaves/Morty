@@ -34,6 +34,9 @@ struct MBlendState {
     MHashCode                 GetHashCode() const;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const morty::fbs::MBlendState* fbsBlendState);
+
+    YAML::Node                SerializeYaml() const;
+    void                      DeserializeYaml(const YAML::Node& node);
 };
 
 struct MDepthStencilState {
@@ -57,6 +60,9 @@ struct MDepthStencilState {
     MHashCode                 GetHashCode() const;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const morty::fbs::MDepthStencilState* fbsDepthStencilState);
+
+    YAML::Node                SerializeYaml() const;
+    void                      DeserializeYaml(const YAML::Node& node);
 };
 
 /**
@@ -99,6 +105,9 @@ public:
 
     flatbuffers::Offset<void>     Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                          Deserialize(const void* pBufferPointer);
+
+    YAML::Node                    SerializeYaml() const;
+    void                          DeserializeYaml(const YAML::Node& node);
 
     void                          ReleaseProgram() const;
 

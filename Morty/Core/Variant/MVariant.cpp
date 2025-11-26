@@ -98,10 +98,7 @@ flatbuffers::Offset<void> MVariant::Serialize(flatbuffers::FlatBufferBuilder& fb
     {
         fbVariantData = fbb.CreateStruct(fbs::Float(GetValue<float>())).Union();
     }
-    else if (GetType() == MEVariantType::EInt)
-    {
-        fbVariantData = fbb.CreateStruct(fbs::Int(GetValue<int>())).Union();
-    }
+    else if (GetType() == MEVariantType::EInt) { fbVariantData = fbb.CreateStruct(fbs::Int(GetValue<int>())).Union(); }
     else if (GetType() == MEVariantType::EMatrix3)
     {
         fbVariantData = fbb.CreateStruct(*GetValue<Matrix3>().Serialize(fbb)).Union();
@@ -122,14 +119,8 @@ flatbuffers::Offset<void> MVariant::Serialize(flatbuffers::FlatBufferBuilder& fb
     {
         fbVariantData = fbb.CreateStruct(*GetValue<Vector4>().Serialize(fbb)).Union();
     }
-    else if (GetType() == MEVariantType::EStruct)
-    {
-        fbVariantData = GetValue<MVariantStruct>().Serialize(fbb);
-    }
-    else if (GetType() == MEVariantType::EArray)
-    {
-        fbVariantData = GetValue<MVariantArray>().Serialize(fbb);
-    }
+    else if (GetType() == MEVariantType::EStruct) { fbVariantData = GetValue<MVariantStruct>().Serialize(fbb); }
+    else if (GetType() == MEVariantType::EArray) { fbVariantData = GetValue<MVariantArray>().Serialize(fbb); }
     else { MORTY_ASSERT(false); }
 
     fbs::MVariantBuilder builder(fbb);
@@ -138,11 +129,7 @@ flatbuffers::Offset<void> MVariant::Serialize(flatbuffers::FlatBufferBuilder& fb
     return builder.Finish().Union();
 }
 
-void MVariant::Deserialize(
-        const void*                     pBufferPointer,
-        std::shared_ptr<MVariantMemory> pMemory,
-        size_t                          nOffset
-)
+void MVariant::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
     const fbs::MVariant* fbData = reinterpret_cast<const fbs::MVariant*>(pBufferPointer);
 
@@ -152,16 +139,13 @@ void MVariant::Deserialize(
     if (GetType() == MEVariantType::EStruct)
     {
         const fbs::MVariantStruct* fbStruct =
-                reinterpret_cast<const fbs::MVariantStruct*>(
-                        fbData->data_as_MVariantStruct()
-                );
+                reinterpret_cast<const fbs::MVariantStruct*>(fbData->data_as_MVariantStruct());
         m_size = fbStruct->size();
     }
     else if (GetType() == MEVariantType::EArray)
     {
-        const fbs::MVariantArray* fbArray = reinterpret_cast<const fbs::MVariantArray*>(
-                fbData->data_as_MVariantStruct()
-        );
+        const fbs::MVariantArray* fbArray =
+                reinterpret_cast<const fbs::MVariantArray*>(fbData->data_as_MVariantStruct());
         m_size = fbArray->size();
     }
     else { m_size = TypeSize(m_type); }
@@ -175,34 +159,13 @@ void MVariant::Deserialize(
     m_memory = pMemory;
 
     if (GetType() == MEVariantType::EUInt) { SetValue(fbData->data_as_UInt()->value()); }
-    else if (GetType() == MEVariantType::EFloat)
-    {
-        SetValue(fbData->data_as_Float()->value());
-    }
-    else if (GetType() == MEVariantType::EInt)
-    {
-        SetValue(fbData->data_as_Int()->value());
-    }
-    else if (GetType() == MEVariantType::EMatrix3)
-    {
-        GetValue<Matrix3>().Deserialize(fbData->data_as_Matrix3());
-    }
-    else if (GetType() == MEVariantType::EMatrix4)
-    {
-        GetValue<Matrix4>().Deserialize(fbData->data_as_Matrix4());
-    }
-    else if (GetType() == MEVariantType::EVector2)
-    {
-        GetValue<Vector2>().Deserialize(fbData->data_as_Vector2());
-    }
-    else if (GetType() == MEVariantType::EVector3)
-    {
-        GetValue<Vector3>().Deserialize(fbData->data_as_Vector3());
-    }
-    else if (GetType() == MEVariantType::EVector4)
-    {
-        GetValue<Vector4>().Deserialize(fbData->data_as_Vector4());
-    }
+    else if (GetType() == MEVariantType::EFloat) { SetValue(fbData->data_as_Float()->value()); }
+    else if (GetType() == MEVariantType::EInt) { SetValue(fbData->data_as_Int()->value()); }
+    else if (GetType() == MEVariantType::EMatrix3) { GetValue<Matrix3>().Deserialize(fbData->data_as_Matrix3()); }
+    else if (GetType() == MEVariantType::EMatrix4) { GetValue<Matrix4>().Deserialize(fbData->data_as_Matrix4()); }
+    else if (GetType() == MEVariantType::EVector2) { GetValue<Vector2>().Deserialize(fbData->data_as_Vector2()); }
+    else if (GetType() == MEVariantType::EVector3) { GetValue<Vector3>().Deserialize(fbData->data_as_Vector3()); }
+    else if (GetType() == MEVariantType::EVector4) { GetValue<Vector4>().Deserialize(fbData->data_as_Vector4()); }
     else if (GetType() == MEVariantType::EStruct)
     {
         m_struct = std::make_shared<MVariantStruct>();
@@ -259,12 +222,7 @@ MByte*        MVariant::GetData() const
     return m_memory->Data() + m_offset;
 }
 
-MVariant::MVariant(
-        const std::shared_ptr<MVariantMemory>& pMemory,
-        size_t                                 nOffset,
-        size_t                                 nSize,
-        MEVariantType                          eType
-)
+MVariant::MVariant(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset, size_t nSize, MEVariantType eType)
     : m_offset(nOffset)
     , m_size(nSize)
     , m_type(eType)
@@ -297,10 +255,7 @@ MVariant& MVariantStruct::FindVariant(const MStringId& strName)
     return findResult->second;
 }
 
-void MVariantStruct::ResetMemory(
-        const std::shared_ptr<MVariantMemory>& pMemory,
-        size_t                                 nOffset
-)
+void MVariantStruct::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset)
 {
     MORTY_ASSERT(m_locked);
     for (auto& pr: m_member)
@@ -332,25 +287,15 @@ MVariant& MVariantArray::operator[](const size_t& nIdx)
     return m_member[nIdx];
 }
 
-void MVariantArray::ResetMemory(
-        const std::shared_ptr<MVariantMemory>& pMemory,
-        size_t                                 nOffset
-)
+void MVariantArray::ResetMemory(const std::shared_ptr<MVariantMemory>& pMemory, size_t nOffset)
 {
     MORTY_ASSERT(m_locked);
-    for (MVariant& member: m_member)
-    {
-        member.ResetMemory(pMemory, member.GetOffset() - m_offset + nOffset);
-    }
+    for (MVariant& member: m_member) { member.ResetMemory(pMemory, member.GetOffset() - m_offset + nOffset); }
     m_memory = pMemory;
     m_offset = nOffset;
 }
 
-MVariant MVariant::Clone(
-        const MVariant&                 source,
-        std::shared_ptr<MVariantMemory> pMemory,
-        size_t                          nOffset
-)
+MVariant MVariant::Clone(const MVariant& source, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
     if (!pMemory)
     {
@@ -403,11 +348,8 @@ std::shared_ptr<MVariantStruct> MVariantStruct::Clone(
 
     for (auto& pr: pSource->GetMember())
     {
-        pTarget->m_member[pr.first] = MVariant::Clone(
-                pr.second,
-                pMemory,
-                pr.second.GetOffset() - pSource->m_offset + nOffset
-        );
+        pTarget->m_member[pr.first] =
+                MVariant::Clone(pr.second, pMemory, pr.second.GetOffset() - pSource->m_offset + nOffset);
     }
 
     return pTarget;
@@ -429,16 +371,13 @@ std::shared_ptr<MVariantArray> MVariantArray::Clone(
 
     for (auto& pr: pSource->GetMember())
     {
-        pTarget->m_member.push_back(
-                MVariant::Clone(pr, pMemory, pr.GetOffset() - pSource->m_offset + nOffset)
-        );
+        pTarget->m_member.push_back(MVariant::Clone(pr, pMemory, pr.GetOffset() - pSource->m_offset + nOffset));
     }
 
     return pTarget;
 }
 
-flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuilder& fbb
-) const
+flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
     std::vector<flatbuffers::Offset<fbs::MStructMember>> vMembers;
 
@@ -450,9 +389,7 @@ flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuild
         fbs::MStructMemberBuilder builder(fbb);
         builder.add_name(fbName);
         builder.add_value(fbVariant.o);
-        builder.add_relative_offset(
-                static_cast<uint32_t>(pr.second.GetOffset() - m_offset)
-        );
+        builder.add_relative_offset(static_cast<uint32_t>(pr.second.GetOffset() - m_offset));
         vMembers.push_back(builder.Finish());
     }
 
@@ -463,20 +400,15 @@ flatbuffers::Offset<void> MVariantStruct::Serialize(flatbuffers::FlatBufferBuild
     return builder.Finish().Union();
 }
 
-void MVariantStruct::Deserialize(
-        const void*                     pBufferPointer,
-        std::shared_ptr<MVariantMemory> pMemory,
-        size_t                          nOffset
-)
+void MVariantStruct::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
     MORTY_ASSERT(pMemory);
 
     m_memory = pMemory;
     m_offset = nOffset;
 
-    const fbs::MVariantStruct* fbData =
-            reinterpret_cast<const fbs::MVariantStruct*>(pBufferPointer);
-    m_size = fbData->size();
+    const fbs::MVariantStruct* fbData = reinterpret_cast<const fbs::MVariantStruct*>(pBufferPointer);
+    m_size                            = fbData->size();
 
     if (fbData->member())
     {
@@ -497,8 +429,7 @@ void MVariantStruct::Deserialize(
     m_locked = true;
 }
 
-flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilder& fbb
-) const
+flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
     std::vector<flatbuffers::Offset<fbs::MArrayMember>> vMembers;
 
@@ -519,20 +450,15 @@ flatbuffers::Offset<void> MVariantArray::Serialize(flatbuffers::FlatBufferBuilde
     return builder.Finish().Union();
 }
 
-void MVariantArray::Deserialize(
-        const void*                     pBufferPointer,
-        std::shared_ptr<MVariantMemory> pMemory,
-        size_t                          nOffset
-)
+void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory, size_t nOffset)
 {
     MORTY_ASSERT(pMemory);
 
     m_memory = pMemory;
     m_offset = nOffset;
 
-    const fbs::MVariantArray* fbData =
-            reinterpret_cast<const fbs::MVariantArray*>(pBufferPointer);
-    m_size = fbData->size();
+    const fbs::MVariantArray* fbData = reinterpret_cast<const fbs::MVariantArray*>(pBufferPointer);
+    m_size                           = fbData->size();
 
     if (fbData->member())
     {

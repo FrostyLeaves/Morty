@@ -1,8 +1,25 @@
-implementing TestModule;
+enum PropertyType
+{
+    int,
+    float,
+    float3,
+    float4,
+    color
+};
+
+
+[__AttributeUsage(_AttributeTargets.Var)]
+struct PropertyAttribute
+{
+    string displayName;
+    PropertyType type;
+};
 
 public struct TestParameterBlockStruct
 {
+    [Property("Param1", PropertyType.float4)]
     public float4 firstParam;
+    [Property("Param2", PropertyType.float4)]
     public float4 secondParam;
 };
 

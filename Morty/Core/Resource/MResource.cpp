@@ -30,6 +30,43 @@ std::vector<MByte> MFbResourceData::SaveBuffer() const
     return data;
 }
 
+void MYamlResourceData::LoadBuffer(const std::vector<MByte>& buffer)
+{
+    if (buffer.empty()) return;
+
+    // Parse YAML from buffer
+    std::string yamlStr(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+    YAML::Node  root;
+
+    try
+    {
+        root = YAML::Load(yamlStr);
+    } catch (const YAML::Exception& e)
+    {
+        // Handle parse error
+        return;
+    }
+
+    Deserialize(root);
+}
+
+std::vector<MByte> MYamlResourceData::SaveBuffer() const
+{
+    auto          root = Serialize();
+
+    // Emit to string
+    YAML::Emitter emitter;
+    emitter << root;
+
+    // Copy to output buffer
+    std::vector<MByte> output;
+    const std::string  yamlStr = emitter.c_str();
+    output.resize(yamlStr.size());
+    std::memcpy(output.data(), yamlStr.data(), yamlStr.size());
+
+    return output;
+}
+
 void               MTextResourceData::LoadBuffer(const std::vector<MByte>& buffer) { Deserialize(buffer); }
 
 std::vector<MByte> MTextResourceData::SaveBuffer() const
@@ -149,10 +186,7 @@ void MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
     if (m_resource) { m_resource->m_keeper.push_back(this); }
 }
 
-MHashCode MResourceRef::GetHashCode() const
-{
-    return MUtils::Hash(GetResourcePath());
-}
+MHashCode           MResourceRef::GetHashCode() const { return MUtils::Hash(GetResourcePath()); }
 
 const MResourceRef& MResourceRef::operator=(const MResourceRef& keeper)
 {

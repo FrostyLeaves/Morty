@@ -79,9 +79,6 @@
       "name": "rapidjson"
     },
     {
-      "name": "ryml"
-    },
-    {
       "name": "sdl2",
       "default-features": false,
       "features": [
@@ -117,6 +114,9 @@
     {
       "name": "vulkan",
       "default-features": false
+    },
+    {
+      "name": "yaml-cpp"
     },
     {
       "name": "zlib"

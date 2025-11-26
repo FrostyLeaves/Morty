@@ -64,6 +64,9 @@ public:
     const fbs::Matrix3* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                Deserialize(const void* pBufferPointer);
 
+    YAML::Node          SerializeYaml() const;
+    void                DeserializeYaml(const YAML::Node& node);
+
 public:
     float m[3][4];
 
@@ -133,6 +136,9 @@ public:
 public:
     const fbs::Matrix4* Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                Deserialize(const void* pBufferPointer);
+
+    YAML::Node          SerializeYaml() const;
+    void                DeserializeYaml(const YAML::Node& node);
 
 public:
     float                m[4][4];

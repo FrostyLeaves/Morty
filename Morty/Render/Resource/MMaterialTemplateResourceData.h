@@ -8,21 +8,24 @@
 
 #pragma once
 
-#include "Material/MMaterialTemplate.h"
 #include "Material/MMaterialPass.h"
+#include "Material/MMaterialTemplate.h"
+
 
 namespace morty
 {
 
-struct MORTY_API MMaterialTemplateResourceData : public MFbResourceData {
+struct MORTY_API MMaterialTemplateResourceData : public MYamlResourceData {
     //RawData
-    MPath     shaderPath;
-    MShaderMacro                                           shaderMacro;
+    MPath                                                         shaderPath;
+    MShaderMacro                                                  shaderMacro;
     std::unordered_map<MStringId, std::unique_ptr<MMaterialPass>> materialPasses;
 
-    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+    flatbuffers::Offset<void>                                     Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+    void                                                          Deserialize(const void* pBufferPointer);
 
-    void                      Deserialize(const void* pBufferPointer) override;
+    YAML::Node                                                    Serialize() const override;
+    void                                                          Deserialize(const YAML::Node& node) override;
 };
 
 

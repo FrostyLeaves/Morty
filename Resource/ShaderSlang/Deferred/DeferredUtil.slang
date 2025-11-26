@@ -12,7 +12,6 @@ public struct DeferredUtil
         output.normalRoughness.a = surfaceData.roughness;
 
         output.ao.r = surfaceData.ao;
-        output.ao.g = 0.0; // 保留用于未来扩展
 
         return output;
     }

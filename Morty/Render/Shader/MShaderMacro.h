@@ -34,6 +34,10 @@ public:
 
     void                      Deserialize(const void* pBufferPointer);
 
+    YAML::Node                SerializeYaml() const;
+
+    void                      DeserializeYaml(const YAML::Node& node);
+
     [[nodiscard]] MHashCode   GetHashCode() const;
 
 protected:

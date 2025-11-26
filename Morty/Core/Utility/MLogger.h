@@ -36,17 +36,16 @@ enum class MLogType
 class MORTY_API MLogger
 {
 public:
-    MLogger() = default;
+                                                             MLogger() = default;
+    ~                                                        MLogger() = default;
 
-    ~MLogger() = default;
+    static MLogger*                                          GetInstance();
 
-public:
     typedef std::function<void(MLogType eType, const char*)> MLogFunction;
 
-    void SetPrintFunction(MLogFunction func) { m_printFunction = func; }
+    void                              SetPrintFunction(MLogFunction func) { m_printFunction = func; }
 
-    template<typename... ARGS_T>
-    void Print(MLogType eType, const char* svMessage, ARGS_T&&... Args)
+    template<typename... ARGS_T> void Print(MLogType eType, const char* svMessage, ARGS_T&&... Args)
     {
         auto logData = fmt::vformat(svMessage, fmt::make_format_args(Args...));
 
@@ -57,10 +56,7 @@ public:
     template<typename... ARGS_T> void Error(const char* svMessage, ARGS_T&&... Args)
     {
 #ifdef MORTY_WIN
-        SetConsoleTextAttribute(
-                GetStdHandle(STD_OUTPUT_HANDLE),
-                FOREGROUND_INTENSITY | FOREGROUND_RED
-        );
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
 #endif
 
         Print(MLogType::EError, svMessage, Args...);

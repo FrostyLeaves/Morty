@@ -13,7 +13,7 @@
 namespace morty
 {
 
-struct MORTY_API MMaterialResourceData : public MFbResourceData {
+struct MORTY_API MMaterialResourceData : public MYamlResourceData {
     struct Property {
         MString  name;
         MVariant value;
@@ -29,9 +29,11 @@ struct MORTY_API MMaterialResourceData : public MFbResourceData {
 
     MString                   strTemplateResource;
 
-    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const override;
+    YAML::Node                Serialize() const override;
+    void                      Deserialize(const YAML::Node& node) override;
 
-    void                      Deserialize(const void* pBufferPointer) override;
+    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
+    void                      Deserialize(const void* pBufferPointer);
 };
 
 

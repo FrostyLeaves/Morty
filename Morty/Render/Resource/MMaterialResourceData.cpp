@@ -1,8 +1,18 @@
 #include "MMaterialResourceData.h"
-#include "Flatbuffer/MMaterial_generated.h"
 #include "MMaterialResource.h"
+#include "Flatbuffer/MMaterial_generated.h"
 
 using namespace morty;
+
+
+YAML::Node MMaterialResourceData::Serialize() const
+{
+    YAML::Node root;
+
+    return root;
+}
+void                      MMaterialResourceData::Deserialize(const YAML::Node& node) { MORTY_UNUSED(node); }
+
 
 flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {

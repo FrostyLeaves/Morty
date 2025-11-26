@@ -10,9 +10,11 @@
 
 #include "Utility/MGlobal.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialTemplateResource.h"
 #include "Resource/MResource.h"
 #include "Resource/MSkeletonResource.h"
 #include "Utility/MString.h"
+
 
 #include <map>
 #include <memory>
@@ -35,12 +37,6 @@ class MTextureResource;
 class MMeshImporter;
 class MEngine;
 
-enum class MModelConvertMaterialType
-{
-    E_Default_Forward = 0,
-    E_PBR_Deferred
-};
-
 enum class MEModelTextureUsage
 {
     Unknow = 0,
@@ -55,7 +51,7 @@ enum class MEModelTextureUsage
 class MORTY_API MITextureDelegate
 {
 public:
-    virtual ~                                 MITextureDelegate() = default;
+    virtual ~MITextureDelegate() = default;
 
     virtual std::shared_ptr<MTextureResource> GetTexture(const MString& strFullPath, MEModelTextureUsage eUsage) = 0;
 };
@@ -63,7 +59,7 @@ public:
 class MORTY_API MIMaterialDelegate
 {
 public:
-    virtual ~    MIMaterialDelegate() = default;
+    virtual ~MIMaterialDelegate() = default;
 
     virtual void PostProcess(MMaterial* pMaterial) = 0;
 };
@@ -71,11 +67,9 @@ public:
 struct MORTY_API MModelConvertInfo {
     MString                             strResourcePath;
     MString                             strOutputDir;
-    MString                             strOutputName;
 
     bool                                bImportCamera = false;
     bool                                bImportLights = true;
-    MModelConvertMaterialType           eMaterialType;
 
     std::shared_ptr<MITextureDelegate>  pTextureDelegate  = nullptr;
     std::shared_ptr<MIMaterialDelegate> pMaterialDelegate = nullptr;
@@ -106,7 +100,7 @@ public:
      * @param convertInfo Import configuration
      * @return true on success
      */
-    bool     Import(const MModelConvertInfo& convertInfo);
+    bool Import(const MModelConvertInfo& convertInfo);
 
 protected:
     /**
@@ -180,7 +174,7 @@ private:
     MEngine*                                                        m_engine;
     MScene*                                                         m_scene;
 
-    MString                                                         m_strResourcePath;
+    MModelConvertInfo                                               m_convertInfo;
 
     std::unique_ptr<MMeshImporter>                                  m_meshImporter;
 
@@ -191,16 +185,10 @@ private:
 
     std::map<aiNode*, MEntity*>                                     m_nodeMaps;
 
+    std::shared_ptr<MMaterialTemplateResource>                      m_defaultMaterial;
     std::shared_ptr<MSkeletonResource>                              m_skeletonResource;
     MEntity*                                                        m_modelEntity;
 
     std::vector<std::shared_ptr<MSkeletalAnimationResource>>        m_skeletalAnimation;
-
-    bool                                                            m_bImportCamera = false;
-    bool                                                            m_bImportLights = true;
-    MModelConvertMaterialType                                       m_eMaterialType;
-
-    std::shared_ptr<MITextureDelegate>                              m_textureDelegate  = nullptr;
-    std::shared_ptr<MIMaterialDelegate>                             m_materialDelegate = nullptr;
 };
 }// namespace morty

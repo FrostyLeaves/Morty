@@ -27,8 +27,6 @@ class MSlangCompiler
 {
 
 public:
-    void                                           EnableReflection(bool enable);
-    void                                           SetModuleName(MStringView moduleName);
     void                                           SetShaderPath(MStringView filePath);
     bool                                           Compile();
 

@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "Flatbuffer/Vector_generated.h"
+#include "yaml-cpp/yaml.h"
 
 using namespace morty;
 
@@ -348,6 +349,21 @@ const fbs::Vector2* Vector2::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
 
 void                Vector2::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Vector2)); }
 
+YAML::Node          Vector2::SerializeYaml() const
+{
+    YAML::Node node;
+    node["x"] = x;
+    node["y"] = y;
+    return node;
+}
+
+void Vector2::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+    if (node["x"]) x = node["x"].as<float>();
+    if (node["y"]) y = node["y"].as<float>();
+}
+
 const fbs::Vector3* Vector3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
     MORTY_UNUSED(fbb);
@@ -360,6 +376,23 @@ void Vector3::Deserialize(const void* pBufferPointer)
     memcpy(reinterpret_cast<void*>(this), pBufferPointer, sizeof(Vector3));
 }
 
+YAML::Node Vector3::SerializeYaml() const
+{
+    YAML::Node node;
+    node["x"] = x;
+    node["y"] = y;
+    node["z"] = z;
+    return node;
+}
+
+void Vector3::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+    if (node["x"]) x = node["x"].as<float>();
+    if (node["y"]) y = node["y"].as<float>();
+    if (node["z"]) z = node["z"].as<float>();
+}
+
 const fbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
     MORTY_UNUSED(fbb);
@@ -368,6 +401,25 @@ const fbs::Vector4* Vector4::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
 }
 
 void Vector4::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Vector4)); }
+
+YAML::Node Vector4::SerializeYaml() const
+{
+    YAML::Node node;
+    node["x"] = x;
+    node["y"] = y;
+    node["z"] = z;
+    node["w"] = w;
+    return node;
+}
+
+void Vector4::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+    if (node["x"]) x = node["x"].as<float>();
+    if (node["y"]) y = node["y"].as<float>();
+    if (node["z"]) z = node["z"].as<float>();
+    if (node["w"]) w = node["w"].as<float>();
+}
 
 Vector2i::Vector2i(int x, int y)
     : x(x)
@@ -392,6 +444,21 @@ Vector2i::Vector2i(float x, float y)
 bool Vector2i::operator!=(const Vector2i& other) const { return !operator==(other); }
 
 bool Vector2i::operator==(const Vector2i& other) const { return x == other.x && y == other.y; }
+
+YAML::Node Vector2i::SerializeYaml() const
+{
+    YAML::Node node;
+    node["x"] = x;
+    node["y"] = y;
+    return node;
+}
+
+void Vector2i::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+    if (node["x"]) x = node["x"].as<int>();
+    if (node["y"]) y = node["y"].as<int>();
+}
 
 Vector3i::Vector3i(int x, int y, int z)
     : x(x)

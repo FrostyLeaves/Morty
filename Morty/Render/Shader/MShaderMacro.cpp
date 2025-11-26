@@ -2,7 +2,9 @@
 
 #include "Mesh/MVertex.h"
 #include "Utility/MFunction.h"
+#include "yaml-cpp/yaml.h"
 #include "Flatbuffer/MShaderMacro_generated.h"
+
 
 #include "Utility/MRenderGlobal.h"
 
@@ -125,17 +127,49 @@ MHashCode MShaderMacro::GetHashCode() const
 {
     MHashCode hash;
 
-    for(const auto& pair : m_macroParams)
+    for (const auto& pair: m_macroParams)
     {
         MUtils::HashCombine(hash, pair.first.Hash());
         MUtils::HashCombine(hash, pair.second);
     }
 
-    for(const auto& pair : m_mortyMacroParams)
+    for (const auto& pair: m_mortyMacroParams)
     {
         MUtils::HashCombine(hash, pair.first.Hash());
         MUtils::HashCombine(hash, pair.second);
     }
 
     return hash;
+}
+
+YAML::Node MShaderMacro::SerializeYaml() const
+{
+    YAML::Node node = YAML::Node(YAML::NodeType::Sequence);
+
+    for (const auto& pair: m_macroParams)
+    {
+        YAML::Node macroPair;
+        macroPair["Key"]   = pair.first.ToString();
+        macroPair["Value"] = pair.second;
+        node.push_back(macroPair);
+    }
+
+    return node;
+}
+
+void MShaderMacro::DeserializeYaml(const YAML::Node& node)
+{
+    m_macroParams.clear();
+
+    if (!node.IsSequence()) return;
+
+    for (const auto& macroPair: node)
+    {
+        if (macroPair["Key"] && macroPair["Value"])
+        {
+            MStringId key(macroPair["Key"].as<std::string>());
+            MString   value    = macroPair["Value"].as<std::string>();
+            m_macroParams[key] = value;
+        }
+    }
 }

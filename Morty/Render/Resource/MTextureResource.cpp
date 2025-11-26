@@ -21,14 +21,17 @@ MORTY_CLASS_IMPLEMENT(MTextureResource, MResource)
 template<typename ByteType> MByte* Malloc(const size_t& nSize) { return new MByte[nSize * sizeof(ByteType)]; }
 
 
-MTextureResource::MTextureResource()
+MTextureResource::                 MTextureResource()
     : MResource()
 {}
 
-MTextureResource::~MTextureResource()
+MTextureResource::~MTextureResource() { UnloadTexture(); }
+
+void               MTextureResource::UnloadTexture()
 {
     auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
     if (m_texture) { m_texture->DestroyBuffer(pRenderSystem->GetDevice()); }
+    m_texture = nullptr;
 }
 
 void MTextureResource::OnDelete()
@@ -44,6 +47,9 @@ void MTextureResource::OnDelete()
 
 bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
+    UnloadTexture();
+
+    if (nullptr == pResourceData) { return true; }
     MORTY_ASSERT(m_texture == nullptr);
 
     const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
@@ -72,8 +78,6 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 bool MTextureResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
-    MORTY_ASSERT(m_resourceData);
-
     if (m_resourceData)
     {
         pResourceData =

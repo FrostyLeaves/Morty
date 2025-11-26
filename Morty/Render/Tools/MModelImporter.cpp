@@ -87,13 +87,11 @@ static Vector3  GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y,
 MModelImporter::MModelImporter(MEngine* pEngine)
     : m_engine(pEngine)
     , m_scene(nullptr)
-    , m_strResourcePath()
     , m_meshImporter(nullptr)
     , m_meshes()
     , m_skeletonResource(nullptr)
     , m_modelEntity(nullptr)
     , m_skeletalAnimation()
-    , m_eMaterialType(MModelConvertMaterialType::E_Default_Forward)
 {
     if (m_engine) { m_meshImporter = std::make_unique<MMeshImporter>(m_engine); }
 }
@@ -109,24 +107,26 @@ MModelImporter::~MModelImporter()
 
 bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 {
-    MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
+    m_convertInfo = convertInfo;
 
-    m_scene = pObjectSystem->CreateObject<MScene>();
-
-    m_strResourcePath  = convertInfo.strResourcePath;
-    m_bImportCamera    = convertInfo.bImportCamera;
-    m_bImportLights    = convertInfo.bImportLights;
-    m_eMaterialType    = convertInfo.eMaterialType;
-    m_textureDelegate  = convertInfo.pTextureDelegate;
-    m_materialDelegate = convertInfo.pMaterialDelegate;
+    auto pObjectSystem  = GetEngine()->FindSystem<MObjectSystem>();
+    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    m_scene             = pObjectSystem->CreateObject<MScene>();
+    m_defaultMaterial   = resourceSystem->CreateResource<MMaterialTemplateResource>();
+    m_defaultMaterial->LoadShader("ShaderSlang/Main/DeferredGBuffer.slang");
+    m_defaultMaterial->SetPass(
+            MRenderGlobal::DEFAULT_PASS_NAME,
+            MRenderGlobal::DEFAULT_VERTEX_ENTRY,
+            MRenderGlobal::DEFAULT_PIXEL_ENTRY
+    );
 
     auto time = MTimer::GetCurTime();
     if (!Load(convertInfo.strResourcePath)) { return false; }
 
     time = MTimer::GetCurTime() - time;
-    GetEngine()->GetLogger()->Log("Load Model Time: {}", time);
+    GetEngine()->GetLogger()->Log("Load Model Time: {}ms", time);
 
-    return SaveResources(convertInfo.strOutputDir, convertInfo.strOutputName);
+    return SaveResources(convertInfo.strOutputDir, MFileHelper::GetFileName(convertInfo.strResourcePath));
 }
 
 bool MModelImporter::Load(const MString& strResourcePath)
@@ -176,13 +176,13 @@ bool MModelImporter::Load(const MString& strResourcePath)
     // Animation
     ProcessAnimation(scene);
 
-    if (m_bImportLights)
+    if (m_convertInfo.bImportLights)
     {
         // Lights
         ProcessLights(scene);
     }
 
-    if (m_bImportCamera)
+    if (m_convertInfo.bImportCamera)
     {
         // Cameras
         ProcessCameras(scene);
@@ -460,114 +460,54 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
 
     std::shared_ptr<MMaterialResource> pMaterial = nullptr;
 
-    const auto                         pTemplate = pResourceSystem->LoadResource(MMaterialName::DEFERRED_GBUFFER);
-    pMaterial                                    = MMaterialResource::CreateMaterial(pTemplate);
+    pMaterial = MMaterialResource::CreateMaterial(m_defaultMaterial);
 
-    if (m_eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
-    {
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_METALLIC_CHANNEL, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS_CHANNEL, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(
-                MShaderPropertyName::MATERIAL_ALBEDO,
-                Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
-                pResourceSystem->LoadResource(MRenderModule::DefaultWhite)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_NORMAL,
-                pResourceSystem->LoadResource(MRenderModule::DefaultNormal)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_METALLIC,
-                pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS,
-                pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC,
-                pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
-        );
-        pMaterial->SetTexture(
-                MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
-                pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
-        );
-    }
-    else
-    {
-        std::shared_ptr<MResource> pDefaultTexture = pResourceSystem->LoadResource(MRenderModule::DefaultWhite);
-        for (size_t i = 0; i < pMaterial->GetMaterialPropertyBlock()->GetTextureParams().size(); ++i)
-        {
-            pMaterial->SetTexture(
-                    pMaterial->GetMaterialPropertyBlock()->GetTextureParams()[i]->strName,
-                    pDefaultTexture
-            );
-        }
-    }
+    pMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+    pMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+    pMaterial->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector3(1.0f, 1.0f, 1.0f));
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
+            pResourceSystem->LoadResource(MRenderModule::DefaultWhite)
+    );
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_NORMAL,
+            pResourceSystem->LoadResource(MRenderModule::DefaultNormal)
+    );
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_METALLIC,
+            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+    );
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS,
+            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+    );
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC,
+            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+    );
+    pMaterial->SetTexture(
+            MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
+            pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
+    );
+
 
     if (nMaterialIdx >= pScene->mNumMaterials) { return; }
 
-    aiMaterial* pAiMaterial = pScene->mMaterials[nMaterialIdx];
+    aiMaterial*                                            pAiMaterial     = pScene->mMaterials[nMaterialIdx];
+    const std::map<aiTextureType, const MStringId&>*       pTextureMapping = nullptr;
 
-    if (m_eMaterialType == MModelConvertMaterialType::E_Default_Forward)
-    {
-        Vector3               v3Ambient(1.0f, 1.0f, 1.0f), v3Diffuse(1.0f, 1.0f, 1.0f), v3Specular(1.0f, 1.0f, 1.0f);
-        float                 fShininess = 32.0f;
+    static const std::map<aiTextureType, const MStringId&> PbrTextureMapping = {
+            {aiTextureType_DIFFUSE, MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO},
+            {aiTextureType_NORMALS, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
+            {aiTextureType_BASE_COLOR, MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO},
+            {aiTextureType_NORMAL_CAMERA, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
+            {aiTextureType_METALNESS, MShaderPropertyName::MATERIAL_TEXTURE_METALLIC},
+            {aiTextureType_DIFFUSE_ROUGHNESS, MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS},
+            {aiTextureType_AMBIENT_OCCLUSION, MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC},
+            {aiTextureType_EMISSION_COLOR, MShaderPropertyName::MATERIAL_TEXTURE_EMISSION},
+    };
 
-        static const aiString strAmbient("$clr.ambient"), strDiffuse("$clr.diffuse"), strSpecular("$clr.specular"),
-                strShininess("$mat.shininess");
-        for (size_t n = 0; n < pAiMaterial->mNumProperties; ++n)
-        {
-            aiMaterialProperty* prop = pAiMaterial->mProperties[n];
-            if (prop->mKey == strAmbient) { memcpy(v3Ambient.m, prop->mData, sizeof(Vector3)); }
-            else if (prop->mKey == strDiffuse) { memcpy(v3Diffuse.m, prop->mData, sizeof(Vector3)); }
-            else if (prop->mKey == strSpecular) { memcpy(v3Specular.m, prop->mData, sizeof(Vector3)); }
-            else if (prop->mKey == strShininess) { memcpy(&fShininess, prop->mData, sizeof(float)); }
-        }
-
-        if (0.0f == fShininess) { fShininess = 32.0f; }
-
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_AMBIENT, v3Ambient);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_DIFFUSE, v3Diffuse);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SPECULAR, v3Specular);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_SHININESS, fShininess);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_NORMAL_TEXTURE_ENABLE, 0);
-        pMaterial->GetMaterialPropertyBlock()->SetValue(MShaderPropertyName::MATERIAL_ALPHA_FACTOR, 1.0f);
-    }
-
-    const std::map<aiTextureType, const MStringId&>* pTextureMapping = nullptr;
-
-    if (m_eMaterialType == MModelConvertMaterialType::E_Default_Forward)
-    {
-        static const std::map<aiTextureType, const MStringId&> ForwardTextureMapping = {
-                {aiTextureType_DIFFUSE, MShaderPropertyName::MATERIAL_TEXTURE_DIFFUSE},
-                {aiTextureType_NORMALS, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
-                {aiTextureType_SPECULAR, MShaderPropertyName::MATERIAL_TEXTURE_SPECULAR}
-        };
-
-        pTextureMapping = &ForwardTextureMapping;
-    }
-    else if (m_eMaterialType == MModelConvertMaterialType::E_PBR_Deferred)
-    {
-        static const std::map<aiTextureType, const MStringId&> PbrTextureMapping = {
-                {aiTextureType_DIFFUSE, MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO},
-                {aiTextureType_NORMALS, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
-                {aiTextureType_BASE_COLOR, MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO},
-                {aiTextureType_NORMAL_CAMERA, MShaderPropertyName::MATERIAL_TEXTURE_NORMAL},
-                {aiTextureType_METALNESS, MShaderPropertyName::MATERIAL_TEXTURE_METALLIC},
-                {aiTextureType_DIFFUSE_ROUGHNESS, MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS},
-                {aiTextureType_AMBIENT_OCCLUSION, MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC},
-                {aiTextureType_EMISSION_COLOR, MShaderPropertyName::MATERIAL_TEXTURE_EMISSION},
-        };
-
-        pTextureMapping = &PbrTextureMapping;
-    }
-    else { MORTY_ASSERT(false); }
+    pTextureMapping = &PbrTextureMapping;
 
     for (auto pr: *pTextureMapping)
     {
@@ -585,12 +525,12 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
         }
         else
         {
-            MString strFullPath = MFileHelper::GetFileFolder(m_strResourcePath) + "/" + strTextureFileName;
+            MString strFullPath = MFileHelper::GetFileFolder(m_convertInfo.strResourcePath) + "/" + strTextureFileName;
             std::shared_ptr<MResource> pTexture = nullptr;
 
-            if (m_textureDelegate)
+            if (m_convertInfo.pTextureDelegate)
             {
-                pTexture = m_textureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
+                pTexture = m_convertInfo.pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
             }
             else
             {
@@ -604,7 +544,7 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
         }
     }
 
-    if (m_materialDelegate) { m_materialDelegate->PostProcess(pMaterial.get()); }
+    if (m_convertInfo.pMaterialDelegate) { m_convertInfo.pMaterialDelegate->PostProcess(pMaterial.get()); }
 
     m_materials[nMaterialIdx] = pMaterial;
 }
@@ -706,6 +646,12 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
     MString          strPath = strOutputDir + "/" + strOutputName + "/";
 
     MFileHelper::MakeDir(strOutputDir);
+
+    if (m_defaultMaterial)
+    {
+        pResourceSystem->MoveTo(m_defaultMaterial, strPath + strOutputName + ".mat_temp");
+        pResourceSystem->SaveResource(m_defaultMaterial);
+    }
 
     // Save skeleton
     if (m_skeletonResource)

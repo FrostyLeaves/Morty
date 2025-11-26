@@ -27,9 +27,9 @@ enum class MTexturePixelType
 };
 
 struct MTextureImportInfo {
-    MTextureImportInfo() = default;
+                      MTextureImportInfo() = default;
 
-    MTextureImportInfo(const MTexturePixelType nPixelSize);
+                      MTextureImportInfo(const MTexturePixelType nPixelSize);
 
     MTexturePixelType ePixelType = MTexturePixelType::Byte8;//	8 or 32
 };
@@ -56,9 +56,9 @@ class MORTY_API MTextureResource : public MResource
 public:
     MORTY_CLASS(MTextureResource)
 
-    MTextureResource();
+                MTextureResource();
 
-    virtual ~MTextureResource();
+    virtual ~   MTextureResource();
 
     MTexturePtr GetTextureTemplate() { return m_texture; }
 
@@ -89,6 +89,8 @@ public:
     bool SaveTo(std::unique_ptr<MResourceData>& pResourceData) override;
 
 protected:
+    void                           UnloadTexture();
+
     bool                           m_readable     = false;
     MTexturePtr                    m_texture      = nullptr;
     std::unique_ptr<MResourceData> m_resourceData = nullptr;

@@ -57,20 +57,19 @@
 
 #include <flatbuffers/buffer.h>
 #include <flatbuffers/flatbuffer_builder.h>
+#include <yaml-cpp/yaml.h>
 
 #include "Utility/MMap.h"
 #include "Utility/MSpan.h"
 #include "Utility/MString.h"
 #include "doctest/doctest.h"
 
-using MObjectID = unsigned long;
+using MObjectID   = unsigned long;
 using MResourceID = unsigned long;
-using MByte = unsigned char;
-using MHashCode = std::size_t;
+using MByte       = unsigned char;
+using MHashCode   = std::size_t;
 
-template<class... T>
-void MORTY_UNUSED(T &&...) {
-}
+template<class... T> void MORTY_UNUSED(T&&...) {}
 
 #if MORTY_DEBUG
 #define MORTY_ASSERT(condition) assert(condition)
@@ -78,23 +77,26 @@ void MORTY_UNUSED(T &&...) {
 #define MORTY_ASSERT MORTY_UNUSED
 #endif
 
-template<class T>
-void MORTY_SAFE_DELETE(T &pointer) {
-    if (pointer) {
+template<class T> void MORTY_SAFE_DELETE(T& pointer)
+{
+    if (pointer)
+    {
         delete pointer;
         pointer = nullptr;
     }
 }
 
-namespace morty {
-    class MORTY_API MGlobal {
-    public:
-        static constexpr int M_INVALID_RESULT = -1;
-        static constexpr size_t M_INVALID_INDEX = -1;
-        static constexpr uint32_t M_INVALID_UINDEX = -1;
-        static constexpr float M_FLOAT_BIAS = 1e-6;
-        static constexpr size_t M_MAX_THREAD_NUM = 10;
-    };
+namespace morty
+{
+class MORTY_API MGlobal
+{
+public:
+    static constexpr int      M_INVALID_RESULT = -1;
+    static constexpr size_t   M_INVALID_INDEX  = -1;
+    static constexpr uint32_t M_INVALID_UINDEX = -1;
+    static constexpr float    M_FLOAT_BIAS     = 1e-6;
+    static constexpr size_t   M_MAX_THREAD_NUM = 10;
+};
 
-    class MEngine;
-} // namespace morty
+class MEngine;
+}// namespace morty

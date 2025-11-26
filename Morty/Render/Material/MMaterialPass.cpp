@@ -2,9 +2,197 @@
 #include "MMaterialTemplate.h"
 #include "System/MShaderProgramSystem.h"
 #include "Utility/MUtils.h"
+#include "yaml-cpp/yaml.h"
 #include "Flatbuffer/MMaterialPass_generated.h"
 
 using namespace morty;
+
+// Helper functions for enum to/from string conversion
+namespace
+{
+const char* EnumToString(MEBlendFactor factor)
+{
+    switch (factor)
+    {
+        case MEBlendFactor::Zero: return "Zero";
+        case MEBlendFactor::One: return "One";
+        case MEBlendFactor::SrcColor: return "SrcColor";
+        case MEBlendFactor::OneMinusSrcColor: return "OneMinusSrcColor";
+        case MEBlendFactor::DstColor: return "DstColor";
+        case MEBlendFactor::OneMinusDstColor: return "OneMinusDstColor";
+        case MEBlendFactor::SrcAlpha: return "SrcAlpha";
+        case MEBlendFactor::OneMinusSrcAlpha: return "OneMinusSrcAlpha";
+        case MEBlendFactor::DstAlpha: return "DstAlpha";
+        case MEBlendFactor::OneMinusDstAlpha: return "OneMinusDstAlpha";
+        case MEBlendFactor::ConstantColor: return "ConstantColor";
+        case MEBlendFactor::OneMinusConstantColor: return "OneMinusConstantColor";
+        case MEBlendFactor::ConstantAlpha: return "ConstantAlpha";
+        case MEBlendFactor::OneMinusConstantAlpha: return "OneMinusConstantAlpha";
+        default: return "Unknown";
+    }
+}
+
+MEBlendFactor StringToBlendFactor(const std::string& str)
+{
+    if (str == "Zero") return MEBlendFactor::Zero;
+    if (str == "One") return MEBlendFactor::One;
+    if (str == "SrcColor") return MEBlendFactor::SrcColor;
+    if (str == "OneMinusSrcColor") return MEBlendFactor::OneMinusSrcColor;
+    if (str == "DstColor") return MEBlendFactor::DstColor;
+    if (str == "OneMinusDstColor") return MEBlendFactor::OneMinusDstColor;
+    if (str == "SrcAlpha") return MEBlendFactor::SrcAlpha;
+    if (str == "OneMinusSrcAlpha") return MEBlendFactor::OneMinusSrcAlpha;
+    if (str == "DstAlpha") return MEBlendFactor::DstAlpha;
+    if (str == "OneMinusDstAlpha") return MEBlendFactor::OneMinusDstAlpha;
+    if (str == "ConstantColor") return MEBlendFactor::ConstantColor;
+    if (str == "OneMinusConstantColor") return MEBlendFactor::OneMinusConstantColor;
+    if (str == "ConstantAlpha") return MEBlendFactor::ConstantAlpha;
+    if (str == "OneMinusConstantAlpha") return MEBlendFactor::OneMinusConstantAlpha;
+    return MEBlendFactor::One;
+}
+
+const char* EnumToString(MEBlendOp op)
+{
+    switch (op)
+    {
+        case MEBlendOp::Add: return "Add";
+        case MEBlendOp::Subtract: return "Subtract";
+        case MEBlendOp::ReverseSubtract: return "ReverseSubtract";
+        case MEBlendOp::Min: return "Min";
+        case MEBlendOp::Max: return "Max";
+        default: return "Unknown";
+    }
+}
+
+MEBlendOp StringToBlendOp(const std::string& str)
+{
+    if (str == "Add") return MEBlendOp::Add;
+    if (str == "Subtract") return MEBlendOp::Subtract;
+    if (str == "ReverseSubtract") return MEBlendOp::ReverseSubtract;
+    if (str == "Min") return MEBlendOp::Min;
+    if (str == "Max") return MEBlendOp::Max;
+    return MEBlendOp::Add;
+}
+
+const char* EnumToString(MEDepthFunc func)
+{
+    switch (func)
+    {
+        case MEDepthFunc::Never: return "Never";
+        case MEDepthFunc::Less: return "Less";
+        case MEDepthFunc::Equal: return "Equal";
+        case MEDepthFunc::LessEqual: return "LessEqual";
+        case MEDepthFunc::Greater: return "Greater";
+        case MEDepthFunc::NotEqual: return "NotEqual";
+        case MEDepthFunc::GreaterEqual: return "GreaterEqual";
+        case MEDepthFunc::Always: return "Always";
+        default: return "Unknown";
+    }
+}
+
+MEDepthFunc StringToDepthFunc(const std::string& str)
+{
+    if (str == "Never") return MEDepthFunc::Never;
+    if (str == "Less") return MEDepthFunc::Less;
+    if (str == "Equal") return MEDepthFunc::Equal;
+    if (str == "LessEqual") return MEDepthFunc::LessEqual;
+    if (str == "Greater") return MEDepthFunc::Greater;
+    if (str == "NotEqual") return MEDepthFunc::NotEqual;
+    if (str == "GreaterEqual") return MEDepthFunc::GreaterEqual;
+    if (str == "Always") return MEDepthFunc::Always;
+    return MEDepthFunc::Less;
+}
+
+const char* EnumToString(MEStencilOp op)
+{
+    switch (op)
+    {
+        case MEStencilOp::Keep: return "Keep";
+        case MEStencilOp::Zero: return "Zero";
+        case MEStencilOp::Replace: return "Replace";
+        case MEStencilOp::Increment: return "Increment";
+        case MEStencilOp::IncrementWrap: return "IncrementWrap";
+        case MEStencilOp::Decrement: return "Decrement";
+        case MEStencilOp::DecrementWrap: return "DecrementWrap";
+        case MEStencilOp::Invert: return "Invert";
+        default: return "Unknown";
+    }
+}
+
+MEStencilOp StringToStencilOp(const std::string& str)
+{
+    if (str == "Keep") return MEStencilOp::Keep;
+    if (str == "Zero") return MEStencilOp::Zero;
+    if (str == "Replace") return MEStencilOp::Replace;
+    if (str == "Increment") return MEStencilOp::Increment;
+    if (str == "IncrementWrap") return MEStencilOp::IncrementWrap;
+    if (str == "Decrement") return MEStencilOp::Decrement;
+    if (str == "DecrementWrap") return MEStencilOp::DecrementWrap;
+    if (str == "Invert") return MEStencilOp::Invert;
+    return MEStencilOp::Keep;
+}
+
+const char* EnumToString(MECullMode mode)
+{
+    switch (mode)
+    {
+        case MECullMode::EWireframe: return "Wireframe";
+        case MECullMode::ECullNone: return "CullNone";
+        case MECullMode::ECullBack: return "CullBack";
+        case MECullMode::ECullFront: return "CullFront";
+        default: return "Unknown";
+    }
+}
+
+MECullMode StringToCullMode(const std::string& str)
+{
+    if (str == "Wireframe") return MECullMode::EWireframe;
+    if (str == "CullNone") return MECullMode::ECullNone;
+    if (str == "CullBack") return MECullMode::ECullBack;
+    if (str == "CullFront") return MECullMode::ECullFront;
+    return MECullMode::ECullBack;
+}
+
+const char* EnumToString(MEShaderType type)
+{
+    switch (type)
+    {
+        case MEShaderType::EVertex: return "Vertex";
+        case MEShaderType::EPixel: return "Pixel";
+        case MEShaderType::ECompute: return "Compute";
+        case MEShaderType::EGeometry: return "Geometry";
+        default: return "Unknown";
+    }
+}
+
+MEShaderType StringToShaderType(const std::string& str)
+{
+    if (str == "Vertex") return MEShaderType::EVertex;
+    if (str == "Pixel") return MEShaderType::EPixel;
+    if (str == "Compute") return MEShaderType::ECompute;
+    if (str == "Geometry") return MEShaderType::EGeometry;
+    return MEShaderType::EVertex;
+}
+
+std::string MaskToString(uint32_t mask, int bits = 4)
+{
+    std::string result(bits, '0');
+    for (int i = 0; i < bits; ++i) { result[bits - 1 - i] = (mask & (1 << i)) ? '1' : '0'; }
+    return result;
+}
+
+uint32_t StringToMask(const std::string& str)
+{
+    uint32_t mask = 0;
+    int      len  = static_cast<int>(str.length());
+    for (int i = 0; i < len; ++i)
+    {
+        if (str[len - 1 - i] == '1') { mask |= (1 << i); }
+    }
+    return mask;
+}
+
+}// namespace
 
 MMaterialPass::MMaterialPass(MMaterialTemplate* param)
     : m_template(param)
@@ -14,7 +202,7 @@ MMaterialPass::MMaterialPass(MMaterialTemplate* param)
 
 MMaterialPass::~MMaterialPass() { ReleaseProgram(); }
 
-void            MMaterialPass::ReleaseProgram() const
+void MMaterialPass::ReleaseProgram() const
 {
     if (auto system = m_programSystem.lock()) system->ReleaseShaderProgram(this);
 }
@@ -306,4 +494,272 @@ void MDepthStencilState::Deserialize(const fbs::MDepthStencilState* fbsDepthSten
     BackStencilFunc  = static_cast<MEDepthFunc>(fbsDepthStencilState->back_stencil_func());
     BackStencilFail  = static_cast<MEStencilOp>(fbsDepthStencilState->back_stencil_fail());
     BackStencilPass  = static_cast<MEStencilOp>(fbsDepthStencilState->back_stencil_pass());
+}
+
+YAML::Node MBlendState::SerializeYaml() const
+{
+    YAML::Node node;
+    node["BlendEnable"]    = BlendEnable;
+    node["SrcColorBlend"]  = EnumToString(SrcColorBlend);
+    node["DstColorBlend"]  = EnumToString(DstColorBlend);
+    node["ColorBlendOp"]   = EnumToString(ColorBlendOp);
+    node["SrcAlphaBlend"]  = EnumToString(SrcAlphaBlend);
+    node["DstAlphaBlend"]  = EnumToString(DstAlphaBlend);
+    node["AlphaBlendOp"]   = EnumToString(AlphaBlendOp);
+    node["ColorWriteMask"] = MaskToString(ColorWriteMask, 4);
+    return node;
+}
+
+void MBlendState::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+
+    if (node["BlendEnable"]) BlendEnable = node["BlendEnable"].as<bool>();
+    if (node["SrcColorBlend"])
+    {
+        SrcColorBlend = node["SrcColorBlend"].IsScalar() ? StringToBlendFactor(node["SrcColorBlend"].as<std::string>())
+                                                         : static_cast<MEBlendFactor>(node["SrcColorBlend"].as<int>());
+    }
+    if (node["DstColorBlend"])
+    {
+        DstColorBlend = node["DstColorBlend"].IsScalar() ? StringToBlendFactor(node["DstColorBlend"].as<std::string>())
+                                                         : static_cast<MEBlendFactor>(node["DstColorBlend"].as<int>());
+    }
+    if (node["ColorBlendOp"])
+    {
+        ColorBlendOp = node["ColorBlendOp"].IsScalar() ? StringToBlendOp(node["ColorBlendOp"].as<std::string>())
+                                                       : static_cast<MEBlendOp>(node["ColorBlendOp"].as<int>());
+    }
+    if (node["SrcAlphaBlend"])
+    {
+        SrcAlphaBlend = node["SrcAlphaBlend"].IsScalar() ? StringToBlendFactor(node["SrcAlphaBlend"].as<std::string>())
+                                                         : static_cast<MEBlendFactor>(node["SrcAlphaBlend"].as<int>());
+    }
+    if (node["DstAlphaBlend"])
+    {
+        DstAlphaBlend = node["DstAlphaBlend"].IsScalar() ? StringToBlendFactor(node["DstAlphaBlend"].as<std::string>())
+                                                         : static_cast<MEBlendFactor>(node["DstAlphaBlend"].as<int>());
+    }
+    if (node["AlphaBlendOp"])
+    {
+        AlphaBlendOp = node["AlphaBlendOp"].IsScalar() ? StringToBlendOp(node["AlphaBlendOp"].as<std::string>())
+                                                       : static_cast<MEBlendOp>(node["AlphaBlendOp"].as<int>());
+    }
+    if (node["ColorWriteMask"])
+    {
+        ColorWriteMask = node["ColorWriteMask"].IsScalar() ? StringToMask(node["ColorWriteMask"].as<std::string>())
+                                                           : node["ColorWriteMask"].as<uint32_t>();
+    }
+}
+
+YAML::Node MDepthStencilState::SerializeYaml() const
+{
+    YAML::Node node;
+    node["DepthTest"]        = DepthTest;
+    node["DepthWrite"]       = DepthWrite;
+    node["DepthFunc"]        = EnumToString(DepthFunc);
+    node["FrontDepthFail"]   = EnumToString(FrontDepthFail);
+    node["BackDepthFail"]    = EnumToString(BackDepthFail);
+    node["StencilTest"]      = StencilTest;
+    node["StencilReadMask"]  = MaskToString(StencilReadMask, 8);
+    node["StencilWriteMask"] = MaskToString(StencilWriteMask, 8);
+    node["FrontStencilRef"]  = FrontStencilRef;
+    node["FrontStencilFunc"] = EnumToString(FrontStencilFunc);
+    node["FrontStencilFail"] = EnumToString(FrontStencilFail);
+    node["FrontStencilPass"] = EnumToString(FrontStencilPass);
+    node["BackStencilRef"]   = BackStencilRef;
+    node["BackStencilFunc"]  = EnumToString(BackStencilFunc);
+    node["BackStencilFail"]  = EnumToString(BackStencilFail);
+    node["BackStencilPass"]  = EnumToString(BackStencilPass);
+    return node;
+}
+
+void MDepthStencilState::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+
+    if (node["DepthTest"]) DepthTest = node["DepthTest"].as<bool>();
+    if (node["DepthWrite"]) DepthWrite = node["DepthWrite"].as<bool>();
+    if (node["DepthFunc"])
+    {
+        DepthFunc = node["DepthFunc"].IsScalar() ? StringToDepthFunc(node["DepthFunc"].as<std::string>())
+                                                 : static_cast<MEDepthFunc>(node["DepthFunc"].as<int>());
+    }
+    if (node["FrontDepthFail"])
+    {
+        FrontDepthFail = node["FrontDepthFail"].IsScalar() ? StringToStencilOp(node["FrontDepthFail"].as<std::string>())
+                                                           : static_cast<MEStencilOp>(node["FrontDepthFail"].as<int>());
+    }
+    if (node["BackDepthFail"])
+    {
+        BackDepthFail = node["BackDepthFail"].IsScalar() ? StringToStencilOp(node["BackDepthFail"].as<std::string>())
+                                                         : static_cast<MEStencilOp>(node["BackDepthFail"].as<int>());
+    }
+    if (node["StencilTest"]) StencilTest = node["StencilTest"].as<bool>();
+    if (node["StencilReadMask"])
+    {
+        StencilReadMask = node["StencilReadMask"].IsScalar()
+                                  ? static_cast<uint8_t>(StringToMask(node["StencilReadMask"].as<std::string>()))
+                                  : node["StencilReadMask"].as<uint8_t>();
+    }
+    if (node["StencilWriteMask"])
+    {
+        StencilWriteMask = node["StencilWriteMask"].IsScalar()
+                                   ? static_cast<uint8_t>(StringToMask(node["StencilWriteMask"].as<std::string>()))
+                                   : node["StencilWriteMask"].as<uint8_t>();
+    }
+    if (node["FrontStencilRef"]) FrontStencilRef = node["FrontStencilRef"].as<uint32_t>();
+    if (node["FrontStencilFunc"])
+    {
+        FrontStencilFunc = node["FrontStencilFunc"].IsScalar()
+                                   ? StringToDepthFunc(node["FrontStencilFunc"].as<std::string>())
+                                   : static_cast<MEDepthFunc>(node["FrontStencilFunc"].as<int>());
+    }
+    if (node["FrontStencilFail"])
+    {
+        FrontStencilFail = node["FrontStencilFail"].IsScalar()
+                                   ? StringToStencilOp(node["FrontStencilFail"].as<std::string>())
+                                   : static_cast<MEStencilOp>(node["FrontStencilFail"].as<int>());
+    }
+    if (node["FrontStencilPass"])
+    {
+        FrontStencilPass = node["FrontStencilPass"].IsScalar()
+                                   ? StringToStencilOp(node["FrontStencilPass"].as<std::string>())
+                                   : static_cast<MEStencilOp>(node["FrontStencilPass"].as<int>());
+    }
+    if (node["BackStencilRef"]) BackStencilRef = node["BackStencilRef"].as<uint32_t>();
+    if (node["BackStencilFunc"])
+    {
+        BackStencilFunc = node["BackStencilFunc"].IsScalar()
+                                  ? StringToDepthFunc(node["BackStencilFunc"].as<std::string>())
+                                  : static_cast<MEDepthFunc>(node["BackStencilFunc"].as<int>());
+    }
+    if (node["BackStencilFail"])
+    {
+        BackStencilFail = node["BackStencilFail"].IsScalar()
+                                  ? StringToStencilOp(node["BackStencilFail"].as<std::string>())
+                                  : static_cast<MEStencilOp>(node["BackStencilFail"].as<int>());
+    }
+    if (node["BackStencilPass"])
+    {
+        BackStencilPass = node["BackStencilPass"].IsScalar()
+                                  ? StringToStencilOp(node["BackStencilPass"].as<std::string>())
+                                  : static_cast<MEStencilOp>(node["BackStencilPass"].as<int>());
+    }
+}
+
+YAML::Node MMaterialPass::SerializeYaml() const
+{
+    YAML::Node node;
+
+    // Serialize pass name
+    node["PassName"] = m_passName.ToString();
+
+    // Serialize conservative rasterization
+    node["ConservativeRasterization"] = m_conservativeRasterizationEnable;
+
+    // Serialize shading rate
+    node["ShadingRateEnable"] = m_shadingRateEnable;
+    node["ShadingRate"]       = m_shadingRate.SerializeYaml();
+
+    // Serialize cull mode
+    node["CullMode"] = EnumToString(m_cullMode);
+
+    // Serialize entry names as map
+    node["EntryNames"] = YAML::Node(YAML::NodeType::Map);
+    for (int i = 0; i < static_cast<int>(MEShaderType::TOTAL_NUM); ++i)
+    {
+        if (!m_entryNames[i].empty())
+        {
+            const char* shaderTypeName         = EnumToString(static_cast<MEShaderType>(i));
+            node["EntryNames"][shaderTypeName] = m_entryNames[i].c_str();
+        }
+    }
+
+    // Serialize blend states
+    node["BlendStates"] = YAML::Node(YAML::NodeType::Sequence);
+    for (const auto& blendState: m_blendState) { node["BlendStates"].push_back(blendState.SerializeYaml()); }
+
+    // Serialize depth stencil state
+    node["DepthStencilState"] = m_depthStencilState.SerializeYaml();
+
+    return node;
+}
+
+void MMaterialPass::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsMap()) return;
+
+    // Deserialize pass name
+    if (node["PassName"]) { m_passName = MStringId(node["PassName"].as<std::string>()); }
+
+    // Deserialize conservative rasterization
+    if (node["ConservativeRasterization"])
+    {
+        m_conservativeRasterizationEnable = node["ConservativeRasterization"].as<bool>();
+    }
+
+    // Deserialize shading rate
+    if (node["ShadingRateEnable"]) { m_shadingRateEnable = node["ShadingRateEnable"].as<bool>(); }
+    if (node["ShadingRate"])
+    {
+        if (node["ShadingRate"].IsMap())
+        {
+            // New format: { x: 1, y: 1 }
+            m_shadingRate.DeserializeYaml(node["ShadingRate"]);
+        }
+        else if (node["ShadingRate"].IsSequence() && node["ShadingRate"].size() >= 2)
+        {
+            // Old format: [1, 1] (for backward compatibility)
+            m_shadingRate.x = node["ShadingRate"][0].as<int>();
+            m_shadingRate.y = node["ShadingRate"][1].as<int>();
+        }
+    }
+
+    // Deserialize cull mode
+    if (node["CullMode"])
+    {
+        m_cullMode = node["CullMode"].IsScalar() ? StringToCullMode(node["CullMode"].as<std::string>())
+                                                 : static_cast<MECullMode>(node["CullMode"].as<int>());
+    }
+
+    // Deserialize entry names
+    if (node["EntryNames"])
+    {
+        if (node["EntryNames"].IsMap())
+        {
+            // New format: key-value pairs
+            for (const auto& entry: node["EntryNames"])
+            {
+                const std::string typeName           = entry.first.as<std::string>();
+                MEShaderType      type               = StringToShaderType(typeName);
+                m_entryNames[static_cast<int>(type)] = MStringId(entry.second.as<std::string>());
+            }
+        }
+        else if (node["EntryNames"].IsSequence())
+        {
+            // Old format: array (for backward compatibility)
+            size_t count = std::min(node["EntryNames"].size(), m_entryNames.size());
+            for (size_t i = 0; i < count; ++i) { m_entryNames[i] = MStringId(node["EntryNames"][i].as<std::string>()); }
+        }
+    }
+
+    // Deserialize blend states
+    if (node["BlendStates"] && node["BlendStates"].IsSequence())
+    {
+        m_blendState.clear();
+        m_blendState.reserve(node["BlendStates"].size());
+        for (const auto& blendStateNode: node["BlendStates"])
+        {
+            MBlendState blendState;
+            blendState.DeserializeYaml(blendStateNode);
+            m_blendState.push_back(blendState);
+        }
+    }
+
+    // Deserialize depth stencil state
+    if (node["DepthStencilState"]) { m_depthStencilState.DeserializeYaml(node["DepthStencilState"]); }
+
+    // Release any cached shader program since properties may have changed
+    ReleaseProgram();
 }

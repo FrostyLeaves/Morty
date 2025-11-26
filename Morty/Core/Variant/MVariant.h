@@ -171,7 +171,7 @@ private:
 
 typedef MVariantStruct MStruct;
 
-class MORTY_API        MVariantArray
+class MORTY_API MVariantArray
 {
 public:
     friend class MVariantArrayBuilder;

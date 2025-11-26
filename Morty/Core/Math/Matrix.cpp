@@ -1,6 +1,7 @@
 ﻿#include "Math/Matrix.h"
 
 #include "Flatbuffer/Matrix_generated.h"
+#include "yaml-cpp/yaml.h"
 
 using namespace morty;
 
@@ -242,6 +243,25 @@ void Matrix3::Deserialize(const void* pBufferPointer)
     memcpy(this, pBufferPointer, sizeof(Matrix3));
 }
 
+YAML::Node Matrix3::SerializeYaml() const
+{
+    YAML::Node node(YAML::NodeType::Sequence);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j) { node.push_back(m[i][j]); }
+    }
+    return node;
+}
+
+void Matrix3::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsSequence() || node.size() < 9) return;
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j) { m[i][j] = node[i * 3 + j].as<float>(); }
+    }
+}
+
 Matrix3 Matrix3::operator*(const float& value) const
 {
     Matrix3 result;
@@ -466,6 +486,25 @@ const fbs::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
 void Matrix4::Deserialize(const void* pBufferPointer)
 {
     memcpy(this, pBufferPointer, sizeof(Matrix4));
+}
+
+YAML::Node Matrix4::SerializeYaml() const
+{
+    YAML::Node node(YAML::NodeType::Sequence);
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j) { node.push_back(m[i][j]); }
+    }
+    return node;
+}
+
+void Matrix4::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsSequence() || node.size() < 16) return;
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j) { m[i][j] = node[i * 4 + j].as<float>(); }
+    }
 }
 
 

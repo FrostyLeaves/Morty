@@ -44,6 +44,16 @@ public:
     [[nodiscard]] std::vector<MByte>  SaveBuffer() const override;
 };
 
+class MORTY_API MYamlResourceData : public MResourceData
+{
+public:
+    virtual YAML::Node               Serialize() const                   = 0;
+    virtual void                     Deserialize(const YAML::Node& node) = 0;
+
+    void                             LoadBuffer(const std::vector<MByte>& buffer) override;
+    [[nodiscard]] std::vector<MByte> SaveBuffer() const override;
+};
+
 class MORTY_API MTextResourceData : public MResourceData
 {
 public:
@@ -139,7 +149,7 @@ public:
 
     std::shared_ptr<MResource> GetResource() const { return m_resource; }
 
-    [[nodiscard]] MHashCode GetHashCode() const;
+    [[nodiscard]] MHashCode    GetHashCode() const;
 
     const MResourceRef&        operator=(const MResourceRef& keeper);
 

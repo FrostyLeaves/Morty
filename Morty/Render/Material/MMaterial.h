@@ -25,9 +25,9 @@ class MORTY_API MMaterial : public MResource
 public:
     MORTY_CLASS(MMaterial)
 
-    MMaterial() = default;
+                                 MMaterial() = default;
 
-    ~MMaterial() override = default;
+    ~                            MMaterial() override = default;
 
 
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
@@ -36,8 +36,8 @@ public:
 
     [[nodiscard]] MShaderMacro   GetShaderMacro() const { return m_materialTemplate->GetShaderMacro(); }
 
-    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>&    GetTemplate() const;
-    void ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
+    [[nodiscard]] const std::shared_ptr<MMaterialTemplate>& GetTemplate() const;
+    void                  ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
 
     MShaderPropertyBlock* GetMaterialPropertyBlock() const;
 
@@ -56,13 +56,21 @@ protected:
     void BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate);
 
 private:
-    std::shared_ptr<MMaterialTemplate>    m_materialTemplate = nullptr;
+    std::shared_ptr<MMaterialTemplate>    m_materialTemplate      = nullptr;
     std::shared_ptr<MShaderPropertyBlock> m_materialPropertyBlock = nullptr;
 };
 
 template<typename TYPE> void MMaterial::SetValue(const MStringId& strName, const TYPE& value)
 {
-    GetMaterialPropertyBlock()->SetValue(strName, value);
+    if (!GetMaterialPropertyBlock()->SetValue(strName, value))
+    {
+        MLogger::GetInstance()->Warning(
+                "Failed to set shader property value: {}, material: {}, type: {}",
+                strName.c_str(),
+                GetDebugName(),
+                typeid(TYPE).name()
+        );
+    }
 }
 
 }// namespace morty

@@ -44,16 +44,8 @@ void ModelImportView::Render()
     prop.ShowValueBegin("Output Dir");
     if (ImGui::Button(m_strOutputDir.c_str(), ImVec2(fWidth, 0)))
     {
-        ImGuiFileDialog::Instance()->OpenModal(svOutputFolderID, "Output", "", "");
+        ImGuiFileDialog::Instance()->OpenDialog(svOutputFolderID, "Choose Output Folder", nullptr, ".");
     }
-    prop.ShowValueEnd();
-
-    prop.ShowValueBegin("Output Name");
-    prop.EditMString(m_strOutputName);
-    prop.ShowValueEnd();
-
-    prop.ShowValueBegin("Material Type");
-    prop.EditEnum({"Forward Basic", "Deferred PBR"}, m_materialTypeEnum);
     prop.ShowValueEnd();
 
     prop.ShowValueBegin("Import Camera");
@@ -75,16 +67,13 @@ void ModelImportView::Render()
         ImGui::BeginDisabled(m_bIsConverting);
         if (ImGui::Button("Import Model", ImVec2(fWidth, 0.0f)))
         {
-            if (!m_strSourcePath.empty() && !m_strOutputDir.empty() && !m_strOutputName.empty())
+            if (!m_strSourcePath.empty() && !m_strOutputDir.empty())
             {
                 MModelConvertInfo info;
                 info.strResourcePath = m_strSourcePath;
                 info.strOutputDir    = m_strOutputDir;
-                info.strOutputName   = m_strOutputName;
                 info.bImportCamera   = m_bImportCamera;
                 info.bImportLights   = m_bImportLights;
-                info.eMaterialType   = m_materialTypeEnum == 0 ? MModelConvertMaterialType::E_Default_Forward
-                                                               : MModelConvertMaterialType::E_PBR_Deferred;
 
                 m_convertQueue.push(info);
                 m_bIsConverting    = true;
@@ -125,7 +114,7 @@ void ModelImportView::Render()
     {
         if (ImGuiFileDialog::Instance()->IsOk() == true)
         {
-            m_strOutputDir = ImGuiFileDialog::Instance()->GetFilePathName();
+            m_strOutputDir = ImGuiFileDialog::Instance()->GetCurrentPath();
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -155,7 +144,7 @@ void ModelImportView::Convert(std::queue<MModelConvertInfo> convertQueue)
         MModelImporter    importer(GetEngine());
         bool              success = importer.Import(info);
 
-        if (success) { m_strStatusMessage = "Successfully imported: " + info.strOutputName; }
+        if (success) { m_strStatusMessage = "Successfully imported: " + info.strResourcePath; }
         else { m_strStatusMessage = "Error: Failed to import " + info.strResourcePath; }
 
         convertQueue.pop();

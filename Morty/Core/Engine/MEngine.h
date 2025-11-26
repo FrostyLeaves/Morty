@@ -53,7 +53,7 @@ public:
     [[nodiscard]] float getTickDelta() const { return m_time.fTimeDelta; }
 
 public:
-    MLogger*     GetLogger() { return &m_logger; }
+    MLogger*     GetLogger() { return m_logger; }
 
     MThreadPool* GetThreadPool() { return &m_threadPool; }
 
@@ -109,7 +109,7 @@ private:
 
     MTaskGraph*                            m_mainTaskGraph = nullptr;
 
-    MLogger                                m_logger;
+    MLogger*                               m_logger;
 
 
     MThreadPool                            m_threadPool;

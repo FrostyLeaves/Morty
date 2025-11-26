@@ -14,13 +14,13 @@ MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
 void MMaterial::SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pResource)
 {
-    if(auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
+    if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
     {
         GetMaterialPropertyBlock()->SetTexture(strName, textureResource->GetTextureTemplate());
     }
 }
 
-const std::shared_ptr<MMaterialTemplate>&    MMaterial::GetTemplate() const { return m_materialTemplate; }
+const std::shared_ptr<MMaterialTemplate>& MMaterial::GetTemplate() const { return m_materialTemplate; }
 
 void MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate)
 {
@@ -40,33 +40,24 @@ std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MReso
     return nullptr;
 }
 
-void MMaterial::OnCreated() { Super::OnCreated(); }
+const char* MMaterial::GetDebugName() const { return GetResourcePath().c_str(); }
 
-void MMaterial::OnDelete()
-{
-    Super::OnDelete();
-}
+void        MMaterial::OnCreated() { Super::OnCreated(); }
 
-void MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
+void        MMaterial::OnDelete() { Super::OnDelete(); }
+
+void        MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
 {
-    if(m_materialTemplate == pTemplate)
-        return;
-    
+    if (m_materialTemplate == pTemplate) return;
+
     m_materialTemplate = pTemplate;
 
     if (m_materialTemplate)
     {
         m_materialPropertyBlock = m_materialTemplate->CreatePropertyBlock(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
     }
-    else
-    {
-        m_materialPropertyBlock = nullptr;
-    }
-    
+    else { m_materialPropertyBlock = nullptr; }
 }
 
 
-MShaderPropertyBlock* MMaterial::GetMaterialPropertyBlock() const
-{
-    return m_materialPropertyBlock.get();
-}
+MShaderPropertyBlock* MMaterial::GetMaterialPropertyBlock() const { return m_materialPropertyBlock.get(); }

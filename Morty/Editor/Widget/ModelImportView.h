@@ -36,10 +36,8 @@ private:
 
     std::string                   m_strSourcePath;
     std::string                   m_strOutputDir;
-    std::string                   m_strOutputName;
-    size_t                        m_materialTypeEnum = 0;
-    bool                          m_bImportCamera    = false;
-    bool                          m_bImportLights    = true;
+    bool                          m_bImportCamera = false;
+    bool                          m_bImportLights = true;
 
     // Status feedback
     std::string                   m_strStatusMessage;

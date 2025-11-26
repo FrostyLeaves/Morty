@@ -25,8 +25,8 @@ bool      MEngine::Initialize()
 {
     m_threadPool.Initialize();
     m_mainTaskGraph = new MTaskGraph();
-
-    m_stage = EngineStage::READY;
+    m_logger        = MLogger::GetInstance();
+    m_stage         = EngineStage::READY;
     return true;
 }
 
