@@ -15,16 +15,16 @@ class MEngine;
 class MTexture;
 class MRenderPassCmd;
 class IRenderCommand;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class ImGuiRenderer
 {
 public:
-             ImGuiRenderer(MEngine* pEngine);
+    ImGuiRenderer(MEngine* pEngine);
 
     virtual ~ImGuiRenderer() = default;
 
 
-    void     UpdateMesh();
+    void UpdateMesh();
 
 public:
     void Initialize();
@@ -49,12 +49,12 @@ public:
 
 protected:
     struct MImGuiTextureDest {
-        int                                   nDestroyCount;
-        MTexturePtr                           pTexture;
-        std::shared_ptr<MShaderPropertyBlock> pPropertyBlock;
+        int                                  nDestroyCount;
+        MTexturePtr                          pTexture;
+        std::shared_ptr<MShaderParameterSet> pParameterSet;
     };
 
-    MImGuiTextureDest* GetTexturPropertyBlock(ImGuiTexture tex);
+    MImGuiTextureDest* GetTexturParameterSet(ImGuiTexture tex);
 
 private:
     MEngine*                                   m_engine;

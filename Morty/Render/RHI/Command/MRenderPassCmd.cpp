@@ -59,26 +59,26 @@ void MRenderPassCmd::SetGraphPipeline(const MGraphicsPipeline* pipeline, size_t 
     });
 }
 
-void MRenderPassCmd::SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& block)
+void MRenderPassCmd::SetShaderParameterSet(const std::shared_ptr<MShaderParameterSet>& block)
 {
-    SetShaderPropertyBlock(block.get());
+    SetShaderParameterSet(block.get());
 }
 
-void MRenderPassCmd::SetShaderPropertyBlock(MShaderPropertyBlock* propertyBlock)
+void MRenderPassCmd::SetShaderParameterSet(MShaderParameterSet* propertyBlock)
 {
-    m_commandQueue.emplace_back(new MSetShaderPropertyBlockCmd{
+    m_commandQueue.emplace_back(new MSetShaderParameterSetCmd{
             .pipeline           = m_usingPipeline,
             .property           = propertyBlock,
-            .allocDescriptorSet = m_device->SyncPropertyBlock(propertyBlock),
+            .allocDescriptorSet = m_device->SyncParameterSet(propertyBlock),
     });
 }
 
-void MRenderPassCmd::PushShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
+void MRenderPassCmd::PushShaderParameterSet(MShaderParameterSet* pParameterSet)
 {
-    m_propertyBlockStack.emplace_back(pPropertyBlock);
+    m_propertyBlockStack.emplace_back(pParameterSet);
 }
 
-void MRenderPassCmd::PopShaderPropertyBlock() { m_propertyBlockStack.pop_back(); }
+void MRenderPassCmd::PopShaderParameterSet() { m_propertyBlockStack.pop_back(); }
 
 void MRenderPassCmd::AddTextureBarrier(const std::vector<MTexture*>& vTextures, METextureBarrierStage dstStage)
 {
@@ -132,7 +132,11 @@ void MRenderPassCmd::DrawMesh(MIMesh* mesh, size_t nIndexOffset, size_t nIndexCo
     if (!pVertexBuffer || !pIndexBuffer) { return; }
 
     UpdateBuffer(pVertexBuffer, mesh->GetVerticesVector().data(), mesh->GetVerticesVector().size());
-    UpdateBuffer(pIndexBuffer, reinterpret_cast<const MByte*>(mesh->GetIndicesVector().data()), mesh->GetIndicesVector().size() * mesh->GetIndexStructSize());
+    UpdateBuffer(
+            pIndexBuffer,
+            reinterpret_cast<const MByte*>(mesh->GetIndicesVector().data()),
+            mesh->GetIndicesVector().size() * mesh->GetIndexStructSize()
+    );
 
     DrawMesh(pVertexBuffer, pIndexBuffer, nVertexOffset, nIndexOffset, nIndexCount);
 }
@@ -164,9 +168,9 @@ void MRenderPassCmd::SetMaterial(const MMaterial* material, const MMaterialPass*
     SetGraphPipeline(pass);
     if (!material || !pass) { return; }
 
-    if (auto propertyBlock = material->GetMaterialPropertyBlock()) { SetShaderPropertyBlock(propertyBlock); }
+    if (auto propertyBlock = material->GetMaterialParameterSet()) { SetShaderParameterSet(propertyBlock); }
 
-    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderPropertyBlock(pPushedProperty); }
+    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderParameterSet(pPushedProperty); }
 }
 
 void MRenderPassCmd::SetMaterial(const MMaterial* material, const MStringId& passName)

@@ -4,7 +4,7 @@
 #include "Basic/MCameraFrustum.h"
 #include "Component/MComponent.h"
 #include "Math/Vector.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 #include "Utility/MBounds.h"
 
 namespace morty
@@ -21,7 +21,7 @@ class MRenderMeshComponent;
 struct MMaterialCullingGroup
 {
     std::shared_ptr<MMaterial>            pMaterial              = nullptr;
-    std::shared_ptr<MShaderPropertyBlock> pMeshTransformProperty = nullptr;
+    std::shared_ptr<MShaderParameterSet> pMeshTransformProperty = nullptr;
     size_t                                nIndirectBeginIdx      = 0;
     size_t                                nIndirectCount         = 0;
 };

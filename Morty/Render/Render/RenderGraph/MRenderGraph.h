@@ -21,7 +21,7 @@ namespace morty
 {
 
 class MRenderGraphSetting;
-class IPropertyBlockAdapter;
+class IParameterSetAdapter;
 class MORTY_API MRenderGraph : public MTaskGraph
 {
     MORTY_CLASS(MRenderGraph)
@@ -43,23 +43,23 @@ public:
     [[nodiscard]] size_t                               GetFinalOutputNodeIdx() const { return m_finalOutputNodeId; }
     [[nodiscard]] size_t                               GetFinalOutputSlotIdx() const { return m_finalOutputSlotId; }
 
-    void                      OnPreCompile() override;
-    void                      OnPostCompile() override;
-    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
-    void                      Deserialize(const void* pBufferPointer) override;
+    void                                               OnPreCompile() override;
+    void                                               OnPostCompile() override;
+    flatbuffers::Offset<void>                          Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
+    void                                               Deserialize(const void* pBufferPointer) override;
 
-    void                      Resize(const Vector2i& size);
-    [[nodiscard]] Vector2i    GetSize() const { return m_size; }
+    void                                               Resize(const Vector2i& size);
+    [[nodiscard]] Vector2i                             GetSize() const { return m_size; }
 
 private:
     Vector2i                                    m_size = {0, 0};
 
-    MEngine*                                    m_engine             = nullptr;
-    std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting = nullptr;
-    std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding    = nullptr;
-    std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable          = {};
-    size_t                                      m_finalOutputNodeId      = 0;
-    size_t                                      m_finalOutputSlotId      = 0;
+    MEngine*                                    m_engine              = nullptr;
+    std::shared_ptr<MRenderGraphSetting>        m_renderGraphSetting  = nullptr;
+    std::unique_ptr<MRenderTargetBindingWalker> m_renderTargetBinding = nullptr;
+    std::map<const MStringId, MRenderTaskNode*> m_taskNodeTable       = {};
+    size_t                                      m_finalOutputNodeId   = 0;
+    size_t                                      m_finalOutputSlotId   = 0;
 };
 
 }// namespace morty

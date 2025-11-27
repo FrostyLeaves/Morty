@@ -3,7 +3,7 @@
 
 using namespace morty;
 
-MShaderConstantParam::MShaderConstantParam()
+MShaderUniformParam::MShaderUniformParam()
     : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -11,7 +11,7 @@ MShaderConstantParam::MShaderConstantParam()
 #endif
 }
 
-MShaderConstantParam::MShaderConstantParam(const MShaderConstantParam& param)
+MShaderUniformParam::MShaderUniformParam(const MShaderUniformParam& param)
     : MShaderParam(param)
 {
     strName     = param.strName;
@@ -57,7 +57,7 @@ std::unique_ptr<MShaderTextureParam> MShaderTextureParam::Clone() const
     return std::make_unique<MShaderTextureParam>(*this);
 }
 
-MShaderSampleParam::MShaderSampleParam()
+MShaderSamplerParam::MShaderSamplerParam()
     : MShaderParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -73,7 +73,7 @@ MShaderStorageParam::MShaderStorageParam()
 #endif
 }
 
-MShaderSubpasssInputParam::MShaderSubpasssInputParam()
+MShaderSubpassInputParam::MShaderSubpassInputParam()
     : MShaderTextureParam()
 {
 #if RENDER_GRAPHICS == MORTY_VULKAN

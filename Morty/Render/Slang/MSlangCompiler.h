@@ -7,8 +7,10 @@
 
 #include "Utility/MGlobal.h"
 #include "Shader/MShader.h"
+#include "Shader/MShaderPropertyBlock.h"
 #include "Utility/MString.h"
 #include "Utility/MStringId.h"
+
 
 namespace morty
 {
@@ -31,11 +33,13 @@ public:
     bool                                           Compile();
 
     [[nodiscard]] const std::vector<MSlangOutput>& GetOutput() const { return m_output; }
+    [[nodiscard]] const MShaderPropertyBlock&      GetReflection() const { return m_reflection; }
 
 private:
     MString                                       m_filePath;
 
     std::vector<MSlangOutput>                     m_output;
+    MShaderPropertyBlock                          m_reflection;
     static std::unique_ptr<ISlangCompilerSession> s_globalSession;
 };
 

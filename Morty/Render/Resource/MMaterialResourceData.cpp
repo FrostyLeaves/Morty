@@ -9,9 +9,63 @@ YAML::Node MMaterialResourceData::Serialize() const
 {
     YAML::Node root;
 
+    // Serialize material template
+    root["MaterialTemplate"] = strTemplateResource;
+
+    // Serialize properties
+    if (!vProperty.empty())
+    {
+        root["Properties"] = YAML::Node(YAML::NodeType::Map);
+        for (const auto& prop: vProperty) { root["Properties"][prop.name] = prop.value.SerializeYaml(); }
+    }
+
+    // Serialize textures
+    if (!vTextures.empty())
+    {
+        root["Textures"] = YAML::Node(YAML::NodeType::Map);
+        for (const auto& tex: vTextures) { root["Textures"][tex.name] = tex.value; }
+    }
+
     return root;
 }
-void                      MMaterialResourceData::Deserialize(const YAML::Node& node) { MORTY_UNUSED(node); }
+void MMaterialResourceData::Deserialize(const YAML::Node& root)
+{
+    if (!root.IsMap()) return;
+
+    // Deserialize material template
+    if (root["MaterialTemplate"]) { strTemplateResource = root["MaterialTemplate"].as<std::string>(); }
+
+    // Deserialize properties
+    vProperty.clear();
+    if (root["Properties"] && root["Properties"].IsSequence())
+    {
+        for (const auto& propNode: root["Properties"])
+        {
+            if (!propNode["Name"] || !propNode["Value"]) continue;
+
+            Property prop;
+            prop.name = propNode["Name"].as<std::string>();
+            prop.value.DeserializeYaml(propNode["Value"]);
+
+            if (prop.value.IsValid()) { vProperty.push_back(prop); }
+        }
+    }
+
+    // Deserialize textures
+    vTextures.clear();
+    if (root["Textures"] && root["Textures"].IsSequence())
+    {
+        for (const auto& texNode: root["Textures"])
+        {
+            if (!texNode["Name"] || !texNode["Path"]) continue;
+
+            Texture tex;
+            tex.name  = texNode["Name"].as<std::string>();
+            tex.value = texNode["Path"].as<std::string>();
+            vTextures.push_back(tex);
+        }
+    }
+}
 
 
 flatbuffers::Offset<void> MMaterialResourceData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const

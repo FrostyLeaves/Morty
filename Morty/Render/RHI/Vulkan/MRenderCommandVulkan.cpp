@@ -120,44 +120,44 @@ void MRenderCommandVulkan::SetGraphPipeline(const MSetGraphPipelineCmd* cmd)
     pUsingIndex  = nullptr;
 }
 
-void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockCmd* cmd)
+void MRenderCommandVulkan::SetShaderParameterSet(const MSetShaderParameterSetCmd* cmd)
 {
-    auto pPropertyBlock     = cmd->property;
+    auto pParameterSet      = cmd->property;
     auto pPipeline          = cmd->pipeline;
     auto allocDescriptorSet = cmd->allocDescriptorSet;
 
-    if (VK_NULL_HANDLE == pPropertyBlock->m_vkDescriptorSet) { allocDescriptorSet = true; }
+    if (VK_NULL_HANDLE == pParameterSet->m_vkDescriptorSet) { allocDescriptorSet = true; }
 
     if (allocDescriptorSet)
     {
         //alloc a new descriptor set.
-        m_device->m_PipelineManager.AllocateShaderPropertyBlock(pPropertyBlock, pPipeline);
+        m_device->m_PipelineManager.AllocateShaderParameterSet(pParameterSet, pPipeline);
 
         std::vector<VkWriteDescriptorSet> vWriteDescriptorSet;
 
-        for (const auto& param: pPropertyBlock->GetConstantParams())
+        for (const auto& param: pParameterSet->GetConstantParams())
         {
             // bind buffer to descriptor set.
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
             m_device->m_PipelineManager.BindConstantParam(param.get(), writeDescriptorSet);
-            writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
+            writeDescriptorSet.dstSet = pParameterSet->m_vkDescriptorSet;
         }
 
-        for (const auto& param: pPropertyBlock->GetTextureParams())
+        for (const auto& param: pParameterSet->GetTextureParams())
         {
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
             m_device->m_PipelineManager.BindTextureParam(param.get(), writeDescriptorSet);
-            writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
+            writeDescriptorSet.dstSet = pParameterSet->m_vkDescriptorSet;
         }
 
-        for (const auto& param: pPropertyBlock->GetStorageParams())
+        for (const auto& param: pParameterSet->GetStorageParams())
         {
             vWriteDescriptorSet.push_back({});
             VkWriteDescriptorSet& writeDescriptorSet = vWriteDescriptorSet.back();
             m_device->m_PipelineManager.BindStorageParam(param.get(), writeDescriptorSet);
-            writeDescriptorSet.dstSet = pPropertyBlock->m_vkDescriptorSet;
+            writeDescriptorSet.dstSet = pParameterSet->m_vkDescriptorSet;
         }
 
         vkUpdateDescriptorSets(
@@ -170,10 +170,10 @@ void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockC
     }
 
     MORTY_ASSERT(VK_NULL_HANDLE != pPipeline->m_pipelineLayout.vkPipelineLayout);
-    MORTY_ASSERT(VK_NULL_HANDLE != pPropertyBlock->m_vkDescriptorSet);
+    MORTY_ASSERT(VK_NULL_HANDLE != pParameterSet->m_vkDescriptorSet);
 
     std::vector<uint32_t> vDynamicOffsets;
-    for (const auto& pParam: pPropertyBlock->GetConstantParams())
+    for (const auto& pParam: pParameterSet->GetConstantParams())
     {
         if (pParam->m_vkDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
@@ -186,15 +186,15 @@ void MRenderCommandVulkan::SetShaderPropertyBlock(const MSetShaderPropertyBlockC
             m_vkCommandBuffer,
             vkPipelineBindPoint,
             pPipeline->m_pipelineLayout.vkPipelineLayout,
-            pPropertyBlock->m_unKey,
+            pParameterSet->m_unKey,
             1,
-            &pPropertyBlock->m_vkDescriptorSet,
+            &pParameterSet->m_vkDescriptorSet,
             static_cast<uint32_t>(vDynamicOffsets.size()),
             vDynamicOffsets.data()
     );
 }
 
-void MRenderCommandVulkan::AddBarrierForPixelSample(const MSetShaderPropertyBlockCmd* cmd)
+void MRenderCommandVulkan::AddBarrierForPixelSample(const MSetShaderParameterSetCmd* cmd)
 {
     std::vector<MTexture*> vTextures;
     for (const auto& pParam: cmd->property->GetTextureParams())
@@ -369,15 +369,15 @@ bool MRenderCommandVulkan::DispatchComputeJob(
 
         vkCmdBindPipeline(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
 
-        for (const std::shared_ptr<MShaderPropertyBlock>& params: pComputeDispatcher->GetShaderPropertyBlocks())
+        for (const std::shared_ptr<MShaderParameterSet>& params: pComputeDispatcher->GetShaderParameterSets())
         {
-            MSetShaderPropertyBlockCmd cmd{
+            MSetShaderParameterSetCmd cmd{
                     .pipeline           = pComputePipeline.get(),
                     .property           = params.get(),
-                    .allocDescriptorSet = m_device->SyncPropertyBlock(params.get()),
+                    .allocDescriptorSet = m_device->SyncParameterSet(params.get()),
             };
 
-            SetShaderPropertyBlock(&cmd);
+            SetShaderParameterSet(&cmd);
         }
 
         vkCmdDispatch(m_vkCommandBuffer, nGroupX, nGroupY, nGroupZ);

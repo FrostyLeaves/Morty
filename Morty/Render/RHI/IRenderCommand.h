@@ -23,7 +23,7 @@ class MTexture;
 class MMaterial;
 class MRenderPass;
 class MRenderPassCmd;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MComputeDispatcher;
 class MMaterialPipelineLayoutData;
 

@@ -25,4 +25,6 @@ void MShader::SetBuffer(MShaderBuffer* shaderBuffer)
     m_shaderBuffer = shaderBuffer;
 }
 
+void MShader::SetShaderPropertyBlock(const MShaderPropertyBlock& propertyBlock) { m_propertyBlock = propertyBlock; }
+
 MShaderBuffer* MShader::GetBuffer() const { return m_shaderBuffer; }

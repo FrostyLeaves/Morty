@@ -12,7 +12,7 @@
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
 #include "Resource/MResource.h"
 #include "Shader/MShaderParam.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 #include "Utility/MFileHelper.h"
 #include "vulkan/vulkan_core.h"
 
@@ -67,7 +67,7 @@ const std::set<VkFormat> DepthStencilTextureFormat = {
 
 const VkImageLayout UndefinedImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-MVulkanDevice::     MVulkanDevice()
+MVulkanDevice::MVulkanDevice()
     : MIDevice()
     , m_ShaderReflector(this)
     , m_PipelineManager(this)
@@ -784,6 +784,8 @@ bool MVulkanDevice::CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& 
         if (output.name == pShader->GetEntryName()) { spirv = output.buffer; }
     }
 
+    pShader->SetShaderPropertyBlock(compiler.GetReflection());
+
     return true;
 }
 
@@ -878,7 +880,7 @@ void MVulkanDevice::CleanShader(MShader* pShader)
     delete pBuffer;
 }
 
-void MVulkanDevice::UpdateShaderParam(MShaderConstantParam* param)
+void MVulkanDevice::UpdateShaderParam(MShaderUniformParam* param)
 {
     if (VK_NULL_HANDLE == param->m_vkBuffer)
     {
@@ -911,7 +913,7 @@ void MVulkanDevice::UpdateShaderParam(MShaderConstantParam* param)
     }
 }
 
-bool MVulkanDevice::SyncPropertyBlock(MShaderPropertyBlock* propertyBlock)
+bool MVulkanDevice::SyncParameterSet(MShaderParameterSet* propertyBlock)
 {
     bool bNeedAllocDescriptorSet = false;
     for (const auto& pParam: propertyBlock->GetConstantParams())
@@ -949,19 +951,19 @@ bool MVulkanDevice::SyncPropertyBlock(MShaderPropertyBlock* propertyBlock)
     return bNeedAllocDescriptorSet;
 }
 
-bool MVulkanDevice::GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
+bool MVulkanDevice::GenerateShaderParameterSet(MShaderParameterSet* pParameterSet)
 {
-    if (!pPropertyBlock) return false;
+    if (!pParameterSet) return false;
 
     return true;
 }
 
-void MVulkanDevice::DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
+void MVulkanDevice::DestroyShaderParameterSet(MShaderParameterSet* pParameterSet)
 {
-    if (pPropertyBlock) { m_PipelineManager.DestroyShaderPropertyBlock(pPropertyBlock); }
+    if (pParameterSet) { m_PipelineManager.DestroyShaderParameterSet(pParameterSet); }
 }
 
-bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* param)
+bool MVulkanDevice::GenerateShaderParamBuffer(MShaderUniformParam* param)
 {
     if (!param) return false;
 
@@ -971,7 +973,7 @@ bool MVulkanDevice::GenerateShaderParamBuffer(MShaderConstantParam* param)
     return m_BufferPool.AllowBufferMemory(param);
 }
 
-void MVulkanDevice::DestroyShaderParamBuffer(MShaderConstantParam* param)
+void MVulkanDevice::DestroyShaderParamBuffer(MShaderUniformParam* param)
 {
     if (!param) return;
 
@@ -1478,8 +1480,7 @@ void MVulkanDevice::RecoveryRenderCommand(IRenderCommand* pRenderCommand)
 
     if (!pCommand) return;
 
-    while (vkGetFenceStatus(m_vkDevice, pCommand->m_vkRenderFinishedFence) != VK_SUCCESS)
-        ;
+    while (vkGetFenceStatus(m_vkDevice, pCommand->m_vkRenderFinishedFence) != VK_SUCCESS);
 
     if (pCommand->m_vkCommandBuffer)
     {
@@ -1793,7 +1794,7 @@ void MVulkanDevice::UploadBuffer(
     {
         MORTY_UNUSED(vkCommand);
 
-        size_t unMappingSize = (std::min)(unDataSize, pBuffer->GetSize() - unBeginOffset);
+        size_t unMappingSize = (std::min) (unDataSize, pBuffer->GetSize() - unBeginOffset);
         void*  dataMapping   = nullptr;
         vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
         memcpy(dataMapping, data, unMappingSize);

@@ -23,9 +23,9 @@ namespace morty
 
 struct MORTY_API MTextureResourceParam : public MShaderTextureParam {
 public:
-                MTextureResourceParam();
+    MTextureResourceParam();
 
-    explicit    MTextureResourceParam(const MShaderTextureParam& param);
+    explicit MTextureResourceParam(const MShaderTextureParam& param);
     void        SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
     void        SetTexture(MTexturePtr pTexture) override;
     MTexturePtr GetTexture() override;
@@ -61,7 +61,7 @@ public:
             uint8_t                           shaderMask
     );
 
-    ~                                        MShaderProgram() override;
+    ~MShaderProgram() override;
 
     [[nodiscard]] std::shared_ptr<MResource> GetShaderResource() const override
     {
@@ -72,27 +72,28 @@ public:
     MShaderMacro&           GetShaderMacro() override { return m_shaderMacro; }
     [[nodiscard]] MStringId GetEntryName(MEShaderType shaderTYpe) const override;
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
-                            GetShaderPropertyBlocks() override;
+    std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
+                                GetShaderParameterSets() override;
+    const MShaderPropertyBlock& GetPropertyBlock() const override { return m_propertyBlock; }
 
-    [[nodiscard]] MHashCode GetHashCode() const override;
-    [[nodiscard]] bool      IsValid() const override;
+    [[nodiscard]] MHashCode     GetHashCode() const override;
+    [[nodiscard]] bool          IsValid() const override;
 
 private:
-    void        InitializeShaderPropertyBlock();
+    void        InitializeShaderParameterSet();
     bool        LoadShader(const std::shared_ptr<MResource>& pResource);
 
     void        UnloadShader();
 
     static void CopyShaderParams(
-            MEngine*                                           pEngine,
-            const std::shared_ptr<MShaderPropertyBlock>&       target,
-            const std::shared_ptr<const MShaderPropertyBlock>& source
+            MEngine*                                          pEngine,
+            const std::shared_ptr<MShaderParameterSet>&       target,
+            const std::shared_ptr<const MShaderParameterSet>& source
     );
 
-    std::shared_ptr<MShaderPropertyBlock> AllocShaderPropertyBlock(size_t nSetIdx);
+    std::shared_ptr<MShaderParameterSet> AllocShaderParameterSet(size_t nSetIdx);
 
-    void ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock);
+    void ReleaseShaderParameterSet(const std::shared_ptr<MShaderParameterSet>& pShaderParameterSet);
 
 protected:
     [[nodiscard]] MEngine* GetEngine() const { return m_engine; }
@@ -102,8 +103,8 @@ protected:
     void                   BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
     void                   UnbindShaderBuffer(const MEShaderType& eType, MIDevice* device);
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
-    std::set<std::shared_ptr<MShaderPropertyBlock>> m_shaderPropertyBlockInstance;
+    std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
+    std::set<std::shared_ptr<MShaderParameterSet>>                                        m_shaderParameterSetInstance;
 
 
     enum ShaderState
@@ -125,6 +126,7 @@ protected:
     EUsage                                                       m_usage  = EUsage::EUnknow;
     MEntryNames                                                  m_entryNames;
     uint8_t                                                      m_shaderMask;
+    MShaderPropertyBlock                                         m_propertyBlock;
 
     std::array<CompiledShader, (size_t) MEShaderType::TOTAL_NUM> m_compiledShaders;
 };

@@ -19,8 +19,8 @@ class MGraphicsPipeline;
 class MRenderPassCmd
 {
 public:
-    explicit                   MRenderPassCmd(MIDevice* device, MRenderPass* renderPass);
-    ~                          MRenderPassCmd();
+    explicit MRenderPassCmd(MIDevice* device, MRenderPass* renderPass);
+    ~MRenderPassCmd();
 
     [[nodiscard]] MRenderPass* GetRenderPass() const { return m_renderPass; }
 
@@ -57,12 +57,12 @@ public:
     void SetMaterial(const MMaterial* material, const MStringId& passName);
     void SetMaterial(const MMaterial* material, const MMaterialPass* pass);
 
-    void SetShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& block);
-    void SetShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);
+    void SetShaderParameterSet(const std::shared_ptr<MShaderParameterSet>& block);
+    void SetShaderParameterSet(MShaderParameterSet* pParameterSet);
 
-    void PushShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);
+    void PushShaderParameterSet(MShaderParameterSet* pParameterSet);
 
-    void PopShaderPropertyBlock();
+    void PopShaderParameterSet();
 
     void AddTextureBarrier(const std::vector<MTexture*>& vTextures, METextureBarrierStage dstStage);
 
@@ -76,13 +76,13 @@ private:
     void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
 
 private:
-    MIDevice*                          m_device        = nullptr;
-    MPipeline*                         m_usingPipeline = nullptr;
-    MRenderPass*                       m_renderPass    = nullptr;
-    uint32_t                           m_subPassIdx    = 0;
+    MIDevice*                         m_device        = nullptr;
+    MPipeline*                        m_usingPipeline = nullptr;
+    MRenderPass*                      m_renderPass    = nullptr;
+    uint32_t                          m_subPassIdx    = 0;
 
-    std::vector<IPipelineCmd*>         m_commandQueue;
-    std::vector<MShaderPropertyBlock*> m_propertyBlockStack;
+    std::vector<IPipelineCmd*>        m_commandQueue;
+    std::vector<MShaderParameterSet*> m_propertyBlockStack;
 };
 
 }// namespace morty

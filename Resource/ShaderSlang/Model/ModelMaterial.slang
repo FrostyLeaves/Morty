@@ -2,23 +2,29 @@ implementing ModelModule;
 
 internal struct MaterialData
 {
-    [Property("Albedo", Color)]
+    [Property("albedo", PropertyType.color)]
     float3 albedo;
 
-    [Property("Metalness", Slider, 0.0, 1.0)]
+    [Property("metalness", PropertyType.float)]
     float metalness;
 
-    [Property("Roughness", Slider, 0.0, 1.0)]
+    [Property("roughness", PropertyType.float)]
     float roughness;
 }
 
 [[vk::binding(0, 0)]] ParameterBlock<MaterialData> materialData;
 
+[Resource("texAlbedo", ResourceType.Texture2D)]
 [[vk::binding(1, 0)]] Texture2D albedoTexture;
+[Resource("texNormal", ResourceType.Texture2D)]
 [[vk::binding(2, 0)]] Texture2D normalTexture;
+[[Resource("texMetallic", ResourceType.Texture2D)]]
 [[vk::binding(3, 0)]] Texture2D metallicTexture;
+[Resource("texRoughness", ResourceType.Texture2D)]
 [[vk::binding(4, 0)]] Texture2D roughnessTexture;
+[Resource("texAO", ResourceType.Texture2D)]
 [[vk::binding(5, 0)]] Texture2D aoTexture;
+[Resource("texHeight", ResourceType.Texture2D)]
 [[vk::binding(6, 0)]] Texture2D heightTexture;
 
 public struct ModelMaterial : IMaterial

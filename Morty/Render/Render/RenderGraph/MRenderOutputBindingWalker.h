@@ -17,7 +17,7 @@
 namespace morty
 {
 
-class IPropertyBlockAdapter;
+class IParameterSetAdapter;
 class MIMesh;
 class IRenderCommand;
 class MTaskNode;

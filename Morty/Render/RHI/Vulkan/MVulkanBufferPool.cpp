@@ -71,7 +71,7 @@ void MVulkanBufferPool::Release()
     m_device->DestroyBuffer(m_vkReadBackBuffer, m_vkReadBackMemory);
 }
 
-bool MVulkanBufferPool::AllowBufferMemory(MShaderConstantParam* pParam)
+bool MVulkanBufferPool::AllowBufferMemory(MShaderUniformParam* pParam)
 {
     if (!pParam) return false;
 
@@ -83,7 +83,7 @@ bool MVulkanBufferPool::AllowBufferMemory(MShaderConstantParam* pParam)
     return false;
 }
 
-bool MVulkanBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pParam)
+bool MVulkanBufferPool::AllowUniformBufferMemory(MShaderUniformParam* pParam)
 {
     uint32_t       unSize = static_cast<uint32_t>(pParam->var.GetSize());
 
@@ -123,7 +123,7 @@ bool MVulkanBufferPool::AllowUniformBufferMemory(MShaderConstantParam* pParam)
     return true;
 }
 
-bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam)
+bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderUniformParam* pParam)
 {
     if (pParam->m_vkBuffer != VK_NULL_HANDLE)
     {
@@ -162,7 +162,7 @@ bool MVulkanBufferPool::AllowDynamicUniformBufferMemory(MShaderConstantParam* pP
     return true;
 }
 
-void MVulkanBufferPool::FreeBufferMemory(MShaderConstantParam* pParam)
+void MVulkanBufferPool::FreeBufferMemory(MShaderUniformParam* pParam)
 {
     if (!pParam) return;
 
@@ -200,7 +200,7 @@ void   MVulkanBufferPool::FreeDynamicUniformMemory(MemoryInfo& info) { m_Dynamic
 
 size_t MVulkanBufferPool::GetDynamicUniformMemorySize() const { return m_DynamicUniformMemoryPool.GetMaxMemorySize(); }
 
-void   MVulkanBufferPool::FreeUniformBufferMemory(MShaderConstantParam* pParam)
+void   MVulkanBufferPool::FreeUniformBufferMemory(MShaderUniformParam* pParam)
 {
     vkUnmapMemory(m_device->m_vkDevice, pParam->m_vkBufferMemory);
     pParam->m_memoryMapping = nullptr;
@@ -214,7 +214,7 @@ void   MVulkanBufferPool::FreeUniformBufferMemory(MShaderConstantParam* pParam)
     pParam->m_vkBufferInfo   = {};
 }
 
-void MVulkanBufferPool::FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam)
+void MVulkanBufferPool::FreeDynamicUniformBufferMemory(MShaderUniformParam* pParam)
 {
     auto findResult = m_dynamicUniformMemory.find(pParam);
     if (findResult != m_dynamicUniformMemory.end())

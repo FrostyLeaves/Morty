@@ -13,8 +13,9 @@
 
 #include "MMaterialPass.h"
 #include "Shader/MShaderMacro.h"
+#include "Shader/MShaderParameterSet.h"
 #include "Shader/MShaderProgram.h"
-#include "Shader/MShaderPropertyBlock.h"
+
 
 
 namespace morty
@@ -49,11 +50,11 @@ public:
         m_shaderMacro = macro;
         SetDirty();
     }
-    [[nodiscard]] const MShaderMacro&     GetShaderMacro() const { return m_shaderMacro; }
+    [[nodiscard]] const MShaderMacro&    GetShaderMacro() const { return m_shaderMacro; }
 
-    std::shared_ptr<MShaderPropertyBlock> CreatePropertyBlock(size_t setIdx) const;
+    std::shared_ptr<MShaderParameterSet> CreateParameterSet(size_t setIdx) const;
 
-    [[nodiscard]] MHashCode               GetHashCode() const;
+    [[nodiscard]] MHashCode              GetHashCode() const;
 
 public:
     void OnCreated() override;

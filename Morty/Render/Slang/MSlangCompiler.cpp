@@ -28,52 +28,6 @@ public:
     bool                          initialized = false;
 };
 
-
-/*
-static METextureType GetTextureType(SlangResourceShape shape)
-{
-    switch (shape & SLANG_RESOURCE_BASE_SHAPE_MASK)
-    {
-        case SLANG_TEXTURE_2D: return METextureType::ETexture2D;
-        case SLANG_TEXTURE_2D_ARRAY: return METextureType::ETexture2DArray;
-        case SLANG_TEXTURE_3D: return METextureType::ETexture3D;
-        case SLANG_TEXTURE_CUBE: return METextureType::ETextureCube;
-        default: MORTY_ASSERT(false); return METextureType::MAX;
-    }
-}
-
-static void ReflectionStorageFromSlang(VariableLayoutReflection* parameter, MShaderBuffer* shaderBuffer)
-{
-    auto                                 parameterType = parameter->getType();
-    std::shared_ptr<MShaderStorageParam> param         = std::make_shared<MShaderStorageParam>();
-    param->unSet                                       = parameter->getBindingSpace();
-    param->unBinding = parameter->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
-    param->strName   = MStringId(parameter->getName());
-    param->bWritable = parameterType->getResourceAccess() == SlangResourceAccess::SLANG_RESOURCE_ACCESS_READ_WRITE;
-#if RENDER_GRAPHICS == MORTY_VULKAN
-    param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-#endif
-
-    shaderBuffer->m_shaderSets[param->unSet]->m_storages.push_back(param);
-}
-
-static void ReflectionResourceFromSlang(VariableLayoutReflection* parameter, MShaderBuffer* shaderBuffer)
-{
-    auto                                 parameterType = parameter->getType();
-    std::shared_ptr<MShaderTextureParam> param         = std::make_shared<MShaderTextureParam>();
-    param->unSet                                       = parameter->getBindingSpace();
-    param->unBinding = parameter->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
-    param->strName   = MStringId(parameter->getName());
-    param->eType     = GetTextureType(parameterType->getResourceShape());
-#if RENDER_GRAPHICS == MORTY_VULKAN
-    param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-#endif
-    shaderBuffer->m_shaderSets[param->unSet]->m_textures.push_back(param);
-}
-
-*/
-
-
 MEShaderType ConvertShaderType(SlangStage stage)
 {
     if (stage == SlangStage::SLANG_STAGE_VERTEX) return MEShaderType::EVertex;
@@ -86,7 +40,11 @@ MEShaderType ConvertShaderType(SlangStage stage)
 }
 
 
-static void ReflectionDefaultFromSlang(VariableLayoutReflection* parameter, uint32_t reflectionDepth = 0)
+static void ReflectionDefaultFromSlang(
+        VariableLayoutReflection* parameter,
+        MShaderPropertyBlock&     output,
+        uint32_t                  reflectionDepth = 0
+)
 {
     MLogger logger;
     auto    set         = parameter->getBindingSpace();
@@ -122,6 +80,26 @@ static void ReflectionDefaultFromSlang(VariableLayoutReflection* parameter, uint
                 auto argCount  = attribute->getArgumentCount();
 
                 logger.Log("{}    [{}], {}", space, attrName, argCount);
+
+                if (MString(attrName) == "Property")
+                {
+                    size_t nameSize    = 0;
+                    int    paramType   = 0;
+                    auto   displayName = attribute->getArgumentValueString(0, &nameSize);
+                    attribute->getArgumentValueInt(1, &paramType);
+                    output.AddProperty(MStringId(name), {displayName, static_cast<MShaderParamType>(paramType)});
+                }
+                if (MString(attrName) == "Resource")
+                {
+                    size_t nameSize    = 0;
+                    int    paramType   = 0;
+                    auto   displayName = attribute->getArgumentValueString(0, &nameSize);
+                    attribute->getArgumentValueInt(1, &paramType);
+                    output.AddResource(
+                            MStringId(name),
+                            {displayName, static_cast<MShaderParamResourceType>(paramType)}
+                    );
+                }
             }
         }
     }
@@ -133,12 +111,13 @@ static void ReflectionDefaultFromSlang(VariableLayoutReflection* parameter, uint
         auto fieldCount        = elementTypeLayout->getFieldCount();
         for (auto idx = 0u; idx < fieldCount; ++idx)
         {
-            ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), reflectionDepth + 1);
+            ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1);
         }
     }
 }
 
-static void ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, uint32_t reflectionDepth = 0)
+static void
+ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
 {
     MLogger logger;
     auto    name = parameter->getName();
@@ -151,10 +130,11 @@ static void ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, uint32_t
     auto fieldCount        = elementTypeLayout->getFieldCount();
     for (auto idx = 0u; idx < fieldCount; ++idx)
     {
-        ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), reflectionDepth + 1);
+        ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1);
     }
 }
 
+/*
 static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout)
 {
     MLogger logger;
@@ -170,8 +150,9 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout)
         logger.Log("idx: {}, descriptorCount: {}, type: {}", rangeIdx, descriptorCount, (int) bindingType);
     }
 }
+*/
 
-static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout)
+static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
 {
     MLogger logger;
 
@@ -187,7 +168,7 @@ static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout)
             case slang::BindingType::ParameterBlock:
             case slang::BindingType::ConstantBuffer: {
                 auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
-                ReflectionDefaultFromSlang(parameterTypeLayout);
+                ReflectionDefaultFromSlang(parameterTypeLayout, output);
             }
             break;
             default: break;
@@ -195,14 +176,14 @@ static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout)
     }
 }
 
-static void ReflectionSlang(Slang::ComPtr<IComponentType> linkedProgram)
+static void ReflectionSlang(const Slang::ComPtr<IComponentType>& linkedProgram, MShaderPropertyBlock& output)
 {
     if (nullptr == linkedProgram) { return; }
     auto layout = linkedProgram->getLayout();
 
     auto globalScopeLayout = layout->getGlobalParamsTypeLayout();
-    ReflectionDescriptorSetFromSlang(globalScopeLayout);
-    ReflectionGlobalPropertyFromSlang(globalScopeLayout);
+    //ReflectionDescriptorSetFromSlang(globalScopeLayout);
+    ReflectionGlobalPropertyFromSlang(globalScopeLayout, output);
 
     for (auto rangeIdx = 0u; rangeIdx < globalScopeLayout->getSubObjectRangeCount(); ++rangeIdx)
     {
@@ -213,21 +194,16 @@ static void ReflectionSlang(Slang::ComPtr<IComponentType> linkedProgram)
         {
             case slang::BindingType::ParameterBlock: {
                 auto parameterBlockTypeLayout = globalScopeLayout->getBindingRangeLeafTypeLayout(bindingRangeIndex);
-                ReflectionDefaultFromSlang(parameterBlockTypeLayout);
+                ReflectionDefaultFromSlang(parameterBlockTypeLayout, output);
+            }
+            break;
+            case slang::BindingType::Texture: {
+                auto parameterBlockTypeLayout = globalScopeLayout->getBindingRangeLeafTypeLayout(bindingRangeIndex);
+                ReflectionDefaultFromSlang(parameterBlockTypeLayout, output);
             }
             break;
             default: break;
         }
-        /*
-switch (kind)
-{
-    case slang::TypeReflection::Kind::ShaderStorageBuffer:
-        ReflectionStorageFromSlang(parameter, shaderBuffer);
-        break;
-    case slang::TypeReflection::Kind::Resource: ReflectionResourceFromSlang(parameter, shaderBuffer); break;
-    default: ReflectionDefaultFromSlang(parameter, shaderBuffer); break;
-}
- * */
     }
 }
 
@@ -332,8 +308,7 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].buffer = std::move(buffer);
     }
 
-    ReflectionSlang(linkedProgram);
-
+    ReflectionSlang(linkedProgram, m_reflection);
 
     return true;
 }

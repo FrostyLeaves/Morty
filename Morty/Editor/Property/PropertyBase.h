@@ -19,7 +19,7 @@
 namespace morty
 {
 
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MEntity;
 class MObject;
 class MMaterial;
@@ -73,7 +73,7 @@ public:
 
     bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
 
-    bool EditShaderProperty(MShaderPropertyBlock* pProperty);
+    bool EditShaderProperty(MShaderParameterSet* pProperty);
 
     bool EditMResource(
             const MString&              strDlgID,

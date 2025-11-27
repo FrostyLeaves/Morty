@@ -4,7 +4,7 @@
 #include "Engine/MEngine.h"
 #include "Flatbuffer/MBone_generated.h"
 #include "Flatbuffer/MSkeleton_generated.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 #include "System/MRenderSystem.h"
 #include "Utility/MFileHelper.h"
 

@@ -23,9 +23,9 @@ class MBoundsAABB;
 class MBoundsSphere;
 class MModelInstance;
 class MModelComponent;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MSkeletonInstance;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 
 class MORTY_API MRenderMeshComponent : public MComponent
 {

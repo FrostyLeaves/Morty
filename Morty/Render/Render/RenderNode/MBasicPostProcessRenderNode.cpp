@@ -31,15 +31,17 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
     const Vector2i n2Size      = m_renderPass.GetFrameBufferSize();
     MRenderPassCmd command     = pCommand->BeginRenderPass(&m_renderPass);
 
-    command.SetViewportAndScissor(MSetViewportCmd{
-            .x      = 0.0f,
-            .y      = 0.0f,
-            .width  = static_cast<float>(n2Size.x),
-            .height = static_cast<float>(n2Size.y)
-    });
+    command.SetViewportAndScissor(
+            MSetViewportCmd{
+                    .x      = 0.0f,
+                    .y      = 0.0f,
+                    .width  = static_cast<float>(n2Size.x),
+                    .height = static_cast<float>(n2Size.y)
+            }
+    );
 
     command.SetMaterial(m_material.get(), m_material->GetTemplate()->GetDefaultPass());
-    //command.SetShaderPropertyBlock(GetRenderGraph()->GetFrameProperty()->GetPropertyBlock());
+    //command.SetShaderParameterSet(GetRenderGraph()->GetFrameProperty()->GetParameterSet());
     command.DrawMesh(pScreenMesh);
 
     pCommand->EndRenderPass(command);
@@ -47,11 +49,11 @@ void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
 
 void MBasicPostProcessRenderNode::BindInOutTexture()
 {
-    if (auto pPropertyBlock = m_material->GetMaterialPropertyBlock())
+    if (auto pParameterSet = m_material->GetMaterialParameterSet())
     {
         for (size_t nInputIdx = 0; nInputIdx < GetInputSize(); ++nInputIdx)
         {
-            pPropertyBlock->SetTexture(
+            pParameterSet->SetTexture(
                     MShaderPropertyName::POSTPROCESS_SCREEN_TEXTURE[nInputIdx],
                     GetInputTexture(nInputIdx)
             );

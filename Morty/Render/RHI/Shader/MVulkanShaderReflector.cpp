@@ -10,7 +10,7 @@
 #include "Engine/MEngine.h"
 #include "RHI/Vulkan/MVulkanDevice.h"
 #include "Resource/MResource.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 #include "Utility/MLogger.h"
 
 using namespace morty;
@@ -191,7 +191,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
     {
         spirv_cross::SPIRType          type = compiler.get_type(res.type_id);
 
-        auto param = std::make_unique<MShaderConstantParam>();
+        auto param = std::make_unique<MShaderUniformParam>();
         param->unSet                                = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
@@ -267,7 +267,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.separate_samplers)
     {
-        auto param = std::make_unique<MShaderSampleParam>();
+        auto param = std::make_unique<MShaderSamplerParam>();
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());
@@ -286,7 +286,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.subpass_inputs)
     {
-        auto param = std::make_unique<MShaderSubpasssInputParam>();
+        auto param = std::make_unique<MShaderSubpassInputParam>();
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());

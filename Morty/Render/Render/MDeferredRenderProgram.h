@@ -29,7 +29,7 @@ class MRenderTargetManager;
 class MCPUCameraFrustumCulling;
 class MGPUCameraFrustumCulling;
 class IGBufferAdapter;
-class IPropertyBlockAdapter;
+class IParameterSetAdapter;
 class ITextureInputAdapter;
 class MViewport;
 class MMaterial;
@@ -50,8 +50,8 @@ public:
 #endif
 
 public:
-    void Render(IRenderCommand* pPrimaryCommand) override;
-    void RenderSetup(IRenderCommand* pPrimaryCommand);
+    void          Render(IRenderCommand* pPrimaryCommand) override;
+    void          RenderSetup(IRenderCommand* pPrimaryCommand);
 
     MRenderGraph* GetRenderGraph() override { return m_renderGraph.get(); }
 
@@ -69,9 +69,9 @@ public:
     void ReleaseTaskGraph();
 
 protected:
-    MRenderInfo m_renderInfo;
+    MRenderInfo                   m_renderInfo;
 
-    uint32_t m_frameIndex = 0;
+    uint32_t                      m_frameIndex = 0;
 
     std::unique_ptr<MRenderGraph> m_renderGraph = nullptr;
 };

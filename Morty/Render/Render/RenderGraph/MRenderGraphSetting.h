@@ -20,7 +20,7 @@
 namespace morty
 {
 
-class IPropertyBlockAdapter;
+class IParameterSetAdapter;
 class MRenderTargetManager;
 class MORTY_API MRenderGraphSetting
 {

@@ -52,8 +52,8 @@ void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
     );
 
     command.SetMaterial(m_lightningMaterial.get(), m_lightningMaterial->GetTemplate()->GetDefaultPass());
-    //auto pPropertyBlock = GetRenderGraph()->GetFrameProperty()->GetPropertyBlock();
-    //command.SetShaderPropertyBlock(pPropertyBlock);
+    //auto pParameterSet = GetRenderGraph()->GetFrameProperty()->GetParameterSet();
+    //command.SetShaderParameterSet(pParameterSet);
 
     command.DrawMesh(pMeshManager->GetScreenRect());
 
@@ -90,7 +90,7 @@ void MDeferredLightingRenderNode::BindInOutTexture()
 
     if (!m_lightningMaterial) { return; }
 
-    if (auto pParams = m_lightningMaterial->GetMaterialPropertyBlock())
+    if (auto pParams = m_lightningMaterial->GetMaterialParameterSet())
     {
         if (auto texture = GetInputTexture(0))
         {

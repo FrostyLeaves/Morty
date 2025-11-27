@@ -21,7 +21,7 @@ namespace morty
 
 class MBoundsOBB;
 class MSkeletonResource;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MORTY_API MSkeletonInstance : public MObject
 {
 public:

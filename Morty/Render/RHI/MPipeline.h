@@ -15,7 +15,7 @@ namespace morty
 
 class MMaterial;
 class MRenderPass;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 struct MORTY_API MPipelineLayout {
     VkPipelineLayout                   vkPipelineLayout;
     std::vector<VkDescriptorSetLayout> vDescriptorSetLayouts;
@@ -29,10 +29,10 @@ public:
     virtual ~MPipeline() = default;
 
 public:
-    std::set<std::shared_ptr<MShaderPropertyBlock>> m_shaderPropertyBlocks = {};
+    std::set<std::shared_ptr<MShaderParameterSet>> m_shaderParameterSets = {};
 
-    MPipelineLayout                                 m_pipelineLayout;
-    VkPipelineBindPoint                             m_vkPipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    MPipelineLayout                                m_pipelineLayout;
+    VkPipelineBindPoint                            m_vkPipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 };
 
 class MORTY_API MGraphicsPipeline : public MPipeline

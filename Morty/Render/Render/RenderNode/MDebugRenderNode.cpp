@@ -42,7 +42,7 @@ void MDebugRenderNode::Render(const MRenderInfo& info)
     //Render static mesh.
     MCullingResultRenderable indirectMesh;
     indirectMesh.SetMeshBuffer(pMeshManager->GetMeshBuffer());
-    indirectMesh.SetPropertyBlockAdapter({GetRenderGraph()->GetFrameProperty()});
+    indirectMesh.SetParameterSetAdapter({GetRenderGraph()->GetFrameProperty()});
     indirectMesh.SetMaterialFilter(std::make_shared<MMaterialTypeFilter>(MEMaterialType::ECustom));
     indirectMesh.SetInstanceCulling(GetRenderGraph()->GetCameraCullingResult());
 

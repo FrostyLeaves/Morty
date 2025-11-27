@@ -61,13 +61,13 @@ MMaterialPass* MMaterialTemplate::GetPass(const MStringId& passName) const
 
 MMaterialPass* MMaterialTemplate::GetDefaultPass() const { return GetPass(MRenderGlobal::DEFAULT_PASS_NAME); }
 
-std::shared_ptr<MShaderPropertyBlock> MMaterialTemplate::CreatePropertyBlock(size_t setIdx) const
+std::shared_ptr<MShaderParameterSet> MMaterialTemplate::CreateParameterSet(size_t setIdx) const
 {
     if (GetDefaultPass() == nullptr) return nullptr;
     auto shaderProgram = GetDefaultPass()->GetShaderProgram();
     if (!shaderProgram) { return nullptr; }
 
-    auto propertyBlocks = shaderProgram->GetShaderPropertyBlocks();
+    auto propertyBlocks = shaderProgram->GetShaderParameterSets();
     if (setIdx >= propertyBlocks.size()) { return nullptr; }
 
     return propertyBlocks[setIdx] ? propertyBlocks[setIdx]->Clone() : nullptr;

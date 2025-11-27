@@ -27,10 +27,10 @@ class MMaterialPass;
 class MMaterialTemplate;
 class IShaderProgram;
 class MVulkanDevice;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MComputeDispatcher;
 struct MShaderTextureParam;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 struct MShaderStorageParam;
 
 class MORTY_API MVulkanPipelineManager
@@ -40,7 +40,7 @@ public:
         const IShaderProgram* pShaderProgram = nullptr;
         const MRenderPass*    pRenderPass    = nullptr;
 
-                              MPipelineKey(const IShaderProgram* shaderProgram, const MRenderPass* renderPass)
+        MPipelineKey(const IShaderProgram* shaderProgram, const MRenderPass* renderPass)
             : pShaderProgram(shaderProgram)
             , pRenderPass(renderPass)
         {}
@@ -68,11 +68,11 @@ public:
 
 
 public:
-             MVulkanPipelineManager(MVulkanDevice* pDevice);
+    MVulkanPipelineManager(MVulkanDevice* pDevice);
 
     virtual ~MVulkanPipelineManager();
 
-    void     Release();
+    void Release();
 
 public:
     std::shared_ptr<MGraphicsPipeline>
@@ -101,16 +101,16 @@ public:
     VkPipeline
          CreateComputePipeline(const std::shared_ptr<MPipeline>& pPipeline, MComputeDispatcher* pComputeDispatcher);
 
-    void AllocateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock, const MPipeline* pPipeline);
+    void AllocateShaderParameterSet(MShaderParameterSet* pParameterSet, const MPipeline* pPipeline);
 
-    void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock);
+    void DestroyShaderParameterSet(MShaderParameterSet* pParameterSet);
 
-    void DestroyShaderPropertyBlockImpl(MShaderPropertyBlock* pPropertyBlock) const;
+    void DestroyShaderParameterSetImpl(MShaderParameterSet* pParameterSet) const;
 
 public:
     void        GeneratePipelineLayout(const std::shared_ptr<MPipeline>& pPipeline, IShaderProgram* shaderProgram);
 
-    void        BindConstantParam(const MShaderConstantParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
+    void        BindConstantParam(const MShaderUniformParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 
     void        BindTextureParam(MShaderTextureParam* pParam, VkWriteDescriptorSet& writeDescriptorSet);
 

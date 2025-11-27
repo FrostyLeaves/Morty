@@ -88,6 +88,10 @@ public:
 
     void Deserialize(const void* pBufferPointer, std::shared_ptr<MVariantMemory> pMemory = nullptr, size_t nOffset = 0);
 
+    YAML::Node SerializeYaml() const;
+
+    void DeserializeYaml(const YAML::Node& node);
+
 private:
     size_t                          m_offset = 0;
     size_t                          m_size   = 0;
@@ -318,6 +322,16 @@ template<typename TYPE> inline void MVariant::SetValue(const TYPE& value)
     MORTY_ASSERT(m_memory);
 
     memcpy(m_memory->Data() + m_offset, &value, m_size);
+}
+
+template<> inline void MVariant::SetValue<MVariant>(const MVariant& value)
+{
+    MORTY_ASSERT(value.GetType() == GetType());
+    MORTY_ASSERT(value.GetSize() == GetSize());
+    MORTY_ASSERT(value.GetType() != MEVariantType::EArray);
+    MORTY_ASSERT(value.GetType() != MEVariantType::EStruct);
+
+    memcpy(m_memory->Data() + m_offset, value.GetData(), value.GetSize());
 }
 
 template<typename TYPE> inline MEVariantType MVariant::Type()

@@ -12,15 +12,26 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
-void MMaterial::SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pResource)
+void MMaterial::SetTexture(const MStringId& name, const std::shared_ptr<MResource>& pResource)
 {
     if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
     {
-        GetMaterialPropertyBlock()->SetTexture(strName, textureResource->GetTextureTemplate());
+        m_propertyModifier.SetTexture(name, textureResource->GetTextureTemplate());
     }
 }
 
-const std::shared_ptr<MMaterialTemplate>& MMaterial::GetTemplate() const { return m_materialTemplate; }
+MShaderMacro MMaterial::GetShaderMacro() const
+{
+    auto temp = m_materialTemplate.GetResource<MMaterialTemplate>();
+    if (temp) { return temp->GetShaderMacro(); }
+    return {};
+}
+
+std::shared_ptr<MMaterialTemplate> MMaterial::GetTemplate() const
+{
+    auto temp = m_materialTemplate.GetResource<MMaterialTemplate>();
+    return temp;
+}
 
 void MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate)
 {
@@ -48,16 +59,30 @@ void        MMaterial::OnDelete() { Super::OnDelete(); }
 
 void        MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pTemplate)
 {
-    if (m_materialTemplate == pTemplate) return;
+    if (m_materialTemplate.GetResource<MMaterialTemplate>() == pTemplate) return;
 
-    m_materialTemplate = pTemplate;
+    auto reloadFunc = [this]() {
+        auto temp = m_materialTemplate.GetResource<MMaterialTemplate>();
+        if (temp) { m_materialParameterSet = temp->CreateParameterSet(MRenderGlobal::SHADER_PARAM_SET_MATERIAL); }
+        else { m_materialParameterSet = nullptr; }
 
-    if (m_materialTemplate)
-    {
-        m_materialPropertyBlock = m_materialTemplate->CreatePropertyBlock(MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
-    }
-    else { m_materialPropertyBlock = nullptr; }
+        if (temp && temp->GetDefaultPass() && temp->GetDefaultPass()->GetShaderProgram())
+        {
+            m_propertyModifier.BindPropertyBlock(
+                    m_materialParameterSet.get(),
+                    temp->GetDefaultPass()->GetShaderProgram()->GetPropertyBlock()
+            );
+        }
+        else { m_propertyModifier.BindPropertyBlock(nullptr, MShaderPropertyBlock{}); }
+
+        return true;
+    };
+
+    m_materialTemplate.SetResource(pTemplate);
+    m_materialTemplate.SetResChangedCallback(reloadFunc);
+
+    reloadFunc();
 }
 
 
-MShaderPropertyBlock* MMaterial::GetMaterialPropertyBlock() const { return m_materialPropertyBlock.get(); }
+MShaderParameterSet* MMaterial::GetMaterialParameterSet() const { return m_materialParameterSet.get(); }

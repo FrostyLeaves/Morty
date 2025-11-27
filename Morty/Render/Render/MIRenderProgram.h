@@ -22,7 +22,7 @@ class MRenderGraph;
 class MIMeshInstance;
 class IRenderCommand;
 struct MRenderInfo;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 
 class MORTY_API MIRenderProgram : public MObject
 {

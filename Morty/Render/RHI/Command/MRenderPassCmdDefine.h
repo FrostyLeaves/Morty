@@ -10,7 +10,7 @@ struct MBufferRHI;
 class MPipeline;
 class MRenderPass;
 class MGraphicsPipeline;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 
 enum class METextureBarrierStage
 {
@@ -32,7 +32,7 @@ struct IPipelineCmd {
 };
 
 template<size_t CmdType> struct MPipelineCmd : public IPipelineCmd {
-                  MPipelineCmd() { type = CmdType; }
+    MPipelineCmd() { type = CmdType; }
     static size_t GetType() { return CmdType; }
 };
 
@@ -73,10 +73,10 @@ struct MSetGraphPipelineCmd : public MPipelineCmd<5> {
     const size_t             subPassIdx = 0;
 };
 
-struct MSetShaderPropertyBlockCmd : public MPipelineCmd<6> {
-    const MPipeline*      pipeline           = nullptr;
-    MShaderPropertyBlock* property           = nullptr;
-    bool                  allocDescriptorSet = false;
+struct MSetShaderParameterSetCmd : public MPipelineCmd<6> {
+    const MPipeline*     pipeline           = nullptr;
+    MShaderParameterSet* property           = nullptr;
+    bool                 allocDescriptorSet = false;
 };
 
 struct MAddTextureBarrierCmd : public MPipelineCmd<7> {

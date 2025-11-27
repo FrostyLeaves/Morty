@@ -2,7 +2,7 @@
 
 #include "Engine/MEngine.h"
 #include "Resource/MSkeletonResource.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 
 using namespace morty;
 

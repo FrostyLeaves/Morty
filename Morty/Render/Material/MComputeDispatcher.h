@@ -15,8 +15,9 @@
 
 #include "Shader/MShaderBuffer.h"
 #include "Shader/MShaderMacro.h"
+#include "Shader/MShaderParameterSet.h"
 #include "Shader/MShaderProgram.h"
-#include "Shader/MShaderPropertyBlock.h"
+
 
 namespace morty
 {
@@ -26,7 +27,7 @@ class MORTY_API MComputeDispatcher : public MObject
 public:
     MORTY_CLASS(MComputeDispatcher)
 
-             MComputeDispatcher() = default;
+    MComputeDispatcher() = default;
 
     virtual ~MComputeDispatcher() = default;
 
@@ -38,14 +39,14 @@ public:
 public:
     std::shared_ptr<MResource> GetComputeShaderResource() { return m_shaderProgram->GetShaderResource(); }
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderPropertyBlocks()
+    std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM>& GetShaderParameterSets()
     {
-        return m_shaderProgram->GetShaderPropertyBlocks();
+        return m_shaderProgram->GetShaderParameterSets();
     }
 
-    std::shared_ptr<MShaderPropertyBlock> GetShaderPropertyBlock(size_t nSetIdx)
+    std::shared_ptr<MShaderParameterSet> GetShaderParameterSet(size_t nSetIdx)
     {
-        return GetShaderPropertyBlocks()[nSetIdx];
+        return GetShaderParameterSets()[nSetIdx];
     }
 
     MShader*                      GetComputeShader();

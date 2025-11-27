@@ -18,7 +18,7 @@ class MRenderPass;
 class MRenderPassCmd;
 class IRenderCommand;
 class MComputeDispatcher;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 struct MMeshInstanceRenderProxy;
 
 class IShaderPropertyUpdateDecorator;
@@ -30,12 +30,12 @@ public:
     virtual MTexturePtr GetTexture() = 0;
 };
 
-class MORTY_API IPropertyBlockAdapter
+class MORTY_API IParameterSetAdapter
 {
 public:
-    virtual ~IPropertyBlockAdapter() = default;
+    virtual ~IParameterSetAdapter() = default;
 
-    [[nodiscard]] virtual std::shared_ptr<MShaderPropertyBlock> GetPropertyBlock() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<MShaderParameterSet> GetParameterSet() const = 0;
 };
 
 class MORTY_API MMeshBufferAdapter
@@ -115,8 +115,8 @@ class MORTY_API IShaderPropertyUpdateDecorator
 public:
     virtual ~IShaderPropertyUpdateDecorator() = default;
 
-    virtual void BindMaterial(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock) = 0;
-    virtual void Update(const MRenderInfo& info)                                                 = 0;
+    virtual void BindMaterial(const std::shared_ptr<MShaderParameterSet>& pShaderParameterSet) = 0;
+    virtual void Update(const MRenderInfo& info)                                               = 0;
 };
 
 class MGetTextureAdapter : public IGetTextureAdapter

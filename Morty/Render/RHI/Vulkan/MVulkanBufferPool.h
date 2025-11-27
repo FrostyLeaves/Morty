@@ -21,7 +21,7 @@ namespace morty
 {
 
 class MVulkanDevice;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 
 class MORTY_API MVulkanBufferPool
 {
@@ -36,9 +36,9 @@ public:
 
     void     Release();
 
-    bool     AllowBufferMemory(MShaderConstantParam* pParam);
+    bool     AllowBufferMemory(MShaderUniformParam* pParam);
 
-    void     FreeBufferMemory(MShaderConstantParam* pParam);
+    void     FreeBufferMemory(MShaderUniformParam* pParam);
 
     bool     AllowReadBackBuffer(const uint32_t& unMemorySize, uint32_t& unBufferID, MemoryInfo& info);
 
@@ -53,13 +53,13 @@ public:
     VkBuffer GetReadBackBuffer() { return m_vkReadBackBuffer; }
 
 protected:
-    bool AllowUniformBufferMemory(MShaderConstantParam* pParam);
+    bool AllowUniformBufferMemory(MShaderUniformParam* pParam);
 
-    bool AllowDynamicUniformBufferMemory(MShaderConstantParam* pParam);
+    bool AllowDynamicUniformBufferMemory(MShaderUniformParam* pParam);
 
-    void FreeUniformBufferMemory(MShaderConstantParam* pParam);
+    void FreeUniformBufferMemory(MShaderUniformParam* pParam);
 
-    void FreeDynamicUniformBufferMemory(MShaderConstantParam* pParam);
+    void FreeDynamicUniformBufferMemory(MShaderUniformParam* pParam);
 
 
 private:
@@ -68,7 +68,7 @@ private:
     uint32_t                                                    m_unMinUboAlignment;
     uint32_t                                                    m_unDynamicUniformBufferMemorySize;
     MMemoryPool                                                 m_DynamicUniformMemoryPool;
-    std::map<MShaderConstantParam*, MemoryInfo> m_dynamicUniformMemory;
+    std::map<MShaderUniformParam*, MemoryInfo> m_dynamicUniformMemory;
 
     VkBuffer                                                    m_vkDynamicUniformBuffer;
     VkDeviceMemory                                              m_vkDynamicUniformMemory;

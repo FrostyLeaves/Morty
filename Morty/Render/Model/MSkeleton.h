@@ -18,7 +18,7 @@ namespace morty
 {
 
 class MBoundsOBB;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MORTY_API MBone
 {
 public:

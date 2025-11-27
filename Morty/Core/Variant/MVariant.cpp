@@ -1,6 +1,8 @@
 #include "MVariant.h"
 
 #include "MVariant_generated.h"
+#include "yaml-cpp/yaml.h"
+#include <sstream>
 
 using namespace morty;
 
@@ -476,6 +478,225 @@ void MVariantArray::Deserialize(const void* pBufferPointer, std::shared_ptr<MVar
     }
 
     m_locked = true;
+}
+
+
+YAML::Node MVariant::SerializeYaml() const
+{
+    YAML::Node node;
+
+    const auto type = GetType();
+    switch (type)
+    {
+    case MEVariantType::EUInt:
+    {
+        std::ostringstream oss;
+        oss << "uint(" << GetValue<uint32_t>() << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EInt:
+    {
+        std::ostringstream oss;
+        oss << "int(" << GetValue<int32_t>() << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EFloat:
+    {
+        std::ostringstream oss;
+        oss << "float(" << GetValue<float>() << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EVector2:
+    {
+        const auto& vec = GetValue<Vector2>();
+        std::ostringstream oss;
+        oss << "float2(" << vec.x << ", " << vec.y << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EVector3:
+    {
+        const auto& vec = GetValue<Vector3>();
+        std::ostringstream oss;
+        oss << "float3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EVector4:
+    {
+        const auto& vec = GetValue<Vector4>();
+        std::ostringstream oss;
+        oss << "float4(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EMatrix3:
+    {
+        const auto& mat = GetValue<Matrix3>();
+        std::ostringstream oss;
+        oss << "float3x3(";
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                if (i > 0 || j > 0) oss << ", ";
+                oss << mat.m[i][j];
+            }
+        }
+        oss << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EMatrix4:
+    {
+        const auto& mat = GetValue<Matrix4>();
+        std::ostringstream oss;
+        oss << "float4x4(";
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                if (i > 0 || j > 0) oss << ", ";
+                oss << mat.m[i][j];
+            }
+        }
+        oss << ")";
+        node = oss.str();
+        break;
+    }
+    case MEVariantType::EStruct:
+        // TODO: Implement struct serialization if needed
+        node = "struct()";
+        break;
+    case MEVariantType::EArray:
+        // TODO: Implement array serialization if needed
+        node = "array()";
+        break;
+    default:
+        break;
+    }
+
+    return node;
+}
+
+void MVariant::DeserializeYaml(const YAML::Node& node)
+{
+    if (!node.IsScalar()) return;
+
+    const std::string str = node.as<std::string>();
+
+    // Parse format: type(value1, value2, ...)
+    size_t pos = str.find('(');
+    if (pos == std::string::npos) return;
+
+    std::string type = str.substr(0, pos);
+    size_t endPos = str.find(')', pos);
+    if (endPos == std::string::npos) return;
+
+    std::string values = str.substr(pos + 1, endPos - pos - 1);
+
+    // Helper to split by comma
+    auto splitValues = [](const std::string& s) -> std::vector<float> {
+        std::vector<float> result;
+        std::istringstream iss(s);
+        std::string token;
+        while (std::getline(iss, token, ','))
+        {
+            // Trim whitespace
+            size_t start = token.find_first_not_of(" \t");
+            size_t end = token.find_last_not_of(" \t");
+            if (start != std::string::npos && end != std::string::npos)
+            {
+                token = token.substr(start, end - start + 1);
+                result.push_back(std::stof(token));
+            }
+        }
+        return result;
+    };
+
+    if (type == "uint")
+    {
+        *this = MVariant(static_cast<uint32_t>(std::stoul(values)));
+    }
+    else if (type == "int")
+    {
+        *this = MVariant(std::stoi(values));
+    }
+    else if (type == "float")
+    {
+        *this = MVariant(std::stof(values));
+    }
+    else if (type == "float2")
+    {
+        auto vals = splitValues(values);
+        if (vals.size() >= 2)
+        {
+            Vector2 vec;
+            vec.x = vals[0];
+            vec.y = vals[1];
+            *this = MVariant(vec);
+        }
+    }
+    else if (type == "float3")
+    {
+        auto vals = splitValues(values);
+        if (vals.size() >= 3)
+        {
+            Vector3 vec;
+            vec.x = vals[0];
+            vec.y = vals[1];
+            vec.z = vals[2];
+            *this = MVariant(vec);
+        }
+    }
+    else if (type == "float4")
+    {
+        auto vals = splitValues(values);
+        if (vals.size() >= 4)
+        {
+            Vector4 vec;
+            vec.x = vals[0];
+            vec.y = vals[1];
+            vec.z = vals[2];
+            vec.w = vals[3];
+            *this = MVariant(vec);
+        }
+    }
+    else if (type == "float3x3")
+    {
+        auto vals = splitValues(values);
+        if (vals.size() >= 9)
+        {
+            Matrix3 mat;
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    mat.m[i][j] = vals[i * 3 + j];
+                }
+            }
+            *this = MVariant(mat);
+        }
+    }
+    else if (type == "float4x4")
+    {
+        auto vals = splitValues(values);
+        if (vals.size() >= 16)
+        {
+            Matrix4 mat;
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < 4; ++j)
+                {
+                    mat.m[i][j] = vals[i * 4 + j];
+                }
+            }
+            *this = MVariant(mat);
+        }
+    }
 }
 
 

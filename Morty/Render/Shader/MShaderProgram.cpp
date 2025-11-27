@@ -30,7 +30,7 @@ MShaderProgram::MShaderProgram(
     , m_entryNames(entryNames)
     , m_shaderMask(shaderMask)
 {
-    InitializeShaderPropertyBlock();
+    InitializeShaderParameterSet();
     MORTY_ASSERT(LoadShader(shader));
 
     CompileShaderIfNeed();
@@ -38,7 +38,7 @@ MShaderProgram::MShaderProgram(
 
 MShaderProgram::~MShaderProgram() { UnloadShader(); }
 
-bool             MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
+bool MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
 {
     if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
     {
@@ -60,16 +60,16 @@ bool             MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pR
     return false;
 }
 
-void MShaderProgram::InitializeShaderPropertyBlock()
+void MShaderProgram::InitializeShaderParameterSet()
 {
     m_shaderSets[MRenderGlobal::SHADER_PARAM_SET_MATERIAL] =
-            std::make_shared<MShaderPropertyBlock>(this, MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
+            std::make_shared<MShaderParameterSet>(this, MRenderGlobal::SHADER_PARAM_SET_MATERIAL);
     m_shaderSets[MRenderGlobal::SHADER_PARAM_SET_FRAME] =
-            std::make_shared<MShaderPropertyBlock>(this, MRenderGlobal::SHADER_PARAM_SET_FRAME);
+            std::make_shared<MShaderParameterSet>(this, MRenderGlobal::SHADER_PARAM_SET_FRAME);
     m_shaderSets[MRenderGlobal::SHADER_PARAM_SET_MESH] =
-            std::make_shared<MShaderPropertyBlock>(this, MRenderGlobal::SHADER_PARAM_SET_MESH);
+            std::make_shared<MShaderParameterSet>(this, MRenderGlobal::SHADER_PARAM_SET_MESH);
     m_shaderSets[MRenderGlobal::SHADER_PARAM_SET_OTHER] =
-            std::make_shared<MShaderPropertyBlock>(this, MRenderGlobal::SHADER_PARAM_SET_OTHER);
+            std::make_shared<MShaderParameterSet>(this, MRenderGlobal::SHADER_PARAM_SET_OTHER);
 }
 
 void MShaderProgram::UnloadShader()
@@ -91,19 +91,19 @@ void MShaderProgram::UnloadShader()
 }
 
 void MShaderProgram::CopyShaderParams(
-        MEngine*                                           pEngine,
-        const std::shared_ptr<MShaderPropertyBlock>&       target,
-        const std::shared_ptr<const MShaderPropertyBlock>& source
+        MEngine*                                          pEngine,
+        const std::shared_ptr<MShaderParameterSet>&       target,
+        const std::shared_ptr<const MShaderParameterSet>& source
 )
 {
     auto* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
 
     target->DestroyBuffer(pRenderSystem->GetDevice());
 
-    target->m_params.resize(source->m_params.size());
-    for (uint32_t i = 0; i < source->m_params.size(); ++i)
+    target->m_uniforms.resize(source->m_uniforms.size());
+    for (uint32_t i = 0; i < source->m_uniforms.size(); ++i)
     {
-        target->m_params[i] = std::make_unique<MShaderConstantParam>(*source->m_params[i]);
+        target->m_uniforms[i] = std::make_unique<MShaderUniformParam>(*source->m_uniforms[i]);
     }
 
     target->m_textures.resize(source->m_textures.size());
@@ -117,10 +117,10 @@ void MShaderProgram::CopyShaderParams(
         target->m_textures[i] = std::move(pParam);
     }
 
-    target->m_samples.resize(source->m_samples.size());
-    for (uint32_t i = 0; i < source->m_samples.size(); ++i)
+    target->m_samplers.resize(source->m_samplers.size());
+    for (uint32_t i = 0; i < source->m_samplers.size(); ++i)
     {
-        target->m_samples[i] = std::make_unique<MShaderSampleParam>(*source->m_samples[i]);
+        target->m_samplers[i] = std::make_unique<MShaderSamplerParam>(*source->m_samplers[i]);
     }
 
     target->m_storages.resize(source->m_storages.size());
@@ -130,23 +130,25 @@ void MShaderProgram::CopyShaderParams(
     }
 }
 
-std::shared_ptr<MShaderPropertyBlock> MShaderProgram::AllocShaderPropertyBlock(size_t nSetIdx)
+std::shared_ptr<MShaderParameterSet> MShaderProgram::AllocShaderParameterSet(size_t nSetIdx)
 {
-    std::shared_ptr<MShaderPropertyBlock> pShaderPropertyBlock = m_shaderSets[nSetIdx]->Clone();
-    m_shaderPropertyBlockInstance.insert(pShaderPropertyBlock);
+    std::shared_ptr<MShaderParameterSet> pShaderParameterSet = m_shaderSets[nSetIdx]->Clone();
+    m_shaderParameterSetInstance.insert(pShaderParameterSet);
 
-    return pShaderPropertyBlock;
+    return pShaderParameterSet;
 }
 
-void MShaderProgram::ReleaseShaderPropertyBlock(const std::shared_ptr<MShaderPropertyBlock>& pShaderPropertyBlock)
+void MShaderProgram::ReleaseShaderParameterSet(const std::shared_ptr<MShaderParameterSet>& pShaderParameterSet)
 {
-    m_shaderPropertyBlockInstance.erase(pShaderPropertyBlock);
+    m_shaderParameterSetInstance.erase(pShaderParameterSet);
 }
 
 void MShaderProgram::CompileShaderIfNeed()
 {
     auto* pShaderResource = m_shaderResource.GetResource()->template DynamicCast<MShaderResource>();
     if (nullptr == pShaderResource) { return; }
+
+    bool compileAction = false;
 
     for (size_t idx = 0; idx < m_compiledShaders.size(); ++idx)
     {
@@ -166,13 +168,26 @@ void MShaderProgram::CompileShaderIfNeed()
                 desc.pShader = nullptr;
                 desc.state   = ShaderState::Failed;
             }
-            else { desc.state = ShaderState::Compiled; }
+            else
+            {
+                desc.state    = ShaderState::Compiled;
+                compileAction = true;
+            }
         }
 
         if (desc.pShader)
         {
             UnbindShaderBuffer(shaderType, pRenderSystem->GetDevice());
             BindShaderBuffer(desc.pShader->GetBuffer(), shaderType);
+        }
+    }
+
+    if (compileAction)
+    {
+        m_propertyBlock.Clear();
+        for (const auto& desc: m_compiledShaders)
+        {
+            if (desc.state == ShaderState::Compiled) { m_propertyBlock.Merge(desc.pShader->GetPropertyBlock()); }
         }
     }
 }
@@ -190,8 +205,8 @@ MShader* MShaderProgram::GetShader(MEShaderType eType)
     return desc.pShader;
 }
 
-std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
-MShaderProgram::GetShaderPropertyBlocks()
+std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
+MShaderProgram::GetShaderParameterSets()
 {
     CompileShaderIfNeed();
     return m_shaderSets;
@@ -265,10 +280,10 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType
     uint32_t bitType = 1 << static_cast<size_t>(eType);
     for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
     {
-        std::shared_ptr<MShaderPropertyBlock>& pPropertyTemplate = pBuffer->m_shaderSets[i];
-        std::shared_ptr<MShaderPropertyBlock>& pProgramProperty  = m_shaderSets[i];
+        std::shared_ptr<MShaderParameterSet>& pPropertyTemplate = pBuffer->m_shaderSets[i];
+        std::shared_ptr<MShaderParameterSet>& pProgramProperty  = m_shaderSets[i];
 
-        for (const auto& pBufferParam: pPropertyTemplate->m_params)
+        for (const auto& pBufferParam: pPropertyTemplate->m_uniforms)
         {
             if (const auto& pSelfParam = pProgramProperty->FindConstantParam(pBufferParam.get()))
             {
@@ -278,7 +293,7 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType
             }
             else
             {
-                auto pParam         = std::make_unique<MShaderConstantParam>(*pBufferParam);
+                auto pParam         = std::make_unique<MShaderUniformParam>(*pBufferParam);
                 pParam->eShaderType = bitType;
                 pProgramProperty->AppendConstantParam(std::move(pParam));
             }
@@ -298,7 +313,7 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType
             }
         }
 
-        for (const auto& pBufferParam: pPropertyTemplate->m_samples)
+        for (const auto& pBufferParam: pPropertyTemplate->m_samplers)
         {
             if (const auto& pSelfParam = pProgramProperty->FindSampleParam(pBufferParam.get()))
             {
@@ -306,7 +321,7 @@ void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType
             }
             else
             {
-                auto pParam         = std::make_unique<MShaderSampleParam>(*pBufferParam);
+                auto pParam         = std::make_unique<MShaderSamplerParam>(*pBufferParam);
                 pParam->eShaderType = bitType;
                 pProgramProperty->AppendSampleParam(std::move(pParam));
             }
@@ -333,7 +348,7 @@ void MShaderProgram::UnbindShaderBuffer(const MEShaderType& eType, MIDevice* dev
     uint32_t bitType = 1 << static_cast<size_t>(eType);
     for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
     {
-        if (std::shared_ptr<MShaderPropertyBlock> pProgramProperty = m_shaderSets[i])
+        if (std::shared_ptr<MShaderParameterSet> pProgramProperty = m_shaderSets[i])
         {
             auto&& vConstantParams = pProgramProperty->RemoveConstantParam(bitType);
             pProgramProperty->RemoveTextureParam(bitType);

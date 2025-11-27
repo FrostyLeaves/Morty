@@ -54,10 +54,10 @@ public:
 #endif
 };
 
-struct MORTY_API MShaderConstantParam : public MShaderParam {
-    MShaderConstantParam();
+struct MORTY_API MShaderUniformParam : public MShaderParam {
+    MShaderUniformParam();
 
-    MShaderConstantParam(const MShaderConstantParam& param);
+    MShaderUniformParam(const MShaderUniformParam& param);
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkBuffer               m_vkBuffer       = VK_NULL_HANDLE;
@@ -108,12 +108,12 @@ public:
 #endif
 };
 
-struct MShaderSubpasssInputParam : public MShaderTextureParam {
-    MShaderSubpasssInputParam();
+struct MShaderSubpassInputParam : public MShaderTextureParam {
+    MShaderSubpassInputParam();
 };
 
-struct MShaderSampleParam : public MShaderParam {
-    MShaderSampleParam();
+struct MShaderSamplerParam : public MShaderParam {
+    MShaderSamplerParam();
 
     MESamplerType eSamplerType = MESamplerType::ELinear;
 

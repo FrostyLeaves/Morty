@@ -33,8 +33,8 @@ morty::MVulkanCommandExecuteTable::MVulkanCommandExecuteTable()
         self->SetGraphPipeline((const MSetGraphPipelineCmd*) cmd);
     };
 
-    m_commandFunction[MSetShaderPropertyBlockCmd::GetType()] = [](auto* self, auto* cmd) {
-        self->SetShaderPropertyBlock((const MSetShaderPropertyBlockCmd*) cmd);
+    m_commandFunction[MSetShaderParameterSetCmd::GetType()] = [](auto* self, auto* cmd) {
+        self->SetShaderParameterSet((const MSetShaderParameterSetCmd*) cmd);
     };
 
     m_commandFunction[MNextSubPassCmd::GetType()] = [](auto* self, auto* cmd) {
@@ -46,8 +46,8 @@ morty::MVulkanCommandExecuteTable::MVulkanCommandExecuteTable()
     };
 
 
-    m_perProcessFunction[MSetShaderPropertyBlockCmd::GetType()] = [](auto* self, auto* cmd) {
-        self->AddBarrierForPixelSample((const MSetShaderPropertyBlockCmd*) cmd);
+    m_perProcessFunction[MSetShaderParameterSetCmd::GetType()] = [](auto* self, auto* cmd) {
+        self->AddBarrierForPixelSample((const MSetShaderParameterSetCmd*) cmd);
     };
 }
 

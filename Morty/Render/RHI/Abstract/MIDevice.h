@@ -27,7 +27,7 @@ class MTexture;
 class MRenderPass;
 class MIRenderTarget;
 class MTextureRenderTarget;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 class MGraphicsPipeline;
 class MMaterialTemplate;
 class MMaterial;
@@ -72,15 +72,15 @@ public:
 
     virtual void CleanShader(MShader* pShader) = 0;
 
-    virtual bool SyncPropertyBlock(MShaderPropertyBlock* propertyBlock) = 0;
+    virtual bool SyncParameterSet(MShaderParameterSet* propertyBlock) = 0;
 
-    virtual bool GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) = 0;
+    virtual bool GenerateShaderParameterSet(MShaderParameterSet* pParameterSet) = 0;
 
-    virtual void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) = 0;
+    virtual void DestroyShaderParameterSet(MShaderParameterSet* pParameterSet) = 0;
 
-    virtual bool GenerateShaderParamBuffer(MShaderConstantParam* param) = 0;
+    virtual bool GenerateShaderParamBuffer(MShaderUniformParam* param) = 0;
 
-    virtual void DestroyShaderParamBuffer(MShaderConstantParam* param) = 0;
+    virtual void DestroyShaderParamBuffer(MShaderUniformParam* param) = 0;
 
     virtual bool GenerateRenderPass(MRenderPass* pRenderPass) = 0;
 

@@ -331,14 +331,13 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
         ShowValueBegin("Shader");
         if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
         {
-            MString strResPath =
-                    pMaterial->GetShaderResource()->GetResourcePath();
+            MString strResPath = pMaterial->GetShaderResource()->GetResourcePath();
             pMaterial->GetResourceSystem()->Reload(strResPath);
         }
         ShowValueEnd();
     }
 
-    for(const auto& pair : pMaterial->GetPasses())
+    for (const auto& pair: pMaterial->GetPasses())
     {
         //pass name
         ImGui::TextUnformatted(pair.first.ToString().c_str());
@@ -385,10 +384,10 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
     }
     ShowValueEnd();
 
-    bModified |= EditShaderProperty(pMaterial->GetMaterialPropertyBlock());
+    bModified |= EditShaderProperty(pMaterial->GetMaterialParameterSet());
 
     {
-        auto& vParams = pMaterial->GetMaterialPropertyBlock()->GetTextureParams();
+        auto& vParams = pMaterial->GetMaterialParameterSet()->GetTextureParams();
         for (unsigned int i = 0; i < vParams.size(); ++i)
         {
             if (auto* param = dynamic_cast<MTextureResourceParam*>(vParams[i].get()))
@@ -431,7 +430,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
     return bModified;
 }
 
-bool PropertyBase::EditShaderProperty(MShaderPropertyBlock* pProperty)
+bool PropertyBase::EditShaderProperty(MShaderParameterSet* pProperty)
 {
     bool bModified = false;
     for (const auto& param: pProperty->GetConstantParams())

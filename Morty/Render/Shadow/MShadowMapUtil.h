@@ -14,9 +14,9 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MRenderMeshComponent;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 
 
 template<typename TYPE> using MCascadedArray = std::array<TYPE, MRenderGlobal::CASCADED_SHADOW_MAP_NUM>;

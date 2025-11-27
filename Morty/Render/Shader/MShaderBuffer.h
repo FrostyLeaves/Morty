@@ -13,7 +13,7 @@
 namespace morty
 {
 
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MORTY_API MShaderBuffer
 {
 public:
@@ -21,7 +21,7 @@ public:
 
     virtual ~MShaderBuffer() = default;
 
-    std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
+    std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkShaderModule                  m_vkShaderModule = VK_NULL_HANDLE;

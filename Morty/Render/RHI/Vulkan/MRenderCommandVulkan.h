@@ -27,7 +27,7 @@ class MORTY_API MRenderCommandVulkan : public IRenderCommand
 public:
     explicit MRenderCommandVulkan() = default;
 
-    ~        MRenderCommandVulkan() override = default;
+    ~MRenderCommandVulkan() override = default;
 
 public:
     void           RenderCommandBegin() override;
@@ -61,7 +61,7 @@ public:
 
     void addFinishedCallback(std::function<void()> func) override;
 
-    void UpdateShaderParam(MShaderConstantParam* param);
+    void UpdateShaderParam(MShaderUniformParam* param);
 
     void SetTextureLayout(const std::vector<MTexture*>& vTextures, const std::vector<VkImageLayout>& newLayouts);
 
@@ -84,8 +84,8 @@ private:
     void                              DrawMesh(const MDrawMeshCmd* cmd);
     void                              DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cmd);
     void                              SetGraphPipeline(const MSetGraphPipelineCmd* cmd);
-    void                              SetShaderPropertyBlock(const MSetShaderPropertyBlockCmd* cmd);
-    void                              AddBarrierForPixelSample(const MSetShaderPropertyBlockCmd* cmd);
+    void                              SetShaderParameterSet(const MSetShaderParameterSetCmd* cmd);
+    void                              AddBarrierForPixelSample(const MSetShaderParameterSetCmd* cmd);
     void                              NextSubPass(const MNextSubPassCmd* cmd);
     void                              SetShadingRate(const MSetShadingRateCmd* cmd);
 
@@ -93,17 +93,17 @@ private:
     static MVulkanCommandExecuteTable m_executeTable;
 
 public:
-    MVulkanDevice*                                     m_device     = nullptr;
-    const MBufferRHIVulkan*                            pUsingVertex = nullptr;
-    const MBufferRHIVulkan*                            pUsingIndex  = nullptr;
+    MVulkanDevice*                                    m_device     = nullptr;
+    const MBufferRHIVulkan*                           pUsingVertex = nullptr;
+    const MBufferRHIVulkan*                           pUsingIndex  = nullptr;
 
-    VkCommandBuffer                                    m_vkCommandBuffer = VK_NULL_HANDLE;
+    VkCommandBuffer                                   m_vkCommandBuffer = VK_NULL_HANDLE;
 
-    std::map<MTexture*, VkImageLayout>                 m_textureLayout;
+    std::map<MTexture*, VkImageLayout>                m_textureLayout;
 
-    std::vector<std::function<void()>>                 m_renderFinishedCallback = {};
+    std::vector<std::function<void()>>                m_renderFinishedCallback = {};
 
-    std::vector<std::shared_ptr<MShaderPropertyBlock>> m_propertyBlockStack;
+    std::vector<std::shared_ptr<MShaderParameterSet>> m_propertyBlockStack;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MRenderCommandVulkan
@@ -113,7 +113,7 @@ class MORTY_API MVulkanSecondaryRenderCommand : public MRenderCommandVulkan
 class MORTY_API MVulkanPrimaryRenderCommand : public MRenderCommandVulkan
 {
 public:
-                    MVulkanPrimaryRenderCommand();
+    MVulkanPrimaryRenderCommand();
 
     bool            IsFinished() override { return m_finished; }
 

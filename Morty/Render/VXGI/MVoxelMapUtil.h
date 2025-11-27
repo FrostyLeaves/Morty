@@ -14,9 +14,9 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 class MRenderMeshComponent;
-struct MShaderConstantParam;
+struct MShaderUniformParam;
 
 
 class MORTY_API MVoxelMapUtil

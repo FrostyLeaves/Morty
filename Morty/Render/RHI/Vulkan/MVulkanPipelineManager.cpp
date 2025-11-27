@@ -26,7 +26,7 @@ MVulkanPipelineManager::MVulkanPipelineManager(MVulkanDevice* pDevice)
 
 MVulkanPipelineManager::~MVulkanPipelineManager() {}
 
-void                     MVulkanPipelineManager::Release()
+void MVulkanPipelineManager::Release()
 {
     for (auto& pr: m_pipelineTable)
     {
@@ -137,14 +137,14 @@ void MVulkanPipelineManager::DestroyPipeline(const std::shared_ptr<MPipeline>& p
         DestroyComputePipeline(graphicsPipeline);
     }
 
-    for (const std::shared_ptr<MShaderPropertyBlock>& pPropertyBlock: pipeline->m_shaderPropertyBlocks)
+    for (const std::shared_ptr<MShaderParameterSet>& pParameterSet: pipeline->m_shaderParameterSets)
     {
-        DestroyShaderPropertyBlockImpl(pPropertyBlock.get());
+        DestroyShaderParameterSetImpl(pParameterSet.get());
     }
 
     DestroyPipelineLayout(pipeline);
 
-    pipeline->m_shaderPropertyBlocks.clear();
+    pipeline->m_shaderParameterSets.clear();
 }
 
 VkShaderStageFlags GetShaderStageFlags(MShaderProgram* program)
@@ -182,9 +182,9 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
 
     for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
     {
-        std::shared_ptr<MShaderPropertyBlock> pPropertyBlock = shaderProgram->GetShaderPropertyBlocks()[unSetIdx];
+        std::shared_ptr<MShaderParameterSet> pParameterSet = shaderProgram->GetShaderParameterSets()[unSetIdx];
 
-        for (const auto& param: pPropertyBlock->GetConstantParams())
+        for (const auto& param: pParameterSet->GetConstantParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -197,7 +197,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const auto& param: pPropertyBlock->GetTextureParams())
+        for (const auto& param: pParameterSet->GetTextureParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding = param->unBinding;
@@ -211,7 +211,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const auto& param: pPropertyBlock->GetSampleParams())
+        for (const auto& param: pParameterSet->GetSampleParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -227,7 +227,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
-        for (const auto& param: pPropertyBlock->GetStorageParams())
+        for (const auto& param: pParameterSet->GetStorageParams())
         {
             VkDescriptorSetLayoutBinding uboLayoutBinding{};
             uboLayoutBinding.binding         = param->unBinding;
@@ -697,23 +697,20 @@ VkPipeline MVulkanPipelineManager::CreateComputePipeline(
     return computePipeline;
 }
 
-void MVulkanPipelineManager::AllocateShaderPropertyBlock(
-        MShaderPropertyBlock* pPropertyBlock,
-        const MPipeline*      pPipeline
-)
+void MVulkanPipelineManager::AllocateShaderParameterSet(MShaderParameterSet* pParameterSet, const MPipeline* pPipeline)
 {
-    if (pPropertyBlock->m_vkDescriptorSet)
+    if (pParameterSet->m_vkDescriptorSet)
     {
-        m_device->GetRecycleBin()->DestroyDescriptorSetLater(pPropertyBlock->m_vkDescriptorSet);
-        pPropertyBlock->m_vkDescriptorSet = VK_NULL_HANDLE;
+        m_device->GetRecycleBin()->DestroyDescriptorSetLater(pParameterSet->m_vkDescriptorSet);
+        pParameterSet->m_vkDescriptorSet = VK_NULL_HANDLE;
     }
 
-    MORTY_ASSERT(VK_NULL_HANDLE == pPropertyBlock->m_vkDescriptorSet);
+    MORTY_ASSERT(VK_NULL_HANDLE == pParameterSet->m_vkDescriptorSet);
     MORTY_ASSERT(VK_NULL_HANDLE != pPipeline->m_pipelineLayout.vkPipelineLayout);
 
-    //pPipeline->m_shaderPropertyBlocks.insert(pPropertyBlock);
+    //pPipeline->m_shaderParameterSets.insert(pParameterSet);
     VkDescriptorSetLayout vkDescriptorSetLayout =
-            pPipeline->m_pipelineLayout.vDescriptorSetLayouts[pPropertyBlock->m_unKey];
+            pPipeline->m_pipelineLayout.vDescriptorSetLayouts[pParameterSet->m_unKey];
     MORTY_ASSERT(VK_NULL_HANDLE != vkDescriptorSetLayout);
 
     VkDescriptorSetAllocateInfo allocInfo{};
@@ -725,34 +722,33 @@ void MVulkanPipelineManager::AllocateShaderPropertyBlock(
     VkDescriptorSet descriptorSet;
     if (vkAllocateDescriptorSets(m_device->m_vkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
     {
-        m_device->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::AllocateShaderPropertyBlock error: "
-                                                  "descriptor pool == 0");
+        m_device->GetEngine()->GetLogger()->Error(
+                "MVulkanPipelineManager::AllocateShaderParameterSet error: "
+                "descriptor pool == 0"
+        );
         return;
     }
 
-    pPropertyBlock->m_vkDescriptorSet = descriptorSet;
+    pParameterSet->m_vkDescriptorSet = descriptorSet;
 }
 
-void MVulkanPipelineManager::DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock)
+void MVulkanPipelineManager::DestroyShaderParameterSet(MShaderParameterSet* pParameterSet)
 {
-    DestroyShaderPropertyBlockImpl(pPropertyBlock);
+    DestroyShaderParameterSetImpl(pParameterSet);
 }
 
-void MVulkanPipelineManager::DestroyShaderPropertyBlockImpl(MShaderPropertyBlock* pPropertyBlock) const
+void MVulkanPipelineManager::DestroyShaderParameterSetImpl(MShaderParameterSet* pParameterSet) const
 {
-    if (!pPropertyBlock) return;
+    if (!pParameterSet) return;
 
-    if (pPropertyBlock->m_vkDescriptorSet)
+    if (pParameterSet->m_vkDescriptorSet)
     {
-        m_device->GetRecycleBin()->DestroyDescriptorSetLater(pPropertyBlock->m_vkDescriptorSet);
-        pPropertyBlock->m_vkDescriptorSet = VK_NULL_HANDLE;
+        m_device->GetRecycleBin()->DestroyDescriptorSetLater(pParameterSet->m_vkDescriptorSet);
+        pParameterSet->m_vkDescriptorSet = VK_NULL_HANDLE;
     }
 }
 
-void MVulkanPipelineManager::BindConstantParam(
-        const MShaderConstantParam* pParam,
-        VkWriteDescriptorSet&       descriptorWrite
-)
+void MVulkanPipelineManager::BindConstantParam(const MShaderUniformParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
     const VkDescriptorBufferInfo& bufferInfo = pParam->m_vkBufferInfo;
     MORTY_ASSERT(VK_NULL_HANDLE != bufferInfo.buffer);

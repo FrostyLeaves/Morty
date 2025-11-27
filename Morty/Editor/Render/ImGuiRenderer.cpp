@@ -7,7 +7,7 @@
 #include "RHI/IRenderCommand.h"
 #include "Resource/MTextureResource.h"
 #include "Resource/MTextureResourceUtil.h"
-#include "Shader/MShaderPropertyBlock.h"
+#include "Shader/MShaderParameterSet.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
 
@@ -69,14 +69,16 @@ void ImGuiRenderer::InitializeFont()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-    pFontTexture->Load(MTextureResourceUtil::LoadFromMemory(
-            "ImGUI_Font",
-            MSpan<MByte>(pixels, width * height * 4),
-            width,
-            height,
-            4,
-            MTexturePixelType::Byte8
-    ));
+    pFontTexture->Load(
+            MTextureResourceUtil::LoadFromMemory(
+                    "ImGUI_Font",
+                    MSpan<MByte>(pixels, width * height * 4),
+                    width,
+                    height,
+                    4,
+                    MTexturePixelType::Byte8
+            )
+    );
     m_FontTexture.SetResource(pFontTexture);
 
     // Store our identifier
@@ -145,7 +147,7 @@ void ImGuiRenderer::Tick(const float& fDelta)
 
         if (count > 30)
         {
-            iter->second->pPropertyBlock->DestroyBuffer(pRenderSystem->GetDevice());
+            iter->second->pParameterSet->DestroyBuffer(pRenderSystem->GetDevice());
             iter = m_imGuiDrawTexture.erase(iter);
         }
         else { ++iter; }
@@ -172,7 +174,7 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
     translate.y = -1.0f - draw_data->DisplayPos.y * scale.y;
 
 
-    auto propertyBlock = m_material->GetMaterialPropertyBlock();
+    auto propertyBlock = m_material->GetMaterialParameterSet();
     propertyBlock->SetValue(MShaderPropertyName::IMGUI_SCALE, scale);
     propertyBlock->SetValue(MShaderPropertyName::IMGUI_TRANSLATE, translate);
 
@@ -198,10 +200,10 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
             {
                 using_texture        = pcmd->TextureId;
                 MTexturePtr pTexture = using_texture.pTexture;
-                if (auto dest = GetTexturPropertyBlock(using_texture))
+                if (auto dest = GetTexturParameterSet(using_texture))
                 {
                     dest->nDestroyCount = 0;
-                    pCommand->SetShaderPropertyBlock(dest->pPropertyBlock);
+                    pCommand->SetShaderParameterSet(dest->pParameterSet);
                 }
                 else { MORTY_ASSERT(false); }
             }
@@ -239,7 +241,7 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
     }
 }
 
-ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturPropertyBlock(ImGuiTexture key)
+ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturParameterSet(ImGuiTexture key)
 {
     auto findResult = m_imGuiDrawTexture.find(key);
 
@@ -247,9 +249,9 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturPropertyBlock(ImGuiTex
     {
         auto* pDest = new MImGuiTextureDest();
 
-        pDest->pTexture       = key.pTexture;
-        pDest->nDestroyCount  = 0;
-        pDest->pPropertyBlock = m_material->GetTemplate()->CreatePropertyBlock(MRenderGlobal::SHADER_PARAM_SET_MESH);
+        pDest->pTexture      = key.pTexture;
+        pDest->nDestroyCount = 0;
+        pDest->pParameterSet = m_material->GetTemplate()->CreateParameterSet(MRenderGlobal::SHADER_PARAM_SET_MESH);
 
 
         static const MStringId TexNameList[] = {
@@ -260,7 +262,7 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturPropertyBlock(ImGuiTex
         };
 
 
-        MVariantStruct& imguiUniform = pDest->pPropertyBlock->GetConstantParams()[0]->var.GetValue<MVariantStruct>();
+        MVariantStruct& imguiUniform = pDest->pParameterSet->GetConstantParams()[0]->var.GetValue<MVariantStruct>();
         {
             int        nImageType         = 0;
             int        nSingleChannelFlag = 0;
@@ -299,10 +301,10 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturPropertyBlock(ImGuiTex
                 imguiUniform.SetVariant(MShaderPropertyName::IMGUI_SINGLE_CHANNEL_FLAG, nSingleChannelFlag);
                 imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_INDEX, nImageIndex);
                 imguiUniform.SetVariant(MShaderPropertyName::IMGUI_IMAGE_SIZE, f2ImageSize);
-                pDest->pPropertyBlock->GetConstantParams()[0]->SetDirty();
+                pDest->pParameterSet->GetConstantParams()[0]->SetDirty();
             }
 
-            pDest->pPropertyBlock->SetTexture(TexNameList[nImageType], key.pTexture);
+            pDest->pParameterSet->SetTexture(TexNameList[nImageType], key.pTexture);
         }
 
 

@@ -10,7 +10,7 @@ namespace morty
 
 class Shader;
 class MResource;
-class MShaderPropertyBlock;
+class MShaderParameterSet;
 
 class MORTY_API IShaderProgram : public MTypeClass
 {
@@ -25,13 +25,14 @@ public:
 public:
     MORTY_INTERFACE(IShaderProgram)
 
-    virtual const std::array<std::shared_ptr<MShaderPropertyBlock>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
-                                                     GetShaderPropertyBlocks() = 0;
+    virtual const std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM>&
+                                                     GetShaderParameterSets() = 0;
 
     virtual MShaderMacro&                            GetShaderMacro()                            = 0;
     [[nodiscard]] virtual MStringId                  GetEntryName(MEShaderType shaderType) const = 0;
     [[nodiscard]] virtual std::shared_ptr<MResource> GetShaderResource() const                   = 0;
     virtual MShader*                                 GetShader(MEShaderType)                     = 0;
+    virtual const MShaderPropertyBlock&              GetPropertyBlock() const                    = 0;
 
     virtual MHashCode                                GetHashCode() const = 0;
     virtual bool                                     IsValid() const     = 0;

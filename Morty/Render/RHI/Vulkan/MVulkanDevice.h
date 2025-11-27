@@ -43,13 +43,13 @@ class MORTY_API MVulkanDevice : public MIDevice
 public:
     explicit MVulkanDevice();
 
-    bool     Initialize() override;
+    bool Initialize() override;
 
-    void     Release() override;
+    void Release() override;
 
-    void     GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
+    void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
 
-    void     DestroyBuffer(MBuffer* pBuffer) override;
+    void DestroyBuffer(MBuffer* pBuffer) override;
 
     void
     UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
@@ -64,15 +64,15 @@ public:
 
     void CleanShader(MShader* pShader) override;
 
-    bool SyncPropertyBlock(MShaderPropertyBlock* propertyBlock) override;
+    bool SyncParameterSet(MShaderParameterSet* propertyBlock) override;
 
-    bool GenerateShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) override;
+    bool GenerateShaderParameterSet(MShaderParameterSet* pParameterSet) override;
 
-    void DestroyShaderPropertyBlock(MShaderPropertyBlock* pPropertyBlock) override;
+    void DestroyShaderParameterSet(MShaderParameterSet* pParameterSet) override;
 
-    bool GenerateShaderParamBuffer(MShaderConstantParam* pParam) override;
+    bool GenerateShaderParamBuffer(MShaderUniformParam* pParam) override;
 
-    void DestroyShaderParamBuffer(MShaderConstantParam* pParam) override;
+    void DestroyShaderParamBuffer(MShaderUniformParam* pParam) override;
 
     bool GenerateRenderPass(MRenderPass* pRenderPass) override;
 
@@ -183,7 +183,7 @@ public:
 
     bool                              CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& spirv);
 
-    void                              UpdateShaderParam(MShaderConstantParam* param);
+    void                              UpdateShaderParam(MShaderUniformParam* param);
 
 protected:
     void CopyBuffer(

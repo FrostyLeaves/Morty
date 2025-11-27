@@ -4,8 +4,9 @@
 #include "MMaterialTemplate_generated.h"
 
 #include "Engine/MEngine.h"
-#include "System/MResourceSystem.h"
 #include "Shader/MShaderProgram.h"
+#include "System/MResourceSystem.h"
+
 
 using namespace morty;
 
@@ -16,24 +17,24 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 {
     auto pMaterialData = std::make_unique<MMaterialResourceData>();
 
-    if (const auto pMaterialProperty = GetMaterialPropertyBlock())
+    if (auto modifier = GetPropertyModifier())
     {
-        for (const auto& param: pMaterialProperty->GetConstantParams())
+        for (const auto& [name, modifiedParam]: modifier->GetModifiedParams())
         {
             MMaterialResourceData::Property prop;
-            prop.name  = param->strName.ToString();
-            prop.value = MVariant::Clone(param->var);
+            prop.name  = name.ToString();
+            prop.value = MVariant::Clone(modifiedParam.value);
             pMaterialData->vProperty.push_back(prop);
         }
 
-        for (const auto& texture: pMaterialProperty->GetTextureParams())
+        for (const auto& [name, modifiedResource]: modifier->GetModifiedResources())
         {
-            if (auto pTextureResourceParam = dynamic_cast<MTextureResourceParam*>(texture.get()))
+            if (auto textureResourceParam = dynamic_cast<MTextureResourceParam*>(modifiedResource.param))
             {
-                if (auto pResource = pTextureResourceParam->GetTextureResource())
+                if (auto pResource = textureResourceParam->GetTextureResource())
                 {
                     MMaterialResourceData::Texture tex;
-                    tex.name  = texture->strName.ToString();
+                    tex.name  = name.ToString();
                     tex.value = pResource->GetResourcePath();
                     pMaterialData->vTextures.push_back(tex);
                 }
@@ -62,11 +63,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
         const auto      fbProperty = pMaterialData->vProperty[nIdx];
         const MStringId strPropertyName(fbProperty.name.c_str());
 
-        if (auto pConstantParam = GetMaterialPropertyBlock()->FindConstantParam(strPropertyName))
-        {
-            pConstantParam->var = MVariant::Clone(fbProperty.value);
-            pConstantParam->SetDirty();
-        }
+        SetValue(strPropertyName, fbProperty.value);
     }
 
     const size_t nTextureNum = pMaterialData->vTextures.size();
@@ -83,8 +80,8 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 std::shared_ptr<MMaterial> MMaterialResource::GetMaterial() const { return DynamicCast<MMaterial>(GetShared()); }
 
-std::shared_ptr<MMaterialResource> MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate
-)
+std::shared_ptr<MMaterialResource>
+MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
     {
