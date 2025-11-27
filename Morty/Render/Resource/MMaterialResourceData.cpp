@@ -37,15 +37,13 @@ void MMaterialResourceData::Deserialize(const YAML::Node& root)
 
     // Deserialize properties
     vProperty.clear();
-    if (root["Properties"] && root["Properties"].IsSequence())
+    if (root["Properties"] && root["Properties"].IsMap())
     {
         for (const auto& propNode: root["Properties"])
         {
-            if (!propNode["Name"] || !propNode["Value"]) continue;
-
             Property prop;
-            prop.name = propNode["Name"].as<std::string>();
-            prop.value.DeserializeYaml(propNode["Value"]);
+            prop.name = propNode.first.as<std::string>();
+            prop.value.DeserializeYaml(propNode.second);
 
             if (prop.value.IsValid()) { vProperty.push_back(prop); }
         }
@@ -53,15 +51,13 @@ void MMaterialResourceData::Deserialize(const YAML::Node& root)
 
     // Deserialize textures
     vTextures.clear();
-    if (root["Textures"] && root["Textures"].IsSequence())
+    if (root["Textures"] && root["Textures"].IsMap())
     {
         for (const auto& texNode: root["Textures"])
         {
-            if (!texNode["Name"] || !texNode["Path"]) continue;
-
             Texture tex;
-            tex.name  = texNode["Name"].as<std::string>();
-            tex.value = texNode["Path"].as<std::string>();
+            tex.name  = texNode.first.as<std::string>();
+            tex.value = texNode.second.as<std::string>();
             vTextures.push_back(tex);
         }
     }
