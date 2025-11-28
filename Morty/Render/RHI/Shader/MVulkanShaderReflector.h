@@ -34,9 +34,9 @@ class MVertexShaderBuffer;
 class MORTY_API MVulkanShaderReflector
 {
 public:
-    MVulkanShaderReflector(MVulkanDevice* pDevice);
+                                   MVulkanShaderReflector(MVulkanDevice* pDevice);
 
-    ~MVulkanShaderReflector();
+    ~                              MVulkanShaderReflector();
 
     bool                           Initialize();
 
@@ -47,9 +47,13 @@ public:
 
     void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
 
+private:
     void BuildVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
 
     bool BuildBasicVariant(const spirv_cross::SPIRType& type, MVariant& variant) const;
+
+    spirv_cross::SPIRType
+    GetStorageBufferType(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type) const;
 
 private:
     MVulkanDevice* m_device;

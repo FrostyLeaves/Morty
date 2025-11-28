@@ -38,15 +38,15 @@ public struct ModelUtil
         MeshData data = model.GetMeshData(INSTANCE_ID);
 
         float4 positionCS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
-        float4 positionWS = mul(positionCS, data.u_matWorld);
+        float4 positionWS = mul(positionCS, data.matWorld);
 
         output.pos = mul(positionWS, mainCameraData.viewMatrix);
         output.uv = input.uv;
         output.positionWS = positionWS.xyz;
         output.depth = output.pos.z;
 
-        output.normal = normalize(mul(input.normal, data.u_matNormal));
-        output.tangent = normalize(mul(input.tangent, data.u_matNormal));
+        output.normal = normalize(mul(input.normal, data.matNormal));
+        output.tangent = normalize(mul(input.tangent, data.matNormal));
         output.bitangent = normalize(cross(output.tangent, output.normal));
 
         return output;

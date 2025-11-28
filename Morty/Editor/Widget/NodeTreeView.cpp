@@ -67,8 +67,8 @@ void NodeTreeView::RenderNode(MEntity* pNode)
         {
             for (const auto& child: pSceneComponent->GetChildrenComponent())
             {
-                MComponent* pComponent = pScene->GetComponent(child);
-                RenderNode(pComponent->GetEntity());
+                MComponent* component = pScene->GetComponent(child);
+                RenderNode(component->GetEntity());
             }
         }
 

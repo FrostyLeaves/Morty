@@ -97,13 +97,13 @@ private:
 
     std::unordered_map<MIMesh*, size_t>          m_meshTable;
     std::vector<MMeshData>                       m_meshDatas;
-    MRepeatIDPool<size_t>                        m_meshDataIDPool;
+    MReusableIDPool<size_t>                      m_meshDataIDPool;
 
     std::unique_ptr<MIMesh>                      m_screenRect = nullptr;
 
 
     std::vector<MClusterGroupData>               m_clusterGroupDatas;
-    MRepeatIDPool<size_t>                        m_clusterGroupDataIDPool;
+    MReusableIDPool<size_t>                      m_clusterGroupDataIDPool;
 
 
     // render thread.

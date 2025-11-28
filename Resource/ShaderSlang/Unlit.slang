@@ -34,7 +34,7 @@ UnlitVertexOut VS_MAIN(UnlitVertexIn input, uint INSTANCE_ID: SV_InstanceID)
     StorageBatchMeshData model;
     MeshData meshData = model.GetMeshData(INSTANCE_ID);
     
-    float4 positionWS = mul(float4(input.pos, 1.0), meshData.u_matWorld);
+    float4 positionWS = mul(float4(input.pos, 1.0), meshData.matWorld);
     
     UnlitVertexOut output;
     output.pos = mul(positionWS, frameData.mainCamera.viewMatrix);

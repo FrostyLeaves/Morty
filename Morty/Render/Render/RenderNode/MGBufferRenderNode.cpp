@@ -24,8 +24,7 @@ void MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRend
     const Vector2   v2Size    = info.f2ViewportSize;
 
     auto            command = pCommand->BeginRenderPass(&m_renderPass);
-    command.SetViewport({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
-    command.SetScissor({.x = 0.0f, .y = 0.0f, .width = v2Size.x, .height = v2Size.y});
+    command.SetViewportAndScissor({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
 
     for (IRenderable* renderable: vRenderable) { renderable->Render(&command); }
 

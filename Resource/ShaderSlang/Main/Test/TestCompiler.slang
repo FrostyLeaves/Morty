@@ -51,7 +51,6 @@ public cbuffer global_cbuffer_1
 }
 
 uniform ParameterBlock<TestParameterBlockStruct> global_block_1;
-uniform ParameterBlock<TestParameterBlockStruct> global_block_2;
 
 public cbuffer global_cbuffer_2
 {

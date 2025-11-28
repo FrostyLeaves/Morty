@@ -126,9 +126,9 @@ void MModelComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MModelComponent::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MModelComponent* pComponent = reinterpret_cast<const fbs::MModelComponent*>(pBufferPointer);
+    const fbs::MModelComponent* component = reinterpret_cast<const fbs::MModelComponent*>(pBufferPointer);
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 
-    SetSkeletonResourcePath(pComponent->skeleton_resource_path()->c_str());
+    SetSkeletonResourcePath(component->skeleton_resource_path()->c_str());
 }

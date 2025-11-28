@@ -1,10 +1,12 @@
 ﻿#include "Math/Matrix.h"
 
-#include "Flatbuffer/Matrix_generated.h"
 #include "yaml-cpp/yaml.h"
+#include "Flatbuffer/Matrix_generated.h"
+
 
 using namespace morty;
 
+const Matrix3 Matrix3::IdentityMatrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 const Matrix4 Matrix4::IdentityMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
 Matrix4::Matrix4() { memset(m, 0, sizeof(m)); }
@@ -101,10 +103,10 @@ Matrix4::Matrix4(const Quaternion& quat)
     m[2][2] = 1 - 2 * (xx + yy);
     m[3][2] = 0;
 
-    m[0][3]       = 0;
-    m[1][3]       = 0;
-    m[2][3]       = 0;
-    m[3][3]       = 1;
+    m[0][3] = 0;
+    m[1][3] = 0;
+    m[2][3] = 0;
+    m[3][3] = 1;
 #endif
 }
 
@@ -171,15 +173,9 @@ Vector3 Matrix4::operator*(const Vector3& value) const
     return result;
 }
 
-Vector4 Matrix4::Row(const unsigned int& row) const
-{
-    return Vector4(m[row][0], m[row][1], m[row][2], m[row][3]);
-}
+Vector4 Matrix4::Row(const unsigned int& row) const { return Vector4(m[row][0], m[row][1], m[row][2], m[row][3]); }
 
-Vector4 Matrix4::Col(const unsigned int& col) const
-{
-    return Vector4(m[0][col], m[1][col], m[2][col], m[3][col]);
-}
+Vector4 Matrix4::Col(const unsigned int& col) const { return Vector4(m[0][col], m[1][col], m[2][col], m[3][col]); }
 
 Matrix4 Matrix4::operator/(const float& value) const { return *this * (1.0f / value); }
 
@@ -196,8 +192,7 @@ bool    Matrix4::operator==(const Matrix4& mat) const
 
 float Matrix3::Determinant() const
 {
-    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) +
-           m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) +
+    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) + m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) +
            m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
 }
 
@@ -227,9 +222,9 @@ float   Matrix3::AlgebraicCofactor(const int& i, const int& j) const
         return -fResult;
 }
 
-Matrix3 Matrix3::Inverse() const { return AdjointMatrix() / Determinant(); }
+Matrix3             Matrix3::Inverse() const { return AdjointMatrix() / Determinant(); }
 
-Matrix3 Matrix3::operator/(const float& value) const { return *this * (1.0f / value); }
+Matrix3             Matrix3::operator/(const float& value) const { return *this * (1.0f / value); }
 
 const fbs::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {
@@ -238,10 +233,7 @@ const fbs::Matrix3* Matrix3::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
     return reinterpret_cast<const fbs::Matrix3*>(this);
 }
 
-void Matrix3::Deserialize(const void* pBufferPointer)
-{
-    memcpy(this, pBufferPointer, sizeof(Matrix3));
-}
+void       Matrix3::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Matrix3)); }
 
 YAML::Node Matrix3::SerializeYaml() const
 {
@@ -328,17 +320,7 @@ Matrix3::Matrix3(const Matrix4& mat4, const int& di, const int& dj)
 
 Matrix3 Matrix3::Transposed() const
 {
-    return Matrix3(
-            m[0][0],
-            m[1][0],
-            m[2][0],
-            m[0][1],
-            m[1][1],
-            m[2][1],
-            m[0][2],
-            m[1][2],
-            m[2][2]
-    );
+    return Matrix3(m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1], m[0][2], m[1][2], m[2][2]);
 }
 
 float Matrix4::Determinant() const
@@ -389,10 +371,7 @@ float   Matrix4::AlgebraicCofactor(const int& i, const int& j) const
 
 Matrix4 Matrix4::Inverse() const { return AdjointMatrix() / Determinant(); }
 
-bool    Matrix4::IsOrthogonal() const
-{
-    return IdentityMatrix == *this * this->Transposed();
-}
+bool    Matrix4::IsOrthogonal() const { return IdentityMatrix == *this * this->Transposed(); }
 
 //
 // void Matrix4::SetTranslation(const float& x, const float& y, const float& z)
@@ -431,13 +410,11 @@ Matrix4 Matrix4::GetRotatePart() const
         for (int col = 0; col < 3; ++col)
         {
 #if ROW_MAJOR == MATRIX_MAJOR
-            if (lineLength[row] < -1e-6 || lineLength[row] > 1e-6)
-                mat.m[row][col] = m[row][col] / lineLength[row];
+            if (lineLength[row] < -1e-6 || lineLength[row] > 1e-6) mat.m[row][col] = m[row][col] / lineLength[row];
             else
                 mat.m[row][col] = 0.0f;
 #else
-            if (lineLength[col] < -1e-6 || lineLength[col] > 1e-6)
-                mat.m[row][col] = m[row][col] / lineLength[col];
+            if (lineLength[col] < -1e-6 || lineLength[col] > 1e-6) mat.m[row][col] = m[row][col] / lineLength[col];
             else
                 mat.m[row][col] = 0.0f;
 #endif
@@ -483,10 +460,7 @@ const fbs::Matrix4* Matrix4::Serialize(flatbuffers::FlatBufferBuilder& fbb) cons
     return reinterpret_cast<const fbs::Matrix4*>(this);
 }
 
-void Matrix4::Deserialize(const void* pBufferPointer)
-{
-    memcpy(this, pBufferPointer, sizeof(Matrix4));
-}
+void       Matrix4::Deserialize(const void* pBufferPointer) { memcpy(this, pBufferPointer, sizeof(Matrix4)); }
 
 YAML::Node Matrix4::SerializeYaml() const
 {
@@ -527,7 +501,8 @@ Quaternion Matrix4::GetRotation() const
             mat.m[0][0] + mat.m[1][1] + mat.m[2][2],
             mat.m[0][0] - mat.m[1][1] - mat.m[2][2],
             mat.m[1][1] - mat.m[0][0] - mat.m[2][2],
-            mat.m[2][2] - mat.m[0][0] - mat.m[1][1]};
+            mat.m[2][2] - mat.m[0][0] - mat.m[1][1]
+    };
 
     int   nBiggestIndex = 0;
     float fBiggestValue = vWXYZLength[0];

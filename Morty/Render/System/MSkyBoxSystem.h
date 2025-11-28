@@ -28,10 +28,10 @@ public:
     virtual ~MSkyBoxSystem();
 
 public:
-    void GenerateEnvironmentTexture(MSkyBoxComponent* pComponent);
+    void GenerateEnvironmentTexture(MSkyBoxComponent* component);
 
 private:
-    void GenerateEnvironmentWork(MSkyBoxComponent* pComponent);
+    void GenerateEnvironmentWork(MSkyBoxComponent* component);
 };
 
 }// namespace morty

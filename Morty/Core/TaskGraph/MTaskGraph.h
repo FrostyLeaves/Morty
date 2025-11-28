@@ -66,7 +66,7 @@ protected:
     bool                                   m_requireCompile;
     bool                                   m_lock = false;
 
-    MRepeatIDPool<size_t>                  m_idPool;
+    MReusableIDPool<size_t>                m_idPool;
 };
 
 template<typename TYPE> TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)

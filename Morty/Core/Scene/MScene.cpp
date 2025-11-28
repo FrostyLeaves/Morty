@@ -76,10 +76,10 @@ MEntity* MScene::FindFirstEntityByComponent(const MType* pComponentType)
 
     if (!pGroup) return nullptr;
 
-    MComponent* pComponent = pGroup->FirstComponent();
-    if (!pComponent) return nullptr;
+    MComponent* component = pGroup->FirstComponent();
+    if (!component) return nullptr;
 
-    return pComponent->GetEntity();
+    return component->GetEntity();
 }
 
 MIComponentGroup* MScene::FindComponents(const MType* pComponentType)
@@ -150,16 +150,16 @@ MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)
 
     MComponentID compID = pComponents->AddComponent(entity);
 
-    MComponent*  pComponent                     = pComponents->FindComponent(compID);
-    entity->m_components[compID.pComponentType] = pComponent;
+    MComponent*  component                      = pComponents->FindComponent(compID);
+    entity->m_components[compID.pComponentType] = component;
 
-    auto findRegister = m_componentRegister.find(pComponent->GetType());
+    auto findRegister = m_componentRegister.find(component->GetType());
     if (findRegister != m_componentRegister.end())
     {
-        for (IManager* pManager: findRegister->second) { pManager->RegisterComponent(pComponent); }
+        for (IManager* pManager: findRegister->second) { pManager->RegisterComponent(component); }
     }
 
-    return pComponent;
+    return component;
 }
 
 MComponent* MScene::AddComponent(MEntity* entity, const MType* pComponentType)
@@ -191,19 +191,19 @@ void MScene::RemoveComponent(MEntity* entity, const MType* pComponentType)
     auto findResult = entity->m_components.find(pComponentType);
     if (findResult == entity->m_components.end()) { return; }
 
-    MComponent* pComponent = findResult->second;
+    MComponent* component = findResult->second;
 
     entity->m_components.erase(findResult);
-    if (!pComponent)
+    if (!component)
     {
-        MORTY_ASSERT(pComponent);
+        MORTY_ASSERT(component);
         return;
     }
 
     auto findRegister = m_componentRegister.find(pComponentType);
     if (findRegister != m_componentRegister.end())
     {
-        for (IManager* pManager: findRegister->second) { pManager->UnregisterComponent(pComponent); }
+        for (IManager* pManager: findRegister->second) { pManager->UnregisterComponent(component); }
     }
-    pComponents->RemoveComponent(pComponent->GetComponentID());
+    pComponents->RemoveComponent(component->GetComponentID());
 }

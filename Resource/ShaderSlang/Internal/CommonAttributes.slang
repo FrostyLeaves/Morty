@@ -28,3 +28,9 @@ struct ResourceAttribute
     string displayName;
     ResourceType type;
 };
+
+[__AttributeUsage(_AttributeTargets.Var)]
+struct MeshInstanceAttribute
+{
+};
+

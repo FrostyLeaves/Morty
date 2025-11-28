@@ -80,9 +80,9 @@ static void CopyMatrix4Transposed(Matrix4* matdest, aiMatrix4x4* matsour)
     }
 }
 
-static MColor   GetColor(const aiColor3D& color) { return MColor(color.r, color.g, color.b); }
+static MColor  GetColor(const aiColor3D& color) { return MColor(color.r, color.g, color.b); }
 
-static Vector3  GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y, val.z); }
+static Vector3 GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y, val.z); }
 
 MModelImporter::MModelImporter(MEngine* pEngine)
     : m_engine(pEngine)
@@ -215,9 +215,9 @@ void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* pScene)
         pChildEntity->SetName(pChildMesh->mName.C_Str());
         pChildEntity->RegisterComponent<MSceneComponent>();
 
-        MRenderMeshComponent* pMeshComponent = pChildEntity->RegisterComponent<MRenderMeshComponent>();
-        pMeshComponent->Load(pChildMeshResource);
-        pMeshComponent->SetMaterial(GetMaterial(pScene, pChildMesh->mMaterialIndex));
+        MRenderMeshComponent* meshComponent = pChildEntity->RegisterComponent<MRenderMeshComponent>();
+        meshComponent->Load(pChildMeshResource);
+        meshComponent->SetMaterial(GetMaterial(pScene, pChildMesh->mMaterialIndex));
 
         pEntitySystem->AddChild(GetEntityFromNode(pScene, pNode), pChildEntity);
     }
@@ -458,34 +458,34 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
 {
     MResourceSystem*                   pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    std::shared_ptr<MMaterialResource> pMaterial = nullptr;
+    std::shared_ptr<MMaterialResource> material = nullptr;
 
-    pMaterial = MMaterialResource::CreateMaterial(m_defaultMaterial);
+    material = MMaterialResource::CreateMaterial(m_defaultMaterial);
 
-    pMaterial->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
-    pMaterial->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
-    pMaterial->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector3(1.0f, 1.0f, 1.0f));
-    pMaterial->SetTexture(
+    material->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
+    material->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
+    material->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector3(1.0f, 1.0f, 1.0f));
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
             pResourceSystem->LoadResource(MRenderModule::DefaultWhite)
     );
-    pMaterial->SetTexture(
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_NORMAL,
             pResourceSystem->LoadResource(MRenderModule::DefaultNormal)
     );
-    pMaterial->SetTexture(
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_METALLIC,
             pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
-    pMaterial->SetTexture(
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS,
             pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
-    pMaterial->SetTexture(
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC,
             pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
-    pMaterial->SetTexture(
+    material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
             pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
     );
@@ -521,7 +521,7 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
         if (findResult != m_rawTextures.end())
         {
             std::shared_ptr<MTextureResource>& pTexture = findResult->second;
-            pMaterial->SetTexture(pr.second, pTexture);
+            material->SetTexture(pr.second, pTexture);
         }
         else
         {
@@ -539,14 +539,14 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
                 pTexture->Load(std::move(pTextureData));
             }
 
-            pMaterial->SetTexture(pr.second, pTexture);
+            material->SetTexture(pr.second, pTexture);
             m_fileTextures.insert(pTexture);
         }
     }
 
-    if (m_convertInfo.pMaterialDelegate) { m_convertInfo.pMaterialDelegate->PostProcess(pMaterial.get()); }
+    if (m_convertInfo.pMaterialDelegate) { m_convertInfo.pMaterialDelegate->PostProcess(material.get()); }
 
-    m_materials[nMaterialIdx] = pMaterial;
+    m_materials[nMaterialIdx] = material;
 }
 
 void MModelImporter::ProcessTexture(const aiScene* pScene)
@@ -562,10 +562,12 @@ void MModelImporter::ProcessTexture(const aiScene* pScene)
             // Embedded texture
             if (aiTexture->mHeight == 0)
             {
-                pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(
-                        MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
-                        MTextureImportInfo(MTexturePixelType::Byte8)
-                ));
+                pTextureResource->Load(
+                        MTextureResourceUtil::ImportTextureFromMemory(
+                                MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
+                                MTextureImportInfo(MTexturePixelType::Byte8)
+                        )
+                );
             }
             else
             {
@@ -586,14 +588,16 @@ void MModelImporter::ProcessTexture(const aiScene* pScene)
                     buffer[i + 3] = temp;
                 }
 
-                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory(
-                        "RawTexture",
-                        buffer,
-                        static_cast<uint32_t>(nWidth),
-                        static_cast<uint32_t>(nHeight),
-                        4,
-                        MTexturePixelType::Byte8
-                ));
+                pTextureResource->Load(
+                        MTextureResourceUtil::LoadFromMemory(
+                                "RawTexture",
+                                buffer,
+                                static_cast<uint32_t>(nWidth),
+                                static_cast<uint32_t>(nHeight),
+                                4,
+                                MTexturePixelType::Byte8
+                        )
+                );
             }
 
             m_rawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;

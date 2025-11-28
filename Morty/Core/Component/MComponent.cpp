@@ -49,18 +49,15 @@ void MComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
     //const fbs::MComponent* fbcomponent = fbs::GetMComponent(fbb.GetCurrentBufferPointer());
 }
 
-void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
-{
-    MORTY_UNUSED(tRedirectGuid);
-}
+void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid) { MORTY_UNUSED(tRedirectGuid); }
 
 void MComponent::SendComponentNotify(const char* notify)
 {
     if (MScene* pScene = GetScene())
     {
-        if (MNotifyManager* pNotifySystem = pScene->GetManager<MNotifyManager>())
+        if (MNotifyManager* notifySystem = pScene->GetManager<MNotifyManager>())
         {
-            pNotifySystem->SendNotify(notify, GetScene(), GetComponentID());
+            notifySystem->SendNotify(notify, GetScene(), GetComponentID());
         }
     }
 }
@@ -83,10 +80,7 @@ bool MComponentID::operator==(const MComponentID& id) const
     return pComponentType == id.pComponentType && nIdx == id.nIdx;
 }
 
-bool MComponentID::operator==(const MType* pType) const
-{
-    return pComponentType == pType;
-}
+bool MComponentID::operator==(const MType* pType) const { return pComponentType == pType; }
 
 bool MComponentID::operator<(const MComponentID& id) const
 {

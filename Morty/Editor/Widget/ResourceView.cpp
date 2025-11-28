@@ -80,9 +80,9 @@ void ResourceView::Render()
                 {
                     m_selectedResourceId = pResource->GetResourceID();
 
-                    if (auto pMaterial = MTypeClass::DynamicCast<MMaterialResource>(pResource))
+                    if (auto material = MTypeClass::DynamicCast<MMaterialResource>(pResource))
                     {
-                        GetMainEditor()->FindWidget<MaterialView>()->SetMaterial(pMaterial);
+                        GetMainEditor()->FindWidget<MaterialView>()->SetMaterial(material);
                     }
                 }
                 ImGui::TableSetColumnIndex(1);

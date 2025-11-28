@@ -19,17 +19,17 @@ public:
 
     virtual ~IManager();
 
-    virtual void                   Initialize(){};
+    virtual void                   Initialize() {};
 
-    virtual void                   Release(){};
+    virtual void                   Release() {};
 
     virtual std::set<const MType*> RegisterComponentType() const { return {}; }
 
     virtual void                   SceneTick(MScene* pScene, const float& fDelta) { MORTY_UNUSED(pScene, fDelta); }
 
-    virtual void                   RegisterComponent(MComponent* pComponent) { MORTY_UNUSED(pComponent); }
+    virtual void                   RegisterComponent(MComponent* component) { MORTY_UNUSED(component); }
 
-    virtual void                   UnregisterComponent(MComponent* pComponent) { MORTY_UNUSED(pComponent); }
+    virtual void                   UnregisterComponent(MComponent* component) { MORTY_UNUSED(component); }
 
     void                           SetScene(MScene* pScene);
 

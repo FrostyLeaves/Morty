@@ -31,13 +31,13 @@ MRenderMeshComponent::MRenderMeshComponent()
 
 MRenderMeshComponent::~MRenderMeshComponent() {}
 
-void                   MRenderMeshComponent::Release() { Super::Release(); }
+void MRenderMeshComponent::Release() { Super::Release(); }
 
-void                   MRenderMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
+void MRenderMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> material)
 {
-    if (m_material.GetResource() == pMaterial) return;
+    if (m_material.GetResource() == material) return;
 
-    m_material = pMaterial;
+    m_material = material;
     SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
 }
 
@@ -135,18 +135,18 @@ void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
     auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    auto pComponent      = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
+    auto component       = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 
-    SetGenerateDirLightShadow(pComponent->gen_dir_shadow());
-    SetDetailLevel(pComponent->lod());
+    SetGenerateDirLightShadow(component->gen_dir_shadow());
+    SetDetailLevel(component->lod());
 
     MResourceRef material;
-    material.Deserialize(pResourceSystem, pComponent->material());
+    material.Deserialize(pResourceSystem, component->material());
     SetMaterial(material.GetResource<MMaterialResource>());
 
     MResourceRef mesh;
-    mesh.Deserialize(pResourceSystem, pComponent->mesh());
+    mesh.Deserialize(pResourceSystem, component->mesh());
     Load(mesh.GetResource());
 }

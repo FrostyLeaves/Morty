@@ -37,13 +37,13 @@ MaterialView::MaterialView()
     m_strViewName = "Material";
 }
 
-void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
+void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> material)
 {
-    if (m_material == pMaterial) return;
+    if (m_material == material) return;
 
     auto* pSceneSystem = GetEngine()->FindSystem<MSceneSystem>();
 
-    m_material = pMaterial;
+    m_material = material;
 
     if (!m_material || !m_material->GetTemplate())
     {
@@ -55,9 +55,9 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
         pSceneSystem->SetVisible(m_staticSphereMeshNode, true);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
 
-        if (auto* pMeshComponent = m_staticSphereMeshNode->GetComponent<MRenderMeshComponent>())
+        if (auto* meshComponent = m_staticSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
-            pMeshComponent->SetMaterial(pMaterial);
+            meshComponent->SetMaterial(material);
         }
     }
     else
@@ -65,9 +65,9 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> pMaterial)
         pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
         pSceneSystem->SetVisible(m_skeletonSphereMeshNode, true);
 
-        if (auto* pMeshComponent = m_skeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
+        if (auto* meshComponent = m_skeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
-            pMeshComponent->SetMaterial(pMaterial);
+            meshComponent->SetMaterial(material);
         }
     }
 }
@@ -127,11 +127,11 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 
     m_staticSphereMeshNode = m_scene->CreateEntity();
 
-    if (auto* pMeshComponent = m_staticSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
+    if (auto* meshComponent = m_staticSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
     {
         std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere());
-        pMeshComponent->Load(pMeshResource);
+        meshComponent->Load(pMeshResource);
     }
 
     pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
@@ -144,11 +144,11 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
         pModelComponent->SetSkeletonResource(pSkeleton);
     }
 
-    if (auto* pMeshComponent = m_skeletonSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
+    if (auto* meshComponent = m_skeletonSphereMeshNode->RegisterComponent<MRenderMeshComponent>())
     {
         std::shared_ptr<MMeshResource> pMeshResource = pResourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere(MEMeshVertexType::Skeleton));
-        pMeshComponent->Load(pMeshResource);
+        meshComponent->Load(pMeshResource);
     }
 
     pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);

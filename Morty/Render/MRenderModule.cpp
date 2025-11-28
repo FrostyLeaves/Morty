@@ -1,4 +1,5 @@
 #include "MRenderModule.h"
+#include "Batch/Mesh/MMeshInstanceManager.h"
 #include "Component/MCameraComponent.h"
 #include "Component/MDebugRenderComponent.h"
 #include "Component/MDirectionalLightComponent.h"
@@ -33,6 +34,7 @@
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 #include "Utility/MMaterialName.h"
+
 
 using namespace morty;
 
@@ -152,21 +154,18 @@ bool          MRenderModule::Register(MEngine* pEngine)
 
 void MRenderModule::OnObjectPostCreate(MObject* pObject)
 {
-    MORTY_UNUSED(pObject);
-    /*
     if (!pObject) { return; }
 
     if (pObject->GetType() == MScene::GetClassType())
     {
         if (MScene* pScene = pObject->template DynamicCast<MScene>())
         {
-            //pScene->RegisterManager<MMeshInstanceManager>();
+            pScene->RegisterManager<MMeshInstanceManager>();
             //pScene->RegisterManager<MEnvironmentManager>();
             //pScene->RegisterManager<MShadowMeshManager>();
             //pScene->RegisterManager<MAnimationManager>();
         }
     }
-    */
 }
 
 void MRenderModule::RegisterMaterial(MEngine* pEngine)

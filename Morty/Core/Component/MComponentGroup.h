@@ -86,22 +86,22 @@ template<typename TYPE> MComponentID MComponentGroup<TYPE>::AddComponent(MEntity
     MComponentID nResult = m_freeComponent.back();
     m_freeComponent.pop_back();
 
-    MComponent* pComponent = FindComponent(nResult.nIdx);
-    MORTY_ASSERT(pComponent && !pComponent->IsValid());
+    MComponent* component = FindComponent(nResult.nIdx);
+    MORTY_ASSERT(component && !component->IsValid());
 
-    pComponent->SetComponentID(nResult);
-    pComponent->MComponent::Initialize(m_scene, entity->GetID());
+    component->SetComponentID(nResult);
+    component->MComponent::Initialize(m_scene, entity->GetID());
     return nResult;
 }
 
 template<typename TYPE> void MComponentGroup<TYPE>::RemoveComponent(const MComponentID& id)
 {
-    MComponent* pComponent = FindComponent(id.nIdx);
-    if (!pComponent) return;
+    MComponent* component = FindComponent(id.nIdx);
+    if (!component) return;
 
-    if (!pComponent->IsValid()) return;
+    if (!component->IsValid()) return;
 
-    pComponent->Release();
+    component->Release();
     m_freeComponent.push_back(id);
 }
 

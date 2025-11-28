@@ -18,16 +18,14 @@ class MSkeletonInstance;
 class MDebugMeshComponent;
 class MRenderMeshComponent;
 
-struct MMaterialCullingGroup
-{
-    std::shared_ptr<MMaterial>            pMaterial              = nullptr;
+struct MMaterialCullingGroup {
+    std::shared_ptr<MMaterial>           material               = nullptr;
     std::shared_ptr<MShaderParameterSet> pMeshTransformProperty = nullptr;
-    size_t                                nIndirectBeginIdx      = 0;
-    size_t                                nIndirectCount         = 0;
+    size_t                               nIndirectBeginIdx      = 0;
+    size_t                               nIndirectCount         = 0;
 };
 
-struct MORTY_API MCascadedSplitData
-{
+struct MORTY_API MCascadedSplitData {
     //range: 0.0 - 1.0f
     float fCascadeSplit    = 0.0f;
     float fTransitionRange = 0.0f;
@@ -38,69 +36,63 @@ struct MORTY_API MCascadedSplitData
     //MCameraFrustum cCameraFrustum;
 };
 
-struct MORTY_API MCascadedShadowRenderData
-{
+struct MORTY_API MCascadedShadowRenderData {
     Matrix4 m4DirLightInvProj;
     Vector4 fSplitRange;//far, far + 0.1
 };
 
-struct MORTY_API MVoxelClipmap
-{
+struct MORTY_API MVoxelClipmap {
     Vector3 f3VoxelOrigin = {};
     float   fVoxelSize    = 0.0f;
 };
 
-struct MORTY_API MVoxelMapSetting
-{
+struct MORTY_API MVoxelMapSetting {
     MVoxelClipmap vClipmap[MRenderGlobal::VOXEL_GI_CLIP_MAP_NUM];
     uint32_t      nResolution   = 1;
     uint32_t      nViewportSize = 1;
     uint32_t      nClipmapIdx   = 0;
 };
 
-struct MORTY_API MDirectionLightData
-{
+struct MORTY_API MDirectionLightData {
     Vector3 f3LightDirection;
     Vector3 f3LightIntensity;
     float   fLightSize;
 };
 
-struct MORTY_API MPointLightData
-{
+struct MORTY_API MPointLightData {
     Vector3 f3LightPosition;
     Vector3 f3LightIntensity;
 
-    float fConstant;
-    float fLinear;
-    float fQuadratic;
+    float   fConstant;
+    float   fLinear;
+    float   fQuadratic;
 };
 
-struct MRenderInfo
-{
+struct MRenderInfo {
     //TODO remove scene pointer.
-    const MScene* pScene = nullptr;
+    const MScene*                pScene = nullptr;
 
     /************************** render **************************/
-    IRenderCommand* pPrimaryRenderCommand = nullptr;
+    IRenderCommand*              pPrimaryRenderCommand = nullptr;
 
     /************************** basic **************************/
-    uint32_t nFrameIndex = 0;
-    float    fDelta      = 0.0f;
-    float    fGameTime   = 0.0f;
+    uint32_t                     nFrameIndex = 0;
+    float                        fDelta      = 0.0f;
+    float                        fGameTime   = 0.0f;
 
-    Vector2 f2ViewportLeftTop;
-    Vector2 f2ViewportSize;
+    Vector2                      f2ViewportLeftTop;
+    Vector2                      f2ViewportSize;
 
     /************************** camera **************************/
-    Vector2        f2CameraNearFar;
-    Matrix4        m4ProjectionMatrix;
-    Matrix4        m4CameraTransform;
-    Matrix4        m4CameraInverseProjection;
-    MCameraFrustum cameraFrustum;
+    Vector2                      f2CameraNearFar;
+    Matrix4                      m4ProjectionMatrix;
+    Matrix4                      m4CameraTransform;
+    Matrix4                      m4CameraInverseProjection;
+    MCameraFrustum               cameraFrustum;
 
     /************************** environment **************************/
-    MTexturePtr pEnvDiffuseTexture  = nullptr;
-    MTexturePtr pEnvSpecularTexture = nullptr;
+    MTexturePtr                  pEnvDiffuseTexture  = nullptr;
+    MTexturePtr                  pEnvSpecularTexture = nullptr;
 
     /************************** light **************************/
     MDirectionLightData          directionLight;
@@ -109,7 +101,7 @@ struct MRenderInfo
 public:
     static MRenderInfo CreateFromViewport(MViewport* pViewport);
 
-    static void FillVoxelMapSetting(const MVoxelMapSetting& setting, MVariantStruct& output);
+    static void        FillVoxelMapSetting(const MVoxelMapSetting& setting, MVariantStruct& output);
 };
 
 }// namespace morty

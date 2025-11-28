@@ -61,7 +61,7 @@ class MORTY_API MIMaterialDelegate
 public:
     virtual ~MIMaterialDelegate() = default;
 
-    virtual void PostProcess(MMaterial* pMaterial) = 0;
+    virtual void PostProcess(MMaterial* material) = 0;
 };
 
 struct MORTY_API MModelConvertInfo {

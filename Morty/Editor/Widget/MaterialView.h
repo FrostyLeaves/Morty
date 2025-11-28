@@ -22,7 +22,7 @@ public:
     ~MaterialView() override = default;
 
 public:
-    void SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
+    void SetMaterial(std::shared_ptr<MMaterialResource> material);
 
     void Initialize(MainEditor* pMainEditor) override;
 

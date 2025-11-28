@@ -65,6 +65,7 @@ struct MORTY_API MShaderPropertyName {
     static MStringId IMGUI_IMAGE_SIZE;
 };
 
+using MMaterialInstanceKey = size_t;
 using MMeshInstanceKey     = size_t;
 using MSkeletonInstanceKey = size_t;
 

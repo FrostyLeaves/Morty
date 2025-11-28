@@ -6,7 +6,7 @@ internal struct InstanceGroupData
     int instanceBeginIndex;
 };
 
-StructuredBuffer<MeshData> meshData;
+[MeshInstance] StructuredBuffer<MeshData> meshData;
 ParameterBlock<InstanceGroupData> instanceGroupData;
 
 struct StorageBatchMeshData : IBatchMeshData

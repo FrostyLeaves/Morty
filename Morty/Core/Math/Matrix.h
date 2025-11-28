@@ -68,7 +68,9 @@ public:
     void                DeserializeYaml(const YAML::Node& node);
 
 public:
-    float m[3][4];
+    float                m[3][4];
+
+    static const Matrix3 IdentityMatrix;
 
 private:
     float AlgebraicCofactor(const int& i, const int& j) const;

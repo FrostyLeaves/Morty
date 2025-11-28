@@ -85,10 +85,10 @@ MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTem
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
     {
-        auto pMaterial = std::make_shared<MMaterialResource>();
-        pMaterial->BindTemplate(pTemplate);
+        auto material = std::make_shared<MMaterialResource>();
+        material->BindTemplate(pTemplate);
 
-        return pMaterial;
+        return material;
     }
 
     return nullptr;

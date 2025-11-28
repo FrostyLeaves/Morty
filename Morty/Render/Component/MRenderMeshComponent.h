@@ -33,7 +33,7 @@ public:
     MORTY_CLASS(MRenderMeshComponent)
 
 public:
-             MRenderMeshComponent();
+    MRenderMeshComponent();
 
     virtual ~MRenderMeshComponent();
 
@@ -48,7 +48,7 @@ public:
 public:
     virtual void                                     Release() override;
 
-    void                                             SetMaterial(std::shared_ptr<MMaterialResource> pMaterial);
+    void                                             SetMaterial(std::shared_ptr<MMaterialResource> material);
 
     [[nodiscard]] std::shared_ptr<MMaterialResource> GetMaterialResource() const;
 

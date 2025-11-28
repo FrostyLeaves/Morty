@@ -90,7 +90,7 @@ size_t MMeshManager::RegisterClusterGroup(const MClusterGroup& group)
 {
     MORTY_UNUSED(group);
 
-    auto idx = m_clusterGroupDataIDPool.GetNewID();
+    auto idx = m_clusterGroupDataIDPool.AllocateID();
     if (m_clusterGroupDatas.size() <= idx) { m_clusterGroupDatas.resize(idx + 1); }
     MClusterGroupData& data = m_clusterGroupDatas[idx];
     data.valid              = true;
@@ -101,7 +101,7 @@ size_t MMeshManager::RegisterClusterGroup(const MClusterGroup& group)
 void MMeshManager::UnregisterClusterGroup(const size_t& groupIdx)
 {
     MORTY_ASSERT(groupIdx < m_clusterGroupDatas.size());
-    m_clusterGroupDataIDPool.RecoveryID(groupIdx);
+    m_clusterGroupDataIDPool.FreeID(groupIdx);
 }
 
 void MMeshManager::LoadClusterPage(size_t groupIdx, const MClusterPage& page)
@@ -224,7 +224,7 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
 
     if (m_meshTable.find(mesh) != m_meshTable.end()) { return true; }
 
-    auto id = m_meshTable[mesh] = m_meshDataIDPool.GetNewID();
+    auto id = m_meshTable[mesh] = m_meshDataIDPool.AllocateID();
 
     if (m_meshDatas.size() <= id) { m_meshDatas.resize(id + 1); }
 

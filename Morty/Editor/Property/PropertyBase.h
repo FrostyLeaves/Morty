@@ -69,9 +69,9 @@ public:
 
     bool EditMString(MString& value);
 
-    bool EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& pMaterial);
+    bool EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& material);
 
-    bool EditMMaterial(std::shared_ptr<MMaterial> pMaterial);
+    bool EditMMaterial(std::shared_ptr<MMaterial> material);
 
     bool EditShaderProperty(MShaderParameterSet* pProperty);
 

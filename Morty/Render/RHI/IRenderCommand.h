@@ -30,7 +30,7 @@ class MMaterialPipelineLayoutData;
 class MORTY_API IRenderCommand
 {
 public:
-    virtual ~              IRenderCommand() = default;
+    virtual ~IRenderCommand() = default;
 
     virtual void           RenderCommandBegin() = 0;
 
@@ -41,7 +41,7 @@ public:
     virtual void           EndRenderPass(const MRenderPassCmd& command) = 0;
 
     virtual bool           DispatchComputeJob(
-                      MComputeDispatcher* pMaterial,
+                      MComputeDispatcher* material,
                       const MStringId&    entryName,
                       const uint32_t&     nGroupX,
                       const uint32_t&     nGroupY,

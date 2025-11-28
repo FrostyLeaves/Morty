@@ -281,13 +281,13 @@ bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
     return bModified;
 }
 
-bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& pMaterial)
+bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& material)
 {
     bool bModified = false;
 
     {
         bool         bModify     = false;
-        MShaderMacro shaderMacro = pMaterial->GetShaderMacro();
+        MShaderMacro shaderMacro = material->GetShaderMacro();
         float        fWidth      = ImGui::GetContentRegionAvail().x;
         if (ShowNodeBeginWithEx("Macro"))
         {
@@ -323,7 +323,7 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
 
             ShowNodeEnd();
 
-            if (bModify) { pMaterial->SetShaderMacro(shaderMacro); }
+            if (bModify) { material->SetShaderMacro(shaderMacro); }
         }
     }
 
@@ -331,13 +331,13 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
         ShowValueBegin("Shader");
         if (ImGui::Button("Reload Shader", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
         {
-            MString strResPath = pMaterial->GetShaderResource()->GetResourcePath();
-            pMaterial->GetResourceSystem()->Reload(strResPath);
+            MString strResPath = material->GetShaderResource()->GetResourcePath();
+            material->GetResourceSystem()->Reload(strResPath);
         }
         ShowValueEnd();
     }
 
-    for (const auto& pair: pMaterial->GetPasses())
+    for (const auto& pair: material->GetPasses())
     {
         //pass name
         ImGui::TextUnformatted(pair.first.ToString().c_str());
@@ -359,10 +359,10 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
     return bModified;
 }
 
-bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
+bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> material)
 {
     bool bModified = false;
-    if (!pMaterial) { return false; }
+    if (!material) { return false; }
 
     {
         ShowValueBegin("Save");
@@ -370,24 +370,24 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
                 "material_save_dlg",
                 MMaterialResourceLoader::GetResourceTypeName(),
                 MMaterialResourceLoader::GetSuffixList(),
-                pMaterial
+                material
         );
         ShowValueEnd();
     }
 
-    auto materialTemplate = MTypeClass::DynamicCast<MMaterialTemplateResource>(pMaterial->GetTemplate());
+    auto materialTemplate = MTypeClass::DynamicCast<MMaterialTemplateResource>(material->GetTemplate());
     ShowValueBegin("Material Template");
     if (EditMMaterialTemplateResource(materialTemplate))
     {
-        pMaterial->ResetMaterialTemplate(materialTemplate);
+        material->ResetMaterialTemplate(materialTemplate);
         bModified = true;
     }
     ShowValueEnd();
 
-    bModified |= EditShaderProperty(pMaterial->GetMaterialParameterSet());
+    bModified |= EditShaderProperty(material->GetMaterialParameterSet());
 
     {
-        auto& vParams = pMaterial->GetMaterialParameterSet()->GetTextureParams();
+        auto& vParams = material->GetMaterialParameterSet()->GetTextureParams();
         for (unsigned int i = 0; i < vParams.size(); ++i)
         {
             if (auto* param = dynamic_cast<MTextureResourceParam*>(vParams[i].get()))
@@ -419,7 +419,7 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> pMaterial)
                             pTextureResource
                     ))
                 {
-                    pMaterial->SetTexture(param->strName, pTextureResource);
+                    material->SetTexture(param->strName, pTextureResource);
                 }
 
                 ShowValueEnd();

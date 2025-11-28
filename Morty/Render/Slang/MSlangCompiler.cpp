@@ -46,16 +46,17 @@ static void ReflectionDefaultFromSlang(
         uint32_t                  reflectionDepth = 0
 )
 {
-    MLogger logger;
-    auto    set         = parameter->getBindingSpace();
-    auto    binding     = parameter->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
-    auto    name        = parameter->getName();
-    auto    type        = parameter->getType()->getName();
-    auto    offset      = parameter->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
-    auto    type_layout = parameter->getTypeLayout()->getName();
+    auto name = parameter->getName();
 
-    auto    space = std::string(reflectionDepth * 4, ' ');
-    logger.Log(
+
+    auto set         = parameter->getBindingSpace();
+    auto binding     = parameter->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
+    auto type        = parameter->getType()->getName();
+    auto offset      = parameter->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
+    auto type_layout = parameter->getTypeLayout()->getName();
+
+    auto space = std::string(reflectionDepth * 4, ' ');
+    MLogger().Log(
             "{}name: {}, type: {}, set: {}, binding: {}, offest: {}, type layout: {}",
             space,
             name,
@@ -72,14 +73,14 @@ static void ReflectionDefaultFromSlang(
         auto attributeCount = variable->getUserAttributeCount();
         if (attributeCount > 0)
         {
-            logger.Log("{}  User Attributes ({} total):", space, attributeCount);
+            //logger.Log("{}  User Attributes ({} total):", space, attributeCount);
             for (unsigned int attrIdx = 0; attrIdx < attributeCount; ++attrIdx)
             {
                 auto attribute = variable->getUserAttributeByIndex(attrIdx);
                 auto attrName  = attribute->getName();
                 auto argCount  = attribute->getArgumentCount();
 
-                logger.Log("{}    [{}], {}", space, attrName, argCount);
+                MLogger().Log("[{}], {}", attrName, argCount);
 
                 if (MString(attrName) == "Property")
                 {
@@ -89,7 +90,7 @@ static void ReflectionDefaultFromSlang(
                     attribute->getArgumentValueInt(1, &paramType);
                     output.AddProperty(MStringId(name), {displayName, static_cast<MShaderParamType>(paramType)});
                 }
-                if (MString(attrName) == "Resource")
+                else if (MString(attrName) == "Resource")
                 {
                     size_t nameSize    = 0;
                     int    paramType   = 0;
@@ -119,12 +120,11 @@ static void ReflectionDefaultFromSlang(
 static void
 ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
 {
-    MLogger logger;
-    auto    name = parameter->getName();
-    auto    type = parameter->getType()->getName();
+    //auto name = parameter->getName();
+    //auto type = parameter->getType()->getName();
 
-    auto    space = std::string(reflectionDepth * 4, ' ');
-    if (nullptr != name) { logger.Log("{}name: {}, type: {}", space, name, type); }
+    auto space = std::string(reflectionDepth * 4, ' ');
+    //if (nullptr != name) { logger.Log("{}name: {}, type: {}", space, name, type); }
 
     auto elementTypeLayout = parameter->getElementTypeLayout();
     auto fieldCount        = elementTypeLayout->getFieldCount();
@@ -134,34 +134,12 @@ ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock
     }
 }
 
-/*
-static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout)
+static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
 {
-    MLogger logger;
-
-
-    int     relativeSetIndex     = 0;
-    int     descriptorRangeCount = typeLayout->getDescriptorSetDescriptorRangeCount(relativeSetIndex);
-    for (int rangeIdx = 0; rangeIdx < descriptorRangeCount; ++rangeIdx)
-    {
-        slang::BindingType bindingType = typeLayout->getDescriptorSetDescriptorRangeType(relativeSetIndex, rangeIdx);
-        auto descriptorCount = typeLayout->getDescriptorSetDescriptorRangeDescriptorCount(relativeSetIndex, rangeIdx);
-
-        logger.Log("idx: {}, descriptorCount: {}, type: {}", rangeIdx, descriptorCount, (int) bindingType);
-    }
-}
-*/
-
-static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
-{
-    MLogger logger;
-
     for (int rangeIdx = 0; rangeIdx < typeLayout->getSubObjectRangeCount(); ++rangeIdx)
     {
         int  bindingRangeIdx = typeLayout->getSubObjectRangeBindingRangeIndex(rangeIdx);
         auto bindingType     = typeLayout->getBindingRangeType(bindingRangeIdx);
-
-        logger.Log("range: {}, bindingRangeIdx: {}, bindingType: {}", rangeIdx, bindingRangeIdx, (int) bindingType);
 
         switch (bindingType)
         {
@@ -174,6 +152,58 @@ static void ReflectionGlobalPropertyFromSlang(TypeLayoutReflection* typeLayout, 
             default: break;
         }
     }
+
+    auto setCount = typeLayout->getDescriptorSetCount();
+    for (int relativeSetIndex = 0; relativeSetIndex < setCount; ++relativeSetIndex)
+    {
+        int descriptorRangeCount = typeLayout->getDescriptorSetDescriptorRangeCount(relativeSetIndex);
+        for (int rangeIdx = 0; rangeIdx < descriptorRangeCount; ++rangeIdx)
+        {
+            slang::BindingType bindingType =
+                    typeLayout->getDescriptorSetDescriptorRangeType(relativeSetIndex, rangeIdx);
+
+            switch (bindingType)
+            {
+                case slang::BindingType::Texture:
+                case slang::BindingType::Sampler: {
+                    // For standalone textures/samplers, we need to get the corresponding variable
+                    // Get the variable layout for this binding range
+                    auto fieldCount = typeLayout->getFieldCount();
+                    for (unsigned int fieldIdx = 0; fieldIdx < fieldCount; ++fieldIdx)
+                    {
+                        auto fieldLayout            = typeLayout->getFieldByIndex(fieldIdx);
+                        auto fieldBindingRangeCount = fieldLayout->getCategoryCount();
+
+                        // Check if this field corresponds to our binding range
+                        for (unsigned int catIdx = 0; catIdx < fieldBindingRangeCount; ++catIdx)
+                        {
+                            auto category = fieldLayout->getCategoryByIndex(catIdx);
+                            if (static_cast<SlangParameterCategory>(category) ==
+                                SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT)
+                            {
+                                auto bindingIndex =
+                                        fieldLayout->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
+
+                                // Find matching binding
+                                auto rangeBindingIndex = typeLayout->getDescriptorSetDescriptorRangeIndexOffset(
+                                        relativeSetIndex,
+                                        rangeIdx
+                                );
+
+                                if (static_cast<SlangInt>(bindingIndex) == rangeBindingIndex)
+                                {
+                                    ReflectionDefaultFromSlang(fieldLayout, output, 0);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+                default: break;
+            }
+        }
+    }
 }
 
 static void ReflectionSlang(const Slang::ComPtr<IComponentType>& linkedProgram, MShaderPropertyBlock& output)
@@ -182,29 +212,7 @@ static void ReflectionSlang(const Slang::ComPtr<IComponentType>& linkedProgram, 
     auto layout = linkedProgram->getLayout();
 
     auto globalScopeLayout = layout->getGlobalParamsTypeLayout();
-    //ReflectionDescriptorSetFromSlang(globalScopeLayout);
-    ReflectionGlobalPropertyFromSlang(globalScopeLayout, output);
-
-    for (auto rangeIdx = 0u; rangeIdx < globalScopeLayout->getSubObjectRangeCount(); ++rangeIdx)
-    {
-        auto bindingRangeIndex = globalScopeLayout->getSubObjectRangeBindingRangeIndex(rangeIdx);
-        auto bindingType       = globalScopeLayout->getBindingRangeType(bindingRangeIndex);
-
-        switch (bindingType)
-        {
-            case slang::BindingType::ParameterBlock: {
-                auto parameterBlockTypeLayout = globalScopeLayout->getBindingRangeLeafTypeLayout(bindingRangeIndex);
-                ReflectionDefaultFromSlang(parameterBlockTypeLayout, output);
-            }
-            break;
-            case slang::BindingType::Texture: {
-                auto parameterBlockTypeLayout = globalScopeLayout->getBindingRangeLeafTypeLayout(bindingRangeIndex);
-                ReflectionDefaultFromSlang(parameterBlockTypeLayout, output);
-            }
-            break;
-            default: break;
-        }
-    }
+    ReflectionDescriptorSetFromSlang(globalScopeLayout, output);
 }
 
 std::unique_ptr<ISlangCompilerSession> MSlangCompiler::s_globalSession = std::make_unique<MSlangCompilerSession>();
@@ -308,7 +316,9 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].buffer = std::move(buffer);
     }
 
+    MLogger().Log("==== Slang Reflection Result ====");
     ReflectionSlang(linkedProgram, m_reflection);
+    MLogger().Log("==== Slang Reflection End ====");
 
     return true;
 }
@@ -317,6 +327,8 @@ TEST_CASE("slang compile test")
 {
     MSlangCompiler compiler;
     compiler.SetShaderPath(MString(MORTY_RESOURCE_PATH) + "/ShaderSlang/Main/Test/TestCompiler.slang");
+
+    //auto reflection = compiler.GetReflection();
 
     CHECK(compiler.Compile());
 }

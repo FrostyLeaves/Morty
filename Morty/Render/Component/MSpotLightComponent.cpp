@@ -74,12 +74,12 @@ void MSpotLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MSpotLightComponent::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MSpotLightComponent* pComponent = reinterpret_cast<const fbs::MSpotLightComponent*>(pBufferPointer);
+    const fbs::MSpotLightComponent* component = reinterpret_cast<const fbs::MSpotLightComponent*>(pBufferPointer);
 
-    SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
-    SetLightIntensity(pComponent->light_intensity());
-    SetInnerCutOff(pComponent->inner_cut_off_angle());
-    SetOuterCutOff(pComponent->outer_cut_off_angle());
+    SetColorVector(*reinterpret_cast<const Vector4*>(component->color()));
+    SetLightIntensity(component->light_intensity());
+    SetInnerCutOff(component->inner_cut_off_angle());
+    SetOuterCutOff(component->outer_cut_off_angle());
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 }

@@ -13,12 +13,12 @@ public:
     {
         MORTY_UNUSED(editor);
 
-        if (auto* pComponent = pEntity->GetComponent<MPointLightComponent>())
+        if (auto* component = pEntity->GetComponent<MPointLightComponent>())
         {
             if (m_editProperty.ShowNodeBegin("PointLightComponent"))
             {
-                PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Color", MColor, GetColor, SetColor);
-                PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
+                PROPERTY_VALUE_GET_SET_EDIT(component, "Color", MColor, GetColor, SetColor);
+                PROPERTY_VALUE_GET_SET_EDIT(component, "Intensity", float, GetLightIntensity, SetLightIntensity);
                 m_editProperty.ShowNodeEnd();
             }
         }

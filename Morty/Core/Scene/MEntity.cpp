@@ -99,16 +99,16 @@ flatbuffers::Offset<void> MEntity::Serialize(flatbuffers::FlatBufferBuilder& bui
 
     std::vector<flatbuffers::Offset<fbs::AnyComponent>> vFbComponents;
     std::vector<MComponent*>&&                          vComponents = GetComponents();
-    for (MComponent* pComponent: vComponents)
+    for (MComponent* component: vComponents)
     {
         flatbuffers::FlatBufferBuilder compBuilder;
-        flatbuffers::Offset<void>&&    componentRoot = pComponent->Serialize(compBuilder);
+        flatbuffers::Offset<void>&&    componentRoot = component->Serialize(compBuilder);
         compBuilder.Finish(componentRoot);
 
         flatbuffers::Offset<flatbuffers::Vector<uint8_t>>&& fbdata =
                 builder.CreateVector(compBuilder.GetBufferPointer(), compBuilder.GetSize());
         flatbuffers::Offset<fbs::AnyComponent>&& fbcomponent =
-                fbs::CreateAnyComponent(builder, builder.CreateString(pComponent->GetTypeName().c_str()), fbdata);
+                fbs::CreateAnyComponent(builder, builder.CreateString(component->GetTypeName().c_str()), fbdata);
 
         vFbComponents.push_back(fbcomponent);
     }
@@ -140,12 +140,12 @@ void MEntity::Deserialize(const void* pBufferPointer)
 
         MStringId                      type = MStringId(fbcomponent->type()->c_str());
 
-        const MType*                   pType      = MTypeClass::GetType(type);
-        MComponent*                    pComponent = GetScene()->AddComponent(this, pType);
+        const MType*                   pType     = MTypeClass::GetType(type);
+        MComponent*                    component = GetScene()->AddComponent(this, pType);
 
         flatbuffers::FlatBufferBuilder fbb;
         fbb.PushBytes(fbcomponent->data()->data(), fbcomponent->data()->size());
-        pComponent->Deserialize(fbb);
+        component->Deserialize(fbb);
     }
 }
 
@@ -153,6 +153,6 @@ void MEntity::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid)
 {
     for (auto& pr: m_components)
     {
-        if (MComponent* pComponent = pr.second) { pComponent->PostDeserialize(tRedirectGuid); }
+        if (MComponent* component = pr.second) { component->PostDeserialize(tRedirectGuid); }
     }
 }

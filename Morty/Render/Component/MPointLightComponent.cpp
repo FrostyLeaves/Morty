@@ -43,13 +43,13 @@ void MPointLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MPointLightComponent::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MPointLightComponent* pComponent = reinterpret_cast<const fbs::MPointLightComponent*>(pBufferPointer);
+    const fbs::MPointLightComponent* component = reinterpret_cast<const fbs::MPointLightComponent*>(pBufferPointer);
 
-    SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
-    SetLightIntensity(pComponent->light_intensity());
-    SetConstant(pComponent->constant());
-    SetLinear(pComponent->linear());
-    SetQuadratic(pComponent->quadratic());
+    SetColorVector(*reinterpret_cast<const Vector4*>(component->color()));
+    SetLightIntensity(component->light_intensity());
+    SetConstant(component->constant());
+    SetLinear(component->linear());
+    SetQuadratic(component->quadratic());
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 }

@@ -178,7 +178,7 @@ bool MVulkanBufferPool::AllowReadBackBuffer(const uint32_t& unMemorySize, uint32
 {
     if (m_ReadBackMemoryPool.AllocMemory(unMemorySize, info))
     {
-        unBufferID                   = m_ReadBackIDPool.GetNewID();
+        unBufferID                   = m_ReadBackIDPool.AllocateID();
         m_readBackMemory[unBufferID] = info;
         return true;
     }
@@ -192,7 +192,7 @@ void MVulkanBufferPool::FreeReadBackBuffer(const uint32_t& unBufferID)
     if (findResult != m_readBackMemory.end())
     {
         m_ReadBackMemoryPool.FreeMemory(findResult->second);
-        m_ReadBackIDPool.RecoveryID(unBufferID);
+        m_ReadBackIDPool.FreeID(unBufferID);
     }
 }
 

@@ -52,11 +52,11 @@ void MDirectionalLightComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb
 
 void MDirectionalLightComponent::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MDirectionalLightComponent* pComponent =
+    const fbs::MDirectionalLightComponent* component =
             reinterpret_cast<const fbs::MDirectionalLightComponent*>(pBufferPointer);
 
-    SetColorVector(*reinterpret_cast<const Vector4*>(pComponent->color()));
-    SetLightIntensity(pComponent->light_intensity());
+    SetColorVector(*reinterpret_cast<const Vector4*>(component->color()));
+    SetLightIntensity(component->light_intensity());
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 }

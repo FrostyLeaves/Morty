@@ -62,14 +62,14 @@ void MCameraComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MCameraComponent::Deserialize(const void* pBufferPointer)
 {
-    const fbs::MCameraComponent* pComponent = reinterpret_cast<const fbs::MCameraComponent*>(pBufferPointer);
+    const fbs::MCameraComponent* component = reinterpret_cast<const fbs::MCameraComponent*>(pBufferPointer);
 
-    Super::Deserialize(pComponent->super());
+    Super::Deserialize(component->super());
 
-    SetCameraType((MECameraType) pComponent->camera_type());
-    SetFov(pComponent->fov());
-    SetZNear(pComponent->znear());
-    SetZFar(pComponent->zfar());
-    SetWidth(pComponent->width());
-    SetHeight(pComponent->height());
+    SetCameraType((MECameraType) component->camera_type());
+    SetFov(component->fov());
+    SetZNear(component->znear());
+    SetZFar(component->zfar());
+    SetWidth(component->width());
+    SetHeight(component->height());
 }

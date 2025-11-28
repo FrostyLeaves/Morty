@@ -29,7 +29,7 @@ public:
     void SceneTick(MScene* pScene, const float& fDelta) override;
 
 public:
-    void UpdateTransform(MMoveControllerComponent* pComponent, const float& fDelta, const Vector2& v2MouseAddi);
+    void UpdateTransform(MMoveControllerComponent* component, const float& fDelta, const Vector2& v2MouseAddi);
 };
 
 }// namespace morty

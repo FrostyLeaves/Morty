@@ -21,7 +21,7 @@ MResourceSystem::MResourceSystem()
     , m_searchPath({""})
 {}
 
-MResourceSystem::~         MResourceSystem() {}
+MResourceSystem::~MResourceSystem() {}
 
 std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
 {
@@ -35,7 +35,7 @@ std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
     }
 
     pResource->m_self                      = pResource;
-    pResource->m_unResourceID              = m_ResourceDB.GetNewID();
+    pResource->m_unResourceID              = m_ResourceDB.AllocateID();
     pResource->m_engine                    = GetEngine();
     m_resources[pResource->m_unResourceID] = pResource;
 

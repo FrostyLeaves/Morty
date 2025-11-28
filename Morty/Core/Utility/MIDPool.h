@@ -1,6 +1,6 @@
 /**
  * @File         MIDPool
- * 
+ *
  * @Created      2019-08-06 18:39:21
  *
  * @Author       DoubleYe
@@ -9,46 +9,51 @@
 #pragma once
 
 #include "Utility/MGlobal.h"
+#include <queue>
 
 namespace morty
 {
 
-template<typename IDTYPE> class MORTY_API MIDPool
+// Simple incrementing ID pool - IDs are never reused
+template<typename TID> class MORTY_API MIDPool
 {
 public:
     MIDPool()
-        : m_IDPool(0)
+        : m_nextID(0)
     {}
 
-    IDTYPE GetNewID() { return m_IDPool++; }
+    TID AllocateID() { return m_nextID++; }
 
 private:
-    IDTYPE m_IDPool;
+    TID m_nextID;
 };
 
-template<typename IDTYPE> class MORTY_API MRepeatIDPool
+// Reusable ID pool - freed IDs can be reused
+template<typename TID> class MORTY_API MReusableIDPool
 {
 public:
-    MRepeatIDPool()
-        : m_IDPool(0)
+    MReusableIDPool()
+        : m_nextID(0)
     {}
 
-    IDTYPE GetNewID()
+    TID AllocateID()
     {
-        if (m_iDPool.empty()) return m_IDPool++;
+        if (m_freeIDs.empty()) { return m_nextID++; }
         else
         {
-            IDTYPE id = m_iDPool.front();
-            m_iDPool.pop();
+            TID id = m_freeIDs.front();
+            m_freeIDs.pop();
             return id;
         }
     }
 
-    void RecoveryID(const IDTYPE& id) { m_iDPool.push(id); }
+    void FreeID(const TID& id) { m_freeIDs.push(id); }
+
 
 private:
-    IDTYPE             m_IDPool;
-    std::queue<IDTYPE> m_iDPool;
+    TID             m_nextID;
+    std::queue<TID> m_freeIDs;
 };
+
 
 }// namespace morty

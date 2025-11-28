@@ -34,7 +34,7 @@ bool MTaskGraph::AddNode(const MStringId& strNodeName, MTaskNode* pTaskNode)
     if (!pTaskNode) { return false; }
     pTaskNode->m_strNodeName    = strNodeName;
     pTaskNode->m_graph          = this;
-    pTaskNode->m_id             = m_idPool.GetNewID();
+    pTaskNode->m_id             = m_idPool.AllocateID();
     m_taskNode[pTaskNode->m_id] = pTaskNode;
 
     pTaskNode->OnCreated();
@@ -54,7 +54,7 @@ void MTaskGraph::DestroyNode(MTaskNode* pTaskNode)
     pTaskNode->DisconnectAll();
 
     m_taskNode.erase(pTaskNode->GetNodeID());
-    m_idPool.RecoveryID(pTaskNode->GetNodeID());
+    m_idPool.FreeID(pTaskNode->GetNodeID());
 
     RequireCompile();
 

@@ -42,10 +42,10 @@ std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MReso
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
     {
-        auto pMaterial = std::make_shared<MMaterial>();
-        pMaterial->BindTemplate(pTemplate);
+        auto material = std::make_shared<MMaterial>();
+        material->BindTemplate(pTemplate);
 
-        return pMaterial;
+        return material;
     }
 
     return nullptr;

@@ -63,26 +63,26 @@ protected:
 
 
 private:
-    MVulkanDevice*                                              m_device;
+    MVulkanDevice*                             m_device;
 
-    uint32_t                                                    m_unMinUboAlignment;
-    uint32_t                                                    m_unDynamicUniformBufferMemorySize;
-    MMemoryPool                                                 m_DynamicUniformMemoryPool;
+    uint32_t                                   m_unMinUboAlignment;
+    uint32_t                                   m_unDynamicUniformBufferMemorySize;
+    MMemoryPool                                m_DynamicUniformMemoryPool;
     std::map<MShaderUniformParam*, MemoryInfo> m_dynamicUniformMemory;
 
-    VkBuffer                                                    m_vkDynamicUniformBuffer;
-    VkDeviceMemory                                              m_vkDynamicUniformMemory;
-    MByte*                                                      m_dynamicUniformMemoryMapping;
+    VkBuffer                                   m_vkDynamicUniformBuffer;
+    VkDeviceMemory                             m_vkDynamicUniformMemory;
+    MByte*                                     m_dynamicUniformMemoryMapping;
 
-    uint32_t                                                    m_unReadBackBufferMemorySize;
-    MMemoryPool                                                 m_ReadBackMemoryPool;
-    MRepeatIDPool<uint32_t>                                     m_ReadBackIDPool;
-    std::map<uint32_t, MemoryInfo>                              m_readBackMemory;
+    uint32_t                                   m_unReadBackBufferMemorySize;
+    MMemoryPool                                m_ReadBackMemoryPool;
+    MReusableIDPool<uint32_t>                  m_ReadBackIDPool;
+    std::map<uint32_t, MemoryInfo>             m_readBackMemory;
 
-    VkBuffer                                                    m_vkReadBackBuffer;
-    VkDeviceMemory                                              m_vkReadBackMemory;
+    VkBuffer                                   m_vkReadBackBuffer;
+    VkDeviceMemory                             m_vkReadBackMemory;
 
-    MByte*                                                      m_readBackMemoryMapping;
+    MByte*                                     m_readBackMemoryMapping;
 };
 
 }// namespace morty

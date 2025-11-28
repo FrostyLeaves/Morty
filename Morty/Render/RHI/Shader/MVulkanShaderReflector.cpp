@@ -21,7 +21,7 @@ MVulkanShaderReflector::MVulkanShaderReflector(MVulkanDevice* pDevice)
 
 MVulkanShaderReflector::~MVulkanShaderReflector() {}
 
-bool MVulkanShaderReflector::Initialize() { return true; }
+bool                     MVulkanShaderReflector::Initialize() { return true; }
 
 
 enum class ShaderReflectorType
@@ -169,18 +169,18 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.storage_buffers)
     {
-        //const spirv_cross::SPIRType& type = compiler.get_type(res.type_id);
-
-        auto param = std::make_unique<MShaderStorageParam>();
-        param->unSet                               = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-        param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+        const spirv_cross::SPIRType& type  = compiler.get_type(res.base_type_id);
+        auto                         param = std::make_unique<MShaderStorageParam>();
+        param->unSet                       = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+        param->unBinding                   = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
         const std::string& uav_name = compiler.get_name(res.id);
-        param->strName             = MStringId(uav_name.c_str());
+        param->strName              = MStringId(uav_name.c_str());
 
         spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
-        param->bWritable                = !buffer_flags.get(spv::DecorationNonWritable);
+        param->bWritable                 = !buffer_flags.get(spv::DecorationNonWritable);
 
+        MVulkanShaderReflector::BuildVariant(compiler, GetStorageBufferType(compiler, type), param->var);
 
         param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
@@ -189,11 +189,11 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.uniform_buffers)
     {
-        spirv_cross::SPIRType          type = compiler.get_type(res.type_id);
+        spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
-        auto param = std::make_unique<MShaderUniformParam>();
-        param->unSet                                = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-        param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+        auto                  param = std::make_unique<MShaderUniformParam>();
+        param->unSet                = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+        param->unBinding            = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
         std::string uav_name = compiler.get_name(res.id);
         if (uav_name.empty())// compatible glslang.
@@ -212,11 +212,11 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.separate_images)
     {
-        spirv_cross::SPIRType                type = compiler.get_type(res.type_id);
+        spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
-        auto param = std::make_unique<MShaderTextureParam>();
-        uint32_t                             nSet   = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-        uint32_t nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+        auto                  param    = std::make_unique<MShaderTextureParam>();
+        uint32_t              nSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+        uint32_t              nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
         param->unSet     = nSet;
         param->unBinding = nBinding;
@@ -231,10 +231,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         else { MORTY_ASSERT(false); }
 
         if (sub_type.basetype == spirv_cross::SPIRType::BaseType::Float) { param->eFormat = MESamplerFormat::EFloat; }
-        else if (sub_type.basetype == spirv_cross::SPIRType::BaseType::UInt)
-        {
-            param->eFormat = MESamplerFormat::EInt;
-        }
+        else if (sub_type.basetype == spirv_cross::SPIRType::BaseType::UInt) { param->eFormat = MESamplerFormat::EInt; }
         else { MORTY_ASSERT(false); }
 
         param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -244,11 +241,11 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.storage_images)
     {
-        spirv_cross::SPIRType                type = compiler.get_type(res.type_id);
+        spirv_cross::SPIRType type = compiler.get_type(res.type_id);
 
-        auto param = std::make_unique<MShaderTextureParam>();
-        uint32_t                             nSet   = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
-        uint32_t nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
+        auto                  param    = std::make_unique<MShaderTextureParam>();
+        uint32_t              nSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
+        uint32_t              nBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
         param->unSet     = nSet;
         param->unBinding = nBinding;
@@ -267,7 +264,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.separate_samplers)
     {
-        auto param = std::make_unique<MShaderSamplerParam>();
+        auto param       = std::make_unique<MShaderSamplerParam>();
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());
@@ -286,7 +283,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
     for (const spirv_cross::Resource& res: shaderResources.subpass_inputs)
     {
-        auto param = std::make_unique<MShaderSubpassInputParam>();
+        auto param       = std::make_unique<MShaderSubpassInputParam>();
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());
@@ -326,15 +323,15 @@ void MVulkanShaderReflector::BuildVariant(
     }
     else { BuildBasicVariant(type, tempVariant); }
 
-    if (type.array.empty()) { variant = std::move(tempVariant); }
+    if (type.array.empty() || type.array[0] == 0) { variant = std::move(tempVariant); }
     else
     {
-        uint32_t             unArraySize = type.array[0];
+        uint32_t             arraySize = type.array[0];
 
         MVariantArray        varArray;
         MVariantArrayBuilder builder(varArray);
 
-        for (uint32_t i = 0; i < unArraySize; ++i) { builder.AppendVariant(tempVariant); }
+        for (uint32_t i = 0; i < arraySize; ++i) { builder.AppendVariant(tempVariant); }
         builder.Finish();
         variant = MVariant(varArray);
     }
@@ -392,6 +389,24 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
 
     m_device->GetEngine()->GetLogger()->Error("Can`t convert MVariant from spirv_cross::SPIRType. Unknow type");
     return false;
+}
+
+spirv_cross::SPIRType MVulkanShaderReflector::GetStorageBufferType(
+        const spirv_cross::Compiler& compiler,
+        const spirv_cross::SPIRType& type
+) const
+{
+    //storage buffer is a dynamic array that array size == 0.
+    if (!type.array.empty() && type.array[0] == 0) { return type; }
+
+    if (spirv_cross::SPIRType::BaseType::Struct == type.basetype && type.member_types.size() == 1)
+    {
+        const spirv_cross::TypeID&  id         = type.member_types[0];
+        const spirv_cross::SPIRType memberType = compiler.get_type(id);
+        return GetStorageBufferType(compiler, memberType);
+    }
+
+    return type;
 }
 
 #endif

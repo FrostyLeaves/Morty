@@ -92,8 +92,8 @@ void PropertyView::UpdatePropertyList(MEntity* pEntity)
     m_propertyList.clear();
 
     auto vComponents = pEntity->GetComponents();
-    for (MComponent* pComponent: vComponents)
+    for (MComponent* component: vComponents)
     {
-        if (auto func = m_createPropertyFactory[pComponent->GetTypeName()]) { m_propertyList.push_back(func()); }
+        if (auto func = m_createPropertyFactory[component->GetTypeName()]) { m_propertyList.push_back(func()); }
     }
 }

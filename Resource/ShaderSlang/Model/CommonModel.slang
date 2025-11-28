@@ -2,12 +2,10 @@ implementing ModelModule;
 
 #include "Internal/PreDefine.slang"
 
-
 public struct MeshData
 {
-    public float4x4 u_matWorld;
-    public float3x3 u_matNormal;
-    public float4 u_meshIdx;
+    public float4x4 matWorld;
+    public float3x3 matNormal;
 };
 
 public struct VertexIn

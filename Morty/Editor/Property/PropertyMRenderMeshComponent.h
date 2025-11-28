@@ -22,14 +22,14 @@ public:
     {
         m_editProperty.BindEngine(pEntity->GetEngine());
 
-        if (auto* pMeshComponent = pEntity->GetComponent<MRenderMeshComponent>())
+        if (auto* meshComponent = pEntity->GetComponent<MRenderMeshComponent>())
         {
             if (m_editProperty.ShowNodeBegin("MeshComponent"))
             {
                 if (m_editProperty.ShowNodeBegin("Model Mesh"))
                 {
                     PROPERTY_VALUE_GET_SET_EDIT(
-                            pMeshComponent,
+                            meshComponent,
                             "DirShadow",
                             bool,
                             GetGenerateDirLightShadow,
@@ -43,7 +43,7 @@ public:
                 {
                     m_editProperty.ShowValueBegin("Load");
 
-                    auto pMaterialResource = pMeshComponent->GetMaterialResource();
+                    auto pMaterialResource = meshComponent->GetMaterialResource();
                     if (m_editProperty.EditMResource(
                                 "material_file_dlg",
                                 MMaterialResourceLoader::GetResourceTypeName(),
@@ -51,7 +51,7 @@ public:
                                 pMaterialResource
                         ))
                     {
-                        if (pMaterialResource) { pMeshComponent->SetMaterial(pMaterialResource); };
+                        if (pMaterialResource) { meshComponent->SetMaterial(pMaterialResource); };
                     }
 
                     m_editProperty.ShowValueEnd();
@@ -59,9 +59,9 @@ public:
                     m_editProperty.ShowValueBegin("Instance");
                     if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                     {
-                        if (pMeshComponent->GetMaterial())
+                        if (meshComponent->GetMaterial())
                         {
-                            editor->FindWidget<MaterialView>()->SetMaterial(pMeshComponent->GetMaterialResource());
+                            editor->FindWidget<MaterialView>()->SetMaterial(meshComponent->GetMaterialResource());
                         }
                     }
                     m_editProperty.ShowValueEnd();
@@ -73,16 +73,16 @@ public:
                 if (m_editProperty.ShowNodeBegin("Render"))
                 {
                     m_editProperty.ShowValueBegin("ShadowType");
-                    MRenderMeshComponent::MEShadowType eType     = pMeshComponent->GetShadowType();
+                    MRenderMeshComponent::MEShadowType eType     = meshComponent->GetShadowType();
                     auto                               nSelected = (size_t) eType;
                     if (m_editProperty.EditEnum({"None", "OnlyDirection", "AllLights"}, nSelected))
                     {
-                        pMeshComponent->SetShadowType((MRenderMeshComponent::MEShadowType) nSelected);
+                        meshComponent->SetShadowType((MRenderMeshComponent::MEShadowType) nSelected);
                     }
                     m_editProperty.ShowValueEnd();
 
                     PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(
-                            pMeshComponent,
+                            meshComponent,
                             "LOD",
                             float,
                             GetDetailLevel,

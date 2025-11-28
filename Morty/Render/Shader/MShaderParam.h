@@ -101,6 +101,8 @@ public:
     bool           bWritable   = false;
     void*          pImageIdent = nullptr;
 
+    MVariant       var;
+
     void           SetBuffer(const MBuffer* buf) { pBuffer = buf; }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN

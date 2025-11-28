@@ -13,14 +13,14 @@ public:
     {
         MORTY_UNUSED(editor);
 
-        if (auto* pComponent = pEntity->GetComponent<MSpotLightComponent>())
+        if (auto* component = pEntity->GetComponent<MSpotLightComponent>())
         {
             if (m_editProperty.ShowNodeBegin("Light"))
             {
-                PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Color", MColor, GetColor, SetColor);
-                PROPERTY_VALUE_GET_SET_EDIT(pComponent, "Intensity", float, GetLightIntensity, SetLightIntensity);
+                PROPERTY_VALUE_GET_SET_EDIT(component, "Color", MColor, GetColor, SetColor);
+                PROPERTY_VALUE_GET_SET_EDIT(component, "Intensity", float, GetLightIntensity, SetLightIntensity);
                 PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(
-                        pComponent,
+                        component,
                         "Inner CutOff",
                         float,
                         GetInnerCutOff,
@@ -30,7 +30,7 @@ public:
                         180.0f
                 );
                 PROPERTY_VALUE_EDIT_SPEED_MIN_MAX(
-                        pComponent,
+                        component,
                         "Outer CutOff",
                         float,
                         GetOuterCutOff,
