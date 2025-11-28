@@ -50,7 +50,7 @@ public:
     [[nodiscard]] MRenderTaskOutputDesc  GetOutputDesc() const { return m_desc; }
 
 
-    void                                 SetRenderTexture(const MTexturePtr& pTexture) { m_renderTexture = pTexture; }
+    void                                 SetRenderTexture(const MTexturePtr& texture) { m_renderTexture = texture; }
     [[nodiscard]] MTexturePtr            GetRenderTexture() const { return m_renderTexture; }
     [[nodiscard]] METextureFormat        GetFormat() const;
     [[nodiscard]] MRenderTaskNodeOutput* GetActualOutput();

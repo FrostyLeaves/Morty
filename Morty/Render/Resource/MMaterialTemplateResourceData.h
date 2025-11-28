@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Material/MMaterialPass.h"
-#include "Material/MMaterialTemplate.h"
+#include "Resource/MMaterialTemplateResource.h"
 
 
 namespace morty
@@ -30,7 +30,7 @@ struct MORTY_API MMaterialTemplateResourceData : public MYamlResourceData {
 
 
 class MORTY_API MMaterialTemplateResourceDataLoader
-    : public MResourceLoaderTemplate<MMaterialTemplate, MMaterialTemplateResourceData>
+    : public MResourceLoaderTemplate<MMaterialTemplateResource, MMaterialTemplateResourceData>
 {
 public:
     static MString              GetResourceTypeName() { return "MaterialTemplate"; }

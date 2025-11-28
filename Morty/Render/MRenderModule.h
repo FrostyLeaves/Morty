@@ -19,11 +19,11 @@ class MObject;
 class MORTY_API MRenderModule
 {
 public:
-    static bool          Register(MEngine* pEngine);
+    static bool          Register(MEngine* engine);
 
     static void          OnObjectPostCreate(MObject* pObject);
 
-    static void          RegisterMaterial(MEngine* pEngine);
+    static void          RegisterMaterial(MEngine* engine);
 
     static const MString DefaultWhite;
     static const MString DefaultBlack;

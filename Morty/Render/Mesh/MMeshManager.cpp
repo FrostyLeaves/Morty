@@ -55,15 +55,15 @@ void MMeshManager::OnCreated()
 {
     Super::OnCreated();
 
-    const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     m_vertexBuffer = MBuffer::CreateVertexBuffer("MeshManager VertexBuffer");
     m_vertexBuffer.ReallocMemory(m_vertexMemoryPool.GetMaxMemorySize());
-    m_vertexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
+    m_vertexBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
     m_indexBuffer = MBuffer::CreateIndexBuffer("MeshManager VertexBuffer");
     m_indexBuffer.ReallocMemory(m_indexMemoryPool.GetMaxMemorySize());
-    m_indexBuffer.GenerateBuffer(pRenderSystem->GetDevice(), nullptr, 0);
+    m_indexBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
     InitializeScreenRect();
 
@@ -76,10 +76,10 @@ void MMeshManager::OnDelete()
 {
     ReleaseScreenRect();
 
-    const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-    m_vertexBuffer.DestroyBuffer(pRenderSystem->GetDevice());
-    m_indexBuffer.DestroyBuffer(pRenderSystem->GetDevice());
+    m_vertexBuffer.DestroyBuffer(renderSystem->GetDevice());
+    m_indexBuffer.DestroyBuffer(renderSystem->GetDevice());
 
 
     Super::OnDelete();
@@ -164,14 +164,14 @@ void MMeshManager::InitializeScreenRect()
     vIndices[5] = 1;
 
 
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    m_screenRect->GenerateBuffer(pRenderSystem->GetDevice());
+    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    m_screenRect->GenerateBuffer(renderSystem->GetDevice());
 }
 
 void MMeshManager::ReleaseScreenRect()
 {
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    m_screenRect->DestroyBuffer(pRenderSystem->GetDevice());
+    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    m_screenRect->DestroyBuffer(renderSystem->GetDevice());
     m_screenRect = nullptr;
 }
 
@@ -183,9 +183,9 @@ size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
 
 void MMeshManager::UploadPageData(size_t groupIdx, const MClusterPage& page)
 {
-    const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    MIDevice*            pDevice       = pRenderSystem->GetDevice();
-    const auto&          groupData     = m_clusterGroupDatas[groupIdx];
+    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MIDevice*            pDevice      = renderSystem->GetDevice();
+    const auto&          groupData    = m_clusterGroupDatas[groupIdx];
 
     pDevice->UploadBuffer(
             &m_vertexBuffer,

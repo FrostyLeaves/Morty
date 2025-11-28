@@ -59,10 +59,10 @@ void MainView::Render()
                     ImGui::GetContentRegionAvail().x,
                     ImGui::GetContentRegionAvail().y);
 
-    if (auto pTexture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
+    if (auto texture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
     {
         ImGui::Image(
-                {pTexture, intptr_t(pTexture.get()), static_cast<size_t>(m_textureIdx)},
+                {texture, intptr_t(texture.get()), static_cast<size_t>(m_textureIdx)},
                 ImVec2(v4RenderViewSize.z, v4RenderViewSize.w)
         );
     }
@@ -134,9 +134,9 @@ void MainView::DrawMessage()
         ImGui::Text("%zu", RenderMessageManager::GetInstance()->nDrawCallCount);
         ImGui::NextColumn();
 
-        if (auto pTexture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
+        if (auto texture = GetMainEditor()->GetSceneTexture()->GetFinalOutputTexture())
         {
-            auto max     = pTexture->GetLayer() - 1;
+            auto max     = texture->GetLayer() - 1;
             m_textureIdx = std::clamp<int>(m_textureIdx, 0, max);
             ImGui::Text("Texture Idx");
             ImGui::NextColumn();

@@ -46,8 +46,8 @@ void MDeferredRenderProgram::RenderSetup(IRenderCommand* pPrimaryCommand)
 
     MViewport* pViewport = GetViewport();
     //MEntity*   pCameraEntity         = pViewport->GetCamera();
-    //MScene*    pScene                = pViewport->GetScene();
-    //MEntity*   pMainDirectionalLight = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>();
+    //MScene*    scene                = pViewport->GetScene();
+    //MEntity*   pMainDirectionalLight = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
     //auto*      pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
 
     m_renderInfo                       = MRenderInfo::CreateFromViewport(pViewport);

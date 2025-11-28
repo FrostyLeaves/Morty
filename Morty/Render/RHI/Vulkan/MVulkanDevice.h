@@ -56,9 +56,9 @@ public:
 
     void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
 
-    void GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer) override;
+    void GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer) override;
 
-    void DestroyTexture(MTexture* pTexture) override;
+    void DestroyTexture(MTexture* texture) override;
 
     bool CompileShader(MShader* pShader) override;
 
@@ -125,7 +125,7 @@ public:
 
     VkFormat                           GetFormat(const METextureFormat& layout) const;
 
-    VkImageUsageFlags                  GetUsageFlags(MTexture* pTexture) const;
+    VkImageUsageFlags                  GetUsageFlags(MTexture* texture) const;
 
     static VkImageAspectFlags          GetAspectFlags(METextureWriteUsage eUsage);
 
@@ -133,15 +133,15 @@ public:
 
     VkImageAspectFlags                 GetAspectFlags(VkImageLayout layout) const;
 
-    VkImageLayout                      GetImageLayout(MTexture* pTexture) const;
+    VkImageLayout                      GetImageLayout(MTexture* texture) const;
 
-    VkImageViewType                    GetImageViewType(MTexture* pTexture) const;
+    VkImageViewType                    GetImageViewType(MTexture* texture) const;
 
-    VkImageCreateFlags                 GetImageCreateFlags(MTexture* pTexture) const;
+    VkImageCreateFlags                 GetImageCreateFlags(MTexture* texture) const;
 
-    VkImageType                        GetImageType(MTexture* pTexture) const;
+    VkImageType                        GetImageType(MTexture* texture) const;
 
-    uint32_t                           GetMipmapCount(MTexture* pTexture) const;
+    uint32_t                           GetMipmapCount(MTexture* texture) const;
 
     uint32_t                           GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 

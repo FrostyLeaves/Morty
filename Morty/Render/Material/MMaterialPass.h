@@ -71,8 +71,8 @@ struct MDepthStencilState {
 class MORTY_API MMaterialPass : public MTypeClass
 {
 public:
-    explicit MMaterialPass(MMaterialTemplate* temp);
-    ~        MMaterialPass() override;
+    explicit MMaterialPass() = default;
+    ~MMaterialPass() override;
 
 public:
     [[nodiscard]] const MMaterialTemplate* GetTemplate() const { return m_template; }
@@ -109,6 +109,7 @@ public:
     YAML::Node                    SerializeYaml() const;
     void                          DeserializeYaml(const YAML::Node& node);
 
+    void                          Initialize(MMaterialTemplate* temp);
     void                          ReleaseProgram() const;
 
 private:

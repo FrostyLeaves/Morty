@@ -29,13 +29,13 @@ public:
     virtual ~MSkyBoxComponent();
 
 public:
-    void                       LoadSkyBoxResource(std::shared_ptr<MResource> pTexture);
+    void                       LoadSkyBoxResource(std::shared_ptr<MResource> texture);
 
     std::shared_ptr<MResource> GetSkyBoxResource();
 
-    void                       LoadDiffuseEnvResource(std::shared_ptr<MResource> pTexture);
+    void                       LoadDiffuseEnvResource(std::shared_ptr<MResource> texture);
 
-    void                       LoadSpecularEnvResource(std::shared_ptr<MResource> pTexture);
+    void                       LoadSpecularEnvResource(std::shared_ptr<MResource> texture);
 
     std::shared_ptr<MResource> GetDiffuseEnvResource();
 

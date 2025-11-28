@@ -17,7 +17,7 @@ namespace morty
 
 typedef std::function<void(MComponent* component)> MNotifyFunction;
 
-class MORTY_API MNotifyManager : public IManager
+class MORTY_API                                    MNotifyManager : public IManager
 {
     MORTY_CLASS(MNotifyManager)
 
@@ -27,7 +27,7 @@ public:
     virtual ~MNotifyManager();
 
 public:
-    void SendNotify(const char* strNotifyName, MScene* pScene, const MComponentID& senderID);
+    void SendNotify(const char* strNotifyName, MScene* scene, const MComponentID& senderID);
 
     void RegisterNotify(const char* strNotifyName, MNotifyFunction func);
 

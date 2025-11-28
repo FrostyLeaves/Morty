@@ -37,8 +37,8 @@ class MResourceSystem;
 class MORTY_API MMeshImporter
 {
 public:
-    explicit                       MMeshImporter(MEngine* pEngine);
-    ~                              MMeshImporter();
+    explicit MMeshImporter(MEngine* engine);
+    ~MMeshImporter();
 
     /**
      * @brief Import a mesh from Assimp

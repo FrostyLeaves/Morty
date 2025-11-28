@@ -194,13 +194,15 @@ uint32_t StringToMask(const std::string& str)
 
 }// namespace
 
-MMaterialPass::MMaterialPass(MMaterialTemplate* param)
-    : m_template(param)
+MMaterialPass::~MMaterialPass() { ReleaseProgram(); }
+
+void MMaterialPass::Initialize(morty::MMaterialTemplate* temp)
 {
+    MORTY_ASSERT(temp);
+
+    m_template      = temp;
     m_programSystem = m_template->GetEngine()->FindSystemWeak<MShaderProgramSystem>();
 }
-
-MMaterialPass::~MMaterialPass() { ReleaseProgram(); }
 
 void MMaterialPass::ReleaseProgram() const
 {

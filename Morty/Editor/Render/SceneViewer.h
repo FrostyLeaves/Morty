@@ -18,7 +18,7 @@ class MIRenderProgram;
 class SceneViewer
 {
 public:
-    void                      Initialize(const MString& viewName, MScene* pScene, const MStringId& strRenderProgram);
+    void                      Initialize(const MString& viewName, MScene* scene, const MStringId& strRenderProgram);
     void                      Release();
 
     void                      UpdateTexture(IRenderCommand* pRenderCommand);

@@ -92,7 +92,7 @@ struct MORTY_API MModelConvertInfo {
 class MORTY_API MModelImporter
 {
 public:
-    explicit MModelImporter(MEngine* pEngine);
+    explicit MModelImporter(MEngine* engine);
     virtual ~MModelImporter();
 
     /**
@@ -111,57 +111,57 @@ protected:
     /**
      * @brief Process scene node hierarchy
      */
-    void     ProcessNode(aiNode* pNode, const aiScene* pScene);
+    void     ProcessNode(aiNode* pNode, const aiScene* scene);
 
     /**
      * @brief Process skeleton from scene
      */
-    void     ProcessBones(const aiScene* pScene);
+    void     ProcessBones(const aiScene* scene);
 
     /**
      * @brief Record bones from scene nodes
      */
-    void     RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene);
+    void     RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene);
 
     /**
      * @brief Bind bones to hierarchy
      */
-    void     BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene, MBone* pParent = nullptr);
+    void     BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene, MBone* pParent = nullptr);
 
     /**
      * @brief Process lights from scene
      */
-    void     ProcessLights(const aiScene* pScene);
+    void     ProcessLights(const aiScene* scene);
 
     /**
      * @brief Process cameras from scene
      */
-    void     ProcessCameras(const aiScene* pScene);
+    void     ProcessCameras(const aiScene* scene);
 
     /**
      * @brief Process skeletal animations
      */
-    void     ProcessAnimation(const aiScene* pScene);
+    void     ProcessAnimation(const aiScene* scene);
 
     /**
      * @brief Process material at index
      */
-    void     ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
+    void     ProcessMaterial(const aiScene* scene, const uint32_t& nMaterialIdx);
 
     /**
      * @brief Process embedded textures
      */
-    void     ProcessTexture(const aiScene* pScene);
+    void     ProcessTexture(const aiScene* scene);
 
     /**
      * @brief Get or create entity from Assimp node
      */
-    MEntity* GetEntityFromNode(const aiScene* pScene, aiNode* pNode);
+    MEntity* GetEntityFromNode(const aiScene* scene, aiNode* pNode);
 
     /**
      * @brief Get or create material at index
      */
-    std::shared_ptr<MMaterialResource> GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx);
+    std::shared_ptr<MMaterialResource> GetMaterial(const aiScene* scene, const uint32_t& nMaterialIdx);
 
     /**
      * @brief Save all resources to disk

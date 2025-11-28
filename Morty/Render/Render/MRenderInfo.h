@@ -70,7 +70,7 @@ struct MORTY_API MPointLightData {
 
 struct MRenderInfo {
     //TODO remove scene pointer.
-    const MScene*                pScene = nullptr;
+    const MScene*                scene = nullptr;
 
     /************************** render **************************/
     IRenderCommand*              pPrimaryRenderCommand = nullptr;

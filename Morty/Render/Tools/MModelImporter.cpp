@@ -84,8 +84,8 @@ static MColor  GetColor(const aiColor3D& color) { return MColor(color.r, color.g
 
 static Vector3 GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y, val.z); }
 
-MModelImporter::MModelImporter(MEngine* pEngine)
-    : m_engine(pEngine)
+MModelImporter::MModelImporter(MEngine* engine)
+    : m_engine(engine)
     , m_scene(nullptr)
     , m_meshImporter(nullptr)
     , m_meshes()
@@ -109,9 +109,9 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 {
     m_convertInfo = convertInfo;
 
-    auto pObjectSystem  = GetEngine()->FindSystem<MObjectSystem>();
+    auto objectSystem   = GetEngine()->FindSystem<MObjectSystem>();
     auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    m_scene             = pObjectSystem->CreateObject<MScene>();
+    m_scene             = objectSystem->CreateObject<MScene>();
     m_defaultMaterial   = resourceSystem->CreateResource<MMaterialTemplateResource>();
     m_defaultMaterial->LoadShader("ShaderSlang/Main/DeferredGBuffer.slang");
     m_defaultMaterial->SetPass(
@@ -131,9 +131,9 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 
 bool MModelImporter::Load(const MString& strResourcePath)
 {
-    MResourceSystem*     pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*     resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    std::vector<MString> vSearchPath = pResourceSystem->GetSearchPath();
+    std::vector<MString> vSearchPath = resourceSystem->GetSearchPath();
 
     Assimp::Importer     importer;
     const aiScene*       scene = nullptr;
@@ -191,7 +191,7 @@ bool MModelImporter::Load(const MString& strResourcePath)
     return true;
 }
 
-void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* pScene)
+void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* scene)
 {
     MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
@@ -199,7 +199,7 @@ void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* pScene)
 
     for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
     {
-        aiMesh*                        pChildMesh = pScene->mMeshes[pNode->mMeshes[i]];
+        aiMesh*                        pChildMesh = scene->mMeshes[pNode->mMeshes[i]];
 
         // Use MMeshImporter to import mesh
         MString                        strMeshName;
@@ -217,40 +217,40 @@ void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* pScene)
 
         MRenderMeshComponent* meshComponent = pChildEntity->RegisterComponent<MRenderMeshComponent>();
         meshComponent->Load(pChildMeshResource);
-        meshComponent->SetMaterial(GetMaterial(pScene, pChildMesh->mMaterialIndex));
+        meshComponent->SetMaterial(GetMaterial(scene, pChildMesh->mMaterialIndex));
 
-        pEntitySystem->AddChild(GetEntityFromNode(pScene, pNode), pChildEntity);
+        pEntitySystem->AddChild(GetEntityFromNode(scene, pNode), pChildEntity);
     }
 
     for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
     {
         aiNode* pChild = pNode->mChildren[i];
-        ProcessNode(pChild, pScene);
+        ProcessNode(pChild, scene);
     }
 }
 
-void MModelImporter::ProcessBones(const aiScene* pScene)
+void MModelImporter::ProcessBones(const aiScene* scene)
 {
     std::unique_ptr<MResourceData> pResourceData = std::make_unique<MSkeletonResourceData>();
     MSkeletonResourceData*         pSkeletonData = static_cast<MSkeletonResourceData*>(pResourceData.get());
 
-    RecordBones(&pSkeletonData->skeleton, pScene->mRootNode, pScene);
-    BindBones(&pSkeletonData->skeleton, pScene->mRootNode, pScene);
+    RecordBones(&pSkeletonData->skeleton, scene->mRootNode, scene);
+    BindBones(&pSkeletonData->skeleton, scene->mRootNode, scene);
 
     if (pSkeletonData->skeleton.GetAllBones().empty()) { return; }
 
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    m_skeletonResource               = pResourceSystem->CreateResource<MSkeletonResource>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    m_skeletonResource              = resourceSystem->CreateResource<MSkeletonResource>();
 
     pSkeletonData->skeleton.SortByDeep();
     m_skeletonResource->Load(std::move(pResourceData));
 }
 
-void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene)
+void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene)
 {
     for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
     {
-        aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[i]];
+        aiMesh* pMesh = scene->mMeshes[pNode->mMeshes[i]];
         if (pMesh->HasBones())
         {
             for (uint32_t j = 0; j < pMesh->mNumBones; ++j)
@@ -269,10 +269,10 @@ void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiSc
         }
     }
 
-    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { RecordBones(pSkeleton, pNode->mChildren[i], pScene); }
+    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { RecordBones(pSkeleton, pNode->mChildren[i], scene); }
 }
 
-void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* pScene, MBone* pParent)
+void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene, MBone* pParent)
 {
     MBone* pMBone = pSkeleton->FindBoneByName(pNode->mName.data);
     if (pMBone)
@@ -287,14 +287,14 @@ void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScen
         CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
     }
 
-    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { BindBones(pSkeleton, pNode->mChildren[i], pScene, pMBone); }
+    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { BindBones(pSkeleton, pNode->mChildren[i], scene, pMBone); }
 }
 
-void MModelImporter::ProcessLights(const aiScene* pScene)
+void MModelImporter::ProcessLights(const aiScene* scene)
 {
-    for (uint32_t i = 0; i < pScene->mNumLights; ++i)
+    for (uint32_t i = 0; i < scene->mNumLights; ++i)
     {
-        aiLight* pLight = pScene->mLights[i];
+        aiLight* pLight = scene->mLights[i];
 
         MString  strName = pLight->mName.C_Str();
 
@@ -341,13 +341,13 @@ void MModelImporter::ProcessLights(const aiScene* pScene)
     }
 }
 
-void MModelImporter::ProcessCameras(const aiScene* pScene)
+void MModelImporter::ProcessCameras(const aiScene* scene)
 {
     MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
-    for (uint32_t i = 0; i < pScene->mNumCameras; ++i)
+    for (uint32_t i = 0; i < scene->mNumCameras; ++i)
     {
-        aiCamera* pCamera = pScene->mCameras[i];
+        aiCamera* pCamera = scene->mCameras[i];
         MString   strName = pCamera->mName.C_Str();
 
         MEntity*  pCameraEntity = m_scene->CreateEntity();
@@ -363,15 +363,15 @@ void MModelImporter::ProcessCameras(const aiScene* pScene)
         pSceneComponent->SetPosition(GetVector3(pCamera->mPosition));
         pSceneComponent->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
 
-        pEntitySystem->AddChild(GetEntityFromNode(pScene, pScene->mRootNode), pCameraEntity);
+        pEntitySystem->AddChild(GetEntityFromNode(scene, scene->mRootNode), pCameraEntity);
     }
 }
 
-void MModelImporter::ProcessAnimation(const aiScene* pScene)
+void MModelImporter::ProcessAnimation(const aiScene* scene)
 {
     if (!m_skeletonResource) { return; }
 
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     MSkeleton*       pSkeleton = m_skeletonResource->GetSkeleton();
     if (!pSkeleton)
@@ -380,9 +380,9 @@ void MModelImporter::ProcessAnimation(const aiScene* pScene)
         return;
     }
 
-    for (uint32_t i = 0; i < pScene->mNumAnimations; ++i)
+    for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
     {
-        aiAnimation*       pAnimation = pScene->mAnimations[i];
+        aiAnimation*       pAnimation = scene->mAnimations[i];
 
         MSkeletalAnimation animationData;
 
@@ -440,7 +440,7 @@ void MModelImporter::ProcessAnimation(const aiScene* pScene)
         }
 
         std::shared_ptr<MSkeletalAnimationResource> pAnimationResource =
-                pResourceSystem->CreateResource<MSkeletalAnimationResource>();
+                resourceSystem->CreateResource<MSkeletalAnimationResource>();
 
         std::unique_ptr<MResourceData> resourceData = std::make_unique<MSkeletalAnimationResourceData>();
         if (auto* pAnimationResourceData = static_cast<MSkeletalAnimationResourceData*>(resourceData.get()))
@@ -454,9 +454,9 @@ void MModelImporter::ProcessAnimation(const aiScene* pScene)
     }
 }
 
-void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
+void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMaterialIdx)
 {
-    MResourceSystem*                   pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*                   resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     std::shared_ptr<MMaterialResource> material = nullptr;
 
@@ -467,33 +467,33 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
     material->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector3(1.0f, 1.0f, 1.0f));
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
-            pResourceSystem->LoadResource(MRenderModule::DefaultWhite)
+            resourceSystem->LoadResource(MRenderModule::DefaultWhite)
     );
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_NORMAL,
-            pResourceSystem->LoadResource(MRenderModule::DefaultNormal)
+            resourceSystem->LoadResource(MRenderModule::DefaultNormal)
     );
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_METALLIC,
-            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS,
-            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC,
-            pResourceSystem->LoadResource(MRenderModule::Default_R8_One)
+            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
     );
     material->SetTexture(
             MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
-            pResourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
+            resourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
     );
 
 
-    if (nMaterialIdx >= pScene->mNumMaterials) { return; }
+    if (nMaterialIdx >= scene->mNumMaterials) { return; }
 
-    aiMaterial*                                            pAiMaterial     = pScene->mMaterials[nMaterialIdx];
+    aiMaterial*                                            pAiMaterial     = scene->mMaterials[nMaterialIdx];
     const std::map<aiTextureType, const MStringId&>*       pTextureMapping = nullptr;
 
     static const std::map<aiTextureType, const MStringId&> PbrTextureMapping = {
@@ -520,27 +520,27 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
         auto findResult = m_rawTextures.find(aiTextureFileName.C_Str());
         if (findResult != m_rawTextures.end())
         {
-            std::shared_ptr<MTextureResource>& pTexture = findResult->second;
-            material->SetTexture(pr.second, pTexture);
+            std::shared_ptr<MTextureResource>& texture = findResult->second;
+            material->SetTexture(pr.second, texture);
         }
         else
         {
             MString strFullPath = MFileHelper::GetFileFolder(m_convertInfo.strResourcePath) + "/" + strTextureFileName;
-            std::shared_ptr<MResource> pTexture = nullptr;
+            std::shared_ptr<MResource> texture = nullptr;
 
             if (m_convertInfo.pTextureDelegate)
             {
-                pTexture = m_convertInfo.pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
+                texture = m_convertInfo.pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
             }
             else
             {
-                auto pTextureData = pResourceSystem->LoadResourceData(strFullPath);
-                pTexture          = pResourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
-                pTexture->Load(std::move(pTextureData));
+                auto pTextureData = resourceSystem->LoadResourceData(strFullPath);
+                texture           = resourceSystem->CreateResource<MReadableTextureResource>(strFullPath);
+                texture->Load(std::move(pTextureData));
             }
 
-            material->SetTexture(pr.second, pTexture);
-            m_fileTextures.insert(pTexture);
+            material->SetTexture(pr.second, texture);
+            m_fileTextures.insert(texture);
         }
     }
 
@@ -549,25 +549,23 @@ void MModelImporter::ProcessMaterial(const aiScene* pScene, const uint32_t& nMat
     m_materials[nMaterialIdx] = material;
 }
 
-void MModelImporter::ProcessTexture(const aiScene* pScene)
+void MModelImporter::ProcessTexture(const aiScene* scene)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    for (size_t nTextureIdx = 0; nTextureIdx < pScene->mNumTextures; ++nTextureIdx)
+    for (size_t nTextureIdx = 0; nTextureIdx < scene->mNumTextures; ++nTextureIdx)
     {
-        if (aiTexture* aiTexture = pScene->mTextures[nTextureIdx])
+        if (aiTexture* aiTexture = scene->mTextures[nTextureIdx])
         {
-            auto pTextureResource = pResourceSystem->CreateResource<MTextureResource>();
+            auto pTextureResource = resourceSystem->CreateResource<MTextureResource>();
 
             // Embedded texture
             if (aiTexture->mHeight == 0)
             {
-                pTextureResource->Load(
-                        MTextureResourceUtil::ImportTextureFromMemory(
-                                MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
-                                MTextureImportInfo(MTexturePixelType::Byte8)
-                        )
-                );
+                pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(
+                        MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
+                        MTextureImportInfo(MTexturePixelType::Byte8)
+                ));
             }
             else
             {
@@ -588,16 +586,14 @@ void MModelImporter::ProcessTexture(const aiScene* pScene)
                     buffer[i + 3] = temp;
                 }
 
-                pTextureResource->Load(
-                        MTextureResourceUtil::LoadFromMemory(
-                                "RawTexture",
-                                buffer,
-                                static_cast<uint32_t>(nWidth),
-                                static_cast<uint32_t>(nHeight),
-                                4,
-                                MTexturePixelType::Byte8
-                        )
-                );
+                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory(
+                        "RawTexture",
+                        buffer,
+                        static_cast<uint32_t>(nWidth),
+                        static_cast<uint32_t>(nHeight),
+                        4,
+                        MTexturePixelType::Byte8
+                ));
             }
 
             m_rawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
@@ -605,7 +601,7 @@ void MModelImporter::ProcessTexture(const aiScene* pScene)
     }
 }
 
-MEntity* MModelImporter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode)
+MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* pNode)
 {
     MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
@@ -622,7 +618,7 @@ MEntity* MModelImporter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode)
 
     if (pNode->mParent)
     {
-        if (MEntity* pParentEntity = GetEntityFromNode(pScene, pNode->mParent))
+        if (MEntity* pParentEntity = GetEntityFromNode(scene, pNode->mParent))
         {
             pEntitySystem->AddChild(pParentEntity, pEntity);
         }
@@ -633,19 +629,19 @@ MEntity* MModelImporter::GetEntityFromNode(const aiScene* pScene, aiNode* pNode)
     return pEntity;
 }
 
-std::shared_ptr<MMaterialResource> MModelImporter::GetMaterial(const aiScene* pScene, const uint32_t& nMaterialIdx)
+std::shared_ptr<MMaterialResource> MModelImporter::GetMaterial(const aiScene* scene, const uint32_t& nMaterialIdx)
 {
     if (m_materials.size() <= nMaterialIdx) { m_materials.resize(static_cast<size_t>(nMaterialIdx) + 1); }
 
-    if (!m_materials[nMaterialIdx]) { ProcessMaterial(pScene, nMaterialIdx); }
+    if (!m_materials[nMaterialIdx]) { ProcessMaterial(scene, nMaterialIdx); }
 
     return m_materials[nMaterialIdx];
 }
 
 bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& strOutputName)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    MEntitySystem*   pEntitySystem   = GetEngine()->FindSystem<MEntitySystem>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MEntitySystem*   pEntitySystem  = GetEngine()->FindSystem<MEntitySystem>();
 
     MString          strPath = strOutputDir + "/" + strOutputName + "/";
 
@@ -653,15 +649,15 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
 
     if (m_defaultMaterial)
     {
-        pResourceSystem->MoveTo(m_defaultMaterial, strPath + strOutputName + ".mat_temp");
-        pResourceSystem->SaveResource(m_defaultMaterial);
+        resourceSystem->MoveTo(m_defaultMaterial, strPath + strOutputName + ".mat_temp");
+        resourceSystem->SaveResource(m_defaultMaterial);
     }
 
     // Save skeleton
     if (m_skeletonResource)
     {
-        pResourceSystem->MoveTo(m_skeletonResource, strPath + strOutputName + ".ske");
-        pResourceSystem->SaveResource(m_skeletonResource);
+        resourceSystem->MoveTo(m_skeletonResource, strPath + strOutputName + ".ske");
+        resourceSystem->SaveResource(m_skeletonResource);
     }
 
     // Save raw textures
@@ -671,19 +667,19 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
         {
             std::shared_ptr<MTextureResource> pTextureResource = pr.second;
             MString                           strValidFileName = pr.first;
-            pResourceSystem->MoveTo(pTextureResource, strPath + strValidFileName + ".mtex");
-            pResourceSystem->SaveResource(pTextureResource);
+            resourceSystem->MoveTo(pTextureResource, strPath + strValidFileName + ".mtex");
+            resourceSystem->SaveResource(pTextureResource);
         }
     }
 
     // Save file textures
-    for (auto pTexture: m_fileTextures)
+    for (auto texture: m_fileTextures)
     {
-        if (pTexture)
+        if (texture)
         {
-            MString strValidFileName = MFileHelper::GetFileName(pTexture->GetResourcePath());
-            pResourceSystem->MoveTo(pTexture, strPath + strValidFileName + ".mtex");
-            pResourceSystem->SaveResource(pTexture);
+            MString strValidFileName = MFileHelper::GetFileName(texture->GetResourcePath());
+            resourceSystem->MoveTo(texture, strPath + strValidFileName + ".mtex");
+            resourceSystem->SaveResource(texture);
         }
     }
 
@@ -693,8 +689,8 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
         if (m_materials[i])
         {
             MString strMaterialFileName = strPath + "material_" + MStringUtil::ToString(i);
-            pResourceSystem->MoveTo(m_materials[i], strMaterialFileName + ".mat");
-            pResourceSystem->SaveResource(m_materials[i]);
+            resourceSystem->MoveTo(m_materials[i], strMaterialFileName + ".mat");
+            resourceSystem->SaveResource(m_materials[i]);
         }
     }
 
@@ -704,8 +700,8 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
         std::shared_ptr<MMeshResource> pMeshResource   = m_meshes[i].second;
         MString                        strMeshFileName = strPath + m_meshes[i].first + "_" + MStringUtil::ToString(i);
 
-        pResourceSystem->MoveTo(pMeshResource, strMeshFileName + ".mesh");
-        pResourceSystem->SaveResource(pMeshResource);
+        resourceSystem->MoveTo(pMeshResource, strMeshFileName + ".mesh");
+        resourceSystem->SaveResource(pMeshResource);
     }
 
     // Save animations
@@ -713,16 +709,16 @@ bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& s
     {
         MString strValidFileName = pAnimResource->GetAnimationName();
         MFileHelper::GetValidFileName(strValidFileName);
-        pResourceSystem->MoveTo(pAnimResource, strPath + strValidFileName + ".anim");
-        pResourceSystem->SaveResource(pAnimResource);
+        resourceSystem->MoveTo(pAnimResource, strPath + strValidFileName + ".anim");
+        resourceSystem->SaveResource(pAnimResource);
     }
 
     // Save entity hierarchy
     auto                       vAllEntity    = m_scene->GetAllEntity();
     std::shared_ptr<MResource> pNodeResource = pEntitySystem->PackEntity(vAllEntity);
 
-    pResourceSystem->MoveTo(pNodeResource, strPath + strOutputName + ".entity");
-    pResourceSystem->SaveResource(pNodeResource);
+    resourceSystem->MoveTo(pNodeResource, strPath + strOutputName + ".entity");
+    resourceSystem->SaveResource(pNodeResource);
 
     pNodeResource = nullptr;
 

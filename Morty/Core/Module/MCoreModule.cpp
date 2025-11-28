@@ -18,31 +18,31 @@
 
 using namespace morty;
 
-bool MCoreModule::Register(MEngine* pEngine)
+bool MCoreModule::Register(MEngine* engine)
 {
-    if (!pEngine) return false;
+    if (!engine) return false;
 
-    pEngine->RegisterSystem<MInputSystem>();
+    engine->RegisterSystem<MInputSystem>();
     ;
-    pEngine->RegisterSystem<MEntitySystem>();
+    engine->RegisterSystem<MEntitySystem>();
 
 
-    if (auto* pObjectSystem = pEngine->RegisterSystem<MObjectSystem>())
+    if (auto* objectSystem = engine->RegisterSystem<MObjectSystem>())
     {
-        pObjectSystem->RegisterPostCreateObject(MCoreModule::OnObjectPostCreate);
+        objectSystem->RegisterPostCreateObject(MCoreModule::OnObjectPostCreate);
     }
 
-    if (auto* pResourceSystem = pEngine->RegisterSystem<MResourceSystem>())
+    if (auto* resourceSystem = engine->RegisterSystem<MResourceSystem>())
     {
 #ifdef MORTY_RESOURCE_PATH
-        pResourceSystem->SetSearchPath({MORTY_RESOURCE_PATH});
+        resourceSystem->SetSearchPath({MORTY_RESOURCE_PATH});
 #endif
-        pResourceSystem->RegisterResourceLoader<MEntityResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MEntityResourceLoader>();
     }
 
-    pEngine->RegisterSystem<MResourceAsyncLoadSystem>();
+    engine->RegisterSystem<MResourceAsyncLoadSystem>();
 
-    if (auto* pComponentSystem = pEngine->RegisterSystem<MComponentSystem>())
+    if (auto* pComponentSystem = engine->RegisterSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MSceneComponent>();
         pComponentSystem->RegisterComponent<MInputComponent>();
@@ -57,6 +57,6 @@ void MCoreModule::OnObjectPostCreate(MObject* pObject)
 
     if (pObject->GetType() == MScene::GetClassType())
     {
-        if (auto* pScene = pObject->template DynamicCast<MScene>()) { pScene->RegisterManager<MNotifyManager>(); }
+        if (auto* scene = pObject->template DynamicCast<MScene>()) { scene->RegisterManager<MNotifyManager>(); }
     }
 }

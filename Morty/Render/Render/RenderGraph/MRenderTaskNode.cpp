@@ -59,15 +59,15 @@ void MRenderTaskNode::Resize(Vector2i size)
     for (auto pOutput: m_output)
     {
         auto        pRenderOutput = static_cast<MRenderTaskNodeOutput*>(pOutput);
-        auto        pTexture      = pRenderOutput->GetRenderTexture();
+        auto        texture       = pRenderOutput->GetRenderTexture();
         const auto& desc          = pRenderOutput->GetOutputDesc();
-        if (desc.allocPolicy == METextureSourceType::Allocate && desc.resizePolicy == MEResizePolicy::Scale && pTexture)
+        if (desc.allocPolicy == METextureSourceType::Allocate && desc.resizePolicy == MEResizePolicy::Scale && texture)
         {
             Vector2i n2TexelFormatSize{};
             n2TexelFormatSize.x = size.x * desc.scale + ((size.x % desc.texelSize) == 0 ? 0 : 1);
             n2TexelFormatSize.y = size.y * desc.scale + ((size.y % desc.texelSize) == 0 ? 0 : 1);
 
-            pTexture->Resize(pDevice, Vector3i(n2TexelFormatSize.x, n2TexelFormatSize.y, pTexture->GetSize().z));
+            texture->Resize(pDevice, Vector3i(n2TexelFormatSize.x, n2TexelFormatSize.y, texture->GetSize().z));
         }
     }
 }

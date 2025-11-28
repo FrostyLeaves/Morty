@@ -3,8 +3,9 @@
 #include "Engine/MEngine.h"
 #include "System/MResourceSystem.h"
 
-#include "Flatbuffer/MSkeletalAnimationResource_generated.h"
 #include "Resource/MSkeletonResource.h"
+#include "Flatbuffer/MSkeletalAnimationResource_generated.h"
+
 
 using namespace morty;
 
@@ -49,13 +50,13 @@ void MSkeletalAnimationResource::SetSkeletonResource(std::shared_ptr<MSkeletonRe
 
 bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     if (auto pAnimationData = static_cast<MSkeletalAnimationResourceData*>(pResourceData.get()))
     {
         m_skeletonAnimation = pAnimationData->skeletonAnimation;
 
-        const auto pResource = pResourceSystem->LoadResource(pAnimationData->skeletonResource);
+        const auto pResource = resourceSystem->LoadResource(pAnimationData->skeletonResource);
         if (const auto pSkeletonResource = MTypeClass::DynamicCast<MSkeletonResource>(pResource))
         {
             SetSkeletonResource(pSkeletonResource);

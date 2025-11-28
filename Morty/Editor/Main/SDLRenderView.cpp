@@ -42,12 +42,12 @@ MString SDLRenderView::m_imGUISettingFileName   = MString(MORTY_RESOURCE_PATH) +
 MString SDLRenderView::m_imNodesSettingFileName = MString(MORTY_RESOURCE_PATH) + "/Editor/imnodes.ini";
 
 
-void    SDLRenderView::Initialize(MEngine* pEngine)
+void    SDLRenderView::Initialize(MEngine* engine)
 {
     m_IniConfig.LoadFromFile(m_windowSettingFileName);
     auto windowSize = m_IniConfig.GetValue<Vector2i>("Window", "Size");
 
-    MRenderView::Initialize(pEngine);
+    MRenderView::Initialize(engine);
     MRenderView::InitSize(std::max(1, windowSize.x), std::max(1, windowSize.y));
 
     //Setup ImGui
@@ -71,7 +71,7 @@ void    SDLRenderView::Initialize(MEngine* pEngine)
     ImNodes::LoadCurrentEditorStateFromIniFile(m_imNodesSettingFileName.c_str());
 
 
-    m_imGuiRender = new ImGuiRenderer(pEngine);
+    m_imGuiRender = new ImGuiRenderer(engine);
     m_imGuiRender->Initialize();
 
     MTaskGraph* pMainGraph  = GetEngine()->GetMainGraph();
@@ -232,8 +232,8 @@ void SDLRenderView::BindSDLWindow()
 {
     if (m_sDLWindow) { UnbindSDLWindow(); }
 
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    MVulkanDevice* pDevice       = dynamic_cast<MVulkanDevice*>(pRenderSystem->GetDevice());
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MVulkanDevice* pDevice      = dynamic_cast<MVulkanDevice*>(renderSystem->GetDevice());
 
     SDL_SetMainReady();
 
@@ -329,8 +329,8 @@ void SDLRenderView::Render(MTaskNode* pNode)
         m_windowResized = false;
     }
 
-    MRenderSystem*     pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    MIDevice*          pDevice       = pRenderSystem->GetDevice();
+    MRenderSystem*     renderSystem  = GetEngine()->FindSystem<MRenderSystem>();
+    MIDevice*          pDevice       = renderSystem->GetDevice();
     MViewRenderTarget* pRenderTarget = GetNextRenderTarget();
     if (!pRenderTarget) return;
 

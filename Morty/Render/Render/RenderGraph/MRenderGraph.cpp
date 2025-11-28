@@ -10,10 +10,10 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MRenderGraph, MTaskGraph)
 
-MRenderGraph::MRenderGraph(MEngine* pEngine)
+MRenderGraph::MRenderGraph(MEngine* engine)
     : Super()
 {
-    m_engine             = pEngine;
+    m_engine             = engine;
     m_renderGraphSetting = std::make_shared<MRenderGraphSetting>();
 }
 

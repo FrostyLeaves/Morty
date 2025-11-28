@@ -50,8 +50,8 @@ std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial() { return m_materi
 
 bool                       MRenderMeshComponent::SetMaterialPath(const MString& strPath)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strPath))
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strPath))
     {
         if (std::shared_ptr<MMaterialResource> pMaterialResource =
                     MTypeClass::DynamicCast<MMaterialResource>(pResource))
@@ -77,8 +77,8 @@ void MRenderMeshComponent::Load(std::shared_ptr<MResource> pResource)
 
 void MRenderMeshComponent::SetMeshResourcePath(const MString& strResourcePath)
 {
-    MResourceSystem*           pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    std::shared_ptr<MResource> pResource       = pResourceSystem->LoadResource(strResourcePath);
+    MResourceSystem*           resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    std::shared_ptr<MResource> pResource      = resourceSystem->LoadResource(strResourcePath);
     Load(pResource);
 }
 
@@ -134,8 +134,8 @@ void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
-    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    auto component       = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
+    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto component      = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
 
     Super::Deserialize(component->super());
 
@@ -143,10 +143,10 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
     SetDetailLevel(component->lod());
 
     MResourceRef material;
-    material.Deserialize(pResourceSystem, component->material());
+    material.Deserialize(resourceSystem, component->material());
     SetMaterial(material.GetResource<MMaterialResource>());
 
     MResourceRef mesh;
-    mesh.Deserialize(pResourceSystem, component->mesh());
+    mesh.Deserialize(resourceSystem, component->mesh());
     Load(mesh.GetResource());
 }

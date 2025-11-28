@@ -18,7 +18,7 @@ class MEngine;
 class MORTY_API MCoreModule
 {
 public:
-    static bool Register(MEngine* pEngine);
+    static bool Register(MEngine* engine);
 
     static void OnObjectPostCreate(MObject* pObject);
 };

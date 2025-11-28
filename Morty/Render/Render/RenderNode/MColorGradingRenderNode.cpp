@@ -21,15 +21,15 @@ void                       MColorGradingRenderNode::Release() { Super::Release()
 
 std::shared_ptr<MMaterial> MColorGradingRenderNode::CreateMaterial()
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto             material = pResourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
+    auto             material = resourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
 
     //TODO
     /*
     std::shared_ptr<MResource> pVertexShader =
-            pResourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
-    std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
+            resourceSystem->LoadResource("Shader/PostProcess/post_process_basic.mvs");
+    std::shared_ptr<MResource> pPixelShader = resourceSystem->LoadResource("Shader/ColorGrading/color_garding.mps");
     material->LoadShader(pVertexShader, MEShaderType::EVertex, MRenderGlobal::DEFAULT_VERTEX_ENTRY);
     material->LoadShader(pPixelShader, MEShaderType::EPixel, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
     material->SetCullMode(MECullMode::ECullNone);

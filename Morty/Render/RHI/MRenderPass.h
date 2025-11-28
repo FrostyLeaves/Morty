@@ -61,12 +61,12 @@ public:
 struct MORTY_API MRenderTarget {
     MRenderTarget() = default;
 
-    MRenderTarget(const MTexturePtr pTexture, const MPassTargetDescription& desc)
-        : pTexture(pTexture)
+    MRenderTarget(const MTexturePtr texture, const MPassTargetDescription& desc)
+        : texture(texture)
         , desc(desc)
     {}
 
-    MTexturePtr            pTexture = nullptr;
+    MTexturePtr            texture = nullptr;
     MPassTargetDescription desc;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
@@ -115,7 +115,7 @@ public:
 
     void                  SetDepthTexture(MTexturePtr pDepthTexture, const MPassTargetDescription& desc);
 
-    void                  SetShadingRateTexture(MTexturePtr& pTexture);
+    void                  SetShadingRateTexture(MTexturePtr& texture);
 
     void                  SetRenderTarget(const MRenderTargetGroup& renderTarget);
 

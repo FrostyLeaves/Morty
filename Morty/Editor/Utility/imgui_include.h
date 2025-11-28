@@ -15,11 +15,11 @@ class MTexture;
 }
 
 struct ImGuiTexture {
-    std::shared_ptr<morty::MTexture> pTexture    = nullptr;
+    std::shared_ptr<morty::MTexture> texture     = nullptr;
     intptr_t                         nTextureIdx = 0;
     size_t                           nArrayIdx   = 0;
 
-                                     ImGuiTexture() = default;
+    ImGuiTexture() = default;
 
     operator intptr_t() const { return nTextureIdx; }
 
@@ -28,20 +28,20 @@ struct ImGuiTexture {
     {}
 
     ImGuiTexture(std::shared_ptr<morty::MTexture> tex, intptr_t nTextureIdx, size_t arrIdx)
-        : pTexture(tex)
+        : texture(tex)
         , nTextureIdx(nTextureIdx)
         , nArrayIdx(arrIdx)
     {}
 
     bool operator==(const ImGuiTexture& other) const
     {
-        return pTexture == other.pTexture && nArrayIdx == other.nArrayIdx;
+        return texture == other.texture && nArrayIdx == other.nArrayIdx;
     }
 
     bool operator<(const ImGuiTexture& other) const
     {
-        if (pTexture < other.pTexture) return true;
-        if (pTexture > other.pTexture) return false;
+        if (texture < other.texture) return true;
+        if (texture > other.texture) return false;
 
         return nArrayIdx < other.nArrayIdx;
     }

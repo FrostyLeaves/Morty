@@ -28,9 +28,9 @@ void ResourceView::Render()
     ProcessDialog();
 
 
-    auto        pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto        resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    const auto& resources   = pResourceSystem->GetAllResources();
+    const auto& resources   = resourceSystem->GetAllResources();
     size_t      ITEMS_COUNT = resources.size();
 
     if (ImGui::BeginTable("resource table", 3 /*, ImGuiTableFlags_Sortable*/))

@@ -52,7 +52,7 @@ void MMaterialTemplateResourceData::Deserialize(const YAML::Node& root)
                 if (passNode["PassName"])
                 {
                     MStringId passName(passNode["PassName"].as<std::string>());
-                    auto      pass = std::make_unique<MMaterialPass>(nullptr);
+                    auto      pass = std::make_unique<MMaterialPass>();
                     pass->DeserializeYaml(passNode["PassData"]);
                     materialPasses[passName] = std::move(pass);
                 }
@@ -60,9 +60,9 @@ void MMaterialTemplateResourceData::Deserialize(const YAML::Node& root)
             else if (passNode["PassName"])
             {
                 // New format: pass data directly with PassName inside
-                auto pass = std::make_unique<MMaterialPass>(nullptr);
+                auto pass = std::make_unique<MMaterialPass>();
                 pass->DeserializeYaml(passNode);
-                MStringId passName = pass->GetPassName();
+                MStringId passName       = pass->GetPassName();
                 materialPasses[passName] = std::move(pass);
             }
         }
@@ -110,7 +110,7 @@ void MMaterialTemplateResourceData::Deserialize(const void* pBufferPointer)
             if (fbPass && fbPass->pass_name())
             {
                 // Create a temporary pass with nullptr template - will be corrected during loading
-                auto pass = std::make_unique<MMaterialPass>(nullptr);
+                auto pass = std::make_unique<MMaterialPass>();
                 pass->Deserialize(fbPass);
 
                 MStringId passName(fbPass->pass_name()->c_str());

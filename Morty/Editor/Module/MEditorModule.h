@@ -17,7 +17,7 @@ class MEngine;
 class MORTY_API MEditorModule
 {
 public:
-    static bool Register(MEngine* pEngine);
+    static bool Register(MEngine* engine);
 };
 
 }// namespace morty

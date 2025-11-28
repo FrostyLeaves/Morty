@@ -157,9 +157,9 @@ void MSceneComponent::SetParent(MSceneComponent* pParent)
 
 MSceneComponent* MSceneComponent::GetParent()
 {
-    if (MScene* pScene = GetScene())
+    if (MScene* scene = GetScene())
     {
-        if (MComponent* component = pScene->GetComponent(GetParentComponent()))
+        if (MComponent* component = scene->GetComponent(GetParentComponent()))
         {
             return component->template DynamicCast<MSceneComponent>();
         }
@@ -241,8 +241,8 @@ void    MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function
 {
     if (!pEntity) return;
 
-    MScene* pScene = pEntity->GetScene();
-    if (!pScene) return;
+    MScene* scene = pEntity->GetScene();
+    if (!scene) return;
 
     auto* component = pEntity->GetComponent<MSceneComponent>();
     if (!component) return;
@@ -252,7 +252,7 @@ void    MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function
     const auto& children = component->GetChildrenComponent();
     for (const auto& child: children)
     {
-        if (MSceneComponent* pSceneComponent = pScene->GetComponent(child)->template DynamicCast<MSceneComponent>())
+        if (MSceneComponent* pSceneComponent = scene->GetComponent(child)->template DynamicCast<MSceneComponent>())
         {
             CallRecursivelyFunction(pSceneComponent->GetEntity(), func);
         }

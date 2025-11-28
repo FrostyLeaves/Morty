@@ -28,7 +28,7 @@ namespace morty
 class MORTY_API MVulkanPhysicalDevice
 {
 public:
-    explicit MVulkanPhysicalDevice(MEngine* pEngine);
+    explicit MVulkanPhysicalDevice(MEngine* engine);
 
 
     bool             Initialize();

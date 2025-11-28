@@ -359,7 +359,7 @@ bool PropertyBase::EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate
     return bModified;
 }
 
-bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> material)
+bool PropertyBase::EditMMaterial(const std::shared_ptr<MMaterial>& material)
 {
     bool bModified = false;
     if (!material) { return false; }
@@ -384,16 +384,15 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> material)
     }
     ShowValueEnd();
 
-    bModified |= EditShaderProperty(material->GetMaterialParameterSet());
+    bModified |= EditMaterialProperty(material->GetPropertyModifier());
 
     {
-        auto& vParams = material->GetMaterialParameterSet()->GetTextureParams();
-        for (unsigned int i = 0; i < vParams.size(); ++i)
+        auto& resourceParams = material->GetPropertyModifier()->GetModifiedResources();
+        for (auto& resourcepParam: resourceParams)
         {
-            if (auto* param = dynamic_cast<MTextureResourceParam*>(vParams[i].get()))
+            if (auto* param = dynamic_cast<MTextureResourceParam*>(resourcepParam.second.param))
             {
-
-                MString strDlgName = "file_dlg_tex_" + MStringUtil::ToString(i);
+                MString strDlgName = MString("file_dlg_tex_") + resourcepParam.first.ToString();
 
                 ShowValueBegin(param->strName.ToString());
                 std::shared_ptr<MTextureResource> pTextureResource = param->GetTextureResource();
@@ -430,14 +429,14 @@ bool PropertyBase::EditMMaterial(std::shared_ptr<MMaterial> material)
     return bModified;
 }
 
-bool PropertyBase::EditShaderProperty(MShaderParameterSet* pProperty)
+bool PropertyBase::EditMaterialProperty(MMaterialPropertyModifier* modifier)
 {
     bool bModified = false;
-    for (const auto& param: pProperty->GetConstantParams())
+    for (auto& param: modifier->GetModifiedParams())
     {
-        if (EditMVariant(param->strName.ToString(), param->var))
+        if (EditMVariant(param.first.ToString(), param.second.value))
         {
-            param->SetDirty();
+            param.second.param->SetDirty();
             bModified = true;
         }
     }
@@ -563,8 +562,8 @@ void PropertyBase::EditSaveMResource(
 
         if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
         {
-            auto pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
-            pResourceSystem->SaveResource(pResource);
+            auto resourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+            resourceSystem->SaveResource(pResource);
         }
 
         if (bButtonDown)
@@ -583,10 +582,10 @@ void PropertyBase::EditSaveMResource(
         {
             if (ImGuiFileDialog::Instance()->IsOk() == true)
             {
-                std::string filePathName    = ImGuiFileDialog::Instance()->GetFilePathName();
-                auto        pResourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
-                pResourceSystem->MoveTo(pResource, filePathName);
-                pResourceSystem->SaveResource(pResource);
+                std::string filePathName   = ImGuiFileDialog::Instance()->GetFilePathName();
+                auto        resourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+                resourceSystem->MoveTo(pResource, filePathName);
+                resourceSystem->SaveResource(pResource);
             }
             ImGuiFileDialog::Instance()->Close();
         }
@@ -594,9 +593,9 @@ void PropertyBase::EditSaveMResource(
     else { ImGui::Text("null"); }
 }
 
-void PropertyBase::ShowTexture(MTexturePtr pTexture, const Vector2& v2Size)
+void PropertyBase::ShowTexture(MTexturePtr texture, const Vector2& v2Size)
 {
-    if (pTexture) { ImGui::Image({pTexture, intptr_t(pTexture.get()), 0}, ImVec2(v2Size.x, v2Size.y)); }
+    if (texture) { ImGui::Image({texture, intptr_t(texture.get()), 0}, ImVec2(v2Size.x, v2Size.y)); }
 }
 
 bool         PropertyBase::EditMColor(MColor& value) { return ImGui::ColorEdit4("", value.m); }

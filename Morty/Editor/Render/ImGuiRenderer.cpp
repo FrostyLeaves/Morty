@@ -13,8 +13,8 @@
 
 using namespace morty;
 
-ImGuiRenderer::ImGuiRenderer(MEngine* pEngine)
-    : m_engine(pEngine)
+ImGuiRenderer::ImGuiRenderer(MEngine* engine)
+    : m_engine(engine)
     , m_Mesh(true)
     , m_material(nullptr)
     , m_FontTexture()
@@ -60,7 +60,7 @@ void ImGuiRenderer::Initialize()
 
 void ImGuiRenderer::InitializeFont()
 {
-    auto           pResourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto           resourceSystem = m_engine->FindSystem<MResourceSystem>();
 
     ImGuiIO&       io = ImGui::GetIO();
 
@@ -68,17 +68,15 @@ void ImGuiRenderer::InitializeFont()
     int            width = 0, height = 0;// width height
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    std::shared_ptr<MTextureResource> pFontTexture = pResourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-    pFontTexture->Load(
-            MTextureResourceUtil::LoadFromMemory(
-                    "ImGUI_Font",
-                    MSpan<MByte>(pixels, width * height * 4),
-                    width,
-                    height,
-                    4,
-                    MTexturePixelType::Byte8
-            )
-    );
+    std::shared_ptr<MTextureResource> pFontTexture = resourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
+    pFontTexture->Load(MTextureResourceUtil::LoadFromMemory(
+            "ImGUI_Font",
+            MSpan<MByte>(pixels, width * height * 4),
+            width,
+            height,
+            4,
+            MTexturePixelType::Byte8
+    ));
     m_FontTexture.SetResource(pFontTexture);
 
     // Store our identifier
@@ -97,8 +95,8 @@ void ImGuiRenderer::ReleaseFont() { m_FontTexture.SetResource(nullptr); }
 
 void ImGuiRenderer::InitializeMaterial()
 {
-    auto pResourceSystem = m_engine->FindSystem<MResourceSystem>();
-    auto pTemplate       = pResourceSystem->CreateResource<MMaterialTemplate>();
+    auto resourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto pTemplate      = resourceSystem->CreateResource<MMaterialTemplate>();
     //pTemplate->LoadShader("ShaderSlang/Main/ImGui/ImGuiModule.slang");
     pTemplate->LoadShader("Shader/Imgui/imgui.hlsl");
 
@@ -131,15 +129,15 @@ void ImGuiRenderer::ReleaseMaterial()
 
 void ImGuiRenderer::ReleaseMesh()
 {
-    auto pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    m_Mesh.DestroyBuffer(pRenderSystem->GetDevice());
+    auto renderSystem = m_engine->FindSystem<MRenderSystem>();
+    m_Mesh.DestroyBuffer(renderSystem->GetDevice());
 }
 
 void ImGuiRenderer::Tick(const float& fDelta)
 {
     MORTY_UNUSED(fDelta);
 
-    auto pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto renderSystem = m_engine->FindSystem<MRenderSystem>();
     for (auto iter = m_imGuiDrawTexture.begin(); iter != m_imGuiDrawTexture.end();)
     {
         int& count = iter->second->nDestroyCount;
@@ -147,7 +145,7 @@ void ImGuiRenderer::Tick(const float& fDelta)
 
         if (count > 30)
         {
-            iter->second->pParameterSet->DestroyBuffer(pRenderSystem->GetDevice());
+            iter->second->pParameterSet->DestroyBuffer(renderSystem->GetDevice());
             iter = m_imGuiDrawTexture.erase(iter);
         }
         else { ++iter; }
@@ -198,8 +196,8 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
 
             if (using_texture != pcmd->TextureId)
             {
-                using_texture        = pcmd->TextureId;
-                MTexturePtr pTexture = using_texture.pTexture;
+                using_texture       = pcmd->TextureId;
+                MTexturePtr texture = using_texture.texture;
                 if (auto dest = GetTexturParameterSet(using_texture))
                 {
                     dest->nDestroyCount = 0;
@@ -249,7 +247,7 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturParameterSet(ImGuiText
     {
         auto* pDest = new MImGuiTextureDest();
 
-        pDest->pTexture      = key.pTexture;
+        pDest->texture       = key.texture;
         pDest->nDestroyCount = 0;
         pDest->pParameterSet = m_material->GetTemplate()->CreateParameterSet(MRenderGlobal::SHADER_PARAM_SET_MESH);
 
@@ -267,9 +265,9 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturParameterSet(ImGuiText
             int        nImageType         = 0;
             int        nSingleChannelFlag = 0;
             int        nImageIndex        = 0;
-            const bool isTexArray         = key.pTexture->GetTextureType() == METextureType::ETexture2DArray;
+            const bool isTexArray         = key.texture->GetTextureType() == METextureType::ETexture2DArray;
             Vector2    f2ImageSize;
-            switch (key.pTexture->GetFormat())
+            switch (key.texture->GetFormat())
             {
                 case METextureFormat::Depth:
                 case METextureFormat::UNorm_R8:
@@ -280,7 +278,7 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturParameterSet(ImGuiText
 
                 case METextureFormat::UInt_R8:
                     nImageType  = 2;
-                    f2ImageSize = Vector2(key.pTexture->GetSize2D().x, key.pTexture->GetSize2D().y);
+                    f2ImageSize = Vector2(key.texture->GetSize2D().x, key.texture->GetSize2D().y);
                     break;
 
                 default: nImageType = 0; break;
@@ -304,7 +302,7 @@ ImGuiRenderer::MImGuiTextureDest* ImGuiRenderer::GetTexturParameterSet(ImGuiText
                 pDest->pParameterSet->GetConstantParams()[0]->SetDirty();
             }
 
-            pDest->pParameterSet->SetTexture(TexNameList[nImageType], key.pTexture);
+            pDest->pParameterSet->SetTexture(TexNameList[nImageType], key.texture);
         }
 
 

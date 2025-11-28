@@ -115,13 +115,13 @@ MVariant MShaderParameterSet::FindValue(const MStringId& strName, MShaderUniform
     return MVariant();
 }
 
-bool MShaderParameterSet::SetTexture(const MStringId& strName, const MTexturePtr& pTexture)
+bool MShaderParameterSet::SetTexture(const MStringId& strName, const MTexturePtr& texture)
 {
     for (auto& pParam: m_textures)
     {
         if (pParam->strName == strName)
         {
-            pParam->SetTexture(pTexture);
+            pParam->SetTexture(texture);
             return true;
         }
     }

@@ -66,11 +66,11 @@ void MDeferredLightingRenderNode::Release()
 {
     m_lightningMaterial = nullptr;
 
-    auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     if (auto pShadingRateTexture = m_renderPass.GetShadingRateTexture())
     {
-        pShadingRateTexture->DestroyBuffer(pRenderSystem->GetDevice());
+        pShadingRateTexture->DestroyBuffer(renderSystem->GetDevice());
     }
 
     Super::Release();

@@ -26,7 +26,7 @@ public:
     virtual ~MAndroidRenderView();
 
 public:
-    virtual bool Initialize(MEngine* pEngine, const char* svWindowName) override;
+    virtual bool Initialize(MEngine* engine, const char* svWindowName) override;
     virtual void Release() override;
 
     void SetSize(const Vector2& v2Size);

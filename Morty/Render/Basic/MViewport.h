@@ -35,7 +35,7 @@ public:
     ~MViewport() override;
 
 public:
-    void                   SetScene(MScene* pScene);
+    void                   SetScene(MScene* scene);
 
     [[nodiscard]] MScene*  GetScene() const { return m_scene; }
 

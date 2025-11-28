@@ -28,7 +28,7 @@ class MORTY_API MRenderGraph : public MTaskGraph
 public:
     MRenderGraph() = default;
 
-    explicit MRenderGraph(MEngine* pEngine);
+    explicit MRenderGraph(MEngine* engine);
 
     ~MRenderGraph() override;
 

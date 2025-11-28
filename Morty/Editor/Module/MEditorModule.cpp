@@ -9,14 +9,14 @@
 
 using namespace morty;
 
-bool MEditorModule::Register(MEngine* pEngine)
+bool MEditorModule::Register(MEngine* engine)
 {
-    if (!pEngine) return false;
+    if (!engine) return false;
 
 
-    pEngine->RegisterSystem<MMoveControllerSystem>();
+    engine->RegisterSystem<MMoveControllerSystem>();
 
-    if (MComponentSystem* pComponentSystem = pEngine->FindSystem<MComponentSystem>())
+    if (MComponentSystem* pComponentSystem = engine->FindSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MMoveControllerComponent>();
     }

@@ -28,15 +28,15 @@ void MSkyBoxSystem::GenerateEnvironmentWork(MSkyBoxComponent* pSkyBoxComponent)
     /*
     if (!pSkyBoxComponent) return;
 
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    if (!pRenderSystem) return;
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    if (!renderSystem) return;
 
-    MObjectSystem* pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-    if (!pObjectSystem) return;
+    MObjectSystem* objectSystem = GetEngine()->FindSystem<MObjectSystem>();
+    if (!objectSystem) return;
 
-    MEnvironmentMapRenderNode* pRenderNode = pObjectSystem->CreateObject<MEnvironmentMapRenderNode>();
+    MEnvironmentMapRenderNode* pRenderNode = objectSystem->CreateObject<MEnvironmentMapRenderNode>();
 
-    MIDevice*                  pDevice = pRenderSystem->GetDevice();
+    MIDevice*                  pDevice = renderSystem->GetDevice();
 
     IRenderCommand*            pCommand = pDevice->CreateRenderCommand("Render Environment");
 

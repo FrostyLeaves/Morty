@@ -179,11 +179,11 @@ void MViewport::Input(MInputEvent* pEvent)
     }
 }
 
-void MViewport::SetScene(MScene* pScene)
+void MViewport::SetScene(MScene* scene)
 {
-    if (m_scene == pScene) return;
+    if (m_scene == scene) return;
 
-    m_scene = pScene;
+    m_scene = scene;
 }
 
 void MViewport::SetCamera(MEntity* pCamera)

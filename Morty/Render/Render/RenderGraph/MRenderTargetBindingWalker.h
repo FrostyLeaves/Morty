@@ -28,7 +28,7 @@ class MORTY_API MRenderTargetBindingWalker : public ITaskGraphWalker
 public:
     MRenderTargetBindingWalker() = default;
 
-    explicit MRenderTargetBindingWalker(MEngine* pEngine);
+    explicit MRenderTargetBindingWalker(MEngine* engine);
 
     ~MRenderTargetBindingWalker() override;
 

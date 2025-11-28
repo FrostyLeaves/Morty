@@ -52,7 +52,7 @@ public:
     ) override;
 
     bool DownloadTexture(
-            MTexture*                                                         pTexture,
+            MTexture*                                                         texture,
             const uint32_t&                                                   unMipIdx,
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) override;
@@ -68,7 +68,7 @@ public:
 protected:
     bool          AddRenderToTextureBarrier(const std::vector<MTexture*>& vTextures, METextureBarrierStage dstStage);
 
-    VkImageLayout GetTextureBarrierLayout(MTexture* pTexture, METextureBarrierStage stage) const;
+    VkImageLayout GetTextureBarrierLayout(MTexture* texture, METextureBarrierStage stage) const;
 
     [[nodiscard]] VkAccessFlags        GetBufferBarrierAccessFlag(MEBufferBarrierStage stage) const;
 

@@ -23,9 +23,9 @@ MEntity::MEntity()
     , m_strName("")
 {}
 
-MEntity::MEntity(MScene* pScene, const MGuid& nID)
+MEntity::MEntity(MScene* scene, const MGuid& nID)
     : MTypeClass()
-    , m_scene(pScene)
+    , m_scene(scene)
     , m_id(nID)
     , m_strName("")
 {}

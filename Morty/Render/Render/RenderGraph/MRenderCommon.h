@@ -123,11 +123,11 @@ class MGetTextureAdapter : public IGetTextureAdapter
 {
 public:
     explicit MGetTextureAdapter(const MTexturePtr& tex)
-        : pTexture(tex)
+        : texture(tex)
     {}
 
-    MTexturePtr GetTexture() override { return pTexture; }
-    MTexturePtr pTexture = nullptr;
+    MTexturePtr GetTexture() override { return texture; }
+    MTexturePtr texture = nullptr;
 };
 
 }// namespace morty

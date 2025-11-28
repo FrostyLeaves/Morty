@@ -35,11 +35,18 @@ public:
     void BindPropertyBlock(MShaderParameterSet* materialParamSet, const MShaderPropertyBlock& propertyBlock);
 
 
-    template<typename TYPE> bool SetValue(const MStringId& strName, const TYPE& value);
-    bool                         SetTexture(const MStringId& strName, const MTexturePtr& resource);
+    template<typename TYPE> bool                  SetValue(const MStringId& strName, const TYPE& value);
+    bool                                          SetTexture(const MStringId& strName, const MTexturePtr& resource);
 
-    const std::unordered_map<MStringId, ModifiedParam>&    GetModifiedParams() const { return m_modifiedParams; }
-    const std::unordered_map<MStringId, ModifiedResource>& GetModifiedResources() const { return m_modifiedResources; }
+    std::unordered_map<MStringId, ModifiedParam>& GetModifiedParams() { return m_modifiedParams; }
+    [[nodiscard]] const std::unordered_map<MStringId, ModifiedParam>& GetModifiedParams() const
+    {
+        return m_modifiedParams;
+    }
+    [[nodiscard]] const std::unordered_map<MStringId, ModifiedResource>& GetModifiedResources() const
+    {
+        return m_modifiedResources;
+    }
 
 private:
     std::unordered_map<MStringId, ModifiedParam>    m_modifiedParams;
@@ -49,6 +56,20 @@ private:
 template<typename TYPE> inline bool MMaterialPropertyModifier::SetValue(const MStringId& strName, const TYPE& value)
 {
     if (m_modifiedParams.find(strName) != m_modifiedParams.end() && m_modifiedParams[strName].value.IsType<TYPE>())
+    {
+        m_modifiedParams[strName].value.SetValue(value);
+        m_modifiedParams[strName].param->SetDirty();
+        return true;
+    }
+
+    return false;
+}
+
+template<>
+inline bool MMaterialPropertyModifier::SetValue<MVariant>(const morty::MStringId& strName, const MVariant& value)
+{
+    if (m_modifiedParams.find(strName) != m_modifiedParams.end() &&
+        m_modifiedParams[strName].value.GetType() == value.GetType())
     {
         m_modifiedParams[strName].value.SetValue(value);
         m_modifiedParams[strName].param->SetDirty();

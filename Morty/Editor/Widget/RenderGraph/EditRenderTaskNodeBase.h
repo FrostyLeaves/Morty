@@ -9,8 +9,8 @@ class MRenderTaskNode;
 class EditRenderTaskNodeBase : public PropertyBase
 {
 public:
-    [[nodiscard]] virtual const MType* GetNodeType() const                                                = 0;
-    virtual void                       EditRenderTaskNode(MEngine* pEngine, MRenderTaskNode* pRenderNode) = 0;
+    [[nodiscard]] virtual const MType* GetNodeType() const                                               = 0;
+    virtual void                       EditRenderTaskNode(MEngine* engine, MRenderTaskNode* pRenderNode) = 0;
 };
 
 }// namespace morty

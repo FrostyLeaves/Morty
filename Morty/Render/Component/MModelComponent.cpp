@@ -42,8 +42,8 @@ void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSk
 {
     if (!m_skeleton)
     {
-        auto pObjectSystem = GetEngine()->FindSystem<MObjectSystem>();
-        m_skeleton         = pObjectSystem->CreateObject<MSkeletonInstance>();
+        auto objectSystem = GetEngine()->FindSystem<MObjectSystem>();
+        m_skeleton        = objectSystem->CreateObject<MSkeletonInstance>();
     }
 
     if (m_skeleton) { m_skeleton->SetSkeletonResource(pSkeletonRsource); }
@@ -55,8 +55,8 @@ void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSk
 
 void MModelComponent::SetSkeletonResourcePath(const MString& strSkeletonPath)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strSkeletonPath))
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strSkeletonPath))
     {
         SetSkeletonResource(MTypeClass::DynamicCast<MSkeletonResource>(pResource));
     }
@@ -66,8 +66,8 @@ MString MModelComponent::GetSkeletonResourcePath() const { return m_SkeletonReso
 
 bool    MModelComponent::PlayAnimation(const MString& strAnimationName)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    if (std::shared_ptr<MResource> pAnimResource = pResourceSystem->LoadResource(strAnimationName))
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pAnimResource = resourceSystem->LoadResource(strAnimationName))
     {
         return PlayAnimation(pAnimResource);
     }

@@ -33,8 +33,8 @@ ISinglePassRenderNode::ISinglePassRenderNode()
 
 void ISinglePassRenderNode::Release()
 {
-    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
+    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    m_renderPass.DestroyBuffer(renderSystem->GetDevice());
 }
 
 MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
@@ -43,17 +43,17 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
 
     for (size_t nIdx = 0; nIdx < GetOutputSize(); ++nIdx)
     {
-        auto pOutput  = GetRenderOutput(nIdx);
-        auto pTexture = pOutput->GetRenderTexture();
+        auto pOutput = GetRenderOutput(nIdx);
+        auto texture = pOutput->GetRenderTexture();
 
-        if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
-            pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
+        if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
+            texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
         {
             group.backTargets.emplace_back(pOutput->CreateRenderTarget());
         }
-        else if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
+        else if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
         {
-            MORTY_ASSERT(group.depthTarget.pTexture == nullptr);
+            MORTY_ASSERT(group.depthTarget.texture == nullptr);
             group.depthTarget = {pOutput->CreateRenderTarget()};
         }
         else { MORTY_ASSERT(false); }
@@ -77,18 +77,18 @@ void ISinglePassRenderNode::Resize(Vector2i size)
 {
     Super::Resize(size);
 
-    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
-    if (m_renderPass.GetFrameBufferSize() != size) { m_renderPass.Resize(pRenderSystem->GetDevice()); }
+    if (m_renderPass.GetFrameBufferSize() != size) { m_renderPass.Resize(renderSystem->GetDevice()); }
 }
 
 void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarget)
 {
     m_renderPass.SetRenderTarget(renderTarget);
 
-    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    m_renderPass.DestroyBuffer(pRenderSystem->GetDevice());
-    m_renderPass.GenerateBuffer(pRenderSystem->GetDevice());
+    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    m_renderPass.DestroyBuffer(renderSystem->GetDevice());
+    m_renderPass.GenerateBuffer(renderSystem->GetDevice());
 }
 
 void ISinglePassRenderNode::BindInOutTexture()

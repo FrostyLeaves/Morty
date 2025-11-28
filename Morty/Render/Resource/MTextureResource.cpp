@@ -21,16 +21,16 @@ MORTY_CLASS_IMPLEMENT(MTextureResource, MResource)
 template<typename ByteType> MByte* Malloc(const size_t& nSize) { return new MByte[nSize * sizeof(ByteType)]; }
 
 
-MTextureResource::                 MTextureResource()
+MTextureResource::MTextureResource()
     : MResource()
 {}
 
 MTextureResource::~MTextureResource() { UnloadTexture(); }
 
-void               MTextureResource::UnloadTexture()
+void MTextureResource::UnloadTexture()
 {
-    auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    if (m_texture) { m_texture->DestroyBuffer(pRenderSystem->GetDevice()); }
+    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    if (m_texture) { m_texture->DestroyBuffer(renderSystem->GetDevice()); }
     m_texture = nullptr;
 }
 
@@ -40,8 +40,8 @@ void MTextureResource::OnDelete()
 
     m_resourceData = nullptr;
 
-    const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    m_texture->DestroyBuffer(pRenderSystem->GetDevice());
+    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    m_texture->DestroyBuffer(renderSystem->GetDevice());
     m_texture = nullptr;
 }
 
@@ -52,7 +52,7 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     if (nullptr == pResourceData) { return true; }
     MORTY_ASSERT(m_texture == nullptr);
 
-    const MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     auto                 pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
 
@@ -69,7 +69,7 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
             .nReadUsage      = METextureReadUsageBit::EPixelSampler,
             .nWriteUsage     = METextureWriteUsageBit::EUnknow,
     });
-    m_texture->GenerateBuffer(pRenderSystem->GetDevice(), pTextureData->vMipmaps);
+    m_texture->GenerateBuffer(renderSystem->GetDevice(), pTextureData->vMipmaps);
 
     if (m_readable) { m_resourceData = std::move(pResourceData); }
 
@@ -98,7 +98,7 @@ void MTextureResource::CreateCubeMapRenderTarget(
 {
     MORTY_ASSERT(m_texture == nullptr);
 
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
     if (nChannel == 2 || nChannel == 3) nChannel = 4;
 
@@ -112,7 +112,7 @@ void MTextureResource::CreateCubeMapRenderTarget(
             .nWriteUsage     = METextureWriteUsageBit::ERenderBack,
     });
 
-    m_texture->GenerateBuffer(pRenderSystem->GetDevice());
+    m_texture->GenerateBuffer(renderSystem->GetDevice());
 }
 
 METextureFormat MTextureResource::GetFormat() const

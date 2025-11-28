@@ -23,14 +23,14 @@ using namespace morty;
 
 MString SceneViewer::m_defaultRenderGraphPath = MString(MORTY_RESOURCE_PATH) + "/Pipeline/default_render_graph.mrg";
 
-void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const MStringId& strRenderProgram)
+void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MStringId& strRenderProgram)
 {
-    m_scene = pScene;
+    m_scene = scene;
 
-    MEngine* pEngine       = pScene->GetEngine();
-    auto*    pObjectSystem = pEngine->FindSystem<MObjectSystem>();
+    MEngine* engine       = scene->GetEngine();
+    auto*    objectSystem = engine->FindSystem<MObjectSystem>();
 
-    m_renderViewport = pObjectSystem->CreateObject<MViewport>();
+    m_renderViewport = objectSystem->CreateObject<MViewport>();
     m_renderViewport->SetScene(m_scene);
     m_renderViewport->SetSize(Vector2i(256, 256));
 
@@ -48,7 +48,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
     m_renderViewport->SetCamera(pDefaultCamera);
 
 
-    MObject* pRenderProgramObject = pObjectSystem->CreateObject(strRenderProgram);
+    MObject* pRenderProgramObject = objectSystem->CreateObject(strRenderProgram);
     m_renderProgram               = pRenderProgramObject->template DynamicCast<MIRenderProgram>();
     m_renderProgram->SetViewport(m_renderViewport);
 
@@ -56,7 +56,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
     MORTY_ASSERT(MFileHelper::ReadData(m_defaultRenderGraphPath, renderGraphBuffer));
     m_renderProgram->LoadGraph(renderGraphBuffer);
 
-    m_updateTask = pEngine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
+    m_updateTask = engine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
     if (m_updateTask)
     {
         m_updateTask->SetThreadType(METhreadType::ERenderThread);
@@ -69,11 +69,11 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* pScene, const M
 
 void SceneViewer::Release()
 {
-    MEngine* pEngine = m_scene->GetEngine();
+    MEngine* engine = m_scene->GetEngine();
 
     if (m_updateTask)
     {
-        pEngine->GetMainGraph()->DestroyNode(m_updateTask);
+        engine->GetMainGraph()->DestroyNode(m_updateTask);
         m_updateTask = nullptr;
     }
 

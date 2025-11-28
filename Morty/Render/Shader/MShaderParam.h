@@ -76,14 +76,14 @@ struct MShaderTextureParam : public MShaderParam {
     MShaderTextureParam();
 
 public:
-    virtual void                                 SetTexture(MTexturePtr pTexture);
+    virtual void                                 SetTexture(MTexturePtr texture);
 
-    virtual MTexturePtr                          GetTexture() { return pTexture; }
+    virtual MTexturePtr                          GetTexture() { return texture; }
 
     virtual std::unique_ptr<MShaderTextureParam> Clone() const;
 
 public:
-    MTexturePtr     pTexture    = nullptr;
+    MTexturePtr     texture     = nullptr;
     void*           pImageIdent = nullptr;
     METextureType   eType       = METextureType::ETexture2D;
     MESamplerFormat eFormat     = MESamplerFormat::EFloat;

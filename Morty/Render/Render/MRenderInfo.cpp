@@ -17,10 +17,10 @@ using namespace morty;
 
 MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
 {
-    MScene* pScene = pViewport->GetScene();
-    MORTY_ASSERT(pScene);
+    MScene* scene = pViewport->GetScene();
+    MORTY_ASSERT(scene);
 
-    MEntity* pCamera = pScene->FindFirstEntityByComponent<MCameraComponent>();
+    MEntity* pCamera = scene->FindFirstEntityByComponent<MCameraComponent>();
     MORTY_ASSERT(pCamera);
 
     MSceneComponent* pCameraSceneComponent = pCamera->GetComponent<MSceneComponent>();
@@ -31,7 +31,7 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
 
 
     MRenderInfo info;
-    info.pScene = pScene;
+    info.scene = scene;
 
     info.f2ViewportLeftTop.x = pViewport->GetLeftTop().x;
     info.f2ViewportLeftTop.y = pViewport->GetLeftTop().y;
@@ -54,7 +54,7 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     info.cameraFrustum.UpdateFromCameraInvProj(m4CameraInverseProj);
 
 
-    if (MEntity* pDirectionalLight = pScene->FindFirstEntityByComponent<MDirectionalLightComponent>())
+    if (MEntity* pDirectionalLight = scene->FindFirstEntityByComponent<MDirectionalLightComponent>())
     {
         MSceneComponent* pDirectionalLightSceneComponent = pDirectionalLight->GetComponent<MSceneComponent>();
         MORTY_ASSERT(pDirectionalLightSceneComponent);
@@ -69,7 +69,7 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
         info.directionLight.fLightSize = pDirectionalLightComponent->GetLightSize();
     }
 
-    if (MEntity* pSkyBoxEntity = pScene->FindFirstEntityByComponent<MSkyBoxComponent>())
+    if (MEntity* pSkyBoxEntity = scene->FindFirstEntityByComponent<MSkyBoxComponent>())
     {
         MSkyBoxComponent* pSkyBoxComponent = pSkyBoxEntity->GetComponent<MSkyBoxComponent>();
         info.pEnvDiffuseTexture            = pSkyBoxComponent->GetDiffuseTexture();
@@ -77,7 +77,7 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     }
 
 
-    MComponentGroup<MPointLightComponent>* pComponentGroup = pScene->FindComponents<MPointLightComponent>();
+    MComponentGroup<MPointLightComponent>* pComponentGroup = scene->FindComponents<MPointLightComponent>();
     for (const MPointLightComponent& lightComponent: pComponentGroup->m_components)
     {
         if (!lightComponent.IsValid()) { continue; }

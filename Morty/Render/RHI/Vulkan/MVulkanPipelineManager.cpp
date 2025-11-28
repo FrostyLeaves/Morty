@@ -722,10 +722,8 @@ void MVulkanPipelineManager::AllocateShaderParameterSet(MShaderParameterSet* pPa
     VkDescriptorSet descriptorSet;
     if (vkAllocateDescriptorSets(m_device->m_vkDevice, &allocInfo, &descriptorSet) != VK_SUCCESS)
     {
-        m_device->GetEngine()->GetLogger()->Error(
-                "MVulkanPipelineManager::AllocateShaderParameterSet error: "
-                "descriptor pool == 0"
-        );
+        m_device->GetEngine()->GetLogger()->Error("MVulkanPipelineManager::AllocateShaderParameterSet error: "
+                                                  "descriptor pool == 0");
         return;
     }
 
@@ -767,15 +765,15 @@ void MVulkanPipelineManager::BindConstantParam(const MShaderUniformParam* pParam
 
 void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* param, VkWriteDescriptorSet& descriptorWrite)
 {
-    MTexturePtr pTexture = param->GetTexture();
+    MTexturePtr texture = param->GetTexture();
 
-    if (!pTexture || pTexture->GetTextureRHI<MTextureRHIVulkan>()->vkImageView == VK_NULL_HANDLE)
+    if (!texture || texture->GetTextureRHI<MTextureRHIVulkan>()->vkImageView == VK_NULL_HANDLE)
     {
-        pTexture = GetDefaultTexture(param);
+        texture = GetDefaultTexture(param);
     }
 
-    MORTY_ASSERT(pTexture);
-    auto textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+    MORTY_ASSERT(texture);
+    auto textureRHI = texture->GetTextureRHI<MTextureRHIVulkan>();
     MORTY_ASSERT(textureRHI);
 
 
@@ -784,7 +782,7 @@ void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* param, VkWrit
     MORTY_ASSERT(textureRHI->vkImageLayout != VK_IMAGE_LAYOUT_UNDEFINED);
 
     //TODO: Do not set image layout from a constants value.
-    if (pTexture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite)
+    if (texture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite)
     {
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
     }
@@ -850,7 +848,7 @@ MTexturePtr MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pPara
     std::vector<std::vector<MByte>> cubeBytes{std::vector<MByte>(32)};
     memset(cubeBytes[0].data(), 255, sizeof(MByte) * 32);
 
-    auto pTexture = MTexture::CreateTexture({
+    auto texture = MTexture::CreateTexture({
             .strName         = "Shader Default Texture",
             .n3Size          = Vector3i(1, 1, 1),
             .eTextureType    = pParam->eType,
@@ -860,11 +858,11 @@ MTexturePtr MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pPara
             .nWriteUsage     = METextureWriteUsageBit::EUnknow,
     });
 
-    pTexture->GenerateBuffer(m_device, cubeBytes);
-    MORTY_ASSERT(pTexture);
+    texture->GenerateBuffer(m_device, cubeBytes);
+    MORTY_ASSERT(texture);
 
-    m_defaultTexture[{pParam->eFormat, pParam->eType}] = pTexture;
-    return pTexture;
+    m_defaultTexture[{pParam->eFormat, pParam->eType}] = texture;
+    return texture;
 }
 
 

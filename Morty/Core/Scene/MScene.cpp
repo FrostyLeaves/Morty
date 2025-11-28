@@ -134,10 +134,10 @@ void MScene::RegisterManager(const MType* pManagerType, IManager* pManager)
 
 void MScene::Tick(const float& fDelta)
 {
-    MEngine* pEngine = GetEngine();
-    if (!pEngine) return;
+    MEngine* engine = GetEngine();
+    if (!engine) return;
 
-    auto& systemList = pEngine->GetAllSystem();
+    auto& systemList = engine->GetAllSystem();
 
     for (auto& system: systemList) { system->SceneTick(this, fDelta); }
 

@@ -33,6 +33,7 @@
 #include "Widget/GuizmoWidget.h"
 #include "Widget/MainView.h"
 #include "Widget/MaterialView.h"
+#include "Widget/MenuBar.h"
 #include "Widget/ModelImportView.h"
 #include "Widget/NodeTreeView.h"
 #include "Widget/PropertyView.h"
@@ -46,15 +47,19 @@ using namespace morty;
 MStringId MainEditor::m_renderProgramName    = MDeferredRenderProgram::GetClassTypeName();
 MString   MainEditor::m_editorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
 
-bool      MainEditor::Initialize(MEngine* pEngine)
+bool      MainEditor::Initialize(MEngine* engine)
 {
-    m_engine = pEngine;
+    m_engine = engine;
 
     m_IniConfig.LoadFromFile(m_editorConfigFilePath);
 
     MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
     m_renderTask           = pMainGraph->AddNode<MTaskNode>(MStringId("Editor_Render"));
     m_renderTask->SetThreadType(METhreadType::ERenderThread);
+
+    m_menuBar = new MenuBar();
+    m_menuBar->Initialize(this);
+    m_menuBar->LoadConfig(&m_IniConfig);
 
     m_childView.push_back(new NodeTreeView());
     m_childView.push_back(new PropertyView());
@@ -74,6 +79,7 @@ bool      MainEditor::Initialize(MEngine* pEngine)
     {
         pChild->Initialize(this);
         pChild->LoadConfig(&m_IniConfig);
+        m_menuBar->AddWidget(pChild);
     }
 
     return true;
@@ -97,16 +103,24 @@ void MainEditor::Release()
 
     m_childView.clear();
 
+    if (m_menuBar)
+    {
+        m_menuBar->SaveConfig(&m_IniConfig);
+        m_menuBar->Release();
+        delete m_menuBar;
+        m_menuBar = nullptr;
+    }
+
     m_IniConfig.Save(m_editorConfigFilePath);
 }
 
 MViewport* MainEditor::GetViewport() const { return m_sceneTexture->GetViewport(); }
 
-void       MainEditor::SetScene(MScene* pScene)
+void       MainEditor::SetScene(MScene* scene)
 {
-    if (m_scene == pScene) { return; }
+    if (m_scene == scene) { return; }
 
-    m_scene = pScene;
+    m_scene = scene;
 
     if (m_sceneTexture)
     {
@@ -125,10 +139,10 @@ void                         MainEditor::OnInput(MInputEvent* pEvent) { m_sceneT
 
 void                         MainEditor::OnTick(float fDelta) { m_scene->Tick(fDelta); }
 
-std::shared_ptr<SceneViewer> MainEditor::CreateSceneViewer(const MString& viewName, MScene* pScene)
+std::shared_ptr<SceneViewer> MainEditor::CreateSceneViewer(const MString& viewName, MScene* scene)
 {
     std::shared_ptr<SceneViewer> pSceneViewer = std::make_shared<SceneViewer>();
-    pSceneViewer->Initialize(viewName, pScene, MainEditor::GetRenderProgramName());
+    pSceneViewer->Initialize(viewName, scene, MainEditor::GetRenderProgramName());
     m_sceneViewer.insert(pSceneViewer);
 
     pSceneViewer->GetRenderTask()->ConnectTo(GetRenderTask());
@@ -148,56 +162,7 @@ void MainEditor::UpdateSceneViewer(IRenderCommand* pRenderCommand)
     {
         pSceneViewer->UpdateTexture(pRenderCommand);
 
-        if (auto pTexture = pSceneViewer->GetFinalOutputTexture()) { vRenderTextures.emplace_back(pTexture.get()); }
-    }
-}
-
-void MainEditor::ShowMenu()
-{
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("Open", ""))
-            {
-                ImGuiFileDialog::Instance()->OpenModal("OpenFile", "Open", "entity\0\0", ".");
-            }
-
-            if (ImGui::MenuItem("Save", "")) {}
-
-            if (ImGui::MenuItem("Save as", ""))
-            {
-                ImGuiFileDialog::Instance()->OpenModal("Save As", "Open", "entity\0\0", "new");
-            }
-
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("View"))
-        {
-            for (BaseWidget* pView: m_childView)
-            {
-                bool bVisible = pView->GetVisible();
-                if (ImGui::MenuItem(pView->GetName().c_str(), "", &bVisible)) {}
-                pView->SetVisible(bVisible);
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Import model")) {}
-
-            if (ImGui::MenuItem("Load model")) {}
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Tool")) { ImGui::EndMenu(); }
-
-        ImGui::EndMainMenuBar();
+        if (auto texture = pSceneViewer->GetFinalOutputTexture()) { vRenderTextures.emplace_back(texture.get()); }
     }
 }
 
@@ -213,31 +178,6 @@ void MainEditor::ShowView(BaseWidget* pView)
         ImGui::End();
     }
     else if (pView->GetRenderInHidden()) { pView->Render(); }
-}
-
-void MainEditor::ShowDialog()
-{
-    if (ImGuiFileDialog::Instance()->Display("OpenFile"))
-    {
-        if (ImGuiFileDialog::Instance()->IsOk() == true)
-        {
-            std::map<std::string, std::string>&& files = ImGuiFileDialog::Instance()->GetSelection();
-        }
-        ImGuiFileDialog::Instance()->Close();
-    }
-
-
-    if (ImGuiFileDialog::Instance()->Display("Save As"))
-    {
-        if (ImGuiFileDialog::Instance()->IsOk() == true)
-        {
-            std::string strFilePathName    = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string strCurrentFileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
-        }
-        ImGuiFileDialog::Instance()->Close();
-    }
-
-    if (ImGuiFileDialog::Instance()->Display("Convert Model")) {}
 }
 
 Vector4 MainEditor::GetCurrentWidgetSize() const
@@ -261,12 +201,9 @@ void MainEditor::OnRender(IRenderCommand* pRenderCommand)
     //update all scene viewer.
     UpdateSceneViewer(pRenderCommand);
 
-    ShowMenu();
+    if (m_menuBar) { m_menuBar->Render(); }
 
     ImGui::DockSpaceOverViewport();
 
     for (BaseWidget* pBaseView: m_childView) { ShowView(pBaseView); }
-
-
-    ShowDialog();
 }

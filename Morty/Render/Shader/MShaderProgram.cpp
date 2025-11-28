@@ -74,10 +74,10 @@ void MShaderProgram::InitializeShaderParameterSet()
 
 void MShaderProgram::UnloadShader()
 {
-    auto pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
     for (size_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
     {
-        m_shaderSets[i]->DestroyBuffer(pRenderSystem->GetDevice());
+        m_shaderSets[i]->DestroyBuffer(renderSystem->GetDevice());
         m_shaderSets[i] = nullptr;
     }
 
@@ -91,14 +91,14 @@ void MShaderProgram::UnloadShader()
 }
 
 void MShaderProgram::CopyShaderParams(
-        MEngine*                                          pEngine,
+        MEngine*                                          engine,
         const std::shared_ptr<MShaderParameterSet>&       target,
         const std::shared_ptr<const MShaderParameterSet>& source
 )
 {
-    auto* pRenderSystem = pEngine->FindSystem<MRenderSystem>();
+    auto* renderSystem = engine->FindSystem<MRenderSystem>();
 
-    target->DestroyBuffer(pRenderSystem->GetDevice());
+    target->DestroyBuffer(renderSystem->GetDevice());
 
     target->m_uniforms.resize(source->m_uniforms.size());
     for (uint32_t i = 0; i < source->m_uniforms.size(); ++i)
@@ -158,12 +158,12 @@ void MShaderProgram::CompileShaderIfNeed()
         if ((m_shaderMask & 1 << idx) == 0) { continue; }
         if (desc.state != ShaderState::Unknow) { continue; }
 
-        desc.nShaderIdx     = pShaderResource->FindShaderByMacroParam(m_entryNames[idx], shaderType, m_shaderMacro);
-        desc.pShader        = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
-        auto* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
+        desc.nShaderIdx    = pShaderResource->FindShaderByMacroParam(m_entryNames[idx], shaderType, m_shaderMacro);
+        desc.pShader       = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
+        auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
         if (desc.pShader && !desc.pShader->IsCompiled())
         {
-            if (!desc.pShader->CompileShader(pRenderSystem->GetDevice()))
+            if (!desc.pShader->CompileShader(renderSystem->GetDevice()))
             {
                 desc.pShader = nullptr;
                 desc.state   = ShaderState::Failed;
@@ -177,7 +177,7 @@ void MShaderProgram::CompileShaderIfNeed()
 
         if (desc.pShader)
         {
-            UnbindShaderBuffer(shaderType, pRenderSystem->GetDevice());
+            UnbindShaderBuffer(shaderType, renderSystem->GetDevice());
             BindShaderBuffer(desc.pShader->GetBuffer(), shaderType);
         }
     }
@@ -239,11 +239,11 @@ MTextureResourceParam::MTextureResourceParam(const MShaderTextureParam& param)
     , m_TextureRef()
 {}
 
-void MTextureResourceParam::SetTexture(MTexturePtr pTexture)
+void MTextureResourceParam::SetTexture(MTexturePtr texture)
 {
     m_TextureRef.SetResource(nullptr);
 
-    MShaderTextureParam::SetTexture(pTexture);
+    MShaderTextureParam::SetTexture(texture);
 }
 
 void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource)

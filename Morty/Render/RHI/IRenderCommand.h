@@ -55,7 +55,7 @@ public:
     ) = 0;
 
     virtual bool DownloadTexture(
-            MTexture*                                                         pTexture,
+            MTexture*                                                         texture,
             const uint32_t&                                                   unMipIdx,
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) = 0;

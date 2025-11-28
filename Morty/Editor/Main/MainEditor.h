@@ -25,6 +25,7 @@ class RenderGraphView;
 class MessageWidget;
 class MInputEvent;
 class MTaskNode;
+class MenuBar;
 
 class MainEditor : public RenderViewContent
 {
@@ -33,13 +34,13 @@ public:
 
     virtual ~MainEditor() = default;
 
-    bool                                       Initialize(MEngine* pEngine);
+    bool                                       Initialize(MEngine* engine);
 
     void                                       Release();
 
     [[nodiscard]] MEngine*                     GetEngine() const { return m_engine; }
 
-    void                                       SetScene(MScene* pScene);
+    void                                       SetScene(MScene* scene);
 
     [[nodiscard]] MScene*                      GetScene() const { return m_scene; }
 
@@ -60,7 +61,7 @@ public:
 
     MTaskNode*                                 GetRenderTask() override { return m_renderTask; }
 
-    std::shared_ptr<SceneViewer>               CreateSceneViewer(const MString& viewName, MScene* pScene);
+    std::shared_ptr<SceneViewer>               CreateSceneViewer(const MString& viewName, MScene* scene);
 
     void                                       DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer);
 
@@ -71,16 +72,13 @@ public:
 protected:
     void UpdateSceneViewer(IRenderCommand* pRenderCommand);
 
-    void ShowMenu();
-
     void ShowView(BaseWidget* pView);
-
-    void ShowDialog();
 
 private:
     MEngine*                               m_engine = nullptr;
     MScene*                                m_scene  = nullptr;
     std::vector<BaseWidget*>               m_childView;
+    MenuBar*                               m_menuBar = nullptr;
     std::set<std::shared_ptr<SceneViewer>> m_sceneViewer;
 
     Vector4                                m_renderViewSize = Vector4(0, 0, 32, 32);

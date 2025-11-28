@@ -31,13 +31,13 @@ void GuizmoWidget::Render()
 
     MViewport*        pViewport = GetViewport();
 
-    MRenderSystem*    pRenderSystem         = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem*    renderSystem          = GetEngine()->FindSystem<MRenderSystem>();
     MEntity*          pCameraEntity         = pViewport->GetCamera();
     MSceneComponent*  pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
     MCameraComponent* pCameraComponent      = pCameraEntity->GetComponent<MCameraComponent>();
 
-    Matrix4           cameraView       = pRenderSystem->GetCameraViewMatrix(pCameraSceneComponent).Transposed();
-    Matrix4           cameraProjection = pRenderSystem
+    Matrix4           cameraView       = renderSystem->GetCameraViewMatrix(pCameraSceneComponent).Transposed();
+    Matrix4           cameraProjection = renderSystem
                                        ->GetCameraProjectionMatrix(
                                                pCameraComponent,
                                                pViewport->GetWidth(),

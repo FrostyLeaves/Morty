@@ -48,6 +48,7 @@ bool MMaterialTemplateResource::Load(std::unique_ptr<MResourceData>&& pResourceD
     for (auto& [passName, pass]: pMaterialData->materialPasses)
     {
         m_passes[passName] = std::make_unique<MMaterialPass>(*pass);
+        m_passes[passName]->Initialize(this);
     }
 
     m_resourceData = std::move(pResourceData);

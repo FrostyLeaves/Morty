@@ -60,7 +60,7 @@ public:
     virtual ~MComponent();
 
 public:
-    void         Initialize(MScene* pScene, const MGuid& id);
+    void         Initialize(MScene* scene, const MGuid& id);
 
     virtual void Release();
 

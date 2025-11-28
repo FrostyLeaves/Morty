@@ -11,13 +11,13 @@ IManager::IManager()
 
 IManager::~IManager() {}
 
-void     IManager::SetScene(MScene* pScene) { m_scene = pScene; }
+void     IManager::SetScene(MScene* scene) { m_scene = scene; }
 
 MScene*  IManager::GetScene() { return m_scene; }
 
 MEngine* IManager::GetEngine()
 {
-    if (MScene* pScene = GetScene()) { return pScene->GetEngine(); }
+    if (MScene* scene = GetScene()) { return scene->GetEngine(); }
 
     return nullptr;
 }

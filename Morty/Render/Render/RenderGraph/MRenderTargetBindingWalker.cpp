@@ -48,30 +48,30 @@ public:
 
         if (m_renderTargetCache[hash].empty())
         {
-            auto pTexture = MTexture::CreateTexture(desc.texture);
-            pTexture->GenerateBuffer(pDevice);
-            m_allTextures.push_back(pTexture);
-            return pTexture;
+            auto texture = MTexture::CreateTexture(desc.texture);
+            texture->GenerateBuffer(pDevice);
+            m_allTextures.push_back(texture);
+            return texture;
         }
 
-        auto pTexture = m_renderTargetCache[hash].front();
+        auto texture = m_renderTargetCache[hash].front();
         m_renderTargetCache[hash].pop();
 
-        return pTexture;
+        return texture;
     }
 
-    void RecoveryTexture(const MRenderTaskOutputDesc& desc, const MTexturePtr& pTexture)
+    void RecoveryTexture(const MRenderTaskOutputDesc& desc, const MTexturePtr& texture)
     {
         const size_t hash = Hash(desc);
 
-        m_renderTargetCache[hash].push(pTexture);
+        m_renderTargetCache[hash].push(texture);
     }
 
     void Release(MIDevice* pDevice)
     {
-        for (auto& pTexture: m_allTextures)
+        for (auto& texture: m_allTextures)
         {
-            if (pTexture) { pTexture->DestroyBuffer(pDevice); }
+            if (texture) { texture->DestroyBuffer(pDevice); }
         }
 
         m_renderTargetCache.clear();
@@ -88,18 +88,18 @@ private:
 
 using namespace morty;
 
-MRenderTargetBindingWalker::MRenderTargetBindingWalker(MEngine* pEngine)
-    : m_engine(pEngine)
+MRenderTargetBindingWalker::MRenderTargetBindingWalker(MEngine* engine)
+    : m_engine(engine)
     , m_cacheQueue(new MRenderTargetCacheQueue())
 {}
 
 MRenderTargetBindingWalker::~MRenderTargetBindingWalker()
 {
-    const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    m_cacheQueue->Release(pRenderSystem->GetDevice());
+    const MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    m_cacheQueue->Release(renderSystem->GetDevice());
     MORTY_SAFE_DELETE(m_cacheQueue);
 
-    for (const auto& pTexture: m_exclusiveTextures) { pTexture->DestroyBuffer(pRenderSystem->GetDevice()); }
+    for (const auto& texture: m_exclusiveTextures) { texture->DestroyBuffer(renderSystem->GetDevice()); }
     m_exclusiveTextures.clear();
 }
 
@@ -188,25 +188,25 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* pOutpu
 {
     if (pOutput == nullptr) return;
 
-    const MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    const auto&          desc          = pOutput->GetOutputDesc();
+    const MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    const auto&          desc         = pOutput->GetOutputDesc();
 
     MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
 
     if (desc.sharedPolicy == MESharedPolicy::Exclusive || m_forceExclusive)
     {
-        auto pTexture = MTexture::CreateTexture(desc.texture);
-        pTexture->GenerateBuffer(pRenderSystem->GetDevice());
-        pOutput->SetRenderTexture(pTexture);
+        auto texture = MTexture::CreateTexture(desc.texture);
+        texture->GenerateBuffer(renderSystem->GetDevice());
+        pOutput->SetRenderTexture(texture);
 
-        m_exclusiveTextures.push_back(pTexture);
+        m_exclusiveTextures.push_back(texture);
     }
     else if (desc.sharedPolicy == MESharedPolicy::Shared)
     {
         if (m_targetAllocCount.find(pOutput) == m_targetAllocCount.end())
         {
-            auto pTexture = m_cacheQueue->AllocTexture(desc, pRenderSystem->GetDevice());
-            pOutput->SetRenderTexture(pTexture);
+            auto texture = m_cacheQueue->AllocTexture(desc, renderSystem->GetDevice());
+            pOutput->SetRenderTexture(texture);
 
             m_targetAllocCount[pOutput] = 0;
         }
@@ -229,8 +229,8 @@ void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNodeOutput* pOutput
         if (findCount == m_targetAllocCount.end()) { return; }
         if (findCount->second <= 1)
         {
-            auto pTexture = pOutput->GetRenderTexture();
-            m_cacheQueue->RecoveryTexture(desc, pTexture);
+            auto texture = pOutput->GetRenderTexture();
+            m_cacheQueue->RecoveryTexture(desc, texture);
 
             m_targetAllocCount.erase(findCount);
         }

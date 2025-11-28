@@ -26,7 +26,7 @@ public:
     virtual ~MMoveControllerSystem();
 
 public:
-    void SceneTick(MScene* pScene, const float& fDelta) override;
+    void SceneTick(MScene* scene, const float& fDelta) override;
 
 public:
     void UpdateTransform(MMoveControllerComponent* component, const float& fDelta, const Vector2& v2MouseAddi);

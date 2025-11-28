@@ -25,13 +25,13 @@ public:
 
     virtual std::set<const MType*> RegisterComponentType() const { return {}; }
 
-    virtual void                   SceneTick(MScene* pScene, const float& fDelta) { MORTY_UNUSED(pScene, fDelta); }
+    virtual void                   SceneTick(MScene* scene, const float& fDelta) { MORTY_UNUSED(scene, fDelta); }
 
     virtual void                   RegisterComponent(MComponent* component) { MORTY_UNUSED(component); }
 
     virtual void                   UnregisterComponent(MComponent* component) { MORTY_UNUSED(component); }
 
-    void                           SetScene(MScene* pScene);
+    void                           SetScene(MScene* scene);
 
     MScene*                        GetScene();
 

@@ -71,9 +71,9 @@ public:
 
     bool EditMMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& material);
 
-    bool EditMMaterial(std::shared_ptr<MMaterial> material);
+    bool EditMMaterial(const std::shared_ptr<MMaterial>& material);
 
-    bool EditShaderProperty(MShaderParameterSet* pProperty);
+    bool EditMaterialProperty(MMaterialPropertyModifier* modifier);
 
     bool EditMResource(
             const MString&              strDlgID,
@@ -92,7 +92,7 @@ public:
             std::shared_ptr<MResource>  pResource
     );
 
-    void                         ShowTexture(MTexturePtr pTexture, const Vector2& v2Size);
+    void                         ShowTexture(MTexturePtr texture, const Vector2& v2Size);
 
     //auto call ShowValue/ShowNode
     bool                         EditMVariant(const MString& strVariantName, MVariant& value);
@@ -103,7 +103,7 @@ public:
 
     template<typename TYPE> void SetTemporaryValue(const MString& strValueName, const TYPE& valuealue);
 
-    void                         BindEngine(MEngine* pEngine) { m_engine = pEngine; }
+    void                         BindEngine(MEngine* engine) { m_engine = engine; }
 
 private:
     static unsigned int                    m_unItemIDPool;

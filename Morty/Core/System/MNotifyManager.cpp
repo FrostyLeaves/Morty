@@ -11,18 +11,14 @@ MNotifyManager::MNotifyManager() {}
 
 MNotifyManager::~MNotifyManager() {}
 
-void MNotifyManager::SendNotify(
-        const char*         strNotifyName,
-        MScene*             pScene,
-        const MComponentID& senderID
-)
+void MNotifyManager::SendNotify(const char* strNotifyName, MScene* scene, const MComponentID& senderID)
 {
     auto findResult = m_notifyTable.find(strNotifyName);
     if (findResult != m_notifyTable.end())
     {
         for (MNotifyFunction& func: findResult->second)
         {
-            MComponent* pSender = pScene->GetComponent(senderID);
+            MComponent* pSender = scene->GetComponent(senderID);
             func(pSender);
         }
     }
@@ -36,10 +32,7 @@ void MNotifyManager::RegisterNotify(const char* strNotifyName, MNotifyFunction f
             [](const MNotifyFunction& a, const MNotifyFunction& b) {
                 if (a.target_type() != b.target_type()) return false;
 
-                if (a.target<MNotifyFunction>() != b.target<MNotifyFunction>())
-                {
-                    return false;
-                }
+                if (a.target<MNotifyFunction>() != b.target<MNotifyFunction>()) { return false; }
                 //if (*a.target<void(MComponent*)>() != *b.target<void(MComponent*)>())
                 //	return false;
 
@@ -59,9 +52,7 @@ void MNotifyManager::UnregisterNotify(const char* strNotifyName, MNotifyFunction
                 [](const MNotifyFunction& a, const MNotifyFunction& b) {
                     if (a.target_type() != b.target_type()) return false;
 
-                    if (*a.target<void (*)(MComponent*)>() !=
-                        *b.target<void (*)(MComponent*)>())
-                        return false;
+                    if (*a.target<void (*)(MComponent*)>() != *b.target<void (*)(MComponent*)>()) return false;
 
                     return false;
                 }

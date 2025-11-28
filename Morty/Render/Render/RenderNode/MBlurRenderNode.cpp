@@ -16,18 +16,18 @@ const MStringId            BlurDirectionName = MStringId("Gaussian Blur Vertical
 
 std::shared_ptr<MMaterial> MBlurRenderNode::CreateMaterial()
 {
-    auto pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
-    auto pBlurMaterial = pResourceSystem->FindResource<MMaterialTemplate>("blur");
-    
+    auto pBlurMaterial = resourceSystem->FindResource<MMaterialTemplate>("blur");
+
     //TODO
     /*
     if (pBlurMaterial == nullptr)
     {
-        pBlurMaterial = pResourceSystem->CreateResource<MMaterialTemplate>("blur");
+        pBlurMaterial = resourceSystem->CreateResource<MMaterialTemplate>("blur");
         std::shared_ptr<MResource> pVertexShader =
-                pResourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mvs");
-        std::shared_ptr<MResource> pPixelShader = pResourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mps");
+                resourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mvs");
+        std::shared_ptr<MResource> pPixelShader = resourceSystem->LoadResource("Shader/PostProcess/gaussian_blur.mps");
         pBlurMaterial->LoadShader(pVertexShader, MEShaderType::EVertex, MRenderGlobal::DEFAULT_VERTEX_ENTRY);
         pBlurMaterial->LoadShader(pPixelShader, MEShaderType::EPixel, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
         pBlurMaterial->SetCullMode(MECullMode::ECullNone);

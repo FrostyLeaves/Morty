@@ -54,7 +54,7 @@ public:
 
     void               Resize(const Vector2& v2Size);
 
-    virtual void       Initialize(MEngine* pEngine);
+    virtual void       Initialize(MEngine* engine);
 
     virtual void       Release();
 

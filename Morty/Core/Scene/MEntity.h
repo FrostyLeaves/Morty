@@ -24,7 +24,7 @@ class MORTY_API MEntity : public MTypeClass
 public:
     MEntity();
 
-    MEntity(MScene* pScene, const MGuid& nID);
+    MEntity(MScene* scene, const MGuid& nID);
 
     virtual ~MEntity();//Release memory
 

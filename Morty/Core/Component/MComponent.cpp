@@ -20,9 +20,9 @@ MComponent::MComponent()
 
 MComponent::~MComponent() {}
 
-void MComponent::Initialize(MScene* pScene, const MGuid& id)
+void MComponent::Initialize(MScene* scene, const MGuid& id)
 {
-    m_scene    = pScene;
+    m_scene    = scene;
     m_entityID = id;
 
     m_valid = true;
@@ -53,9 +53,9 @@ void MComponent::PostDeserialize(const std::map<MGuid, MGuid>& tRedirectGuid) { 
 
 void MComponent::SendComponentNotify(const char* notify)
 {
-    if (MScene* pScene = GetScene())
+    if (MScene* scene = GetScene())
     {
-        if (MNotifyManager* notifySystem = pScene->GetManager<MNotifyManager>())
+        if (MNotifyManager* notifySystem = scene->GetManager<MNotifyManager>())
         {
             notifySystem->SendNotify(notify, GetScene(), GetComponentID());
         }

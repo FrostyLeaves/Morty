@@ -38,10 +38,11 @@ public:
     [[nodiscard]] MShaderMacro   GetShaderMacro() const;
 
     [[nodiscard]] std::shared_ptr<MMaterialTemplate> GetTemplate() const;
-    void                 ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
+    void ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate);
 
-    MShaderParameterSet* GetMaterialParameterSet() const;
-    const MMaterialPropertyModifier* GetPropertyModifier() const { return &m_propertyModifier; }
+    [[nodiscard]] MShaderParameterSet*             GetMaterialParameterSet() const;
+    [[nodiscard]] const MMaterialPropertyModifier* GetPropertyModifier() const { return &m_propertyModifier; }
+    MMaterialPropertyModifier*                     GetPropertyModifier() { return &m_propertyModifier; }
 
 public:
     void                              OnCreated() override;

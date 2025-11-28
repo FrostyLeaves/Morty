@@ -217,7 +217,7 @@ flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder
     return builder.Finish().Union();
 }
 
-void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer)
+void MResourceRef::Deserialize(MResourceSystem* resourceSystem, const void* pBufferPointer)
 {
     const fbs::MResourceRef* fbData = reinterpret_cast<const fbs::MResourceRef*>(pBufferPointer);
     if (!fbData) { return; }
@@ -226,7 +226,7 @@ void MResourceRef::Deserialize(MResourceSystem* pResourceSystem, const void* pBu
     if (fbData->path())
     {
         MString strPath = fbData->path()->str();
-        pResource       = pResourceSystem->LoadResource(strPath);
+        pResource       = resourceSystem->LoadResource(strPath);
     }
 
     SetResource(pResource);

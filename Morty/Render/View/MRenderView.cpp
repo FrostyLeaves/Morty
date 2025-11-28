@@ -49,7 +49,7 @@ void MRenderView::Resize(const Vector2& v2Size)
     InitializeSwapchain();
 }
 
-void MRenderView::Initialize(MEngine* pEngine) { m_engine = pEngine; }
+void MRenderView::Initialize(MEngine* engine) { m_engine = engine; }
 
 void MRenderView::InitSize(uint32_t nWidht, uint32_t nHeight)
 {
@@ -365,24 +365,24 @@ bool MRenderView::BindRenderPass()
         m_renderTarget[i].pPrimaryCommand       = nullptr;
         m_renderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
-        auto pTexture   = MTexture::CreateTexture({
-                  .strName         = "Editor Render View",
-                  .n3Size          = Vector3i(size.x, size.y, 1),
-                  .eTextureType    = METextureType::ETexture2DArray,
-                  .eFormat         = METextureFormat::UNorm_RGBA8,
-                  .eMipmapDataType = MEMipmapDataType::Disable,
-                  .nReadUsage      = METextureReadUsageBit::EPixelSampler,
-                  .nWriteUsage     = METextureWriteUsageBit::ERenderPresent,
+        auto texture    = MTexture::CreateTexture({
+                   .strName         = "Editor Render View",
+                   .n3Size          = Vector3i(size.x, size.y, 1),
+                   .eTextureType    = METextureType::ETexture2DArray,
+                   .eFormat         = METextureFormat::UNorm_RGBA8,
+                   .eMipmapDataType = MEMipmapDataType::Disable,
+                   .nReadUsage      = METextureReadUsageBit::EPixelSampler,
+                   .nWriteUsage     = METextureWriteUsageBit::ERenderPresent,
         });
-        auto textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+        auto textureRHI = texture->GetTextureRHI<MTextureRHIVulkan>();
 
         textureRHI->vkTextureImage       = vSwapchainImages[i];
         textureRHI->vkTextureImageMemory = VK_NULL_HANDLE;
         textureRHI->vkImageLayout        = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         textureRHI->vkTextureFormat      = m_vkColorFormat;
 
-        pTexture->GenerateBuffer(m_device);
-        m_renderTarget[i].renderPass.AddBackTexture(pTexture, {true, MColor::Black_T});
+        texture->GenerateBuffer(m_device);
+        m_renderTarget[i].renderPass.AddBackTexture(texture, {true, MColor::Black_T});
 
         MTexturePtr pDepthTexture =
                 MTexture::CreateTexture(MTexture::CreateDepthBuffer("Editor Depth View").InitSize(size));
@@ -409,8 +409,8 @@ void MRenderView::DestroyRenderPass()
 
         for (MRenderTarget& tex: rendertarget.renderPass.m_renderTarget.backTargets)
         {
-            tex.pTexture->DestroyBuffer(m_device);
-            tex.pTexture = nullptr;
+            tex.texture->DestroyBuffer(m_device);
+            tex.texture = nullptr;
         }
 
         rendertarget.renderPass.m_renderTarget.backTargets.clear();

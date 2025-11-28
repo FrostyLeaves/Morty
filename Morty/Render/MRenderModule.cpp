@@ -15,6 +15,7 @@
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMaterialResourceData.h"
 #include "Resource/MMaterialTemplateResource.h"
+#include "Resource/MMaterialTemplateResourceData.h"
 #include "Resource/MMeshResource.h"
 #include "Resource/MShaderResource.h"
 #include "Resource/MSkeletalAnimationResource.h"
@@ -46,85 +47,82 @@ const MString MRenderModule::Default_R8_Zero          = MString("Default_R8_Zero
 const MString MRenderModule::DefaultAnimationMaterial = MString("Default_Animation_Material");
 const MString MRenderModule::NoiseTexture             = MString("Noise Texture");
 
-bool          MRenderModule::Register(MEngine* pEngine)
+bool          MRenderModule::Register(MEngine* engine)
 {
-    if (!pEngine) { return false; }
+    if (!engine) { return false; }
 
-    MTaskGraph* pTaskGraph = pEngine->GetMainGraph();
+    MTaskGraph* pTaskGraph = engine->GetMainGraph();
 
-    pEngine->RegisterSystem<MModelSystem>();
-    pEngine->RegisterSystem<MSkyBoxSystem>();
-    pEngine->RegisterSystem<MShaderProgramSystem>();
+    engine->RegisterSystem<MModelSystem>();
+    engine->RegisterSystem<MSkyBoxSystem>();
+    engine->RegisterSystem<MShaderProgramSystem>();
 
-    MRenderSystem* pRenderSystem = pEngine->RegisterSystem<MRenderSystem>();
+    auto renderSystem = engine->RegisterSystem<MRenderSystem>();
 
-    if (MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>())
+    if (auto resourceSystem = engine->FindSystem<MResourceSystem>())
     {
-        pResourceSystem->RegisterResourceLoader<MMeshResourceLoader>();
-        pResourceSystem->RegisterResourceLoader<MShaderResourceLoader>();
-        pResourceSystem->RegisterResourceLoader<MTextureResourceLoader>();
-        pResourceSystem->RegisterResourceLoader<MMaterialResourceLoader>();
-        pResourceSystem->RegisterResourceLoader<MSkeletonResourceLoader>();
-        pResourceSystem->RegisterResourceLoader<MSkeletalAnimationLoader>();
+        resourceSystem->RegisterResourceLoader<MMeshResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MShaderResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MTextureResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MMaterialResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MSkeletonResourceLoader>();
+        resourceSystem->RegisterResourceLoader<MSkeletalAnimationLoader>();
+        resourceSystem->RegisterResourceLoader<MMaterialTemplateResourceDataLoader>();
 
 
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(DefaultWhite))
+        if (std::shared_ptr<MTextureResource> texture = resourceSystem->CreateResource<MTextureResource>(DefaultWhite))
         {
             std::vector<MByte> byte(4);
             byte[0] = byte[1] = byte[2] = byte[3] = 255;
-            pTexture->Load(MTextureResourceUtil::LoadFromMemory(DefaultWhite, byte, 1, 1, 4, MTexturePixelType::Byte8));
+            texture->Load(MTextureResourceUtil::LoadFromMemory(DefaultWhite, byte, 1, 1, 4, MTexturePixelType::Byte8));
         }
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(DefaultBlack))
+        if (std::shared_ptr<MTextureResource> texture = resourceSystem->CreateResource<MTextureResource>(DefaultBlack))
         {
             std::vector<MByte> byte(4);
             byte[0] = byte[1] = byte[2] = byte[3] = 0;
-            pTexture->Load(MTextureResourceUtil::LoadFromMemory(DefaultBlack, byte, 1, 1, 4, MTexturePixelType::Byte8));
+            texture->Load(MTextureResourceUtil::LoadFromMemory(DefaultBlack, byte, 1, 1, 4, MTexturePixelType::Byte8));
         }
 
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(DefaultNormal))
+        if (std::shared_ptr<MTextureResource> texture = resourceSystem->CreateResource<MTextureResource>(DefaultNormal))
         {
             std::vector<MByte> byte(3);
             byte[0] = byte[1] = 127;
             byte[2]           = 255;
-            pTexture->Load(
+            texture->Load(
                     MTextureResourceUtil::LoadFromMemory("Default_Normal", byte, 1, 1, 3, MTexturePixelType::Byte8)
             );
         }
 
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(Default_R8_One))
+        if (std::shared_ptr<MTextureResource> texture =
+                    resourceSystem->CreateResource<MTextureResource>(Default_R8_One))
         {
             std::vector<MByte> byte(1);
             byte[0] = 255;
-            pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_One", byte, 1, 1, 1, MTexturePixelType::Byte8));
+            texture->Load(MTextureResourceUtil::LoadFromMemory("R8_One", byte, 1, 1, 1, MTexturePixelType::Byte8));
         }
 
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
+        if (std::shared_ptr<MTextureResource> texture =
+                    resourceSystem->CreateResource<MTextureResource>(Default_R8_Zero))
         {
             std::vector<MByte> byte(1);
             byte[0] = 0;
-            pTexture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", byte, 1, 1, 1, MTexturePixelType::Byte8));
+            texture->Load(MTextureResourceUtil::LoadFromMemory("R8_Zero", byte, 1, 1, 1, MTexturePixelType::Byte8));
         }
 
-        if (std::shared_ptr<MTextureResource> pTexture =
-                    pResourceSystem->CreateResource<MTextureResource>(NoiseTexture))
+        if (std::shared_ptr<MTextureResource> texture = resourceSystem->CreateResource<MTextureResource>(NoiseTexture))
         {
             constexpr size_t   nSize = 8;
             std::vector<MByte> byte(nSize * nSize * 4);
             for (size_t nIdx = 0; nIdx < nSize * 4; ++nIdx) { byte[nIdx] = MMath::RandInt(0, 255); }
-            pTexture->Load(
+            texture->Load(
                     MTextureResourceUtil::LoadFromMemory(NoiseTexture, byte, nSize, nSize, 4, MTexturePixelType::Byte8)
             );
         }
     }
 
-    pEngine->RegisterGlobalObject<MMeshManager>();
+    engine->RegisterGlobalObject<MMeshManager>();
 
-    if (auto pComponentSystem = pEngine->FindSystem<MComponentSystem>())
+    if (auto pComponentSystem = engine->FindSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MModelComponent>();
         pComponentSystem->RegisterComponent<MCameraComponent>();
@@ -137,17 +135,17 @@ bool          MRenderModule::Register(MEngine* pEngine)
     }
 
 
-    if (MObjectSystem* pObjectSystem = pEngine->FindSystem<MObjectSystem>())
+    if (auto objectSystem = engine->FindSystem<MObjectSystem>())
     {
-        pObjectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
+        objectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
     }
 
-    MTaskNode* pRenderUpdateTask = pTaskGraph->AddNode<MTaskNode>(MRenderGlobal::TASK_RENDER_MODULE_UPDATE);
-    pRenderUpdateTask->SetThreadType(METhreadType::ERenderThread);
-    pRenderUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, pRenderSystem));
+    auto renderUpdateTask = pTaskGraph->AddNode<MTaskNode>(MRenderGlobal::TASK_RENDER_MODULE_UPDATE);
+    renderUpdateTask->SetThreadType(METhreadType::ERenderThread);
+    renderUpdateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MRenderSystem::Update, renderSystem));
 
 
-    MRenderModule::RegisterMaterial(pEngine);
+    MRenderModule::RegisterMaterial(engine);
 
     return true;
 }
@@ -158,18 +156,18 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 
     if (pObject->GetType() == MScene::GetClassType())
     {
-        if (MScene* pScene = pObject->template DynamicCast<MScene>())
+        if (MScene* scene = pObject->template DynamicCast<MScene>())
         {
-            pScene->RegisterManager<MMeshInstanceManager>();
-            //pScene->RegisterManager<MEnvironmentManager>();
-            //pScene->RegisterManager<MShadowMeshManager>();
-            //pScene->RegisterManager<MAnimationManager>();
+            scene->RegisterManager<MMeshInstanceManager>();
+            //scene->RegisterManager<MEnvironmentManager>();
+            //scene->RegisterManager<MShadowMeshManager>();
+            //scene->RegisterManager<MAnimationManager>();
         }
     }
 }
 
-void MRenderModule::RegisterMaterial(MEngine* pEngine)
+void MRenderModule::RegisterMaterial(MEngine* engine)
 {
-    MResourceSystem* pResourceSystem = pEngine->FindSystem<MResourceSystem>();
-    MORTY_ASSERT(pResourceSystem);
+    MResourceSystem* resourceSystem = engine->FindSystem<MResourceSystem>();
+    MORTY_ASSERT(resourceSystem);
 }

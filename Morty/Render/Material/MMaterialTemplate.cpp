@@ -24,8 +24,8 @@ bool MMaterialTemplate::LoadShader(const std::shared_ptr<MResource>& pResource)
 
 bool MMaterialTemplate::LoadShader(const MString& strResource)
 {
-    auto* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    if (std::shared_ptr<MResource> pResource = pResourceSystem->LoadResource(strResource))
+    auto* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strResource))
     {
         return LoadShader(pResource);
     }
@@ -41,7 +41,8 @@ MMaterialTemplate::SetPass(const MStringId& passName, const MStringId& vsEntryNa
     auto           findResult = m_passes.find(passName);
     if (findResult == m_passes.end())
     {
-        materialPass = (m_passes[passName] = std::make_unique<MMaterialPass>(this)).get();
+        materialPass = (m_passes[passName] = std::make_unique<MMaterialPass>()).get();
+        materialPass->Initialize(this);
     }
     else { materialPass = findResult->second.get(); }
 

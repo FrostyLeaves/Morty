@@ -27,7 +27,7 @@
 ```cpp
 #include "Tools/MModelImporter.h"
 
-MModelImporter importer(pEngine);
+MModelImporter importer(engine);
 
 MModelConvertInfo info;
 info.strResourcePath = "model.fbx";
@@ -45,7 +45,7 @@ importer.Import(info);
 ```cpp
 #include "Tools/MMeshImporter.h"
 
-MMeshImporter meshImporter(pEngine);
+MMeshImporter meshImporter(engine);
 
 MString meshName;
 auto pMeshResource = meshImporter.ImportMesh(

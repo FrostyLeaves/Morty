@@ -90,8 +90,8 @@ template<typename TYPE> void RegisterExtensionFeatures(void*& pExtensionFeatureL
 }
 
 
-MVulkanPhysicalDevice::MVulkanPhysicalDevice(MEngine* pEngine)
-    : m_engine(pEngine)
+MVulkanPhysicalDevice::MVulkanPhysicalDevice(MEngine* engine)
+    : m_engine(engine)
 {}
 
 MEngine* MVulkanPhysicalDevice::GetEngine() const { return m_engine; }

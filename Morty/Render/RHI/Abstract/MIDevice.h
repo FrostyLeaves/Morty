@@ -44,7 +44,7 @@ public:
 
     virtual ~MIDevice() {}
 
-    void     SetEngine(MEngine* pEngine) { m_engine = pEngine; }
+    void     SetEngine(MEngine* engine) { m_engine = engine; }
 
     MEngine* GetEngine() const { return m_engine; }
 
@@ -64,9 +64,9 @@ public:
 
     virtual void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) = 0;
 
-    virtual void GenerateTexture(MTexture* pTexture, const std::vector<std::vector<MByte>>& buffer) = 0;
+    virtual void GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer) = 0;
 
-    virtual void DestroyTexture(MTexture* pTexture) = 0;
+    virtual void DestroyTexture(MTexture* texture) = 0;
 
     virtual bool CompileShader(MShader* pShader) = 0;
 

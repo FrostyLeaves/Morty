@@ -68,7 +68,7 @@ MModelImporter (~600行)
 ### 旧 API (MModelConverter)
 
 ```cpp
-MModelConverter converter(pEngine);
+MModelConverter converter(engine);
 
 MModelConvertInfo info;
 info.strResourcePath = "model.fbx";
@@ -83,7 +83,7 @@ converter.Convert(info);
 
 ```cpp
 // 完全相同的API！
-MModelImporter importer(pEngine);
+MModelImporter importer(engine);
 
 MModelConvertInfo info;
 info.strResourcePath = "model.fbx";
@@ -119,13 +119,13 @@ importer.Import(info);  // 只是方法名从 Convert 改为 Import
 
 **旧代码**:
 ```cpp
-MModelConverter converter(pEngine);
+MModelConverter converter(engine);
 converter.Convert(convertInfo);
 ```
 
 **新代码**:
 ```cpp
-MModelImporter importer(pEngine);
+MModelImporter importer(engine);
 importer.Import(convertInfo);
 ```
 
@@ -144,7 +144,7 @@ importer.Import(convertInfo);
 ```cpp
 #include "Tools/MMeshImporter.h"
 
-MMeshImporter meshImporter(pEngine);
+MMeshImporter meshImporter(engine);
 
 // 从 Assimp mesh 导入
 MString meshName;
@@ -220,9 +220,9 @@ Morty/Render/
 ```cpp
 #include "Model/MModelConverter.h"
 
-void ConvertModel(MEngine* pEngine, const MString& modelPath)
+void ConvertModel(MEngine* engine, const MString& modelPath)
 {
-    MModelConverter converter(pEngine);
+    MModelConverter converter(engine);
 
     MModelConvertInfo info;
     info.strResourcePath = modelPath;
@@ -243,9 +243,9 @@ void ConvertModel(MEngine* pEngine, const MString& modelPath)
 ```cpp
 #include "Tools/MModelImporter.h"  // 只需要改这一行
 
-void ConvertModel(MEngine* pEngine, const MString& modelPath)
+void ConvertModel(MEngine* engine, const MString& modelPath)
 {
-    MModelImporter importer(pEngine);  // MModelConverter → MModelImporter
+    MModelImporter importer(engine);  // MModelConverter → MModelImporter
 
     MModelConvertInfo info;
     info.strResourcePath = modelPath;

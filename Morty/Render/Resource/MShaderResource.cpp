@@ -47,11 +47,11 @@ bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
     auto           pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
 
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
 
     for (MShader* pShader: m_shaders)
     {
-        pShader->CleanShader(pRenderSystem->GetDevice());
+        pShader->CleanShader(renderSystem->GetDevice());
 
         pShader->m_strShaderPath = pShaderData->strShaderPath;
         pShader->m_languageType  = pShaderData->eLanguageType;
@@ -70,12 +70,12 @@ bool MShaderResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 
 void MShaderResource::OnDelete()
 {
-    MRenderSystem* pRenderSystem = m_engine->FindSystem<MRenderSystem>();
-    MORTY_ASSERT(pRenderSystem);
+    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    MORTY_ASSERT(renderSystem);
 
     for (MShader* pShader: m_shaders)
     {
-        pShader->CleanShader(pRenderSystem->GetDevice());
+        pShader->CleanShader(renderSystem->GetDevice());
         delete pShader;
         pShader = nullptr;
     }

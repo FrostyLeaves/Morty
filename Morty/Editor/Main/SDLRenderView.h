@@ -38,7 +38,7 @@ public:
 
     virtual ~SDLRenderView() = default;
 
-    void Initialize(MEngine* pEngine) override;
+    void Initialize(MEngine* engine) override;
 
     void Release() override;
 
@@ -77,7 +77,7 @@ private:
     bool                            m_windowClosed    = false;
     SDL_Window*                     m_sDLWindow       = nullptr;
     MTaskNode*                      m_renderTask      = nullptr;
-    ImGuiRenderer*                m_imGuiRender     = nullptr;
+    ImGuiRenderer*                  m_imGuiRender     = nullptr;
 
     std::vector<RenderViewContent*> m_content;
 

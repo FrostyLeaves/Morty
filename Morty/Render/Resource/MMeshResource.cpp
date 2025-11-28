@@ -206,8 +206,8 @@ void MMeshResource::OnDelete() { MResource::OnDelete(); }
 
 void MMeshResource::Clean()
 {
-    MRenderSystem* pRenderSystem = GetEngine()->FindSystem<MRenderSystem>();
-    if (MIMesh* pMesh = GetMesh()) { pMesh->DestroyBuffer(pRenderSystem->GetDevice()); }
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    if (MIMesh* pMesh = GetMesh()) { pMesh->DestroyBuffer(renderSystem->GetDevice()); }
 }
 
 void MMeshResource::ResetBounds()

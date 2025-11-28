@@ -18,17 +18,17 @@ public:
 
     virtual ~MISystem();
 
-    virtual void Initialize(){};
+    virtual void Initialize() {};
 
-    virtual void Release(){};
+    virtual void Release() {};
 
 
     virtual void EngineTick(const float& fDelta) { MORTY_UNUSED(fDelta); }
 
-    virtual void SceneTick(MScene* pScene, const float& fDelta) { MORTY_UNUSED(pScene, fDelta); }
+    virtual void SceneTick(MScene* scene, const float& fDelta) { MORTY_UNUSED(scene, fDelta); }
 
 
-    void         SetEngine(MEngine* pEngine);
+    void         SetEngine(MEngine* engine);
 
     MEngine*     GetEngine();
 

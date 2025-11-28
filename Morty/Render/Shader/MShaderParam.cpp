@@ -43,11 +43,11 @@ MShaderTextureParam::MShaderTextureParam()
 #endif
 }
 
-void MShaderTextureParam::SetTexture(MTexturePtr pTexture)
+void MShaderTextureParam::SetTexture(MTexturePtr texture)
 {
-    if (this->pTexture != pTexture)
+    if (this->texture != texture)
     {
-        this->pTexture = pTexture;
+        this->texture = texture;
         SetDirty();
     }
 }

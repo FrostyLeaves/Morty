@@ -19,7 +19,7 @@ class MShaderParameterSet;
 class ImGuiRenderer
 {
 public:
-    ImGuiRenderer(MEngine* pEngine);
+    ImGuiRenderer(MEngine* engine);
 
     virtual ~ImGuiRenderer() = default;
 
@@ -50,7 +50,7 @@ public:
 protected:
     struct MImGuiTextureDest {
         int                                  nDestroyCount;
-        MTexturePtr                          pTexture;
+        MTexturePtr                          texture;
         std::shared_ptr<MShaderParameterSet> pParameterSet;
     };
 

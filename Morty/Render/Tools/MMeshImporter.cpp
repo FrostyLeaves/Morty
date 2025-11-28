@@ -21,14 +21,14 @@
 namespace morty
 {
 
-MMeshImporter::MMeshImporter(MEngine* pEngine)
-    : m_engine(pEngine)
+MMeshImporter::MMeshImporter(MEngine* engine)
+    : m_engine(engine)
     , m_resourceSystem(nullptr)
 {
     if (m_engine) { m_resourceSystem = m_engine->FindSystem<MResourceSystem>(); }
 }
 
-MMeshImporter::~               MMeshImporter() = default;
+MMeshImporter::~MMeshImporter() = default;
 
 std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkeleton* pSkeleton, MString& strMeshName)
 {

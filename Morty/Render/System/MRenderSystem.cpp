@@ -59,7 +59,7 @@ void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n
 {
     for (MRenderTarget& tex: renderpass.m_renderTarget.backTargets)
     {
-        if (tex.pTexture->GetSize2D() != n2Size) { tex.pTexture->Resize(GetDevice(), n2Size); }
+        if (tex.texture->GetSize2D() != n2Size) { tex.texture->Resize(GetDevice(), n2Size); }
     }
 
     if (MTexturePtr pDepthTexture = renderpass.GetDepthTexture())
@@ -86,8 +86,8 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
     {
         for (MRenderTarget& tex: renderpass.m_renderTarget.backTargets)
         {
-            tex.pTexture->DestroyBuffer(GetDevice());
-            tex.pTexture = nullptr;
+            tex.texture->DestroyBuffer(GetDevice());
+            tex.texture = nullptr;
         }
 
         if (MTexturePtr pDepthTexture = renderpass.GetDepthTexture())

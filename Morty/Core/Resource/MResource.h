@@ -167,7 +167,7 @@ public:
 public:
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
 
-    void                      Deserialize(MResourceSystem* pResourceSystem, const void* pBufferPointer);
+    void                      Deserialize(MResourceSystem* resourceSystem, const void* pBufferPointer);
 
 private:
     friend class MResource;

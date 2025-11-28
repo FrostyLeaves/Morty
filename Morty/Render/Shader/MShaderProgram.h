@@ -27,7 +27,7 @@ public:
 
     explicit MTextureResourceParam(const MShaderTextureParam& param);
     void        SetTexture(const std::shared_ptr<MTextureResource>& pTextureResource);
-    void        SetTexture(MTexturePtr pTexture) override;
+    void        SetTexture(MTexturePtr texture) override;
     MTexturePtr GetTexture() override;
 
 
@@ -53,7 +53,7 @@ public:
 
     explicit MShaderProgram() = default;
     explicit MShaderProgram(
-            MEngine*                          pEngine,
+            MEngine*                          engine,
             EUsage                            usage,
             const std::shared_ptr<MResource>& shader,
             const MShaderMacro&               macro,
@@ -86,7 +86,7 @@ private:
     void        UnloadShader();
 
     static void CopyShaderParams(
-            MEngine*                                          pEngine,
+            MEngine*                                          engine,
             const std::shared_ptr<MShaderParameterSet>&       target,
             const std::shared_ptr<const MShaderParameterSet>& source
     );

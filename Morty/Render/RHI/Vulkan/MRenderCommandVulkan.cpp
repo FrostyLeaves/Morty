@@ -199,7 +199,7 @@ void MRenderCommandVulkan::AddBarrierForPixelSample(const MSetShaderParameterSet
     std::vector<MTexture*> vTextures;
     for (const auto& pParam: cmd->property->GetTextureParams())
     {
-        if (auto pTexture = pParam->GetTexture().get()) { vTextures.emplace_back(pTexture); }
+        if (auto texture = pParam->GetTexture().get()) { vTextures.emplace_back(texture); }
     }
     AddRenderToTextureBarrier(vTextures, METextureBarrierStage::EPixelShaderSample);
 }
@@ -283,17 +283,17 @@ void MRenderCommandVulkan::InternalBeginRenderPass(MRenderPass* pRenderPass)
         const MColor color = pRenderPass->m_renderTarget.backTargets[i].desc.cClearColor;
         //-Wmissing-braces
         vClearValues[i].color = {{color.r, color.g, color.b, color.a}};
-        vBackTextures[i]      = pRenderPass->m_renderTarget.backTargets[i].pTexture.get();
+        vBackTextures[i]      = pRenderPass->m_renderTarget.backTargets[i].texture.get();
     }
     AddRenderToTextureBarrier(vBackTextures, METextureBarrierStage::EPixelShaderWrite);
 
 
-    if (MTexturePtr pTexture = pRenderPass->GetDepthTexture())
+    if (MTexturePtr texture = pRenderPass->GetDepthTexture())
     {
         vClearValues.push_back({});
         vClearValues.back().depthStencil = {1.0f, 0};
 
-        AddRenderToTextureBarrier({pTexture.get()}, METextureBarrierStage::EPixelShaderWrite);
+        AddRenderToTextureBarrier({texture.get()}, METextureBarrierStage::EPixelShaderWrite);
     }
 
     if (auto pShadingRateTex = pRenderPass->GetShadingRateTexture())
@@ -396,8 +396,8 @@ bool MRenderCommandVulkan::AddRenderToTextureBarrier(
     if (vTextures.empty()) { return false; }
 
     std::vector<VkImageLayout> layouts(vTextures.size());
-    std::transform(vTextures.begin(), vTextures.end(), layouts.begin(), [this, dstStage](auto pTexture) {
-        return GetTextureBarrierLayout(pTexture, dstStage);
+    std::transform(vTextures.begin(), vTextures.end(), layouts.begin(), [this, dstStage](auto texture) {
+        return GetTextureBarrierLayout(texture, dstStage);
     });
 
 
@@ -518,14 +518,14 @@ void MRenderCommandVulkan::SetTextureLayout(
 
     for (size_t nTexIdx = 0; nTexIdx < vTextures.size(); ++nTexIdx)
     {
-        MTexture* pTexture = vTextures[nTexIdx];
-        if (pTexture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent) continue;
+        MTexture* texture = vTextures[nTexIdx];
+        if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent) continue;
 
-        auto textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+        auto textureRHI = texture->GetTextureRHI<MTextureRHIVulkan>();
         if (textureRHI->vkTextureImage == VK_NULL_HANDLE) { continue; }
 
         VkImageLayout oldLayout  = textureRHI->vkImageLayout;
-        auto          findResult = m_textureLayout.find(pTexture);
+        auto          findResult = m_textureLayout.find(texture);
         if (findResult != m_textureLayout.end()) oldLayout = findResult->second;
 
         if (oldLayout == newLayouts[nTexIdx]) continue;
@@ -533,9 +533,9 @@ void MRenderCommandVulkan::SetTextureLayout(
         VkImageSubresourceRange subresourceRange;
         subresourceRange.aspectMask     = morty::MVulkanDevice::GetAspectFlags(textureRHI->vkTextureFormat);
         subresourceRange.baseMipLevel   = 0;
-        subresourceRange.levelCount     = pTexture->GetMipmapLevel();
+        subresourceRange.levelCount     = texture->GetMipmapLevel();
         subresourceRange.baseArrayLayer = 0;
-        subresourceRange.layerCount     = pTexture->GetLayer();
+        subresourceRange.layerCount     = texture->GetLayer();
 
         vImageBarrier.push_back(VkImageMemoryBarrier());
         VkImageMemoryBarrier& imageMemoryBarrier = vImageBarrier.back();
@@ -549,7 +549,7 @@ void MRenderCommandVulkan::SetTextureLayout(
         );
         textureRHI->vkImageLayout = newLayouts[nTexIdx];
 
-        m_textureLayout[pTexture] = newLayouts[nTexIdx];
+        m_textureLayout[texture] = newLayouts[nTexIdx];
 
         srcPipelineStage |= GetSrcPipelineStageFlags(oldLayout);
         dstPipelineStage |= GetDstPipelineStageFlags(newLayouts[nTexIdx]);
@@ -572,23 +572,23 @@ void MRenderCommandVulkan::SetTextureLayout(
 }
 
 bool MRenderCommandVulkan::DownloadTexture(
-        MTexture*                                                         pTexture,
+        MTexture*                                                         texture,
         const uint32_t&                                                   unMipIdx,
         const std::function<void(void* pImageData, const Vector2& size)>& callback
 )
 {
-    if (!pTexture) { return false; }
+    if (!texture) { return false; }
 
-    auto     textureRHI = pTexture->GetTextureRHI<MTextureRHIVulkan>();
+    auto     textureRHI = texture->GetTextureRHI<MTextureRHIVulkan>();
 
     uint32_t unValidMipIdx = unMipIdx;
-    if (unValidMipIdx >= pTexture->GetMipmapLevel())
+    if (unValidMipIdx >= texture->GetMipmapLevel())
     {
-        MORTY_ASSERT(pTexture->GetMipmapLevel() > 0);
-        unValidMipIdx = pTexture->GetMipmapLevel() - 1;
+        MORTY_ASSERT(texture->GetMipmapLevel() > 0);
+        unValidMipIdx = texture->GetMipmapLevel() - 1;
     }
 
-    Vector3i size         = pTexture->GetSize();
+    Vector3i size         = texture->GetSize();
     VkImage  textureImage = textureRHI->vkTextureImage;
 
     uint32_t unBufferWidth  = size.x;
@@ -602,7 +602,7 @@ bool MRenderCommandVulkan::DownloadTexture(
     }
 
     uint32_t unBufferSize =
-            unBufferWidth * unBufferHeight * unBufferDepth * MTexture::GetImageMemorySize(pTexture->GetFormat());
+            unBufferWidth * unBufferHeight * unBufferDepth * MTexture::GetImageMemorySize(texture->GetFormat());
 
 
     uint32_t   unMemoryID = MGlobal::M_INVALID_UINDEX;
@@ -617,7 +617,7 @@ bool MRenderCommandVulkan::DownloadTexture(
     region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel       = unValidMipIdx;
     region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount     = pTexture->GetLayer();
+    region.imageSubresource.layerCount     = texture->GetLayer();
     region.imageOffset.x                   = 0;
     region.imageOffset.y                   = 0;
     region.imageOffset.z                   = 0;
@@ -626,7 +626,7 @@ bool MRenderCommandVulkan::DownloadTexture(
     region.imageExtent.depth               = unBufferDepth;
 
 
-    SetTextureLayout({pTexture}, {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL});
+    SetTextureLayout({texture}, {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL});
 
     vkCmdCopyImageToBuffer(
             m_vkCommandBuffer,
@@ -731,7 +731,7 @@ void MVulkanPrimaryRenderCommand::ExecuteChildCommand()
     vkCmdExecuteCommands(m_vkCommandBuffer, static_cast<uint32_t>(buffers.size()), buffers.data());
 }
 
-VkImageLayout MRenderCommandVulkan::GetTextureBarrierLayout(MTexture* pTexture, METextureBarrierStage stage) const
+VkImageLayout MRenderCommandVulkan::GetTextureBarrierLayout(MTexture* texture, METextureBarrierStage stage) const
 {
     static const std::unordered_map<METextureBarrierStage, VkImageLayout> ImageLayoutTable = {
             {METextureBarrierStage::EPixelShaderSample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
@@ -740,7 +740,7 @@ VkImageLayout MRenderCommandVulkan::GetTextureBarrierLayout(MTexture* pTexture, 
             {METextureBarrierStage::EComputeShaderRead, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
     };
 
-    if (stage == METextureBarrierStage::EPixelShaderWrite) { return m_device->GetImageLayout(pTexture); }
+    if (stage == METextureBarrierStage::EPixelShaderWrite) { return m_device->GetImageLayout(texture); }
 
     const auto layout = ImageLayoutTable.find(stage);
     MORTY_ASSERT(layout != ImageLayoutTable.end());

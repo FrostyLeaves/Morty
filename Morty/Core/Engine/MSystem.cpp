@@ -10,6 +10,6 @@ MISystem::MISystem()
 
 MISystem::~MISystem() {}
 
-void     MISystem::SetEngine(MEngine* pEngine) { m_engine = pEngine; }
+void     MISystem::SetEngine(MEngine* engine) { m_engine = engine; }
 
 MEngine* MISystem::GetEngine() { return m_engine; }

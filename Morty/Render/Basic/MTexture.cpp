@@ -69,11 +69,11 @@ uint32_t MTexture::GetImageMemorySize(const METextureFormat& layout)
 
 MTexturePtr MTexture::CreateTexture(const MTextureDesc& desc)
 {
-    MTexturePtr pTexture    = std::make_shared<MTexture>();
-    pTexture->m_desc        = desc;
-    pTexture->m_desc.nLayer = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
+    MTexturePtr texture    = std::make_shared<MTexture>();
+    texture->m_desc        = desc;
+    texture->m_desc.nLayer = desc.eTextureType == METextureType::ETextureCube ? 6 : desc.nLayer;
 
-    return pTexture;
+    return texture;
 }
 
 MTextureDesc MTexture::CreateDepthBuffer(const MString& name)
@@ -139,7 +139,7 @@ MTextureDesc MTexture::CreateRenderTargetGBuffer(const MString& name)
 
 MTexturePtr MTexture::CreateRenderTargetFloat32()
 {
-    MTexturePtr pTexture = MTexture::CreateTexture({
+    MTexturePtr texture = MTexture::CreateTexture({
             .strName         = "Render Target Float32 Texture",
             .eFormat         = METextureFormat::Float_R32,
             .eMipmapDataType = MEMipmapDataType::Disable,
@@ -147,7 +147,7 @@ MTexturePtr MTexture::CreateRenderTargetFloat32()
             .nWriteUsage     = METextureWriteUsageBit::ERenderBack,
     });
 
-    return pTexture;
+    return texture;
 }
 
 MTextureDesc MTexture::CreateShadingRate()
@@ -204,7 +204,7 @@ flatbuffers::Offset<void> MTexture::SerializeFbs(const MTextureDesc& desc, flatb
 
 MTexturePtr MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
 {
-    MTexturePtr pTexture = MTexture::CreateTexture({
+    MTexturePtr texture = MTexture::CreateTexture({
             .strName         = "VXGI Texture",
             .n3Size          = n3Size,
             .eTextureType    = METextureType::ETexture3D,
@@ -214,7 +214,7 @@ MTexturePtr MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
             .nWriteUsage     = METextureWriteUsageBit::EStorageWrite,
     });
 
-    return pTexture;
+    return texture;
 }
 
 void MTexture::Resize(MIDevice* pDevice, const Vector2i& n2Size)

@@ -25,14 +25,14 @@ MAndroidRenderView::~MAndroidRenderView()
 
 }
 
-bool MAndroidRenderView::Initialize(MEngine* pEngine, const char* svWindowName)
+bool MAndroidRenderView::Initialize(MEngine* engine, const char* svWindowName)
 {
-    MRenderView::Initialize(pEngine, svWindowName);
+    MRenderView::Initialize(engine, svWindowName);
 
-    m_engine = pEngine;
+    m_engine = engine;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
-    MVulkanRenderTarget::CreateForAndroidView(pEngine->GetDevice(), this);
+    MVulkanRenderTarget::CreateForAndroidView(engine->GetDevice(), this);
 #endif
 
     return true;

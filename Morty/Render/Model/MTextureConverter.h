@@ -18,7 +18,7 @@ namespace morty
 class MORTY_API MTextureConverter
 {
 public:
-    static void ConvertSingleChannel(MTextureResourceData* pTexture, size_t nChannel);
+    static void ConvertSingleChannel(MTextureResourceData* texture, size_t nChannel);
 };
 
 }// namespace morty

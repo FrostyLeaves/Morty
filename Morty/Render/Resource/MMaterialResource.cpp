@@ -50,11 +50,11 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 
 bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    MResourceSystem* pResourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
     auto             pMaterialData = static_cast<MMaterialResourceData*>(pResourceData.get());
 
-    const auto       pMaterialTemplate = pResourceSystem->LoadResource(pMaterialData->strTemplateResource);
+    const auto       pMaterialTemplate = resourceSystem->LoadResource(pMaterialData->strTemplateResource);
     BindTemplate(MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate));
 
     const size_t nPropertyNum = pMaterialData->vProperty.size();
@@ -70,7 +70,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     for (size_t nIdx = 0; nIdx < nTextureNum; ++nIdx)
     {
         const auto fbTexture        = pMaterialData->vTextures[nIdx];
-        const auto pTextureResource = pResourceSystem->LoadResource(fbTexture.value, true);
+        const auto pTextureResource = resourceSystem->LoadResource(fbTexture.value, true);
         SetTexture(MStringId(fbTexture.name.c_str()), pTextureResource);
     }
 
@@ -80,8 +80,8 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 
 std::shared_ptr<MMaterial> MMaterialResource::GetMaterial() const { return DynamicCast<MMaterial>(GetShared()); }
 
-std::shared_ptr<MMaterialResource>
-MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
+std::shared_ptr<MMaterialResource> MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate
+)
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
     {

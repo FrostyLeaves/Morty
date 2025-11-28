@@ -30,7 +30,7 @@ public:
 
     std::shared_ptr<MResource> PackEntity(const std::vector<MEntity*>& vEntity);
 
-    std::vector<MEntity*>      LoadEntity(MScene* pScene, std::shared_ptr<MResource> pResource);
+    std::vector<MEntity*>      LoadEntity(MScene* scene, std::shared_ptr<MResource> pResource);
 
     void FindAllComponentRecursively(MEntity* pEntity, const MType* pComponentType, std::vector<MComponentID>& vResult);
 };

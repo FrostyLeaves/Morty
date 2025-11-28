@@ -43,7 +43,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
 {
     if (!pNode) return;
 
-    MScene*            pScene          = pNode->GetScene();
+    MScene*            scene           = pNode->GetScene();
     auto*              pSceneComponent = pNode->GetComponent<MSceneComponent>();
 
 
@@ -67,7 +67,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
         {
             for (const auto& child: pSceneComponent->GetChildrenComponent())
             {
-                MComponent* component = pScene->GetComponent(child);
+                MComponent* component = scene->GetComponent(child);
                 RenderNode(component->GetEntity());
             }
         }
