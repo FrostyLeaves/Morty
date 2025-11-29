@@ -1,6 +1,7 @@
 #include "BaseWidget.h"
 #include "MainEditor.h"
 #include "Utility/IniConfig.h"
+#include <algorithm>
 
 using namespace morty;
 
@@ -22,3 +23,9 @@ MScene*    BaseWidget::GetScene() const { return GetMainEditor()->GetScene(); }
 MViewport* BaseWidget::GetViewport() const { return GetMainEditor()->GetViewport(); }
 
 void       BaseWidget::AddWidget(BaseWidget* pWidget) { m_children.push_back(pWidget); }
+
+void       BaseWidget::RemoveWidget(BaseWidget* widget)
+{
+    auto it = std::find(m_children.begin(), m_children.end(), widget);
+    if (it != m_children.end()) { m_children.erase(it); }
+}

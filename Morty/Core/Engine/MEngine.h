@@ -39,11 +39,11 @@ public:
         float     fTimeDelta;
         long long lPrevTickTime;
 
-                  TickTimeData(const int& nFps);
+        TickTimeData(const int& nFps);
     };
 
 public:
-     MEngine();
+    MEngine();
 
     ~MEngine() override;
 
@@ -94,7 +94,7 @@ protected:
 
     void RegisterGlobalObject(const MType* type);
 
-    void Tick(const float& fDelta);
+    void Tick(const float& delta);
 
 private:
     TickTimeData                           m_time;

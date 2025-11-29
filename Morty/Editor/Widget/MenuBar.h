@@ -24,6 +24,7 @@ public:
 protected:
     void RenderFileMenu();
     void RenderViewMenu();
+    void RenderWindowMenu();
     void RenderEditMenu();
     void RenderToolMenu();
     void RenderFileDialogs();

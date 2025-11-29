@@ -18,7 +18,7 @@ MMoveControllerSystem::MMoveControllerSystem()
 
 MMoveControllerSystem::~MMoveControllerSystem() {}
 
-void MMoveControllerSystem::SceneTick(MScene* scene, const float& fDelta)
+void MMoveControllerSystem::SceneTick(MScene* scene, const float& delta)
 {
     MInputSystem* pInputSystem = GetEngine()->FindSystem<MInputSystem>();
     if (!pInputSystem) return;
@@ -28,13 +28,13 @@ void MMoveControllerSystem::SceneTick(MScene* scene, const float& fDelta)
 
     for (MMoveControllerComponent& comp: pComponents->m_components)
     {
-        if (comp.IsValid()) { UpdateTransform(&comp, fDelta, pInputSystem->GetMouseAddition()); }
+        if (comp.IsValid()) { UpdateTransform(&comp, delta, pInputSystem->GetMouseAddition()); }
     }
 }
 
 void MMoveControllerSystem::UpdateTransform(
         MMoveControllerComponent* component,
-        const float&              fDelta,
+        const float&              delta,
         const Vector2&            v2MouseAddi
 )
 {
@@ -47,12 +47,12 @@ void MMoveControllerSystem::UpdateTransform(
     const float speed       = component->GetMaxSpeed();
     Vector3     v3MoveSpeed = component->GetMoveSpeed();
 
-    if (true == MKeyBoardInputEvent::IsKeyDown('w')) { v3MoveSpeed += pSceneComponent->GetForward() * speed * fDelta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('s')) { v3MoveSpeed += pSceneComponent->GetForward() * -speed * fDelta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('a')) { v3MoveSpeed += pSceneComponent->GetRight() * -speed * fDelta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('d')) { v3MoveSpeed += pSceneComponent->GetRight() * speed * fDelta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('q')) { v3MoveSpeed += Vector3(0, 1, 0) * -speed * fDelta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('e')) { v3MoveSpeed += Vector3(0, 1, 0) * speed * fDelta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('w')) { v3MoveSpeed += pSceneComponent->GetForward() * speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('s')) { v3MoveSpeed += pSceneComponent->GetForward() * -speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('a')) { v3MoveSpeed += pSceneComponent->GetRight() * -speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('d')) { v3MoveSpeed += pSceneComponent->GetRight() * speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('q')) { v3MoveSpeed += Vector3(0, 1, 0) * -speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('e')) { v3MoveSpeed += Vector3(0, 1, 0) * speed * delta; }
     else if (MMouseInputEvent::IsButtonDown(MMouseInputEvent::MEMouseDownButton::RightButton) &&
              (v2MouseAddi.x != 0 || v2MouseAddi.y != 0))
     {

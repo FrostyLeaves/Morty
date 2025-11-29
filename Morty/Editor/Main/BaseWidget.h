@@ -49,6 +49,7 @@ public:
     bool                     GetRenderInHidden() const { return m_renderInHidden; }
 
     void                     AddWidget(BaseWidget* pWidget);
+    void                     RemoveWidget(BaseWidget* widget);
 
 protected:
     MainEditor*              m_mainEditor     = nullptr;

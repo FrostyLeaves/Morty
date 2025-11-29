@@ -25,7 +25,7 @@ public:
 
     virtual std::set<const MType*> RegisterComponentType() const { return {}; }
 
-    virtual void                   SceneTick(MScene* scene, const float& fDelta) { MORTY_UNUSED(scene, fDelta); }
+    virtual void                   SceneTick(MScene* scene, const float& delta) { MORTY_UNUSED(scene, delta); }
 
     virtual void                   RegisterComponent(MComponent* component) { MORTY_UNUSED(component); }
 

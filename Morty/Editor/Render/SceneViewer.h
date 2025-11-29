@@ -2,6 +2,7 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "Math/Vector.h"
+#include "Object/MObject.h"
 #include "Utility/MColor.h"
 
 
@@ -15,11 +16,12 @@ class MViewport;
 class MTexture;
 class IRenderCommand;
 class MIRenderProgram;
-class SceneViewer
+class SceneViewer : public MObject
 {
+    MORTY_CLASS(SceneViewer)
 public:
     void                      Initialize(const MString& viewName, MScene* scene, const MStringId& strRenderProgram);
-    void                      Release();
+    void                      OnDelete() override;
 
     void                      UpdateTexture(IRenderCommand* pRenderCommand);
     void                      SetRect(Vector2i pos, Vector2i size);

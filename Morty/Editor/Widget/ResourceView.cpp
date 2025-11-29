@@ -6,6 +6,8 @@
 #include "Resource/MMaterialResourceData.h"
 #include "Resource/MResource.h"
 #include "System/MResourceSystem.h"
+#include "Utility/SelectionContext.h"
+#include "Utility/SelectionManager.h"
 
 using namespace morty;
 
@@ -72,18 +74,22 @@ void ResourceView::Render()
 
                 std::shared_ptr<MResource> pResource = iter->second;
 
+                bool                       isSelected = false;
+                if (auto selectedResource = SelectionContext::GetInstance()->GetSelectedResource())
+                {
+                    isSelected = (selectedResource->GetResourceID() == pResource->GetResourceID());
+                }
+
                 if (ImGui::Selectable(
                             pResource->GetResourcePath().c_str(),
-                            m_selectedResourceId == pResource->GetResourceID(),
+                            isSelected,
                             ImGuiSelectableFlags_SpanAllColumns
                     ))
                 {
-                    m_selectedResourceId = pResource->GetResourceID();
+                    SelectionContext::GetInstance()->SetSelectedResource(pResource);
 
-                    if (auto material = MTypeClass::DynamicCast<MMaterialResource>(pResource))
-                    {
-                        GetMainEditor()->FindWidget<MaterialView>()->SetMaterial(material);
-                    }
+                    // Broadcast resource selection to all PropertyView panels
+                    SelectionManager::GetInstance()->BroadcastSelection(Selection(pResource));
                 }
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%s", pResource->GetTypeName().c_str());

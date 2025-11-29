@@ -58,7 +58,10 @@ public:
     void                                  RegisterPostCreateObject(const PostCreateObjectFunction& func);
 
 public:
-    virtual void Release() override;
+    void Release() override;
+
+    void EngineTick(const float& delta) override;
+
 
 private:
     MIDPool<MObjectID>*                   m_objectDB;

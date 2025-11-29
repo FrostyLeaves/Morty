@@ -14,7 +14,6 @@
 #include <SDL_vulkan.h>
 
 #endif
-
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
 #include "Component/MRenderMeshComponent.h"
@@ -27,6 +26,7 @@
 #include "RHI/IRenderCommand.h"
 #include "Render/MDeferredRenderProgram.h"
 #include "Scene/MScene.h"
+#include "System/MObjectSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
 #include "Utility/MTimer.h"
@@ -37,6 +37,8 @@
 #include "Widget/ModelImportView.h"
 #include "Widget/NodeTreeView.h"
 #include "Widget/PropertyView.h"
+#include "Widget/PropertyViewManager.h"
+#include "Widget/PropertyViewPanel.h"
 #include "Widget/RenderGraphView.h"
 #include "Widget/RenderSettingView.h"
 #include "Widget/ResourceView.h"
@@ -62,8 +64,6 @@ bool      MainEditor::Initialize(MEngine* engine)
     m_menuBar->LoadConfig(&m_IniConfig);
 
     m_childView.push_back(new NodeTreeView());
-    m_childView.push_back(new PropertyView());
-    m_childView.push_back(new MaterialView());
     m_childView.push_back(new ResourceView());
     m_childView.push_back(new ModelImportView());
     m_childView.push_back(new MainView());
@@ -82,6 +82,12 @@ bool      MainEditor::Initialize(MEngine* engine)
         m_menuBar->AddWidget(pChild);
     }
 
+    // Create PropertyViewManager instead of individual PropertyView
+    auto* propertyViewManager = new PropertyViewManager();
+    m_childView.push_back(propertyViewManager);
+    propertyViewManager->Initialize(this);
+    propertyViewManager->LoadConfig(&m_IniConfig);
+
     return true;
 }
 
@@ -94,8 +100,14 @@ void MainEditor::Release()
         m_sceneTexture = nullptr;
     }
 
+    // Save PropertyViewManager and its panels' configurations
+    if (auto* propViewManager = FindWidget<PropertyViewManager>()) { propViewManager->SaveConfig(&m_IniConfig); }
+
     for (BaseWidget* pChild: m_childView)
     {
+        // Skip PropertyViewManager as it's already saved
+        if (dynamic_cast<PropertyViewManager*>(pChild)) { continue; }
+
         pChild->SaveConfig(&m_IniConfig);
         pChild->Release();
         delete pChild;
@@ -133,25 +145,25 @@ void       MainEditor::SetScene(MScene* scene)
     m_renderGraphView->SetRenderProgram(m_sceneTexture->GetRenderProgram());
 }
 
-void                         MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
+void         MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
 
-void                         MainEditor::OnInput(MInputEvent* pEvent) { m_sceneTexture->GetViewport()->Input(pEvent); }
+void         MainEditor::OnInput(MInputEvent* pEvent) { m_sceneTexture->GetViewport()->Input(pEvent); }
 
-void                         MainEditor::OnTick(float fDelta) { m_scene->Tick(fDelta); }
+void         MainEditor::OnTick(float delta) { m_scene->Tick(delta); }
 
-std::shared_ptr<SceneViewer> MainEditor::CreateSceneViewer(const MString& viewName, MScene* scene)
+SceneViewer* MainEditor::CreateSceneViewer(const MString& viewName, MScene* scene)
 {
-    std::shared_ptr<SceneViewer> pSceneViewer = std::make_shared<SceneViewer>();
-    pSceneViewer->Initialize(viewName, scene, MainEditor::GetRenderProgramName());
-    m_sceneViewer.insert(pSceneViewer);
+    auto sceneViewer = GetEngine()->FindSystem<MObjectSystem>()->CreateObject<SceneViewer>();
+    sceneViewer->Initialize(viewName, scene, MainEditor::GetRenderProgramName());
+    m_sceneViewer.insert(sceneViewer);
 
-    pSceneViewer->GetRenderTask()->ConnectTo(GetRenderTask());
-    return pSceneViewer;
+    sceneViewer->GetRenderTask()->ConnectTo(GetRenderTask());
+    return sceneViewer;
 }
 
-void MainEditor::DestroySceneViewer(std::shared_ptr<SceneViewer> pViewer)
+void MainEditor::DestroySceneViewer(SceneViewer* pViewer)
 {
-    pViewer->Release();
+    pViewer->DeleteLater();
     m_sceneViewer.erase(pViewer);
 }
 

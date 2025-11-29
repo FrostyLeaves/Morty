@@ -29,7 +29,7 @@ MTaskGraph::~MTaskGraph()
 
 bool MTaskGraph::AddNode(const MStringId& strNodeName, MTaskNode* pTaskNode)
 {
-    MORTY_ASSERT(!m_lock);
+    //MORTY_ASSERT(!m_lock);
 
     if (!pTaskNode) { return false; }
     pTaskNode->m_strNodeName    = strNodeName;

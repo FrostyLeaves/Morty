@@ -35,7 +35,7 @@ public:
     Vector2 GetMouseAddition() { return m_mouseAddition; }
 
 public:
-    virtual void EngineTick(const float& fDelta) override;
+    virtual void EngineTick(const float& delta) override;
 
 private:
     Vector2 m_mouseAddition;

@@ -25,7 +25,7 @@
 #include "System/MResourceSystem.h"
 #include "System/MSceneSystem.h"
 #include "Utility/RenderMessageManager.h"
-#include "Utility/SelectionEntityManager.h"
+#include "Utility/SelectionContext.h"
 #include "Utility/SingletonInstance.h"
 #include "Widget/RenderGraphView.h"
 

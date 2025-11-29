@@ -22,10 +22,9 @@ public:
 
     virtual void Release() {};
 
+    virtual void EngineTick(const float& delta) { MORTY_UNUSED(delta); }
 
-    virtual void EngineTick(const float& fDelta) { MORTY_UNUSED(fDelta); }
-
-    virtual void SceneTick(MScene* scene, const float& fDelta) { MORTY_UNUSED(scene, fDelta); }
+    virtual void SceneTick(MScene* scene, const float& delta) { MORTY_UNUSED(scene, delta); }
 
 
     void         SetEngine(MEngine* engine);

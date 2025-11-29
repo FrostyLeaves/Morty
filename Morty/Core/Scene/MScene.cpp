@@ -132,16 +132,16 @@ void MScene::RegisterManager(const MType* pManagerType, IManager* pManager)
     for (const MType* type: pManager->RegisterComponentType()) { m_componentRegister[type].push_back(pManager); }
 }
 
-void MScene::Tick(const float& fDelta)
+void MScene::Tick(const float& delta)
 {
     MEngine* engine = GetEngine();
     if (!engine) return;
 
     auto& systemList = engine->GetAllSystem();
 
-    for (auto& system: systemList) { system->SceneTick(this, fDelta); }
+    for (auto& system: systemList) { system->SceneTick(this, delta); }
 
-    for (auto pr: m_manager) { pr.second->SceneTick(this, fDelta); }
+    for (auto pr: m_manager) { pr.second->SceneTick(this, delta); }
 }
 
 MComponent* MScene::AddComponent(MEntity* entity, MIComponentGroup* pComponents)

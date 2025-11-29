@@ -87,3 +87,9 @@ void MShaderProgramSystem::ReleaseShaderProgram(const MMaterialPass* pass)
         m_shaderProgramTable.erase(reference->key);
     }
 }
+
+void MShaderProgramSystem::Release()
+{
+    m_shaderProgramTable.clear();
+    m_materialPassTable.clear();
+}

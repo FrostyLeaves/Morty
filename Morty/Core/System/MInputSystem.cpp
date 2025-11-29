@@ -22,19 +22,16 @@ void MInputSystem::Input(MInputEvent* pEvent)
     }
 }
 
-bool MInputSystem::IsKeyDown(const int& nKey)
-{
-    return MKeyBoardInputEvent::IsKeyDown(nKey);
-}
+bool MInputSystem::IsKeyDown(const int& nKey) { return MKeyBoardInputEvent::IsKeyDown(nKey); }
 
 bool MInputSystem::IsMouseButtonDown(const MMouseInputEvent::MEMouseDownButton& eButton)
 {
     return MMouseInputEvent::IsButtonDown(eButton);
 }
 
-void MInputSystem::EngineTick(const float& fDelta)
+void MInputSystem::EngineTick(const float& delta)
 {
-    MORTY_UNUSED(fDelta);
+    MORTY_UNUSED(delta);
 
     m_mouseAddition.x = 0.0f;
     m_mouseAddition.y = 0.0f;

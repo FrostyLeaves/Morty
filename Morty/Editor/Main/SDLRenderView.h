@@ -26,7 +26,7 @@ public:
 
     virtual void       OnInput(MInputEvent* pEvent) = 0;
 
-    virtual void       OnTick(float fDelta) = 0;
+    virtual void       OnTick(float delta) = 0;
 
     virtual MTaskNode* GetRenderTask() { return nullptr; }
 };

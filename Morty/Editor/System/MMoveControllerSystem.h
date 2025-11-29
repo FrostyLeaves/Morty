@@ -26,10 +26,10 @@ public:
     virtual ~MMoveControllerSystem();
 
 public:
-    void SceneTick(MScene* scene, const float& fDelta) override;
+    void SceneTick(MScene* scene, const float& delta) override;
 
 public:
-    void UpdateTransform(MMoveControllerComponent* component, const float& fDelta, const Vector2& v2MouseAddi);
+    void UpdateTransform(MMoveControllerComponent* component, const float& delta, const Vector2& v2MouseAddi);
 };
 
 }// namespace morty

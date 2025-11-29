@@ -27,7 +27,7 @@
 #include "Main/MainEditor.h"
 #include "Resource/MMeshResourceUtil.h"
 #include "Utility/NotifyManager.h"
-#include "Utility/SelectionEntityManager.h"
+#include "Utility/SelectionContext.h"
 
 using namespace morty;
 
@@ -41,19 +41,19 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> material)
 {
     if (m_material == material) return;
 
-    auto* pSceneSystem = GetEngine()->FindSystem<MSceneSystem>();
+    auto* sceneSystem = GetEngine()->FindSystem<MSceneSystem>();
 
     m_material = material;
 
     if (!m_material || !m_material->GetTemplate())
     {
-        pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
-        pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
+        sceneSystem->SetVisible(m_staticSphereMeshNode, false);
+        sceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
     }
     else if (m_material->GetShaderMacro().GetMacro(MRenderGlobal::SHADER_SKELETON_ENABLE).empty())
     {
-        pSceneSystem->SetVisible(m_staticSphereMeshNode, true);
-        pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
+        sceneSystem->SetVisible(m_staticSphereMeshNode, true);
+        sceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
 
         if (auto* meshComponent = m_staticSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
@@ -62,8 +62,8 @@ void MaterialView::SetMaterial(std::shared_ptr<MMaterialResource> material)
     }
     else
     {
-        pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
-        pSceneSystem->SetVisible(m_skeletonSphereMeshNode, true);
+        sceneSystem->SetVisible(m_staticSphereMeshNode, false);
+        sceneSystem->SetVisible(m_skeletonSphereMeshNode, true);
 
         if (auto* meshComponent = m_skeletonSphereMeshNode->GetComponent<MRenderMeshComponent>())
         {
@@ -107,7 +107,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
 {
     BaseWidget::Initialize(pMainEditor);
 
-    auto* pSceneSystem   = GetEngine()->FindSystem<MSceneSystem>();
+    auto* sceneSystem    = GetEngine()->FindSystem<MSceneSystem>();
     auto* objectSystem   = GetEngine()->FindSystem<MObjectSystem>();
     auto* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
 
@@ -134,7 +134,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
         meshComponent->Load(pMeshResource);
     }
 
-    pSceneSystem->SetVisible(m_staticSphereMeshNode, false);
+    sceneSystem->SetVisible(m_staticSphereMeshNode, false);
 
     m_skeletonSphereMeshNode = m_scene->CreateEntity();
 
@@ -151,7 +151,7 @@ void MaterialView::Initialize(MainEditor* pMainEditor)
         meshComponent->Load(pMeshResource);
     }
 
-    pSceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
+    sceneSystem->SetVisible(m_skeletonSphereMeshNode, false);
 
 
     MEntity* pDirLight = m_scene->CreateEntity();

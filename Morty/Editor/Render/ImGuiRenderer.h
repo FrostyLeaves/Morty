@@ -42,7 +42,7 @@ public:
     void ReleaseMesh();
 
 
-    void Tick(const float& fDelta);
+    void Tick(const float& delta);
 
     void Render(MRenderPassCmd* pCommand);
 

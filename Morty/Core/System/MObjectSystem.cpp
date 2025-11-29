@@ -71,6 +71,12 @@ void MObjectSystem::RegisterPostCreateObject(const PostCreateObjectFunction& fun
     m_postCreateObjectFunction.push_back(func);
 }
 
+void MObjectSystem::EngineTick(const float& delta)
+{
+    MORTY_UNUSED(delta);
+    CleanRemoveObject();
+}
+
 void MObjectSystem::Release()
 {
     Super::Release();

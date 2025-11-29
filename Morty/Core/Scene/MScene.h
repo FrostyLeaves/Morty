@@ -71,7 +71,7 @@ protected:
     void RegisterManager(const MType* pManagerType, IManager* pManager);
 
 public:
-    void Tick(const float& fDelta);
+    void Tick(const float& delta);
 
     void OnCreated() override;
 

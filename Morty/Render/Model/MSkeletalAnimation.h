@@ -47,7 +47,7 @@ public:
 class MORTY_API MSkeletalAnimation : public MIAnimation
 {
 public:
-             MSkeletalAnimation();
+    MSkeletalAnimation();
 
     virtual ~MSkeletalAnimation();
 
@@ -100,7 +100,7 @@ class MSkeletalAnimationResource;
 class MORTY_API MSkeletalAnimController : public MIAnimController
 {
 public:
-             MSkeletalAnimController();
+    MSkeletalAnimController();
 
     virtual ~MSkeletalAnimController();
 
@@ -117,7 +117,7 @@ public:
 
     virtual bool                                GetLoop() override { return m_loop; }
 
-    virtual void                                NextStep(const float& fDelta, const bool& bAnimStep = true) override;
+    virtual void                                NextStep(const float& delta, const bool& bAnimStep = true) override;
 
     //range 0.0f ~ 100.0f
     virtual void                                SetPercent(const float& fPercent);

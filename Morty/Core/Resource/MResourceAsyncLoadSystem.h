@@ -25,7 +25,7 @@ public:
 
     void AddLoader(std::shared_ptr<MResourceLoader>& pLoader);
 
-    void EngineTick(const float& fDelta) override;
+    void EngineTick(const float& delta) override;
 
     void AnyThreadLoad(const std::list<std::shared_ptr<MResourceLoader>>& vLoader);
 

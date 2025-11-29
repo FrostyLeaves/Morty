@@ -21,7 +21,7 @@ MEngine::MEngine()
 
 MEngine::~MEngine() = default;
 
-bool      MEngine::Initialize()
+bool MEngine::Initialize()
 {
     m_threadPool.Initialize();
     m_mainTaskGraph = new MTaskGraph();
@@ -70,9 +70,9 @@ void MEngine::Update()
     }
 }
 
-void MEngine::Tick(const float& fDelta)
+void MEngine::Tick(const float& delta)
 {
-    for (auto& system: m_systemArray) { system->EngineTick(fDelta); }
+    for (auto& system: m_systemArray) { system->EngineTick(delta); }
 
     if (m_mainTaskGraph)
     {

@@ -37,7 +37,7 @@ public:
 
     virtual void OnResize(const int& nWidth, const int& nHeight) override;
     virtual void SetRenderTarget(MIRenderTarget* pRenderTarget) override;
-    virtual bool MainLoop(const float& fDelta) override;
+    virtual bool MainLoop(const float& delta) override;
 
     void SetWindowTitle(const MString& strTilte);
 

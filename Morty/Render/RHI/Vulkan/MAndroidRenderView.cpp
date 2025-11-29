@@ -51,7 +51,7 @@ void MAndroidRenderView::SetRenderTarget(MIRenderTarget* pRenderTarget)
     MRenderView::SetRenderTarget(pRenderTarget);
 }
 
-bool MAndroidRenderView::MainLoop(const float& fDelta)
+bool MAndroidRenderView::MainLoop(const float& delta)
 {
     return true;
 }

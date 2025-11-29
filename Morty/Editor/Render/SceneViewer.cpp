@@ -21,13 +21,15 @@
 
 using namespace morty;
 
+MORTY_CLASS_IMPLEMENT(SceneViewer, MObject)
+
 MString SceneViewer::m_defaultRenderGraphPath = MString(MORTY_RESOURCE_PATH) + "/Pipeline/default_render_graph.mrg";
 
 void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MStringId& strRenderProgram)
 {
     m_scene = scene;
 
-    MEngine* engine       = scene->GetEngine();
+    MEngine* engine       = GetEngine();
     auto*    objectSystem = engine->FindSystem<MObjectSystem>();
 
     m_renderViewport = objectSystem->CreateObject<MViewport>();
@@ -67,9 +69,9 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MS
     }
 }
 
-void SceneViewer::Release()
+void SceneViewer::OnDelete()
 {
-    MEngine* engine = m_scene->GetEngine();
+    MEngine* engine = GetEngine();
 
     if (m_updateTask)
     {

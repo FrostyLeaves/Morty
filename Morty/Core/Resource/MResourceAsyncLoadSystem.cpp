@@ -15,9 +15,9 @@ void MResourceAsyncLoadSystem::AddLoader(std::shared_ptr<MResourceLoader>& pLoad
     m_pendingLoader.push_back(std::move(pLoader));
 }
 
-void MResourceAsyncLoadSystem::EngineTick(const float& fDelta)
+void MResourceAsyncLoadSystem::EngineTick(const float& delta)
 {
-    MORTY_UNUSED(fDelta);
+    MORTY_UNUSED(delta);
 
     if (m_loadWork.has_value()) { return; }
 
@@ -46,28 +46,20 @@ void MResourceAsyncLoadSystem::EngineTick(const float& fDelta)
 
     MThreadPool* pThreadPool = GetEngine()->GetThreadPool();
 
-    m_loadWork                          = MThreadWork(METhreadType::EAny);
-    m_loadWork.value().funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(
-            MResourceAsyncLoadSystem::AnyThreadLoad,
-            this,
-            vLoader
-    );
+    m_loadWork = MThreadWork(METhreadType::EAny);
+    m_loadWork.value().funcWorkFunction =
+            M_CLASS_FUNCTION_BIND_1_0(MResourceAsyncLoadSystem::AnyThreadLoad, this, vLoader);
     pThreadPool->AddWork(m_loadWork.value());
 }
 
-void MResourceAsyncLoadSystem::AnyThreadLoad(
-        const std::list<std::shared_ptr<MResourceLoader>>& vLoader
-)
+void MResourceAsyncLoadSystem::AnyThreadLoad(const std::list<std::shared_ptr<MResourceLoader>>& vLoader)
 {
     for (auto& pLoader: vLoader)
     {
         pLoader->pResourceData = pLoader->LoadResource(pLoader->strResourceFullPath);
         if (!pLoader->pResourceData)
         {
-            GetEngine()->GetLogger()->Error(
-                    "Load Resource try to find: [path: {}]",
-                    pLoader->strResourcePath.c_str()
-            );
+            GetEngine()->GetLogger()->Error("Load Resource try to find: [path: {}]", pLoader->strResourcePath.c_str());
         }
     }
 
@@ -80,18 +72,13 @@ void MResourceAsyncLoadSystem::AnyThreadLoad(
     m_loadWork.reset();
 }
 
-void MResourceAsyncLoadSystem::MainThreadLoad(
-        const std::list<std::shared_ptr<MResourceLoader>>& vLoader
-)
+void MResourceAsyncLoadSystem::MainThreadLoad(const std::list<std::shared_ptr<MResourceLoader>>& vLoader)
 {
     for (auto& pLoader: vLoader)
     {
         if (!pLoader->pResource->Load(std::move(pLoader->pResourceData)))
         {
-            GetEngine()->GetLogger()->Error(
-                    "Load Resource failed: [path: {}]",
-                    pLoader->strResourcePath.c_str()
-            );
+            GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
         }
         else { pLoader->pResource->OnReload(); }
     }

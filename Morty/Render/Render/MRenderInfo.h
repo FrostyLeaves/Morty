@@ -77,7 +77,7 @@ struct MRenderInfo {
 
     /************************** basic **************************/
     uint32_t                     nFrameIndex = 0;
-    float                        fDelta      = 0.0f;
+    float                        delta       = 0.0f;
     float                        fGameTime   = 0.0f;
 
     Vector2                      f2ViewportLeftTop;

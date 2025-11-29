@@ -2,16 +2,15 @@
 
 
 #include "Basic/MViewport.h"
+#include "Component/MCameraComponent.h"
+#include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Render/MRenderInfo.h"
 #include "Resource/MResource.h"
 #include "Scene/MEntity.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
-#include "Component/MCameraComponent.h"
-#include "Component/MSceneComponent.h"
-#include "Utility/SelectionEntityManager.h"
+#include "Utility/SelectionContext.h"
 
 using namespace morty;
 
@@ -23,7 +22,7 @@ GuizmoWidget::GuizmoWidget()
 
 void GuizmoWidget::Render()
 {
-    MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity();
+    MEntity* pEntity = SelectionContext::GetInstance()->GetSelectedEntity();
     if (nullptr == pEntity) { return; }
 
     MSceneComponent* pEditorSceneComponent = pEntity->GetComponent<MSceneComponent>();

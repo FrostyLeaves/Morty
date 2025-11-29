@@ -133,9 +133,9 @@ void ImGuiRenderer::ReleaseMesh()
     m_Mesh.DestroyBuffer(renderSystem->GetDevice());
 }
 
-void ImGuiRenderer::Tick(const float& fDelta)
+void ImGuiRenderer::Tick(const float& delta)
 {
-    MORTY_UNUSED(fDelta);
+    MORTY_UNUSED(delta);
 
     auto renderSystem = m_engine->FindSystem<MRenderSystem>();
     for (auto iter = m_imGuiDrawTexture.begin(); iter != m_imGuiDrawTexture.end();)

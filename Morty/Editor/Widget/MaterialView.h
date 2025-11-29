@@ -42,7 +42,7 @@ private:
     MEntity*                           m_staticSphereMeshNode   = nullptr;
     MEntity*                           m_skeletonSphereMeshNode = nullptr;
 
-    std::shared_ptr<SceneViewer>       m_sceneTexture = nullptr;
+    SceneViewer*                       m_sceneTexture = nullptr;
 };
 
 }// namespace morty

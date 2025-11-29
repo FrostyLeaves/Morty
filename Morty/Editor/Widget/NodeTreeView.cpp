@@ -7,7 +7,8 @@
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
-#include "Utility/SelectionEntityManager.h"
+#include "Utility/SelectionContext.h"
+#include "Utility/SelectionManager.h"
 #include "imgui.h"
 
 using namespace morty;
@@ -50,7 +51,7 @@ void NodeTreeView::RenderNode(MEntity* pNode)
     ImGuiTreeNodeFlags node_flags =
             ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
     if (!pSceneComponent || pSceneComponent->GetChildrenComponent().empty()) node_flags |= ImGuiTreeNodeFlags_Leaf;
-    if (SelectionEntityManager::GetInstance()->GetSelectedEntity() == pNode) node_flags |= ImGuiTreeNodeFlags_Selected;
+    if (SelectionContext::GetInstance()->GetSelectedEntity() == pNode) node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
     bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, "%s", pNode->GetName().c_str());
@@ -60,7 +61,12 @@ void NodeTreeView::RenderNode(MEntity* pNode)
         ImGui::EndPopup();
     }
 
-    if (ImGui::IsItemClicked()) { SelectionEntityManager::GetInstance()->SetSelectedEntity(pNode); }
+    if (ImGui::IsItemClicked())
+    {
+        SelectionContext::GetInstance()->SetSelectedEntity(pNode);
+        // Broadcast selection to all PropertyView panels
+        SelectionManager::GetInstance()->BroadcastSelection(Selection(pNode));
+    }
     if (bOpened)
     {
         if (pSceneComponent)

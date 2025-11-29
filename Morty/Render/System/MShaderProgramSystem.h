@@ -42,12 +42,15 @@ class MORTY_API MShaderProgramSystem : public MISystem
 public:
     MORTY_CLASS(MShaderProgramSystem)
 
-    explicit        MShaderProgramSystem() = default;
+    explicit MShaderProgramSystem() = default;
 
     MShaderProgram* CreateShaderProgram(const MMaterialPass* pass);
     MShaderProgram* FindShaderProgram(const MMaterialPass* pass);
 
     void            ReleaseShaderProgram(const MMaterialPass* pass);
+
+
+    void            Release() override;
 
 public:
     std::map<MShaderProgramKey, std::shared_ptr<MShaderProgramReference>>    m_shaderProgramTable;

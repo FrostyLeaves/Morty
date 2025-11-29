@@ -8,6 +8,7 @@
 #include "Scene/MScene.h"
 #include "System/MEntitySystem.h"
 #include "System/MResourceSystem.h"
+#include "Widget/PropertyViewManager.h"
 #include "imgui.h"
 
 using namespace morty;
@@ -28,6 +29,7 @@ void MenuBar::Render()
     {
         RenderFileMenu();
         RenderViewMenu();
+        RenderWindowMenu();
         RenderEditMenu();
         RenderToolMenu();
 
@@ -66,6 +68,20 @@ void MenuBar::RenderViewMenu()
             bool bVisible = pView->GetVisible();
             if (ImGui::MenuItem(pView->GetName().c_str(), "", &bVisible)) {}
             pView->SetVisible(bVisible);
+        }
+
+        ImGui::EndMenu();
+    }
+}
+
+void MenuBar::RenderWindowMenu()
+{
+    if (ImGui::BeginMenu("Window"))
+    {
+        if (ImGui::MenuItem("New Property View"))
+        {
+            // This will be handled by MainEditor
+            GetMainEditor()->FindWidget<PropertyViewManager>()->AddPropertyViewPanel();
         }
 
         ImGui::EndMenu();

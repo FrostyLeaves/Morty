@@ -29,7 +29,6 @@ private:
     MString      m_createResourceDialogId;
     MString      m_createResourcePath;
     const MType* m_createResourceType = nullptr;
-    MResourceID  m_selectedResourceId = -1;
 };
 
 }// namespace morty

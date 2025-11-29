@@ -12,7 +12,7 @@
 #include "Property/PropertyMRenderMeshComponent.h"
 #include "Property/PropertyMSceneComponent.h"
 #include "Property/PropertyMSpotLight.h"
-#include "Utility/SelectionEntityManager.h"
+#include "Utility/SelectionContext.h"
 
 using namespace morty;
 
@@ -46,7 +46,7 @@ PropertyView::~PropertyView()
 
 void PropertyView::Render()
 {
-    MEntity* pEntity = SelectionEntityManager::GetInstance()->GetSelectedEntity();
+    MEntity* pEntity = SelectionContext::GetInstance()->GetSelectedEntity();
     if (nullptr == pEntity) return;
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));

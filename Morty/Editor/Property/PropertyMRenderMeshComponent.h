@@ -10,6 +10,9 @@
 #include "Scene/MEntity.h"
 #include "System/MResourceSystem.h"
 #include "Utility/NotifyManager.h"
+#include "Utility/SelectionContext.h"
+#include "Utility/SelectionManager.h"
+#include "Utility/SingletonInstance.h"
 #include "Widget/MaterialView.h"
 
 namespace morty
@@ -20,6 +23,8 @@ class PropertyMRenderMeshComponent : public MComponentProperty
 public:
     void EditEntity(MainEditor* editor, MEntity* pEntity) override
     {
+        MORTY_UNUSED(editor);
+        
         m_editProperty.BindEngine(pEntity->GetEngine());
 
         if (auto* meshComponent = pEntity->GetComponent<MRenderMeshComponent>())
@@ -59,9 +64,14 @@ public:
                     m_editProperty.ShowValueBegin("Instance");
                     if (ImGui::Button("Edit Material", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                     {
-                        if (meshComponent->GetMaterial())
+                        if (auto material = meshComponent->GetMaterial())
                         {
-                            editor->FindWidget<MaterialView>()->SetMaterial(meshComponent->GetMaterialResource());
+                            if (auto resource = std::dynamic_pointer_cast<MMaterialResource>(material))
+                            {
+                                SelectionContext::GetInstance()->SetSelectedResource(resource);
+                                // Broadcast resource selection to all PropertyView panels
+                                SelectionManager::GetInstance()->BroadcastSelection(Selection(resource));
+                            }
                         }
                     }
                     m_editProperty.ShowValueEnd();
