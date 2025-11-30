@@ -216,7 +216,7 @@ void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* scene)
         pChildEntity->RegisterComponent<MSceneComponent>();
 
         MRenderMeshComponent* meshComponent = pChildEntity->RegisterComponent<MRenderMeshComponent>();
-        meshComponent->Load(pChildMeshResource);
+        meshComponent->SetMesh(pChildMeshResource);
         meshComponent->SetMaterial(GetMaterial(scene, pChildMesh->mMaterialIndex));
 
         pEntitySystem->AddChild(GetEntityFromNode(scene, pNode), pChildEntity);

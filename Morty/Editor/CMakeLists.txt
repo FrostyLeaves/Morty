@@ -24,6 +24,8 @@ add_library(Editor OBJECT
 
         ${EDITOR_IMGUI_FILES}
         ${EDITOR_IMGUI_FILE_DIALOG_FILES}
+        Widget/Property/MComponentPropertyList.h
+        Widget/Property/MComponentPropertyList.cpp
 )
 
 target_link_libraries(Editor PUBLIC Core)

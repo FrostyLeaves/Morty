@@ -100,7 +100,6 @@ public:
     const MBuffer* pBuffer     = nullptr;
     bool           bWritable   = false;
     void*          pImageIdent = nullptr;
-
     MVariant       var;
 
     void           SetBuffer(const MBuffer* buf) { pBuffer = buf; }

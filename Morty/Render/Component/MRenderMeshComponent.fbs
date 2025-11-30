@@ -1,15 +1,16 @@
 include "Component/MComponent.fbs";
 include "Math/Vector.fbs";
 include "Resource/MResourceRef.fbs";
+include "Variant/MVariant.fbs";
 namespace morty.fbs;
 
 table MRenderMeshComponent
 {
 	super: MComponent;
 	gen_dir_shadow: bool;
-	lod: int;
 	material: MResourceRef;
 	mesh: MResourceRef;
+	material_data: MVariant;
 }
 
 root_type MRenderMeshComponent;

@@ -51,7 +51,7 @@ void MaterialPropertyRenderer::Initialize(MainEditor* pMainEditor)
     {
         std::shared_ptr<MMeshResource> pMeshResource = resourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere());
-        meshComponent->Load(pMeshResource);
+        meshComponent->SetMesh(pMeshResource);
     }
 
     sceneSystem->SetVisible(m_staticSphereMeshNode, false);
@@ -68,7 +68,7 @@ void MaterialPropertyRenderer::Initialize(MainEditor* pMainEditor)
     {
         std::shared_ptr<MMeshResource> pMeshResource = resourceSystem->CreateResource<MMeshResource>();
         pMeshResource->Load(MMeshResourceUtil::CreateSphere(MEMeshVertexType::Skeleton));
-        meshComponent->Load(pMeshResource);
+        meshComponent->SetMesh(pMeshResource);
     }
 
     sceneSystem->SetVisible(m_skeletonSphereMeshNode, false);

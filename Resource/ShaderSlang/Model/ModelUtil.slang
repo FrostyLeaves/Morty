@@ -49,6 +49,8 @@ public struct ModelUtil
         output.tangent = normalize(mul(input.tangent, data.matNormal));
         output.bitangent = normalize(cross(output.tangent, output.normal));
 
+        output.instanceId = INSTANCE_ID;
+
         return output;
     }
 
@@ -62,6 +64,7 @@ public struct ModelUtil
         pixel.positionWS = input.positionWS;
         pixel.uv = input.uv;
         pixel.TBN = float3x3(T, B, N);
+        pixel.instanceId = input.instanceId;
 
         return pixel;
     }

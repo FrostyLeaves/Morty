@@ -12,7 +12,9 @@ internal struct MaterialData
     float roughness;
 }
 
-[[vk::binding(0, 0)]] ParameterBlock<MaterialData> materialData;
+//[[vk::binding(0, 0)]] ParameterBlock<MaterialData> materialData;
+
+[MeshInstance][[vk::binding(0, 0)]]StructuredBuffer<MaterialData> materialDataBatch;
 
 [Resource("texAlbedo", ResourceType.Texture2D)]
 [[vk::binding(1, 0)]] Texture2D albedoTexture;
@@ -32,6 +34,7 @@ public struct ModelMaterial : IMaterial
     public SurfaceData GetSurfaceData(PixelData pixelData)
     {
         SurfaceData data;
+        MaterialData materialData = materialDataBatch[pixelData.instanceId];
 
         float3 normal = normalTexture.Sample(LinearSampler, pixelData.uv).xyz;
         normal = (normal * 2.0f) - 1.0f;

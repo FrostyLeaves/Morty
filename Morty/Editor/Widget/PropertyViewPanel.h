@@ -27,20 +27,20 @@ public:
 
     ~PropertyViewPanel() override;
 
-    void Render() override;
+    void             Render() override;
 
-    void Initialize(MainEditor* pMainEditor) override;
+    void             Initialize(MainEditor* pMainEditor) override;
 
-    void Release() override;
+    void             Release() override;
 
-    void Input(MInputEvent* pEvent) override;
+    void             Input(MInputEvent* pEvent) override;
 
     ImGuiWindowFlags GetWindowFlags() override;
 
-    void SetLocked(bool locked) { m_locked = locked; }
-    bool IsLocked() const { return m_locked; }
+    void             SetLocked(bool locked) { m_locked = locked; }
+    bool             IsLocked() const { return m_locked; }
 
-    int GetPanelID() const { return m_panelID; }
+    int              GetPanelID() const { return m_panelID; }
 
 protected:
     void OnSelectionChanged(const Selection& selection);
@@ -57,16 +57,14 @@ protected:
     void OnPathClicked();
 
 private:
-    int                                                       m_panelID = 0;
-    bool                                                      m_locked  = false;
+    int                                       m_panelID = 0;
+    bool                                      m_locked  = false;
 
-    Selection                                                 m_currentSelection;
-    MEntity*                                                  m_entity = nullptr;
-    std::deque<MComponentProperty*>                           m_propertyList;
+    Selection                                 m_currentSelection;
+    MEntity*                                  m_entity = nullptr;
+    std::deque<MComponentProperty*>           m_propertyList;
 
-    std::map<MStringId, std::function<MComponentProperty*()>> m_createPropertyFactory;
-
-    std::unique_ptr<MaterialPropertyRenderer>                 m_materialRenderer;
+    std::unique_ptr<MaterialPropertyRenderer> m_materialRenderer;
 };
 
 }// namespace morty

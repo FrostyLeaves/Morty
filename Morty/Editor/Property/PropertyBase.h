@@ -3,18 +3,15 @@
 #include "Utility/MRenderGlobal.h"
 #include "Math/Vector.h"
 #include "Resource/MMaterialResource.h"
+#include "Resource/MMaterialResourceData.h"
 #include "Resource/MMaterialTemplateResource.h"
+#include "Resource/MMeshResource.h"
 #include "Scene/MEntity.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MColor.h"
 #include "Utility/MString.h"
 #include "Utility/MTransform.h"
 #include "Variant/MVariant.h"
-
-#include <any>
-#include <cstdint>
-#include <functional>
-#include <map>
 
 namespace morty
 {
@@ -64,7 +61,7 @@ public:
     bool EditMTransform(MTransform& trans);
 
     bool EditEnum(const std::vector<MString>& select, size_t& index);
-
+    bool EditEnumTable(const std::map<MString, int>& select, int& index);
     bool EditMColor(MColor& value);
 
     bool EditMString(MString& value);
@@ -96,6 +93,7 @@ public:
 
     //auto call ShowValue/ShowNode
     bool                         EditMVariant(const MString& strVariantName, MVariant& value);
+    bool                         EditMVariant(MVariant& value);
 
     unsigned int                 GetID(const MString& strItemName);
 

@@ -206,6 +206,94 @@ bool PropertyBase::EditEnum(const std::vector<MString>& select, size_t& index)
     return false;
 }
 
+bool PropertyBase::EditEnumTable(const std::map<MString, int>& select, int& index)
+{
+    if (select.empty()) { return false; }
+
+    // Find current selection name
+    MString currentName = "Unknown";
+    for (const auto& pair: select)
+    {
+        if (pair.second == index)
+        {
+            currentName = pair.first;
+            break;
+        }
+    }
+
+    int nNewIndex = index;
+    if (ImGui::BeginCombo("", currentName.c_str()))
+    {
+        for (const auto& pair: select)
+        {
+            const bool isSelected = (pair.second == index);
+            if (ImGui::Selectable(pair.first.c_str(), isSelected)) { nNewIndex = pair.second; }
+
+            // Set the initial focus when opening the combo
+            if (isSelected) { ImGui::SetItemDefaultFocus(); }
+        }
+
+        ImGui::EndCombo();
+    }
+
+    if (nNewIndex != index)
+    {
+        index = nNewIndex;
+        return true;
+    }
+
+    return false;
+}
+
+bool PropertyBase::EditMVariant(MVariant& value)
+{
+    bool bModified = false;
+    switch (value.GetType())
+    {
+        case MEVariantType::EUInt: {
+            float val = value.GetValue<uint32_t>();
+            bModified |= Editfloat(val, 1.0f, 0.0f);
+            value.SetValue<uint32_t>(val);
+        }
+        break;
+
+        case MEVariantType::EInt: {
+            float val = static_cast<float>(value.GetValue<int>());
+            bModified |= Editfloat(val, 1.0f);
+            value.SetValue<int>(val);
+        }
+        break;
+
+        case MEVariantType::EFloat: bModified |= Editfloat(value.GetValue<float>()); break;
+        case MEVariantType::EVector2: bModified |= EditVector2(value.GetValue<Vector2>()); break;
+
+        case MEVariantType::EVector3: bModified |= EditVector3(value.GetValue<Vector3>()); break;
+
+        case MEVariantType::EVector4: bModified |= EditVector4(value.GetValue<Vector4>()); break;
+
+        case MEVariantType::EArray:
+        case MEVariantType::EStruct: {
+            MVariantStruct& sut    = value.GetValue<MVariantStruct>();
+            size_t          nCount = 0;
+            for (auto& iter: sut.GetMember())
+            {
+                bModified |= EditMVariant(
+                        iter.first.ToString().empty() ? MStringUtil::ToString(nCount) : iter.first.ToString(),
+                        sut.GetVariant<MVariant>(iter.first)
+                );
+                nCount++;
+            }
+
+            break;
+        }
+
+        case MEVariantType::ENone:
+        default: break;
+    }
+
+    return bModified;
+}
+
 bool PropertyBase::EditMVariant(const MString& strVariantName, MVariant& value)
 {
     bool bModified = false;

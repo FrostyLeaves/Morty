@@ -17,6 +17,7 @@ namespace morty
 {
 
 class MMaterialTemplate;
+class MShaderParameterSet;
 class MRenderMeshComponent;
 
 struct MORTY_API MMeshInstanceRenderProxy {
@@ -36,7 +37,7 @@ struct MORTY_API MeshInstanceRenderData {
 class MORTY_API MMaterialBatchGroup
 {
 public:
-    MMaterialBatchGroup()  = default;
+    MMaterialBatchGroup(const std::shared_ptr<MShaderParameterSet>& parameterSet, const MStringId& name);
     ~MMaterialBatchGroup() = default;
 
     MMaterialInstanceKey               AddInstance(MMeshInstanceKey proxyId);
@@ -56,6 +57,11 @@ private:
     std::unordered_map<MMeshInstanceKey, MMaterialInstanceKey> m_materialTable;
 
     MReusableIDPool<MMaterialInstanceKey>                      m_idPool;
+
+    std::shared_ptr<MShaderParameterSet>                       m_parameterSet;
+    size_t                                                     m_instanceDataSize;
+
+    MBuffer                                                    m_materialData;
 };
 
 }// namespace morty

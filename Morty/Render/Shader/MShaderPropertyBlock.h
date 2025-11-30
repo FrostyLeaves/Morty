@@ -49,9 +49,13 @@ public:
     void                                                                      Merge(const MShaderPropertyBlock& other);
     void                                                                      Clear();
 
+    void      SetInstancingName(const MStringId& name) { m_instancingName = name; }
+    MStringId GetInstancingName() const { return m_instancingName; }
+
 private:
     std::unordered_map<MStringId, MShaderParamAttribute> m_properties;
     std::unordered_map<MStringId, MShaderParamResource>  m_resources;
+    MStringId                                            m_instancingName;
 };
 
 }// namespace morty

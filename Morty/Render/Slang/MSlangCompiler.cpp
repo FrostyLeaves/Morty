@@ -101,6 +101,7 @@ static void ReflectionDefaultFromSlang(
                             {displayName, static_cast<MShaderParamResourceType>(paramType)}
                     );
                 }
+                else if (MString(attrName) == "MeshInstance") { output.SetInstancingName(MStringId(name)); }
             }
         }
     }
@@ -147,6 +148,23 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
             case slang::BindingType::ConstantBuffer: {
                 auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
                 ReflectionDefaultFromSlang(parameterTypeLayout, output);
+            }
+            break;
+            case slang::BindingType::RawBuffer: {
+                // RawBuffer is for StructuredBuffer and RWStructuredBuffer
+                auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
+
+                // Get the element type layout for StructuredBuffer<T>
+                auto elementTypeLayout = parameterTypeLayout->getElementTypeLayout();
+                if (elementTypeLayout)
+                {
+                    // Reflect the structure fields of the buffer element type
+                    auto fieldCount = elementTypeLayout->getFieldCount();
+                    for (auto idx = 0u; idx < fieldCount; ++idx)
+                    {
+                        ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, 0);
+                    }
+                }
             }
             break;
             default: break;

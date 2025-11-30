@@ -1,6 +1,7 @@
 import os
 import re
 import reflector_collector
+import property_type_parser
 
 template_document_head = """#include "Render/RenderGraph/MRenderGraph.h"
 #include "Widget/RenderGraph/EditRenderTaskNodeBase.h"
@@ -77,15 +78,6 @@ class Collector(reflector_collector.Basic):
     def check_attr(self, attr_node) -> bool:
         return attr_node == "RenderNodeProperty"
     
-    def process_property_type(self, property_type):
-        # std::shared_ptr<T>
-        shared_ptr_pattern = r'std::shared_ptr<MResource(.+)>'
-        match = re.match(shared_ptr_pattern, property_type)
-        if match:
-            # 提取尖括号内的类型
-            return 'MResource' + match.group(1)
-        return property_type
-
     def add_node(self, node, parent, _class_name):
 
         if _class_name not in self.m_node_table:
@@ -98,19 +90,19 @@ class Collector(reflector_collector.Basic):
         property_type = parent.type.spelling
 
         # 使用正则表达式处理类型
-        property_type = self.process_property_type(property_type)
+        property_type = property_type_parser.PropertyTypeParser.process_property_type(property_type)
 
         self.m_node_table[_class_name].property_name.append(property_name)
         self.m_node_table[_class_name].property_type.append(property_type)
     
     
     def output(self, source_path):
-        write_path = source_path + "/../Editor/Reflection/MRenderGraphNodeProperty.gen"
+        write_path = source_path + "/../Morty/Editor/Reflection/MRenderGraphNodeProperty.gen"
         if not os.path.exists(write_path) and len(self.m_node_table) == 0:
             return;
     
-        if not os.path.exists(source_path + "/../Editor/Reflection"):
-            os.makedirs(source_path + "/../Editor/Reflection")
+        if not os.path.exists(source_path + "/../Morty/Editor/Reflection"):
+            os.makedirs(source_path + "/../Morty/Editor/Reflection")
     
         fo = open(write_path, "w")
         fo.write(template_document_head)

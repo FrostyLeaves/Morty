@@ -3,7 +3,6 @@
 #include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "Main/MainEditor.h"
-#include "MaterialView.h"
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"

@@ -33,6 +33,7 @@ public struct VertexOut
     float3 normal : NORMAL;
     float3 tangent : Tangent;
     float3 bitangent : BITANGENT;
+    uint instanceId : INSTANCE_ID;
 }
 
 public interface IBatchMeshData

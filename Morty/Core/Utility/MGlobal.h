@@ -22,16 +22,24 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-#define ROW_MAJOR    1
-#define COL_MAJOR    2
+#define ROW_MAJOR               1
+#define COL_MAJOR               2
 
 //#define MATRIX_MAJOR ROW_MAJOR
-#define MATRIX_MAJOR COL_MAJOR
+#define MATRIX_MAJOR            COL_MAJOR
+
+#define MORTY_ENUM              enum class [[clang::annotate("MORTY_ENUM")]]
+
+#define PROPERTY_STRUCT         [[clang::annotate("ComponentPropertyStruct")]]
+#define PROPERTY_VARIANT        [[clang::annotate("ComponentPropertyVariant")]]
+#define PROPERTY_ENUM           [[clang::annotate("ComponentPropertyEnum")]]
+#define PROPERTY_RESOURCE(type) [[clang::annotate("ComponentPropertyResource(" #type ")")]]
 
 //#pragma warning( disable: 4251 )
 //#pragma warning( disable: 4275 )
 
 #include <algorithm>
+#include <any>
 #include <array>
 #include <atomic>
 #include <cassert>
@@ -40,6 +48,9 @@
 #include <climits>
 #include <cmath>
 #include <condition_variable>
+#include <cstdint>
+#include <flatbuffers/buffer.h>
+#include <flatbuffers/flatbuffer_builder.h>
 #include <fstream>
 #include <functional>
 #include <list>
@@ -54,9 +65,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include <flatbuffers/buffer.h>
-#include <flatbuffers/flatbuffer_builder.h>
 #include <yaml-cpp/yaml.h>
 
 #include "Utility/MMap.h"

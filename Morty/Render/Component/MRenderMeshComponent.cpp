@@ -1,22 +1,18 @@
 #include "Component/MRenderMeshComponent.h"
 
+#include "Component/MModelComponent.h"
+#include "Component/MSceneComponent.h"
 #include "Engine/MEngine.h"
 #include "MRenderNotify.h"
 #include "Material/MMaterial.h"
-#include "Scene/MEntity.h"
-#include "Scene/MScene.h"
-#include "Utility/MFunction.h"
-
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMeshResource.h"
-
-
-#include "Component/MModelComponent.h"
-#include "Component/MSceneComponent.h"
-
+#include "Scene/MEntity.h"
+#include "Scene/MScene.h"
+#include "System/MMeshInstanceSystem.h"
 #include "System/MRenderSystem.h"
 #include "System/MResourceSystem.h"
-
+#include "Utility/MFunction.h"
 #include "Flatbuffer/MRenderMeshComponent_generated.h"
 
 using namespace morty;
@@ -26,63 +22,39 @@ MORTY_CLASS_IMPLEMENT(MRenderMeshComponent, MComponent)
 MRenderMeshComponent::MRenderMeshComponent()
     : MComponent()
     , m_shadowType(MEShadowType::ENone)
-    , m_unDetailLevel(MRenderGlobal::MESH_LOD_LEVEL_RANGE)
 {}
-
-MRenderMeshComponent::~MRenderMeshComponent() {}
 
 void MRenderMeshComponent::Release() { Super::Release(); }
 
-void MRenderMeshComponent::SetMaterial(std::shared_ptr<MMaterialResource> material)
+void MRenderMeshComponent::SetMaterial(const std::shared_ptr<MMaterialResource>& material)
 {
     if (m_material.GetResource() == material) return;
 
-    m_material = material;
+    m_material       = material;
+    m_instancingData = MMeshInstanceSystem::CreateMaterialInstanceData(material.get());
+
     SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
 }
 
-std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterialResource() const
+std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterial() const
 {
     return m_material.GetResource<MMaterialResource>();
 }
 
-std::shared_ptr<MMaterial> MRenderMeshComponent::GetMaterial() { return m_material.GetResource<MMaterial>(); }
-
-bool                       MRenderMeshComponent::SetMaterialPath(const MString& strPath)
+void MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
 {
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strPath))
-    {
-        if (std::shared_ptr<MMaterialResource> pMaterialResource =
-                    MTypeClass::DynamicCast<MMaterialResource>(pResource))
-        {
-            SetMaterial(pMaterialResource);
-            return true;
-        }
-    }
+    if (!mesh) return;
 
-    return false;
+    m_mesh.SetResource(mesh);
+    SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
 }
 
-void MRenderMeshComponent::Load(std::shared_ptr<MResource> pResource)
-{
-    if (!pResource) return;
+std::shared_ptr<MMeshResource> MRenderMeshComponent::GetMesh() const { return m_mesh.GetResource<MMeshResource>(); }
 
-    if (std::shared_ptr<MMeshResource> pMeshResource = MTypeClass::DynamicCast<MMeshResource>(pResource))
-    {
-        m_mesh.SetResource(pResource);
-        SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
-    }
-}
+void     MRenderMeshComponent::SetInstancingData(const MVariant& value) { m_instancingData = value; }
+MVariant MRenderMeshComponent::GetInstancingData() const { return m_instancingData; }
 
-void MRenderMeshComponent::SetMeshResourcePath(const MString& strResourcePath)
-{
-    MResourceSystem*           resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    std::shared_ptr<MResource> pResource      = resourceSystem->LoadResource(strResourcePath);
-    Load(pResource);
-}
-
-MIMesh* MRenderMeshComponent::GetMesh()
+MIMesh*  MRenderMeshComponent::GetDrawMesh()
 {
     std::shared_ptr<MMeshResource> pMeshResource = m_mesh.GetResource<MMeshResource>();
     if (!pMeshResource) return nullptr;
@@ -117,7 +89,6 @@ flatbuffers::Offset<void> MRenderMeshComponent::Serialize(flatbuffers::FlatBuffe
     fbs::MRenderMeshComponentBuilder builder(fbb);
 
     builder.add_gen_dir_shadow(GetGenerateDirLightShadow());
-    builder.add_lod((int) GetDetailLevel());
     builder.add_material(fb_material);
     builder.add_mesh(fb_mesh);
     builder.add_super(fb_super);
@@ -140,7 +111,6 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
     Super::Deserialize(component->super());
 
     SetGenerateDirLightShadow(component->gen_dir_shadow());
-    SetDetailLevel(component->lod());
 
     MResourceRef material;
     material.Deserialize(resourceSystem, component->material());
@@ -148,5 +118,5 @@ void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 
     MResourceRef mesh;
     mesh.Deserialize(resourceSystem, component->mesh());
-    Load(mesh.GetResource());
+    SetMesh(mesh.GetResource<MMeshResource>());
 }

@@ -1,13 +1,14 @@
 #coding:UTF-8
 import sys, getopt, os, time
 import datetime
-from distutils.spawn import find_executable
 import clang.cindex # type: ignore
 from clang.cindex import * # type: ignore
 #clang.cindex.Config.set_library_file( 'libclang.dll' ) #clang path
 
 import render_graph_node_collector
 import render_graph_property_collector
+import component_property_collector
+import enum_collector
 
 registed_attr_name_list = [
     "test_attr"
@@ -61,6 +62,15 @@ def main(argv):
 
     collector_list.append(render_graph_node_collector.Collector())
     collector_list.append(render_graph_property_collector.Collector())
+
+    # Create enum collector first
+    enum_col = enum_collector.Collector()
+    collector_list.append(enum_col)
+
+    # Create component property collector and link it to enum collector
+    component_prop_col = component_property_collector.Collector()
+    component_prop_col.set_enum_collector(enum_col)
+    collector_list.append(component_prop_col)
 
 
     compdb = clang.cindex.CompilationDatabase.fromDirectory(build_dir)

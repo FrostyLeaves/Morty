@@ -9,6 +9,17 @@
 
 using namespace morty;
 
+MMaterialBatchGroup::MMaterialBatchGroup(
+        const std::shared_ptr<MShaderParameterSet>& parameterSet,
+        const MStringId&                            name
+)
+    : m_parameterSet(parameterSet)
+{
+    if (auto storage = parameterSet->FindStorageParam(name)) { m_instanceDataSize = storage->var.GetSize(); }
+    
+    m_materialData = MBuffer::CreateStorageBuffer("material batch group buffer");
+}
+
 MMaterialInstanceKey MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId)
 {
     auto id                  = m_idPool.AllocateID();
@@ -16,7 +27,11 @@ MMaterialInstanceKey MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId)
     return id;
 }
 
-void                 MMaterialBatchGroup::RemoveInstance(MMeshInstanceKey proxyId) { m_materialTable.erase(proxyId); }
+void MMaterialBatchGroup::RemoveInstance(MMeshInstanceKey proxyId)
+{
+    m_materialTable.erase(proxyId);
+    m_idPool.FreeID(proxyId);
+}
 
 MMaterialInstanceKey MMaterialBatchGroup::GetInstanceKey(MMeshInstanceKey proxyId) const
 {

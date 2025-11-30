@@ -25,7 +25,6 @@
 #include "Scene/MEntity.h"
 #include "Scene/MScene.h"
 #include "System/MComponentSystem.h"
-#include "System/MModelSystem.h"
 #include "System/MNotifyManager.h"
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
@@ -53,7 +52,6 @@ bool          MRenderModule::Register(MEngine* engine)
 
     MTaskGraph* pTaskGraph = engine->GetMainGraph();
 
-    engine->RegisterSystem<MModelSystem>();
     engine->RegisterSystem<MSkyBoxSystem>();
     engine->RegisterSystem<MShaderProgramSystem>();
 

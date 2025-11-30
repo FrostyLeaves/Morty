@@ -56,8 +56,8 @@ public struct FrameData
 public struct PixelData
 {
     public float3 positionWS;
+    public uint instanceId;
     public float2 uv;
-
     public float3x3 TBN;
 }
 

@@ -6,20 +6,11 @@
 #include "Basic/MViewport.h"
 #include "MaterialPropertyRenderer.h"
 #include "Object/MObject.h"
-#include "Property/PropertyMCameraComponent.h"
-#include "Property/PropertyMDirectionalLightComponent.h"
-#include "Property/PropertyMModelComponent.h"
-#include "Property/PropertyMPointLight.h"
-#include "Property/PropertyMRenderMeshComponent.h"
-#include "Property/PropertyMSceneComponent.h"
-#include "Property/PropertyMSpotLight.h"
 #include "Resource/MMaterialResource.h"
 #include "Utility/SelectionContext.h"
+#include "Widget/Property/MComponentPropertyList.h"
 
 using namespace morty;
-
-#define REGISTER_PROPERTY(CLASS_NAME)                                                                                  \
-    m_createPropertyFactory[MStringId(#CLASS_NAME)] = []() { return new Property##CLASS_NAME(); };
 
 PropertyViewPanel::PropertyViewPanel(int panelID)
     : BaseWidget()
@@ -27,14 +18,6 @@ PropertyViewPanel::PropertyViewPanel(int panelID)
     , m_propertyList()
 {
     m_strViewName = MString("Property ") + std::to_string(panelID);
-
-    REGISTER_PROPERTY(MSceneComponent);
-    REGISTER_PROPERTY(MCameraComponent);
-    REGISTER_PROPERTY(MSpotLightComponent);
-    REGISTER_PROPERTY(MPointLightComponent);
-    REGISTER_PROPERTY(MDirectionalLightComponent);
-    REGISTER_PROPERTY(MModelComponent);
-    REGISTER_PROPERTY(MRenderMeshComponent);
 }
 
 PropertyViewPanel::~PropertyViewPanel()
@@ -156,7 +139,8 @@ void PropertyViewPanel::UpdatePropertyList(MEntity* pEntity)
     auto vComponents = pEntity->GetComponents();
     for (MComponent* component: vComponents)
     {
-        if (auto func = m_createPropertyFactory[component->GetTypeName()]) { m_propertyList.push_back(func()); }
+        auto findResult = MComponentPropertyList::EditFactory.find(component->GetTypeName());
+        if (findResult != MComponentPropertyList::EditFactory.end()) { m_propertyList.push_back(findResult->second()); }
     }
 }
 

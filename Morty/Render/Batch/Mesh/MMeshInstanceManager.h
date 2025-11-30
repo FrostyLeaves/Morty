@@ -33,34 +33,27 @@ public:
     MORTY_INTERFACE(MMeshInstanceManager)
 
 public:
-    void                     Initialize() override;
+    void                                 Initialize() override;
 
-    void                     Release() override;
+    void                                 Release() override;
 
-    std::set<const MType*>   RegisterComponentType() const override;
+    [[nodiscard]] std::set<const MType*> RegisterComponentType() const override;
 
-    void                     UnregisterComponent(MComponent* component) override;
+    void                                 UnregisterComponent(MComponent* component) override;
 
-    void                     RenderUpdate(MTaskNode* pNode);
+    void                                 RenderUpdate(MTaskNode* pNode);
 
-    [[nodiscard]] MTaskNode* GetUpdateTask() const { return m_updateTask; }
+    [[nodiscard]] MTaskNode*             GetUpdateTask() const { return m_updateTask; }
 
-public:
-    void OnMaterialChanged(MComponent* component);
+    void                                 OnMaterialChanged(MComponent* component);
 
-    void OnMeshChanged(MComponent* component);
+    void                                 OnMeshChanged(MComponent* component);
 
-    void OnSceneComponentChanged(MComponent* component);
+    void                                 OnSceneComponentChanged(MComponent* component);
 
-    void OnRenderMeshChanged(MComponent* component);
+    void                                 OnRenderMeshChanged(MComponent* component);
 
-    void RemoveComponent(MRenderMeshComponent* component);
-
-    [[nodiscard]] const std::unordered_map<std::shared_ptr<MMaterialTemplate>, std::shared_ptr<MMaterialBatchGroup>>&
-    GetBatchGroups() const
-    {
-        return m_renderData.batchGroups;
-    }
+    void                                 OnRemoveComponent(MRenderMeshComponent* component);
 
 protected:
     void                     AddComponentToGroup(MRenderMeshComponent* component);
@@ -80,19 +73,15 @@ private:
     struct MainThreadData {
         // Mapping from component ID to material template for fast group lookup
         std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>> componentToMaterialTemplate;
+        // Cache of batch groups created on main thread
+        std::unordered_map<std::shared_ptr<MMaterialTemplate>, std::shared_ptr<MMaterialBatchGroup>>
+                materialTemplateToBatchGroup;
     };
 
     // Render thread data - for rendering
     struct RenderThreadData {
-        // Batch groups organized by material template
-        std::unordered_map<std::shared_ptr<MMaterialTemplate>, std::shared_ptr<MMaterialBatchGroup>> batchGroups;
-
-        // Fast lookup from ProxyId to BatchGroup
-        std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>> proxyToMaterialTemplate;
-
-        std::vector<MMeshInstanceRenderProxy>                                    renderProxies;
-
-        MBuffer                                                                  instanceBuffer;
+        std::vector<MMeshInstanceRenderProxy> renderProxies;
+        MBuffer                               instanceBuffer;
     };
 
     // Update queue, written by main thread and read by render thread
@@ -104,10 +93,10 @@ private:
             Update
         };
 
-        Type                               type;
-        MMeshInstanceKey                   proxyId;
-        MMeshInstanceRenderProxy           proxy;
-        std::shared_ptr<MMaterialTemplate> materialTemplate;
+        Type                                 type;
+        MMeshInstanceKey                     proxyId;
+        MMeshInstanceRenderProxy             proxy;
+        std::shared_ptr<MMaterialBatchGroup> batchGroup;// Pre-created batch group from main thread
     };
 
     MTaskNode*                 m_updateTask = nullptr;
