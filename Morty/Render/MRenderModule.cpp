@@ -156,6 +156,7 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
     {
         if (MScene* scene = pObject->template DynamicCast<MScene>())
         {
+            scene->RegisterManager<MMeshManager>();
             scene->RegisterManager<MMeshInstanceManager>();
             //scene->RegisterManager<MEnvironmentManager>();
             //scene->RegisterManager<MShadowMeshManager>();

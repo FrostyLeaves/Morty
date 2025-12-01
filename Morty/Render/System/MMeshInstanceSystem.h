@@ -21,7 +21,6 @@ class MORTY_API MMeshInstanceSystem : public MISystem
 {
     MORTY_CLASS(MMeshInstanceSystem)
 
-
     static MVariant CreateMaterialInstanceData(const MMaterial* temp);
 };
 

@@ -20,7 +20,7 @@
 
 using namespace morty;
 
-MORTY_CLASS_IMPLEMENT(MMeshManager, MObject)
+MORTY_CLASS_IMPLEMENT(MMeshManager, IManager)
 
 constexpr size_t VertexMemoryMaxSize = 1024 * 1024 * 20;
 constexpr size_t IndexMemoryMaxSize  = 1024 * 1024 * 80;
@@ -51,9 +51,9 @@ MMeshManager::MMeshManager()
     m_meshBufferAdapter = std::make_shared<MeshManagerBuffer>(this);
 }
 
-void MMeshManager::OnCreated()
+void MMeshManager::Initialize()
 {
-    Super::OnCreated();
+    Super::Initialize();
 
     const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
 
@@ -72,7 +72,7 @@ void MMeshManager::OnCreated()
     pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::UploadBufferTask, this));
 }
 
-void MMeshManager::OnDelete()
+void MMeshManager::Release()
 {
     ReleaseScreenRect();
 
@@ -82,7 +82,7 @@ void MMeshManager::OnDelete()
     m_indexBuffer.DestroyBuffer(renderSystem->GetDevice());
 
 
-    Super::OnDelete();
+    Super::Release();
 }
 
 
@@ -164,13 +164,13 @@ void MMeshManager::InitializeScreenRect()
     vIndices[5] = 1;
 
 
-    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
     m_screenRect->GenerateBuffer(renderSystem->GetDevice());
 }
 
 void MMeshManager::ReleaseScreenRect()
 {
-    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
     m_screenRect->DestroyBuffer(renderSystem->GetDevice());
     m_screenRect = nullptr;
 }

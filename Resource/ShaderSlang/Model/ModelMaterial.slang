@@ -14,7 +14,7 @@ internal struct MaterialData
 
 //[[vk::binding(0, 0)]] ParameterBlock<MaterialData> materialData;
 
-[MeshInstance][[vk::binding(0, 0)]]StructuredBuffer<MaterialData> materialDataBatch;
+[[vk::binding(0, 0)]] [MeshInstance] StructuredBuffer<MaterialData> materialDataBatch;
 
 [Resource("texAlbedo", ResourceType.Texture2D)]
 [[vk::binding(1, 0)]] Texture2D albedoTexture;

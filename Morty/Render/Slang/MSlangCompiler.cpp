@@ -39,6 +39,31 @@ MEShaderType ConvertShaderType(SlangStage stage)
     return MEShaderType::EVertex;
 }
 
+static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MShaderPropertyBlock& output)
+{
+    auto attrName = attribute->getName();
+    auto argCount = attribute->getArgumentCount();
+
+    MLogger().Log("[{}], {}", attrName, argCount);
+
+    if (MString(attrName) == "Property")
+    {
+        size_t nameSize    = 0;
+        int    paramType   = 0;
+        auto   displayName = attribute->getArgumentValueString(0, &nameSize);
+        attribute->getArgumentValueInt(1, &paramType);
+        output.AddProperty(name, {displayName, static_cast<MShaderParamType>(paramType)});
+    }
+    else if (MString(attrName) == "Resource")
+    {
+        size_t nameSize    = 0;
+        int    paramType   = 0;
+        auto   displayName = attribute->getArgumentValueString(0, &nameSize);
+        attribute->getArgumentValueInt(1, &paramType);
+        output.AddResource(name, {displayName, static_cast<MShaderParamResourceType>(paramType)});
+    }
+    else if (MString(attrName) == "MeshInstance") { output.SetInstancingName(name); }
+}
 
 static void ReflectionDefaultFromSlang(
         VariableLayoutReflection* parameter,
@@ -77,31 +102,7 @@ static void ReflectionDefaultFromSlang(
             for (unsigned int attrIdx = 0; attrIdx < attributeCount; ++attrIdx)
             {
                 auto attribute = variable->getUserAttributeByIndex(attrIdx);
-                auto attrName  = attribute->getName();
-                auto argCount  = attribute->getArgumentCount();
-
-                MLogger().Log("[{}], {}", attrName, argCount);
-
-                if (MString(attrName) == "Property")
-                {
-                    size_t nameSize    = 0;
-                    int    paramType   = 0;
-                    auto   displayName = attribute->getArgumentValueString(0, &nameSize);
-                    attribute->getArgumentValueInt(1, &paramType);
-                    output.AddProperty(MStringId(name), {displayName, static_cast<MShaderParamType>(paramType)});
-                }
-                else if (MString(attrName) == "Resource")
-                {
-                    size_t nameSize    = 0;
-                    int    paramType   = 0;
-                    auto   displayName = attribute->getArgumentValueString(0, &nameSize);
-                    attribute->getArgumentValueInt(1, &paramType);
-                    output.AddResource(
-                            MStringId(name),
-                            {displayName, static_cast<MShaderParamResourceType>(paramType)}
-                    );
-                }
-                else if (MString(attrName) == "MeshInstance") { output.SetInstancingName(MStringId(name)); }
+                ReflectionAttributes(MStringId(name), attribute, output);
             }
         }
     }
@@ -121,18 +122,27 @@ static void ReflectionDefaultFromSlang(
 static void
 ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
 {
-    //auto name = parameter->getName();
-    //auto type = parameter->getType()->getName();
+    if (parameter == nullptr) return;
 
-    auto space = std::string(reflectionDepth * 4, ' ');
-    //if (nullptr != name) { logger.Log("{}name: {}, type: {}", space, name, type); }
+    if (auto type = parameter->getType())
+    {
 
-    auto elementTypeLayout = parameter->getElementTypeLayout();
-    auto fieldCount        = elementTypeLayout->getFieldCount();
+        MLogger().Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
+
+        for (auto attrIdx = 0u; attrIdx < type->getUserAttributeCount(); ++attrIdx)
+        {
+            auto attribute = type->getUserAttributeByIndex(attrIdx);
+            ReflectionAttributes(MStringId(type->getName()), attribute, output);
+        }
+    }
+
+    auto fieldCount = parameter->getFieldCount();
     for (auto idx = 0u; idx < fieldCount; ++idx)
     {
-        ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1);
+        ReflectionDefaultFromSlang(parameter->getFieldByIndex(idx), output, reflectionDepth + 1);
     }
+
+    ReflectionDefaultFromSlang(parameter->getElementTypeLayout(), output, reflectionDepth + 1);
 }
 
 static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
@@ -150,23 +160,6 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
                 ReflectionDefaultFromSlang(parameterTypeLayout, output);
             }
             break;
-            case slang::BindingType::RawBuffer: {
-                // RawBuffer is for StructuredBuffer and RWStructuredBuffer
-                auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
-
-                // Get the element type layout for StructuredBuffer<T>
-                auto elementTypeLayout = parameterTypeLayout->getElementTypeLayout();
-                if (elementTypeLayout)
-                {
-                    // Reflect the structure fields of the buffer element type
-                    auto fieldCount = elementTypeLayout->getFieldCount();
-                    for (auto idx = 0u; idx < fieldCount; ++idx)
-                    {
-                        ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, 0);
-                    }
-                }
-            }
-            break;
             default: break;
         }
     }
@@ -182,6 +175,11 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
 
             switch (bindingType)
             {
+                case slang::BindingType::RawBuffer: {
+                    // RawBuffer is for StructuredBuffer and RWStructuredBuffer
+                    ReflectionDefaultFromSlang(typeLayout, output);
+                }
+                break;
                 case slang::BindingType::Texture:
                 case slang::BindingType::Sampler: {
                     // For standalone textures/samplers, we need to get the corresponding variable
@@ -344,7 +342,7 @@ bool                                   MSlangCompiler::Compile()
 TEST_CASE("slang compile test")
 {
     MSlangCompiler compiler;
-    compiler.SetShaderPath(MString(MORTY_RESOURCE_PATH) + "/ShaderSlang/Main/Test/TestCompiler.slang");
+    compiler.SetShaderPath(MString(MORTY_RESOURCE_PATH) + "/ShaderSlang/Main/DeferredGBuffer.slang");
 
     //auto reflection = compiler.GetReflection();
 

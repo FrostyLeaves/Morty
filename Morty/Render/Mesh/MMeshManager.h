@@ -5,6 +5,7 @@
 #include "Mesh/MCluster.h"
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
+#include "Scene/MManager.h"
 #include "Utility/MBounds.h"
 #include "Utility/MIDPool.h"
 #include "Utility/MMemoryPool.h"
@@ -20,13 +21,13 @@ class MMaterial;
 class MComponent;
 class MMeshBufferAdapter;
 class MRenderMeshComponent;
-class MMeshManager : public MObject
+class MMeshManager : public IManager
 {
     MORTY_CLASS(MMeshManager)
 public:
     explicit MMeshManager();
-    void OnCreated() override;
-    void OnDelete() override;
+    void Initialize() override;
+    void Release() override;
 
     struct MClusterData {
 

@@ -24,9 +24,16 @@
             "type": "lldb",
             "request": "launch", 
             "program": "${command:cmake.launchTargetPath}",
-            "args": ["import", "model", "assets/models/test.fbx", "assets/models/test.mesh"],
+            "args": ["import", "model", "${workspaceFolder}/../Resource/Model/banana/ripe-banana.obj", "${workspaceFolder}/../Build/Resource/banana"],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "CMake: build"
+        },
+        {
+            "name": "Generate Reflection",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/../Script/reflector/generate_reflector.py",
+            "args": ["${workspaceFolder}", "${command:cmake.buildDirectory}"]
         }
     ]
 }

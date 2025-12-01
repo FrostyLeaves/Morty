@@ -8,7 +8,7 @@ function(setup_python)
                 COMMAND ${Python_EXECUTABLE} -m venv ${PYTHON_VENV_PATH}
         )
         execute_process(
-                COMMAND ${PYTHON_VENV_PATH}/Scripts/pip install libclang
+                COMMAND ${PYTHON_VENV_PATH}/Scripts/pip install git+https://github.com/sighingnow/libclang.git@4fb1d602b96d607e90c1050db290933631d83c6e
         )
     endif ()
 endfunction()
