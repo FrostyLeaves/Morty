@@ -24,27 +24,21 @@ void MBasicPostProcessRenderNode::OnCreated()
 
 void MBasicPostProcessRenderNode::Release() { Super::Release(); }
 
-void MBasicPostProcessRenderNode::Render(const MRenderInfo& info)
+void MBasicPostProcessRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
-    auto           pCommand    = info.pPrimaryRenderCommand;
-    MIMesh*        pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
-    const Vector2i n2Size      = m_renderPass.GetFrameBufferSize();
-    MRenderPassCmd command     = pCommand->BeginRenderPass(&m_renderPass);
+    MORTY_UNUSED(info);
 
-    command.SetViewportAndScissor(
-            MSetViewportCmd{
-                    .x      = 0.0f,
-                    .y      = 0.0f,
-                    .width  = static_cast<float>(n2Size.x),
-                    .height = static_cast<float>(n2Size.y)
-            }
-    );
+    MIMesh*        pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
+    const Vector2i size        = m_renderPass.GetFrameBufferSize();
+    MRenderPassCmd command     = primaryCommand->BeginRenderPass(&m_renderPass);
+
+    command.SetViewportAndScissor(MSetViewportCmd{.rect = MRecti(0, 0, size.x, size.y)});
 
     command.SetMaterial(m_material.get(), m_material->GetTemplate()->GetDefaultPass());
     //command.SetShaderParameterSet(GetRenderGraph()->GetFrameProperty()->GetParameterSet());
     command.DrawMesh(pScreenMesh);
 
-    pCommand->EndRenderPass(command);
+    primaryCommand->EndRenderPass(command);
 }
 
 void MBasicPostProcessRenderNode::BindInOutTexture()

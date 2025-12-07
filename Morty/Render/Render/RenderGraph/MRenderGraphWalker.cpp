@@ -9,8 +9,9 @@
 
 using namespace morty;
 
-MRenderGraphWalker::MRenderGraphWalker(const MRenderInfo& info)
+MRenderGraphWalker::MRenderGraphWalker(const MRenderInfo& info, IRenderCommand* primaryCommand)
     : m_renderInfo(info)
+    , m_primaryCommand(primaryCommand)
 {}
 
 void MRenderGraphWalker::operator()(MTaskGraph* pTaskGraph)
@@ -19,15 +20,13 @@ void MRenderGraphWalker::operator()(MTaskGraph* pTaskGraph)
 
     std::vector<MTaskNode*> vNodes = pTaskGraph->GetOrderedNodes();
 
-    for (MTaskNode* pCurrentNode: vNodes)
+    for (MTaskNode* currentNode: vNodes)
     {
-        auto pRenderTaskNode = static_cast<MRenderTaskNode*>(pCurrentNode);
+        auto pRenderTaskNode = static_cast<MRenderTaskNode*>(currentNode);
 
-        if (pRenderTaskNode->IsValidRenderNode()) { pRenderTaskNode->Render(m_renderInfo); }
+        if (pRenderTaskNode->IsValidRenderNode()) { pRenderTaskNode->Execute(m_renderInfo, m_primaryCommand); }
     }
 }
-
-void MRenderGraphWalker::Render(MRenderTaskNode* pNode) { pNode->Render(m_renderInfo); }
 
 MRenderGraphSetupWalker::MRenderGraphSetupWalker(const MRenderInfo& info)
     : m_renderInfo(info)
@@ -39,7 +38,7 @@ void MRenderGraphSetupWalker::operator()(MTaskGraph* pTaskGraph)
 
     std::vector<MTaskNode*> vNodes = pTaskGraph->GetOrderedNodes();
 
-    for (MTaskNode* pCurrentNode: vNodes) { pCurrentNode->DynamicCast<MRenderTaskNode>()->RenderSetup(m_renderInfo); }
+    for (MTaskNode* currentNode: vNodes) { currentNode->DynamicCast<MRenderTaskNode>()->RenderSetup(m_renderInfo); }
 
     pTaskGraph->DynamicCast<MRenderGraph>()->GetRenderGraphSetting()->FlushDirty();
 }

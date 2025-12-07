@@ -191,15 +191,15 @@ bool MModelImporter::Load(const MString& strResourcePath)
     return true;
 }
 
-void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* scene)
+void MModelImporter::ProcessNode(aiNode* node, const aiScene* scene)
 {
     MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
     MSkeleton*     pSkeleton = m_skeletonResource ? m_skeletonResource->GetSkeleton() : nullptr;
 
-    for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
+    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
     {
-        aiMesh*                        pChildMesh = scene->mMeshes[pNode->mMeshes[i]];
+        aiMesh*                        pChildMesh = scene->mMeshes[node->mMeshes[i]];
 
         // Use MMeshImporter to import mesh
         MString                        strMeshName;
@@ -219,12 +219,12 @@ void MModelImporter::ProcessNode(aiNode* pNode, const aiScene* scene)
         meshComponent->SetMesh(pChildMeshResource);
         meshComponent->SetMaterial(GetMaterial(scene, pChildMesh->mMaterialIndex));
 
-        pEntitySystem->AddChild(GetEntityFromNode(scene, pNode), pChildEntity);
+        pEntitySystem->AddChild(GetEntityFromNode(scene, node), pChildEntity);
     }
 
-    for (uint32_t i = 0; i < pNode->mNumChildren; ++i)
+    for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        aiNode* pChild = pNode->mChildren[i];
+        aiNode* pChild = node->mChildren[i];
         ProcessNode(pChild, scene);
     }
 }
@@ -246,11 +246,11 @@ void MModelImporter::ProcessBones(const aiScene* scene)
     m_skeletonResource->Load(std::move(pResourceData));
 }
 
-void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene)
+void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* node, const aiScene* scene)
 {
-    for (uint32_t i = 0; i < pNode->mNumMeshes; ++i)
+    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
     {
-        aiMesh* pMesh = scene->mMeshes[pNode->mMeshes[i]];
+        aiMesh* pMesh = scene->mMeshes[node->mMeshes[i]];
         if (pMesh->HasBones())
         {
             for (uint32_t j = 0; j < pMesh->mNumBones; ++j)
@@ -269,12 +269,12 @@ void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiSc
         }
     }
 
-    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { RecordBones(pSkeleton, pNode->mChildren[i], scene); }
+    for (uint32_t i = 0; i < node->mNumChildren; ++i) { RecordBones(pSkeleton, node->mChildren[i], scene); }
 }
 
-void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene, MBone* pParent)
+void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* node, const aiScene* scene, MBone* pParent)
 {
-    MBone* pMBone = pSkeleton->FindBoneByName(pNode->mName.data);
+    MBone* pMBone = pSkeleton->FindBoneByName(node->mName.data);
     if (pMBone)
     {
         if (pParent)
@@ -284,10 +284,10 @@ void MModelImporter::BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScen
         }
         else { pMBone->unParentIndex = MGlobal::M_INVALID_UINDEX; }
 
-        CopyMatrix4(&pMBone->m_matTransform, &pNode->mTransformation);
+        CopyMatrix4(&pMBone->m_matTransform, &node->mTransformation);
     }
 
-    for (uint32_t i = 0; i < pNode->mNumChildren; ++i) { BindBones(pSkeleton, pNode->mChildren[i], scene, pMBone); }
+    for (uint32_t i = 0; i < node->mNumChildren; ++i) { BindBones(pSkeleton, node->mChildren[i], scene, pMBone); }
 }
 
 void MModelImporter::ProcessLights(const aiScene* scene)
@@ -562,10 +562,12 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
             // Embedded texture
             if (aiTexture->mHeight == 0)
             {
-                pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(
-                        MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
-                        MTextureImportInfo(MTexturePixelType::Byte8)
-                ));
+                pTextureResource->Load(
+                        MTextureResourceUtil::ImportTextureFromMemory(
+                                MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
+                                MTextureImportInfo(MTexturePixelType::Byte8)
+                        )
+                );
             }
             else
             {
@@ -586,14 +588,16 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
                     buffer[i + 3] = temp;
                 }
 
-                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory(
-                        "RawTexture",
-                        buffer,
-                        static_cast<uint32_t>(nWidth),
-                        static_cast<uint32_t>(nHeight),
-                        4,
-                        MTexturePixelType::Byte8
-                ));
+                pTextureResource->Load(
+                        MTextureResourceUtil::LoadFromMemory(
+                                "RawTexture",
+                                buffer,
+                                static_cast<uint32_t>(nWidth),
+                                static_cast<uint32_t>(nHeight),
+                                4,
+                                MTexturePixelType::Byte8
+                        )
+                );
             }
 
             m_rawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
@@ -601,30 +605,30 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
     }
 }
 
-MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* pNode)
+MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* node)
 {
     MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
 
-    if (m_nodeMaps.find(pNode) != m_nodeMaps.end()) { return m_nodeMaps[pNode]; }
+    if (m_nodeMaps.find(node) != m_nodeMaps.end()) { return m_nodeMaps[node]; }
 
     Matrix4 matTransform;
-    CopyMatrix4(&matTransform, &pNode->mTransformation);
+    CopyMatrix4(&matTransform, &node->mTransformation);
 
     MEntity*         pEntity         = m_scene->CreateEntity();
     MSceneComponent* pSceneComponent = m_scene->AddComponent<MSceneComponent>(pEntity);
 
-    pEntity->SetName(pNode->mName.C_Str());
+    pEntity->SetName(node->mName.C_Str());
     pSceneComponent->SetTransform(MTransform(matTransform));
 
-    if (pNode->mParent)
+    if (node->mParent)
     {
-        if (MEntity* pParentEntity = GetEntityFromNode(scene, pNode->mParent))
+        if (MEntity* pParentEntity = GetEntityFromNode(scene, node->mParent))
         {
             pEntitySystem->AddChild(pParentEntity, pEntity);
         }
     }
 
-    m_nodeMaps[pNode] = pEntity;
+    m_nodeMaps[node] = pEntity;
 
     return pEntity;
 }

@@ -11,9 +11,9 @@ MInputComponent::MInputComponent()
 
 MInputComponent::~MInputComponent() {}
 
-bool MInputComponent::Input(MInputEvent* pEvent, MViewport* pViewport)
+bool MInputComponent::Input(MInputEvent* pEvent, MViewport* viewport)
 {
-    if (m_funcInputCallback) return m_funcInputCallback(this, pEvent, pViewport);
+    if (m_funcInputCallback) return m_funcInputCallback(this, pEvent, viewport);
 
     return false;
 }

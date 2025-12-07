@@ -22,7 +22,7 @@ public:
     void Release() override;
 
 protected:
-    void RenderNode(MEntity* pNode);
+    void RenderNode(MEntity* node);
 };
 
 }// namespace morty

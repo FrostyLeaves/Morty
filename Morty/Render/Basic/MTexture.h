@@ -17,11 +17,6 @@ namespace morty
 {
 
 class MIDevice;
-using METextureType       = morty::fbs::METextureType;
-using METextureFormat     = morty::fbs::METextureFormat;
-using MEMipmapDataType    = morty::fbs::MEMipmapDataType;
-using METextureWriteUsage = uint32_t;
-using METextureReadUsage  = uint32_t;
 
 class METextureWriteUsageBit
 {
@@ -59,9 +54,9 @@ struct MORTY_API MTextureDesc {
         return *this;
     }
 
-    MTextureDesc& InitSize(const Vector2i& n2Size)
+    MTextureDesc& InitSize(const Vector2i& size)
     {
-        n3Size = Vector3i(n2Size.x, n2Size.y, 1);
+        n3Size = Vector3i(size.x, size.y, 1);
         return *this;
     }
 };
@@ -108,7 +103,7 @@ public:
 
     void                              DestroyBuffer(MIDevice* pDevice);
 
-    void                              Resize(MIDevice* pDevice, const Vector2i& n2Size);
+    void                              Resize(MIDevice* pDevice, const Vector2i& size);
 
     void                              Resize(MIDevice* pDevice, const Vector3i& n3Size);
 

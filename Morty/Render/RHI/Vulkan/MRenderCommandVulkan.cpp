@@ -17,10 +17,10 @@ MVulkanCommandExecuteTable MRenderCommandVulkan::m_executeTable = MVulkanCommand
 void                       MRenderCommandVulkan::SetViewport(const MSetViewportCmd* viewport) const
 {
     VkViewport vkViewport = {};
-    vkViewport.x          = viewport->x;
-    vkViewport.y          = viewport->y + viewport->height;
-    vkViewport.width      = std::max(viewport->width, 1.0f);
-    vkViewport.height     = -viewport->height;
+    vkViewport.x          = viewport->rect.x;
+    vkViewport.y          = viewport->rect.y + viewport->rect.height;
+    vkViewport.width      = std::max(viewport->rect.width, 1);
+    vkViewport.height     = -viewport->rect.height;
     vkViewport.minDepth   = viewport->minDepth;
     vkViewport.maxDepth   = viewport->maxDepth;
 
@@ -30,8 +30,8 @@ void                       MRenderCommandVulkan::SetViewport(const MSetViewportC
 void MRenderCommandVulkan::SetScissor(const MSetScissorCmd* scissor) const
 {
     VkRect2D scissorRect = {
-            VkOffset2D{int32_t(scissor->x), int32_t(scissor->y)},
-            VkExtent2D{uint32_t(std::max(scissor->width, 1.0f)), uint32_t(std::max(scissor->height, 1.0f))}
+            VkOffset2D{int32_t(scissor->rect.x), int32_t(scissor->rect.y)},
+            VkExtent2D{uint32_t(std::max(scissor->rect.width, 1)), uint32_t(std::max(scissor->rect.height, 1))}
     };
 
     vkCmdSetScissor(m_vkCommandBuffer, 0, 1, &scissorRect);

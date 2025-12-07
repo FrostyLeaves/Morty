@@ -24,7 +24,7 @@
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
 #include "RHI/IRenderCommand.h"
-#include "Render/MDeferredRenderProgram.h"
+#include "Render/MRenderGraphProgram.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
 #include "TaskGraph/MTaskGraph.h"
@@ -44,7 +44,7 @@
 
 using namespace morty;
 
-MStringId MainEditor::m_renderProgramName    = MDeferredRenderProgram::GetClassTypeName();
+MStringId MainEditor::m_renderProgramName    = MRenderGraphProgram::GetClassTypeName();
 MString   MainEditor::m_editorConfigFilePath = MString(MORTY_RESOURCE_PATH) + "/Editor/editor.ini";
 
 bool      MainEditor::Initialize(MEngine* engine)
@@ -92,10 +92,10 @@ bool      MainEditor::Initialize(MEngine* engine)
 void MainEditor::Release()
 {
 
-    if (m_sceneTexture)
+    if (m_sceneViewer)
     {
-        DestroySceneViewer(m_sceneTexture);
-        m_sceneTexture = nullptr;
+        DestroySceneViewer(m_sceneViewer);
+        m_sceneViewer = nullptr;
     }
 
     // Save PropertyViewManager and its panels' configurations
@@ -124,7 +124,7 @@ void MainEditor::Release()
     m_IniConfig.Save(m_editorConfigFilePath);
 }
 
-MViewport* MainEditor::GetViewport() const { return m_sceneTexture->GetViewport(); }
+MViewport* MainEditor::GetViewport() const { return m_sceneViewer->GetViewport(); }
 
 void       MainEditor::SetScene(MScene* scene)
 {
@@ -132,28 +132,40 @@ void       MainEditor::SetScene(MScene* scene)
 
     m_scene = scene;
 
-    if (m_sceneTexture)
+    if (m_sceneViewer)
     {
-        DestroySceneViewer(m_sceneTexture);
-        m_sceneTexture = nullptr;
+        DestroySceneViewer(m_sceneViewer);
+        m_sceneViewer = nullptr;
     }
 
-    m_sceneTexture = CreateSceneViewer("MainScene", m_scene);
+    m_sceneViewer = CreateSceneViewer("MainScene", m_scene);
 
-    m_renderGraphView->SetRenderProgram(m_sceneTexture->GetRenderProgram());
+    m_renderGraphView->SetRenderProgram(m_sceneViewer->GetRenderProgram());
 }
 
-void         MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
+void MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
 
-void         MainEditor::OnInput(MInputEvent* pEvent) { m_sceneTexture->GetViewport()->Input(pEvent); }
+void MainEditor::OnInput(MInputEvent* pEvent) { m_sceneViewer->GetViewport()->Input(pEvent); }
 
-void         MainEditor::OnTick(float delta) { m_scene->Tick(delta); }
+void MainEditor::OnTick(float delta) { m_scene->Tick(delta); }
+
+void MainEditor::OnRender(IRenderCommand* pRenderCommand)
+{
+    //update all scene viewer.
+    UpdateSceneViewer(pRenderCommand);
+
+    if (m_menuBar) { m_menuBar->Render(); }
+
+    ImGui::DockSpaceOverViewport();
+
+    for (BaseWidget* pBaseView: m_childView) { ShowView(pBaseView); }
+}
 
 SceneViewer* MainEditor::CreateSceneViewer(const MString& viewName, MScene* scene)
 {
     auto sceneViewer = GetEngine()->FindSystem<MObjectSystem>()->CreateObject<SceneViewer>();
     sceneViewer->Initialize(viewName, scene, MainEditor::GetRenderProgramName());
-    m_sceneViewer.insert(sceneViewer);
+    m_sceneViewerSet.insert(sceneViewer);
 
     sceneViewer->GetRenderTask()->ConnectTo(GetRenderTask());
     return sceneViewer;
@@ -162,15 +174,15 @@ SceneViewer* MainEditor::CreateSceneViewer(const MString& viewName, MScene* scen
 void MainEditor::DestroySceneViewer(SceneViewer* pViewer)
 {
     pViewer->DeleteLater();
-    m_sceneViewer.erase(pViewer);
+    m_sceneViewerSet.erase(pViewer);
 }
 
 void MainEditor::UpdateSceneViewer(IRenderCommand* pRenderCommand)
 {
     std::vector<MTexture*> vRenderTextures;
-    for (const auto& pSceneViewer: m_sceneViewer)
+    for (const auto& pSceneViewer: m_sceneViewerSet)
     {
-        pSceneViewer->UpdateTexture(pRenderCommand);
+        pSceneViewer->Render(pRenderCommand);
 
         if (auto texture = pSceneViewer->GetFinalOutputTexture()) { vRenderTextures.emplace_back(texture.get()); }
     }
@@ -204,16 +216,4 @@ Vector4 MainEditor::GetCurrentWidgetSize() const
     v2RenderViewSize.y -= (style.WindowPadding.y * 2.0f + ImGui::GetItemRectSize().y * 2.0f);
 
     return Vector4(v2RenderViewPos.x, v2RenderViewPos.y, v2RenderViewSize.x, v2RenderViewSize.y);
-}
-
-void MainEditor::OnRender(IRenderCommand* pRenderCommand)
-{
-    //update all scene viewer.
-    UpdateSceneViewer(pRenderCommand);
-
-    if (m_menuBar) { m_menuBar->Render(); }
-
-    ImGui::DockSpaceOverViewport();
-
-    for (BaseWidget* pBaseView: m_childView) { ShowView(pBaseView); }
 }

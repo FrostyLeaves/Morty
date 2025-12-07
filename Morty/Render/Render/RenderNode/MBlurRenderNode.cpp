@@ -46,8 +46,8 @@ void MBlurRenderNode::RenderSetup(const MRenderInfo& info)
         const bool    bVertical = setting.GetVariant<bool>(BlurDirectionName);
 
         const Vector2 f2Offset =
-                Vector2(bVertical ? 0 : (fOffset / info.f2ViewportSize.x),
-                        bVertical ? (fOffset / info.f2ViewportSize.y) : 0);
+                Vector2(bVertical ? 0 : (fOffset / info.viewportRect.width),
+                        bVertical ? (fOffset / info.viewportRect.height) : 0);
 
         m_material->SetValue(MShaderPropertyName::POSTPROCESS_BLUR_OFFSET, f2Offset);
     }

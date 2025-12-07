@@ -21,15 +21,15 @@ const int NodeBit       = 8;
 const int InputSlotBit  = 4;
 const int OutputSlotBit = 0;
 
-int       GetInputSlotId(MTaskNodeInput* pInput)
+int       GetInputSlotId(MTaskNodeInput* input)
 {
-    return static_cast<int>((pInput->GetTaskNode()->GetNodeID() << NodeBit) | (pInput->GetIndex() << InputSlotBit));
+    return static_cast<int>((input->GetTaskNode()->GetNodeID() << NodeBit) | (input->GetIndex() << InputSlotBit));
 }
 
-int GetOutputSlotId(MTaskNodeOutput* pOutput)
+int GetOutputSlotId(MTaskNodeOutput* output)
 {
     return static_cast<int>(
-            (pOutput->GetTaskNode()->GetNodeID() << NodeBit) | (pOutput->GetIndex() << OutputSlotBit) + 1
+            (output->GetTaskNode()->GetNodeID() << NodeBit) | (output->GetIndex() << OutputSlotBit) + 1
     );
 }
 
@@ -44,21 +44,21 @@ int RenderGraphView::GetDepthTable(MRenderGraph* pTaskGraph, std::map<MTaskNode*
     int  nMaxDepth = 0;
     auto vNodes    = pTaskGraph->GetFinalNodes();
 
-    for (MTaskNode* pNode: vNodes) { output[pNode] = 0; }
+    for (MTaskNode* node: vNodes) { output[node] = 0; }
 
     while (!vNodes.empty())
     {
-        MTaskNode* pNode = vNodes.back();
+        MTaskNode* node = vNodes.back();
         vNodes.pop_back();
 
-        if (!pNode) continue;
+        if (!node) continue;
 
-        for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
+        for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
         {
-            MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
+            MTaskNode* pPrevNode = node->GetInput(nInputIdx)->GetLinkedNode();
 
-            if (output.find(pPrevNode) == output.end()) { output[pPrevNode] = output[pNode] + 1; }
-            else if (output[pPrevNode] < output[pNode] + 1) { output[pPrevNode] = output[pNode] + 1; }
+            if (output.find(pPrevNode) == output.end()) { output[pPrevNode] = output[node] + 1; }
+            else if (output[pPrevNode] < output[node] + 1) { output[pPrevNode] = output[node] + 1; }
 
             vNodes.push_back(pPrevNode);
 
@@ -117,9 +117,9 @@ void RenderGraphView::DrawGraphView()
     //Warning: use int32 to restore all node | slot | conn, it can only record 8 bit info for node id.
     MORTY_ASSERT(vAllNodes.size() < 256);
 
-    for (auto& pNode: vAllNodes)
+    for (auto& node: vAllNodes)
     {
-        const int imNodeId = static_cast<int>(pNode->GetNodeID());
+        const int imNodeId = static_cast<int>(node->GetNodeID());
         (ImNodes::BeginNode(imNodeId));
         {
             //first initialize position.
@@ -127,24 +127,24 @@ void RenderGraphView::DrawGraphView()
             if (size.x + size.y <= MGlobal::M_FLOAT_BIAS)
             {
                 //ImVec2 initialPosition;
-                //initialPosition.x = -tDepthTable[pNode] * 300;
-                //initialPosition.y = vTaskColumn[tDepthTable[pNode]] * 200;
+                //initialPosition.x = -tDepthTable[node] * 300;
+                //initialPosition.y = vTaskColumn[tDepthTable[node]] * 200;
                 //ImNodes::SetNodeEditorSpacePos(imNodeId, initialPosition);
 
-                vTaskColumn[tDepthTable[pNode]]++;
+                vTaskColumn[tDepthTable[node]]++;
             }
 
             //title
             ImNodes::BeginNodeTitleBar();
-            ImGui::TextUnformatted(pNode->GetNodeName().ToString().c_str());
+            ImGui::TextUnformatted(node->GetNodeName().ToString().c_str());
             ImNodes::EndNodeTitleBar();
 
-            float nodeWidth = GetNodeWidth(static_cast<MRenderTaskNode*>(pNode));
+            float nodeWidth = GetNodeWidth(static_cast<MRenderTaskNode*>(node));
 
             //input
-            for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
+            for (size_t nIdx = 0; nIdx < node->GetInputSize(); ++nIdx)
             {
-                auto pNodeInput = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nIdx));
+                auto pNodeInput = static_cast<MRenderTaskNodeInput*>(node->GetInput(nIdx));
                 SetupLinkStyle(pNodeInput);
                 ImNodes::BeginInputAttribute(GetInputSlotId(pNodeInput));
                 ImGui::Text("%s", pNodeInput->GetName().c_str());
@@ -152,17 +152,17 @@ void RenderGraphView::DrawGraphView()
                 ResetLinkStyle();
             }
 
-            auto         property = pRenderGraph->GetRenderGraphSetting()->GetPropertyVariant(pNode->GetNodeName());
+            auto         property = pRenderGraph->GetRenderGraphSetting()->GetPropertyVariant(node->GetNodeName());
             PropertyBase prop;
-            prop.EditMVariant(pNode->GetNodeName().ToString(), property);
+            prop.EditMVariant(node->GetNodeName().ToString(), property);
 
             //output
-            for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
+            for (size_t nIdx = 0; nIdx < node->GetOutputSize(); ++nIdx)
             {
-                auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(pNode->GetOutput(nIdx));
+                auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(node->GetOutput(nIdx));
                 SetupLinkStyle(pNodeOutput);
                 ImNodes::BeginOutputAttribute(GetOutputSlotId(pNodeOutput));
-                bool check = pNode->GetNodeID() == pRenderGraph->GetFinalOutputNodeIdx() &&
+                bool check = node->GetNodeID() == pRenderGraph->GetFinalOutputNodeIdx() &&
                              nIdx == pRenderGraph->GetFinalOutputSlotIdx();
 
                 ImGui::SetCursorPosX(
@@ -172,7 +172,7 @@ void RenderGraphView::DrawGraphView()
                 ImGui::SameLine(nodeWidth);
                 if (ImGui::Checkbox("", &check))
                 {
-                    pRenderGraph->SetFinalOutput(pNode->GetNodeID(), nIdx);
+                    pRenderGraph->SetFinalOutput(node->GetNodeID(), nIdx);
                     pRenderGraph->RequireCompile();
                 }
 
@@ -184,16 +184,16 @@ void RenderGraphView::DrawGraphView()
     }
 
     //link
-    for (auto& pNode: vAllNodes)
+    for (auto& node: vAllNodes)
     {
-        for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
+        for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
         {
-            auto pInput  = pNode->GetInput(nInputIdx);
-            auto pOutput = pInput->GetLinkedOutput();
-            if (!pOutput) { continue; }
+            auto input  = node->GetInput(nInputIdx);
+            auto output = input->GetLinkedOutput();
+            if (!output) { continue; }
 
-            int inputId  = GetInputSlotId(pInput);
-            int outputId = GetOutputSlotId(pOutput);
+            int inputId  = GetInputSlotId(input);
+            int outputId = GetOutputSlotId(output);
 
             ImNodes::Link((inputId << 16) | outputId, outputId, inputId);
         }
@@ -214,10 +214,10 @@ void RenderGraphView::DrawGraphView()
 
         auto   pInputNode  = pRenderGraph->FindTaskNode(inputNodeId);
         auto   pOutputNode = pRenderGraph->FindTaskNode(outputNodeId);
-        auto   pInput      = pInputNode->GetInput(inputSlotId);
-        auto   pOutput     = pOutputNode->GetOutput(outputSlotId);
+        auto   input       = pInputNode->GetInput(inputSlotId);
+        auto   output      = pOutputNode->GetOutput(outputSlotId);
 
-        pOutput->UnLink(pInput);
+        output->UnLink(input);
         pRenderGraph->RequireCompile();
     }
 
@@ -231,12 +231,12 @@ void RenderGraphView::DrawGraphView()
 
         auto   pInputNode  = pRenderGraph->FindTaskNode(inputNodeId);
         auto   pOutputNode = pRenderGraph->FindTaskNode(outputNodeId);
-        auto   pInput      = pInputNode->GetInput(inputSlotId)->DynamicCast<MRenderTaskNodeInput>();
-        auto   pOutput     = pOutputNode->GetOutput(outputSlotId)->DynamicCast<MRenderTaskNodeOutput>();
+        auto   input       = pInputNode->GetInput(inputSlotId)->DynamicCast<MRenderTaskNodeInput>();
+        auto   output      = pOutputNode->GetOutput(outputSlotId)->DynamicCast<MRenderTaskNodeOutput>();
 
-        if (pInput && pOutput && !pRenderGraph->CheckCycle(pOutputNode, pInputNode))
+        if (input && output && !pRenderGraph->CheckCycle(pOutputNode, pInputNode))
         {
-            if (pOutput->LinkTo(pInput)) { pRenderGraph->RequireCompile(); }
+            if (output->LinkTo(input)) { pRenderGraph->RequireCompile(); }
         }
     }
 }
@@ -381,33 +381,33 @@ ImColor GetColorFromTextureFormat(METextureFormat format)
     return FIND_OR_DEFAULT(ColorTable, format, DefaultLinkColor);
 }
 
-void RenderGraphView::SetupLinkStyle(MRenderTaskNodeInput* pInput)
+void RenderGraphView::SetupLinkStyle(MRenderTaskNodeInput* input)
 {
-    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(pInput->GetFormat()));
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(input->GetFormat()));
 }
 
-void RenderGraphView::SetupLinkStyle(MRenderTaskNodeOutput* pOutput)
+void RenderGraphView::SetupLinkStyle(MRenderTaskNodeOutput* output)
 {
-    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(pOutput->GetFormat()));
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(output->GetFormat()));
 }
 
 void  RenderGraphView::ResetLinkStyle() { ImNodes::PopColorStyle(); }
 
-float RenderGraphView::GetNodeWidth(MRenderTaskNode* pNode)
+float RenderGraphView::GetNodeWidth(MRenderTaskNode* node)
 {
     const float emptyWidth = 30;
 
-    float       width = ImGui::CalcTextSize(pNode->GetNodeName().c_str()).x;
-    for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
+    float       width = ImGui::CalcTextSize(node->GetNodeName().c_str()).x;
+    for (size_t nIdx = 0; nIdx < node->GetInputSize(); ++nIdx)
     {
-        auto pNodeInput = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nIdx));
+        auto pNodeInput = static_cast<MRenderTaskNodeInput*>(node->GetInput(nIdx));
         width           = std::max(width, ImGui::CalcTextSize(pNodeInput->GetName().c_str()).x);
     }
 
     //output
-    for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
+    for (size_t nIdx = 0; nIdx < node->GetOutputSize(); ++nIdx)
     {
-        auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(pNode->GetOutput(nIdx));
+        auto pNodeOutput = static_cast<MRenderTaskNodeOutput*>(node->GetOutput(nIdx));
         width            = std::max(width, ImGui::CalcTextSize(pNodeOutput->GetName().c_str()).x);
     }
 

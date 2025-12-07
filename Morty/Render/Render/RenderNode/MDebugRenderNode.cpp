@@ -32,7 +32,7 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDebugRenderNode, ISinglePassRenderNode)
 
-void MDebugRenderNode::Render(const MRenderInfo& info)
+void MDebugRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
     MORTY_UNUSED(info);
     /*
@@ -49,20 +49,12 @@ void MDebugRenderNode::Render(const MRenderInfo& info)
     Render(info, {&indirectMesh});
 
     */
-}
 
-void MDebugRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
-{
-    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
-    auto            command  = pCommand->BeginRenderPass(&m_renderPass);
+    auto command = primaryCommand->BeginRenderPass(&m_renderPass);
 
-    const Vector2   v2LeftTop = info.f2ViewportLeftTop;
-    const Vector2   v2Size    = info.f2ViewportSize;
-    command.SetViewportAndScissor({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
+    command.SetViewportAndScissor({.rect = info.viewportRect});
 
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(&command); }
-
-    pCommand->EndRenderPass(command);
+    primaryCommand->EndRenderPass(command);
 }
 
 std::vector<MRenderTaskInputDesc> MDebugRenderNode::InitInputDesc()

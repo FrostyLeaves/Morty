@@ -22,10 +22,10 @@ void MMultiThreadTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
     if (pTaskGraph->NeedCompile() && !pTaskGraph->Compile()) { return; }
     const std::vector<MTaskNode*>& vNodes = pTaskGraph->GetStartNodes();
 
-    for (MTaskNode* pNode: vNodes)
+    for (MTaskNode* node: vNodes)
     {
-        m_nodeState[pNode] = METaskState::Active;
-        m_waitTask.push(pNode);
+        m_nodeState[node] = METaskState::Active;
+        m_waitTask.push(node);
     }
 
     while (true)
@@ -55,21 +55,19 @@ void MMultiThreadTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
     }
 }
 
-bool MMultiThreadTaskGraphWalker::CheckNodeActive(MTaskNode* pNode) const
+bool MMultiThreadTaskGraphWalker::CheckNodeActive(MTaskNode* node) const
 {
-    const auto findState = m_nodeState.find(pNode);
-    if (findState != m_nodeState.end() && findState->second != METaskState::Wait)
-        return false;
+    const auto findState = m_nodeState.find(node);
+    if (findState != m_nodeState.end() && findState->second != METaskState::Wait) return false;
 
-    for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
+    for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
     {
-        MTaskNodeInput* pInput = pNode->GetInput(nInputIdx);
+        MTaskNodeInput* input = node->GetInput(nInputIdx);
 
-        if (MTaskNode* pDependNode = pInput->GetLinkedNode())
+        if (MTaskNode* pDependNode = input->GetLinkedNode())
         {
             const auto findDependState = m_nodeState.find(pDependNode);
-            if (findDependState == m_nodeState.end() ||
-                findDependState->second != METaskState::Finish)
+            if (findDependState == m_nodeState.end() || findDependState->second != METaskState::Finish)
             {
                 return false;
             }
@@ -83,11 +81,7 @@ MThreadWork MMultiThreadTaskGraphWalker::CreateThreadWork(MTaskNode* pTaskNode)
 {
     MThreadWork work;
     work.eThreadType      = static_cast<int>(pTaskNode->GetThreadType());
-    work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(
-            MMultiThreadTaskGraphWalker::ExecuteTaskNode,
-            this,
-            pTaskNode
-    );
+    work.funcWorkFunction = M_CLASS_FUNCTION_BIND_1_0(MMultiThreadTaskGraphWalker::ExecuteTaskNode, this, pTaskNode);
 
     return work;
 }
@@ -106,11 +100,11 @@ void MMultiThreadTaskGraphWalker::OnTaskFinishedCallback(MTaskNode* pTaskNode)
 
     for (size_t i = 0; i < pTaskNode->GetOutputSize(); ++i)
     {
-        MTaskNodeOutput* pOutput = pTaskNode->GetOutput(i);
-        const auto&      vInputs = pOutput->GetLinkedInputs();
-        for (MTaskNodeInput* pInput: vInputs)
+        MTaskNodeOutput* output = pTaskNode->GetOutput(i);
+        const auto&      inputs = output->GetLinkedInputs();
+        for (MTaskNodeInput* input: inputs)
         {
-            MTaskNode* pNextNode = pInput->GetTaskNode();
+            MTaskNode* pNextNode = input->GetTaskNode();
 
             if (CheckNodeActive(pNextNode))
             {

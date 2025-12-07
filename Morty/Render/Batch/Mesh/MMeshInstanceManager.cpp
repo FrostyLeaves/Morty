@@ -117,9 +117,21 @@ void MMeshInstanceManager::UnregisterComponent(MComponent* component)
     }
 }
 
-void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
+void MMeshInstanceManager::SceneTick(MScene* scene, const float& delta)
 {
-    MORTY_UNUSED(pNode);
+    MORTY_UNUSED(scene);
+    MORTY_UNUSED(delta);
+
+    {
+        std::lock_guard<std::mutex> lock(m_updateMutex);
+        if (m_pendingCommands.empty()) { return; }
+        m_pendingCommands.swap(m_updateQueue);
+    }
+}
+
+void MMeshInstanceManager::RenderUpdate(MTaskNode* node)
+{
+    MORTY_UNUSED(node);
 
 
     // Process update queue
@@ -138,7 +150,22 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
     {
         switch (cmd.type)
         {
-            case UpdateCommand::Type::Add: {
+            case UpdateCommand::Type::AddGroup: {
+                if (!cmd.batchGroup) { break; }
+                storageBufferNeedsUpdate = true;
+
+                m_renderData.batchGroups.push_back(cmd.batchGroup);
+                break;
+            }
+            case UpdateCommand::Type::RemoveGroup: {
+                if (!cmd.batchGroup) { break; }
+                storageBufferNeedsUpdate = true;
+
+                auto it = std::find(m_renderData.batchGroups.begin(), m_renderData.batchGroups.end(), cmd.batchGroup);
+                if (it != m_renderData.batchGroups.end()) { m_renderData.batchGroups.erase(it); }
+                break;
+            }
+            case UpdateCommand::Type::AddInstance: {
                 if (!cmd.batchGroup) { break; }
                 storageBufferNeedsUpdate = true;
 
@@ -149,12 +176,12 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* pNode)
                 m_renderData.renderProxies[cmd.proxy.proxyId] = cmd.proxy;
                 break;
             }
-            case UpdateCommand::Type::Remove: {
+            case UpdateCommand::Type::RemoveInstance: {
                 storageBufferNeedsUpdate                = true;
                 m_renderData.renderProxies[cmd.proxyId] = MMeshInstanceRenderProxy();
                 break;
             }
-            case UpdateCommand::Type::Update: {
+            case UpdateCommand::Type::UpdateInstance: {
                 storageBufferNeedsUpdate                = true;
                 m_renderData.renderProxies[cmd.proxyId] = cmd.proxy;
                 break;
@@ -227,7 +254,7 @@ MMeshInstanceRenderProxy MMeshInstanceManager::CreateProxyFromComponent(MRenderM
     if (!component) { return proxy; }
 
     // Use component ID index as globally unique ID
-    proxy.proxyId = static_cast<uint32_t>(component->GetComponentID().nIdx);
+    proxy.proxyId = static_cast<MMeshInstanceKey>(component->GetComponentID().nIdx);
 
     // Get visibility
     if (auto* pSceneComponent = component->GetEntity()->GetComponent<MSceneComponent>())
@@ -278,22 +305,22 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* component)
 
         // Cache in main thread
         m_mainThreadData.materialTemplateToBatchGroup[pMaterialTemplate] = batchGroup;
+        UpdateCommand cmd;
+        cmd.type       = UpdateCommand::Type::AddGroup;
+        cmd.batchGroup = batchGroup;
+        m_pendingCommands.push_back(cmd);
     }
     else { batchGroup = it->second; }
     if (batchGroup) { materialInstanceKey = batchGroup->AddInstance(proxyId); }
 
     // Create add command
     UpdateCommand cmd;
-    cmd.type             = UpdateCommand::Type::Add;
+    cmd.type             = UpdateCommand::Type::AddInstance;
     cmd.proxyId          = proxyId;
     cmd.proxy            = CreateProxyFromComponent(component);
     cmd.proxy.materialId = materialInstanceKey;
     cmd.batchGroup       = batchGroup;
-
-    {
-        std::lock_guard<std::mutex> lock(m_updateMutex);
-        m_updateQueue.push_back(cmd);
-    }
+    m_pendingCommands.push_back(cmd);
 }
 
 void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* component)
@@ -315,17 +342,21 @@ void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* compon
     if (batchGroup)
     {
         batchGroup->RemoveInstance(proxyId);
-        if (batchGroup->IsEmpty()) { m_mainThreadData.materialTemplateToBatchGroup.erase(findResult); }
+        if (batchGroup->IsEmpty())
+        {
+            UpdateCommand cmd;
+            cmd.type       = UpdateCommand::Type::RemoveGroup;
+            cmd.batchGroup = batchGroup;
+            m_pendingCommands.push_back(cmd);
+            m_mainThreadData.materialTemplateToBatchGroup.erase(findResult);
+        }
     }
 
     // Create remove command
     UpdateCommand cmd;
-    cmd.type    = UpdateCommand::Type::Remove;
+    cmd.type    = UpdateCommand::Type::RemoveInstance;
     cmd.proxyId = proxyId;
-    {
-        std::lock_guard<std::mutex> lock(m_updateMutex);
-        m_updateQueue.push_back(cmd);
-    }
+    m_pendingCommands.push_back(cmd);
 }
 
 void MMeshInstanceManager::UpdateMeshInstance(MRenderMeshComponent* component, MMeshInstanceRenderProxy proxy)
@@ -343,16 +374,12 @@ void MMeshInstanceManager::UpdateMeshInstance(MRenderMeshComponent* component, M
 
     // Create update command
     UpdateCommand cmd;
-    cmd.type             = UpdateCommand::Type::Update;
+    cmd.type             = UpdateCommand::Type::UpdateInstance;
     cmd.proxyId          = proxy.proxyId;
     cmd.proxy            = proxy;
     cmd.proxy.materialId = batchGroup->GetInstanceKey(proxy.proxyId);
     cmd.batchGroup       = batchGroup;
-
-    {
-        std::lock_guard<std::mutex> lock(m_updateMutex);
-        m_updateQueue.push_back(cmd);
-    }
+    m_pendingCommands.push_back(cmd);
 }
 
 void MMeshInstanceManager::Clean()
@@ -361,7 +388,7 @@ void MMeshInstanceManager::Clean()
     m_mainThreadData.materialTemplateToBatchGroup.clear();
 
     m_renderData.renderProxies.clear();
-
+    m_pendingCommands.clear();
     {
         std::lock_guard<std::mutex> lock(m_updateMutex);
         m_updateQueue.clear();

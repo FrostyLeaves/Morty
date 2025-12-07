@@ -13,26 +13,26 @@ const size_t MTaskNode::InvalidSlotId = ~0U;
 
 MTaskNode::~MTaskNode()
 {
-    for (MTaskNodeInput* pInput: m_input) { delete pInput; }
+    for (MTaskNodeInput* input: m_input) { delete input; }
     m_input.clear();
 
-    for (MTaskNodeOutput* pOutput: m_output) { delete pOutput; }
+    for (MTaskNodeOutput* output: m_output) { delete output; }
     m_output.clear();
 }
 
-void MTaskNode::AppendInput(MTaskNodeInput* pInput)
+void MTaskNode::AppendInput(MTaskNodeInput* input)
 {
-    pInput->pGraphNode = this;
-    pInput->m_unIndex  = m_input.size();
-    m_input.push_back(pInput);
+    input->pGraphNode = this;
+    input->m_unIndex  = m_input.size();
+    m_input.push_back(input);
 }
 
-void MTaskNode::AppendOutput(MTaskNodeOutput* pOutput)
+void MTaskNode::AppendOutput(MTaskNodeOutput* output)
 {
-    pOutput->pGraphNode = this;
-    pOutput->m_unIndex  = m_output.size();
+    output->pGraphNode = this;
+    output->m_unIndex  = m_output.size();
 
-    m_output.push_back(pOutput);
+    m_output.push_back(output);
 }
 
 MTaskNodeInput* MTaskNode::GetInput(const size_t& nInputIdx) const
@@ -51,21 +51,21 @@ MTaskNodeOutput* MTaskNode::GetOutput(const size_t& nOutputIdx) const
 
 void MTaskNode::ConnectTo(MTaskNode* pNextNode)
 {
-    MTaskNodeOutput* pOutput = GetOutputSize() ? GetOutput(0) : AppendOutput();
-    MTaskNodeInput*  pInput  = pNextNode->AppendInput();
+    MTaskNodeOutput* output = GetOutputSize() ? GetOutput(0) : AppendOutput();
+    MTaskNodeInput*  input  = pNextNode->AppendInput();
 
-    pOutput->LinkTo(pInput);
+    output->LinkTo(input);
 }
 
 void MTaskNode::DisconnectTo(MTaskNode* pNextNode)
 {
     for (auto iter = m_output.begin(); iter != m_output.end(); ++iter)
     {
-        MTaskNodeOutput* pOutput = *iter;
-        auto             inputs  = pOutput->GetLinkedInputs();
-        for (MTaskNodeInput* pInput: inputs)
+        MTaskNodeOutput* output = *iter;
+        auto             inputs = output->GetLinkedInputs();
+        for (MTaskNodeInput* input: inputs)
         {
-            if (pInput->GetTaskNode() == pNextNode) { pOutput->UnLink(pInput); }
+            if (input->GetTaskNode() == pNextNode) { output->UnLink(input); }
         }
     }
 }
@@ -73,29 +73,29 @@ void MTaskNode::DisconnectTo(MTaskNode* pNextNode)
 
 void MTaskNode::DisconnectAll()
 {
-    for (MTaskNodeInput* pInput: m_input)
+    for (MTaskNodeInput* input: m_input)
     {
-        if (auto pPrevNode = pInput->GetLinkedNode()) { pPrevNode->DisconnectTo(this); }
+        if (auto pPrevNode = input->GetLinkedNode()) { pPrevNode->DisconnectTo(this); }
 
-        delete pInput;
+        delete input;
     }
     m_input.clear();
 
-    for (MTaskNodeOutput* pOutput: m_output)
+    for (MTaskNodeOutput* output: m_output)
     {
-        auto inputs = pOutput->GetLinkedInputs();
-        for (MTaskNodeInput* pInput: inputs) { pOutput->UnLink(pInput); }
+        auto inputs = output->GetLinkedInputs();
+        for (MTaskNodeInput* input: inputs) { output->UnLink(input); }
 
-        delete pOutput;
+        delete output;
     }
     m_output.clear();
 }
 
 bool MTaskNode::IsStartNode()
 {
-    for (MTaskNodeInput* pInput: m_input)
+    for (MTaskNodeInput* input: m_input)
     {
-        if (pInput->GetLinkedNode()) return false;
+        if (input->GetLinkedNode()) return false;
     }
 
     return true;
@@ -103,9 +103,9 @@ bool MTaskNode::IsStartNode()
 
 bool MTaskNode::IsFinalNode()
 {
-    for (MTaskNodeOutput* pOutput: m_output)
+    for (MTaskNodeOutput* output: m_output)
     {
-        if (!pOutput->GetLinkedInputs().empty()) return false;
+        if (!output->GetLinkedInputs().empty()) return false;
     }
 
     return true;

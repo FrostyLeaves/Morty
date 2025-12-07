@@ -73,14 +73,14 @@ template<typename TYPE> TYPE* MTaskGraph::AddNode(const MStringId& strNodeName)
 {
     if (!MTypeClass::IsType<TYPE, MTaskNode>()) { return nullptr; }
 
-    TYPE* pNode = new TYPE();
-    if (!AddNode(strNodeName, pNode))
+    TYPE* node = new TYPE();
+    if (!AddNode(strNodeName, node))
     {
-        delete pNode;
-        pNode = nullptr;
+        delete node;
+        node = nullptr;
     }
 
-    return pNode;
+    return node;
 }
 
 }// namespace morty

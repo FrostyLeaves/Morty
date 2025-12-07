@@ -43,18 +43,18 @@ MRenderTargetGroup ISinglePassRenderNode::AutoBindTarget()
 
     for (size_t nIdx = 0; nIdx < GetOutputSize(); ++nIdx)
     {
-        auto pOutput = GetRenderOutput(nIdx);
-        auto texture = pOutput->GetRenderTexture();
+        auto output  = GetRenderOutput(nIdx);
+        auto texture = output->GetRenderTexture();
 
         if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack ||
             texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
         {
-            group.backTargets.emplace_back(pOutput->CreateRenderTarget());
+            group.backTargets.emplace_back(output->CreateRenderTarget());
         }
         else if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
         {
             MORTY_ASSERT(group.depthTarget.texture == nullptr);
-            group.depthTarget = {pOutput->CreateRenderTarget()};
+            group.depthTarget = {output->CreateRenderTarget()};
         }
         else { MORTY_ASSERT(false); }
     }

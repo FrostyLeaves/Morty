@@ -32,8 +32,7 @@ MViewport::MViewport()
     : MObject()
     , m_scene(nullptr)
     , m_userCamera(nullptr)
-    , m_leftTop(0, 0)
-    , m_size(0, 0)
+    , m_rect(0, 0, 0, 0)
     , m_screenPosition(0, 0)
     , m_screenScale(1, 1)
 {}
@@ -150,9 +149,10 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
 bool MViewport::ConvertScreenPointToViewport(const Vector2& v2Point, Vector2& v2Result)
 {
     v2Result.x = (v2Point.x - m_screenPosition.x) * m_screenScale.x;
-    v2Result.y = m_size.y - (v2Point.y - m_screenPosition.y) * m_screenScale.y;
+    v2Result.y = m_rect.GetHeight() - (v2Point.y - m_screenPosition.y) * m_screenScale.y;
 
-    return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_size.x && v2Result.y <= m_size.y;
+    return v2Result.x >= 0.0f && v2Result.y >= 0.0f && v2Result.x <= m_rect.GetWidth() &&
+           v2Result.y <= m_rect.GetHeight();
 }
 
 void MViewport::OnCreated() { MObject::OnCreated(); }
@@ -164,7 +164,7 @@ void MViewport::OnDelete()
     Super::OnDelete();
 }
 
-void MViewport::SetSize(const Vector2i& n2Size) { m_size = n2Size; }
+void MViewport::SetSize(const Vector2i& size) { m_rect.SetSize(size); }
 
 void MViewport::Input(MInputEvent* pEvent)
 {

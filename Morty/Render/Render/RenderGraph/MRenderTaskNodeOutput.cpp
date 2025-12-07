@@ -1,5 +1,6 @@
 #include "MRenderTaskNodeOutput.h"
 #include "MRenderTaskNode.h"
+#include "Utility/MUtils.h"
 
 using namespace morty;
 
@@ -13,6 +14,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
 {
     return {
             .name         = name,
+            .type         = MRenderNodeOutputType::RenderTarget,
             .texture      = MTexture::CreateRenderTarget("", format),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -27,6 +29,7 @@ MRenderTaskNodeOutput::Create(const MStringId& name, const MTextureDesc& desc, c
 {
     return {
             .name         = name,
+            .type         = MRenderNodeOutputType::RenderTarget,
             .texture      = desc,
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -40,6 +43,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateDepth(const MStringId& name, 
 {
     return {
             .name         = name,
+            .type         = MRenderNodeOutputType::RenderTarget,
             .texture      = MTexture::CreateDepthBuffer(""),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -54,6 +58,7 @@ MRenderTaskNodeOutput::CreateFromInput(const MStringId& name, const MPassTargetD
 {
     return {
             .name        = name,
+            .type        = MRenderNodeOutputType::RenderTarget,
             .texture     = MTextureDesc(),
             .renderDesc  = rtDesc,
             .allocPolicy = METextureSourceType::Input,
@@ -71,6 +76,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::Create(
 {
     return {
             .name         = name,
+            .type         = MRenderNodeOutputType::RenderTarget,
             .texture      = texDesc,
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -89,6 +95,7 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFixed(
 {
     return {
             .name         = name,
+            .type         = MRenderNodeOutputType::RenderTarget,
             .texture      = MTexture::CreateRenderTarget("", format).InitSize(size),
             .renderDesc   = rtDesc,
             .allocPolicy  = METextureSourceType::Allocate,
@@ -122,13 +129,14 @@ MRenderTaskNodeOutput* MRenderTaskNodeOutput::GetActualOutput()
     return this;
 }
 
-bool MRenderTaskNodeOutput::CanLink(const MTaskNodeInput* pInput) const
+bool MRenderTaskNodeOutput::CanLink(const MTaskNodeInput* input) const
 {
-    auto pRenderInput = pInput->DynamicCast<MRenderTaskNodeInput>();
-    if (!pRenderInput) return false;
+    auto renderInput = input->DynamicCast<MRenderTaskNodeInput>();
+    if (!renderInput) return false;
 
-    return GetFormat() == pRenderInput->GetFormat();
+    return renderInput->GetInputDesc().GetLinkHash() == m_desc.GetLinkHash();
 }
+
 void MRenderTaskNodeOutput::SetOutputDesc(const MRenderTaskOutputDesc& desc)
 {
     m_desc = desc;
@@ -141,3 +149,14 @@ void MRenderTaskNodeOutput::SetOutputDesc(const MRenderTaskOutputDesc& desc)
 }
 
 MRenderTarget MRenderTaskNodeOutput::CreateRenderTarget() { return {GetActualTexture(), m_desc.renderDesc}; }
+
+MHashCode     MRenderTaskOutputDesc::GetLinkHash() const
+{
+    MHashCode hash = 0;
+
+    MUtils::HashCombine(hash, type);
+    MUtils::HashCombine(hash, texture.eFormat);
+    MUtils::HashCombine(hash, dataType);
+
+    return hash;
+}

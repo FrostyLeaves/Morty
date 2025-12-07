@@ -46,7 +46,7 @@ public:
 
     [[nodiscard]] MViewport*       GetViewport() const;
 
-    [[nodiscard]] SceneViewer*     GetSceneTexture() const { return m_sceneTexture; }
+    [[nodiscard]] SceneViewer*     GetSceneTexture() const { return m_sceneViewer; }
     [[nodiscard]] RenderGraphView* GetRenderGraphView() const { return m_renderGraphView; }
 
     void                           OnResize(morty::Vector2 size) override;
@@ -81,12 +81,12 @@ private:
     MScene*                  m_scene  = nullptr;
     std::vector<BaseWidget*> m_childView;
     MenuBar*                 m_menuBar = nullptr;
-    std::set<SceneViewer*>   m_sceneViewer;
+    std::set<SceneViewer*>   m_sceneViewerSet;
 
     Vector4                  m_renderViewSize = Vector4(0, 0, 32, 32);
 
     RenderGraphView*         m_renderGraphView = nullptr;
-    SceneViewer*             m_sceneTexture    = nullptr;
+    SceneViewer*             m_sceneViewer    = nullptr;
     MTaskNode*               m_renderTask      = nullptr;
 
     IniConfig                m_IniConfig;

@@ -34,13 +34,13 @@ public:
     void operator()(MTaskGraph* pTaskGraph) override;
 
 private:
-    bool        CheckNodeActive(MTaskNode* pNode) const;
+    bool        CheckNodeActive(MTaskNode* node) const;
 
-    MThreadWork CreateThreadWork(MTaskNode* pNode);
+    MThreadWork CreateThreadWork(MTaskNode* node);
 
-    void        OnTaskFinishedCallback(MTaskNode* pNode);
+    void        OnTaskFinishedCallback(MTaskNode* node);
 
-    void        ExecuteTaskNode(MTaskNode* pNode);
+    void        ExecuteTaskNode(MTaskNode* node);
 
 private:
     MThreadPool*                      m_threadPool = nullptr;

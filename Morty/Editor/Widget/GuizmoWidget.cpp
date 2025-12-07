@@ -28,10 +28,10 @@ void GuizmoWidget::Render()
     MSceneComponent* pEditorSceneComponent = pEntity->GetComponent<MSceneComponent>();
     if (nullptr == pEditorSceneComponent) { return; }
 
-    MViewport*        pViewport = GetViewport();
+    MViewport*        viewport = GetViewport();
 
     MRenderSystem*    renderSystem          = GetEngine()->FindSystem<MRenderSystem>();
-    MEntity*          pCameraEntity         = pViewport->GetCamera();
+    MEntity*          pCameraEntity         = viewport->GetCamera();
     MSceneComponent*  pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
     MCameraComponent* pCameraComponent      = pCameraEntity->GetComponent<MCameraComponent>();
 
@@ -39,8 +39,8 @@ void GuizmoWidget::Render()
     Matrix4           cameraProjection = renderSystem
                                        ->GetCameraProjectionMatrix(
                                                pCameraComponent,
-                                               pViewport->GetWidth(),
-                                               pViewport->GetHeight(),
+                                               viewport->GetWidth(),
+                                               viewport->GetHeight(),
                                                pCameraComponent->GetZNear(),
                                                pCameraComponent->GetZFar()
                                        )

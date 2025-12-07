@@ -33,10 +33,10 @@ void MaterialPropertyRenderer::Initialize(MainEditor* pMainEditor)
 
     m_scene = objectSystem->CreateObject<MScene>();
 
-    m_sceneTexture = pMainEditor->CreateSceneViewer("MaterialPreview", m_scene);
-    m_sceneTexture->SetRect(Vector2i(0, 0), Vector2i(512, 512));
+    m_sceneViewer = pMainEditor->CreateSceneViewer("MaterialPreview", m_scene);
+    m_sceneViewer->SetRect(Vector2i(0, 0), Vector2i(512, 512));
 
-    if (MEntity* pCameraNode = m_sceneTexture->GetViewport()->GetCamera())
+    if (MEntity* pCameraNode = m_sceneViewer->GetViewport()->GetCamera())
     {
         if (auto* pCameraSceneComponent = pCameraNode->GetComponent<MSceneComponent>())
         {
@@ -101,15 +101,15 @@ void MaterialPropertyRenderer::Release(MainEditor* pMainEditor)
     m_scene->DeleteLater();
     m_scene = nullptr;
 
-    pMainEditor->DestroySceneViewer(m_sceneTexture);
-    m_sceneTexture = nullptr;
+    pMainEditor->DestroySceneViewer(m_sceneViewer);
+    m_sceneViewer = nullptr;
 }
 
 void MaterialPropertyRenderer::SetMaterial(std::shared_ptr<MMaterialResource> material)
 {
     if (m_material == material) return;
 
-    auto* sceneSystem = m_sceneTexture->GetViewport()->GetEngine()->FindSystem<MSceneSystem>();
+    auto* sceneSystem = m_sceneViewer->GetViewport()->GetEngine()->FindSystem<MSceneSystem>();
 
     m_material = material;
 
@@ -146,12 +146,12 @@ void MaterialPropertyRenderer::RenderMaterialProperties(std::shared_ptr<MMateria
 
     if (m_material)
     {
-        m_propertyBase.BindEngine(m_sceneTexture->GetViewport()->GetEngine());
+        m_propertyBase.BindEngine(m_sceneViewer->GetViewport()->GetEngine());
 
         ImGui::Text("%s", m_material->GetResourcePath().c_str());
         ImGui::Separator();
 
-        if (MTexturePtr texture = m_sceneTexture->GetFinalOutputTexture())
+        if (MTexturePtr texture = m_sceneViewer->GetFinalOutputTexture())
         {
             float fImageSize = ImGui::GetContentRegionAvail().x;
             ImGui::SameLine(fImageSize * 0.25f);
@@ -163,12 +163,12 @@ void MaterialPropertyRenderer::RenderMaterialProperties(std::shared_ptr<MMateria
         ImGui::Separator();
 
         const bool bModify = m_propertyBase.EditMMaterial(m_material);
-        m_sceneTexture->SetPauseUpdate(!bModify);
+        m_sceneViewer->SetPauseUpdate(!bModify);
 
 
         ImGui::Columns(1);
         ImGui::Separator();
         ImGui::PopStyleVar();
     }
-    else { m_sceneTexture->SetPauseUpdate(true); }
+    else { m_sceneViewer->SetPauseUpdate(true); }
 }

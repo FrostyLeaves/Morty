@@ -16,8 +16,8 @@ using namespace morty;
 
 void MViewRenderTarget::BindPrimaryCommand(IRenderCommand* pCommand)
 {
-    pPrimaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
-    pPrimaryCommand->m_renderWaitSemaphore.push_back(vkImageReadySemaphore);
+    primaryCommand = dynamic_cast<MVulkanPrimaryRenderCommand*>(pCommand);
+    primaryCommand->m_renderWaitSemaphore.push_back(vkImageReadySemaphore);
 }
 
 MRenderView::MRenderView()
@@ -78,7 +78,7 @@ void MRenderView::Release()
 void MRenderView::PresetWork(MViewRenderTarget* pRenderTarget)
 {
     MVulkanPrimaryRenderCommand* pRenderCommand =
-            dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
+            dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->primaryCommand);
     MORTY_ASSERT(pRenderCommand);
 
     // present
@@ -115,7 +115,7 @@ void MRenderView::Present(MViewRenderTarget* pRenderTarget)
 
     // submit
     MVulkanPrimaryRenderCommand* pRenderCommand =
-            dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->pPrimaryCommand);
+            dynamic_cast<MVulkanPrimaryRenderCommand*>(pRenderTarget->primaryCommand);
     MORTY_ASSERT(pRenderCommand);
     m_device->SubmitCommand(pRenderCommand);
 
@@ -159,8 +159,10 @@ bool MRenderView::InitializeSwapchain()
     VkResult                 result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_vkSurface, &caps);
     if (result != VK_SUCCESS || caps.maxImageCount < 1)
     {
-        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
-                                        "GetPhysicalDeviceSurfaceCapabilitiesKHR error");
+        GetEngine()->GetLogger()->Error(
+                "Create VulkanRenderTarget Error : "
+                "GetPhysicalDeviceSurfaceCapabilitiesKHR error"
+        );
         return false;
     }
 
@@ -209,8 +211,10 @@ bool MRenderView::InitializeSwapchain()
 
     if (result != VK_SUCCESS)
     {
-        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
-                                        "vkGetPhysicalDeviceSurfacePresentModesKHR error");
+        GetEngine()->GetLogger()->Error(
+                "Create VulkanRenderTarget Error : "
+                "vkGetPhysicalDeviceSurfacePresentModesKHR error"
+        );
         vkDestroySurfaceKHR(m_device->GetVkInstance(), m_vkSurface, nullptr);
         return false;
     }
@@ -236,8 +240,10 @@ bool MRenderView::InitializeSwapchain()
     result                 = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_vkSurface, &unFormatCount, NULL);
     if (result != VK_SUCCESS || unFormatCount < 1)
     {
-        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR "
-                                        "unFormatCount < 1");
+        GetEngine()->GetLogger()->Error(
+                "Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR "
+                "unFormatCount < 1"
+        );
         return false;
     }
 
@@ -245,8 +251,10 @@ bool MRenderView::InitializeSwapchain()
     result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_vkSurface, &unFormatCount, surfaceFormats.data());
     if (result != VK_SUCCESS)
     {
-        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
-                                        "GetPhysicalDeviceSurfaceFormatsKHR error");
+        GetEngine()->GetLogger()->Error(
+                "Create VulkanRenderTarget Error : "
+                "GetPhysicalDeviceSurfaceFormatsKHR error"
+        );
         return false;
     }
 
@@ -362,7 +370,7 @@ bool MRenderView::BindRenderPass()
     for (size_t i = 0; i < vSwapchainImages.size(); ++i)
     {
         m_renderTarget[i].unImageIndex          = static_cast<uint32_t>(i);
-        m_renderTarget[i].pPrimaryCommand       = nullptr;
+        m_renderTarget[i].primaryCommand        = nullptr;
         m_renderTarget[i].vkImageReadySemaphore = VK_NULL_HANDLE;
 
         auto texture    = MTexture::CreateTexture({
@@ -422,7 +430,7 @@ void MRenderView::DestroyRenderPass()
         }
 
         rendertarget.renderPass.DestroyBuffer(m_device);
-        rendertarget.pPrimaryCommand = nullptr;
+        rendertarget.primaryCommand = nullptr;
     }
 
     m_renderTarget.clear();

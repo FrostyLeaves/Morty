@@ -1,5 +1,5 @@
 /**
- * @File         MDeferredRenderProgram
+ * @File         MRenderGraphProgram
  * 
  * @Created      2020-07-2 11:45:49
  *
@@ -38,10 +38,10 @@ class IRenderCommand;
 class MComputeDispatcher;
 class MRenderMeshComponent;
 
-class MORTY_API MDeferredRenderProgram : public MIRenderProgram
+class MORTY_API MRenderGraphProgram : public MIRenderProgram
 {
 public:
-    MORTY_CLASS(MDeferredRenderProgram)
+    MORTY_CLASS(MRenderGraphProgram)
 
 #if GPU_CULLING_ENABLE
     using CameraFrustumCullingType = MGPUCameraFrustumCulling;
@@ -50,8 +50,8 @@ public:
 #endif
 
 public:
-    void          Render(IRenderCommand* pPrimaryCommand) override;
-    void          RenderSetup(IRenderCommand* pPrimaryCommand);
+    void          Update() override;
+    void          Render(IRenderCommand* primaryCommand) override;
 
     MRenderGraph* GetRenderGraph() override { return m_renderGraph.get(); }
 

@@ -2,7 +2,9 @@
 
 #include "Utility/MGlobal.h"
 #include "Utility/MRenderGlobal.h"
+#include "Component/MRenderMeshComponent.h"
 #include "Engine/MEngine.h"
+#include "MRenderNotify.h"
 #include "Mesh/MCluster.h"
 #include "Mesh/MMesh.h"
 #include "Mesh/MMeshUtil.h"
@@ -11,12 +13,12 @@
 #include "Render/RenderGraph/MRenderCommon.h"
 #include "Resource/MMeshResource.h"
 #include "Resource/MMeshResourceUtil.h"
+#include "Scene/MScene.h"
+#include "System/MNotifyManager.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 #include "Utility/MFunction.h"
-#include <algorithm>
-#include <utility>
-#include <vcruntime.h>
+
 
 using namespace morty;
 
@@ -67,9 +69,18 @@ void MMeshManager::Initialize()
 
     InitializeScreenRect();
 
+
+    if (auto notifySystem = GetScene()->GetManager<MNotifyManager>())
+    {
+        notifySystem->RegisterNotify(
+                MRenderNotify::NOTIFY_MESH_CHANGED,
+                M_CLASS_FUNCTION_BIND_0_1(MMeshManager::OnMeshChanged, this)
+        );
+    }
+
     auto* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_UPLOAD_MESH_UPDATE);
     pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
-    pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::UploadBufferTask, this));
+    pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::RenderUpdate, this));
 }
 
 void MMeshManager::Release()
@@ -85,6 +96,40 @@ void MMeshManager::Release()
     Super::Release();
 }
 
+std::set<const MType*> MMeshManager::RegisterComponentType() const { return {MRenderMeshComponent::GetClassType()}; }
+
+void                   MMeshManager::UnregisterComponent(MComponent* component)
+{
+    auto* meshComponent = component->template DynamicCast<MRenderMeshComponent>();
+    if (!meshComponent) { return; }
+
+    auto mesh = meshComponent->GetDrawMesh();
+    UnregisterMesh(mesh);
+}
+
+void MMeshManager::OnMeshChanged(MComponent* component)
+{
+    auto* meshComponent = component->template DynamicCast<MRenderMeshComponent>();
+    if (!meshComponent) { return; }
+
+    auto proxyId    = static_cast<MMeshInstanceKey>(meshComponent->GetComponentID().nIdx);
+    auto findResult = m_meshResourceCache.find(proxyId);
+    if (findResult != m_meshResourceCache.end())
+    {
+        auto mesh = findResult->second->GetMesh();
+        m_meshResourceCache.erase(findResult);
+
+        UnregisterMesh(mesh);
+    }
+
+    if (auto meshResource = meshComponent->GetMesh())
+    {
+        m_meshResourceCache[proxyId] = meshResource;
+        auto mesh                    = meshResource->GetMesh();
+
+        RegisterMesh(mesh);
+    }
+}
 
 size_t MMeshManager::RegisterClusterGroup(const MClusterGroup& group)
 {
@@ -202,9 +247,9 @@ void MMeshManager::UploadPageData(size_t groupIdx, const MClusterPage& page)
     );
 }
 
-void MMeshManager::UploadBufferTask(MTaskNode* pNode)
+void MMeshManager::RenderUpdate(MTaskNode* node)
 {
-    MORTY_UNUSED(pNode);
+    MORTY_UNUSED(node);
 
     if (m_uploadPageQueue.empty()) { return; }
 

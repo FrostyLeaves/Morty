@@ -24,7 +24,7 @@ public:
 
     void         RenderMaterialProperties(std::shared_ptr<MMaterialResource> material);
 
-    SceneViewer* GetSceneViewer() const { return m_sceneTexture; }
+    SceneViewer* GetSceneViewer() const { return m_sceneViewer; }
 
 private:
     void SetMaterial(std::shared_ptr<MMaterialResource> material);
@@ -38,7 +38,7 @@ private:
     MEntity*                           m_staticSphereMeshNode   = nullptr;
     MEntity*                           m_skeletonSphereMeshNode = nullptr;
 
-    SceneViewer*                       m_sceneTexture = nullptr;
+    SceneViewer*                       m_sceneViewer = nullptr;
 };
 
 }// namespace morty

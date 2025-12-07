@@ -24,10 +24,10 @@ template<typename TYPE> using MCascadedArray = std::array<TYPE, MRenderGlobal::C
 class MORTY_API MShadowMapUtil
 {
 public:
-    static MCascadedArray<MCascadedSplitData>        CascadedSplitCameraFrustum(MViewport* pViewport);
+    static MCascadedArray<MCascadedSplitData>        CascadedSplitCameraFrustum(MViewport* viewport);
 
     static MCascadedArray<MCascadedShadowRenderData> CalculateRenderData(
-            MViewport*                                pViewport,
+            MViewport*                                viewport,
             MEntity*                                  pCameraEntity,
             const MCascadedArray<MCascadedSplitData>& vCascadedData,
             const MCascadedArray<MBoundsSphere>&      vCascadedPsrBounds,
@@ -36,16 +36,16 @@ public:
 
 
     static MCascadedArray<MBoundsSphere>
-    GetCameraFrustumBounds(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+    GetCameraFrustumBounds(MViewport* viewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
 
     static MCascadedArray<std::unique_ptr<class IRenderableFilter>>
-    GetCameraFrustumCullingFilter(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+    GetCameraFrustumCullingFilter(MViewport* viewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
 
     static MCascadedArray<MBoundsSphere>
-    GetVoxelMapBounds(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
+    GetVoxelMapBounds(MViewport* viewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData);
 
     static MCascadedArray<std::unique_ptr<class IRenderableFilter>>
-    GetBoundsCullingFilter(MViewport* pViewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere);
+    GetBoundsCullingFilter(MViewport* viewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere);
 };
 
 }// namespace morty

@@ -27,13 +27,14 @@ struct MShaderUniformParam;
 class MORTY_API MIRenderProgram : public MObject
 {
 public:
-                             MORTY_INTERFACE(MIRenderProgram);
+    MORTY_INTERFACE(MIRenderProgram);
 
-    void                     SetViewport(MViewport* pViewport) { m_viewport = pViewport; }
+    void                     SetViewport(MViewport* viewport) { m_viewport = viewport; }
 
     [[nodiscard]] MViewport* GetViewport() const { return m_viewport; }
 
-    virtual void             Render(IRenderCommand* pPrimaryCommand) = 0;
+    virtual void             Update()                               = 0;
+    virtual void             Render(IRenderCommand* primaryCommand) = 0;
 
     virtual MRenderGraph*    GetRenderGraph() = 0;
 

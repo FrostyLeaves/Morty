@@ -1,61 +1,6 @@
 include "Math/Vector.fbs";
+include "Utility/MRenderGlobal.fbs";
 namespace morty.fbs;
-
-enum METextureType: byte
-{
-    ETexture2D      = 0,
-    ETextureCube    = 1,
-    ETexture2DArray = 2,
-    ETexture3D      = 3,
-}
-
-enum METextureFormat:byte
-{
-    Unknow = 0,
-    Depth,
-
-    UNorm_R8,
-    UNorm_RG8,
-    UNorm_RGB8,
-    UNorm_RGBA8,
-
-    UInt_R8,
-
-    Float_R16,
-    Float_RG16,
-    Float_RGB16,
-    Float_RGBA16,
-
-    Float_R32,
-    Float_RG32,
-    Float_RGB32,
-    Float_RGBA32,
-
-    UNorm_RGBA8_ASTC4x4,
-    UNorm_RGBA8_ASTC8x8,
-
-    UNorm_RGBA8_BC1,
-    UNorm_RGBA8_BC2,
-    UNorm_RGBA8_BC3,
-    UNorm_RGBA8_BC4,
-    UNorm_RGBA8_BC5,
-    UNorm_RGBA8_BC7,
-
-    SNorm_RGBA8_BC4,
-    SNorm_RGBA8_BC5,
-
-    SRGB_R8,
-    SRGB_R8G8,
-    SRGB_R8G8B8,
-    SRGB_R8G8B8A8,
-}
-
-enum MEMipmapDataType: byte
-{
-    Disable = 0,
-    Generate,
-    Load,
-}
 
 table MTextureDesc
 {

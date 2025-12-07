@@ -144,9 +144,9 @@ void SDLRenderView::Input(MInputEvent* pEvent)
     for (auto content: m_content) { content->OnInput(pEvent); }
 }
 
-bool SDLRenderView::MainLoop(MTaskNode* pNode)
+bool SDLRenderView::MainLoop(MTaskNode* node)
 {
-    MORTY_UNUSED(pNode);
+    MORTY_UNUSED(node);
 
     SDL_Event event;
     bool      bClosed = false;
@@ -315,9 +315,9 @@ void SDLRenderView::UnbindSDLWindow()
     }
 }
 
-void SDLRenderView::Render(MTaskNode* pNode)
+void SDLRenderView::Render(MTaskNode* node)
 {
-    MORTY_UNUSED(pNode);
+    MORTY_UNUSED(node);
 
     if (GetMinimized()) { return; }
 

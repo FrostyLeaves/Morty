@@ -15,10 +15,10 @@ MTaskNodeInput::MTaskNodeInput()
     , pLinkedOutput(nullptr)
 {}
 
-bool MTaskNodeInput::LinkTo(MTaskNodeOutput* pOutput)
+bool MTaskNodeInput::LinkTo(MTaskNodeOutput* output)
 {
     UnLink();
-    return pOutput->LinkTo(this);
+    return output->LinkTo(this);
 }
 
 void MTaskNodeInput::UnLink()

@@ -30,8 +30,8 @@ public:
     void                         BindPrimaryCommand(IRenderCommand* pCommand);
 
     MRenderPass                  renderPass;
-    uint32_t                     unImageIndex    = 0;
-    MVulkanPrimaryRenderCommand* pPrimaryCommand = nullptr;
+    uint32_t                     unImageIndex   = 0;
+    MVulkanPrimaryRenderCommand* primaryCommand = nullptr;
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkSemaphore vkImageReadySemaphore;

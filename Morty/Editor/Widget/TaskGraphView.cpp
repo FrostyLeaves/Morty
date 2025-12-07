@@ -21,19 +21,19 @@ int GetDepthTable(MTaskGraph* pTaskGraph, std::map<MTaskNode*, int>& output)
     int  nMaxDepth = 0;
     auto vNodes    = pTaskGraph->GetFinalNodes();
 
-    for (MTaskNode* pNode: vNodes) { output[pNode] = 0; }
+    for (MTaskNode* node: vNodes) { output[node] = 0; }
 
     while (!vNodes.empty())
     {
-        MTaskNode* pNode = vNodes.back();
+        MTaskNode* node = vNodes.back();
         vNodes.pop_back();
 
-        for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
+        for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
         {
-            MTaskNode* pPrevNode = pNode->GetInput(nInputIdx)->GetLinkedNode();
+            MTaskNode* pPrevNode = node->GetInput(nInputIdx)->GetLinkedNode();
 
-            if (output.find(pPrevNode) == output.end()) { output[pPrevNode] = output[pNode] + 1; }
-            else if (output[pPrevNode] < output[pNode] + 1) { output[pPrevNode] = output[pNode] + 1; }
+            if (output.find(pPrevNode) == output.end()) { output[pPrevNode] = output[node] + 1; }
+            else if (output[pPrevNode] < output[node] + 1) { output[pPrevNode] = output[node] + 1; }
 
             vNodes.push_back(pPrevNode);
 
@@ -56,9 +56,9 @@ void TaskGraphView::Render()
 
     ImNodes::BeginNodeEditor();
 
-    for (auto& pNode: vAllNodes)
+    for (auto& node: vAllNodes)
     {
-        const int imNodeId = static_cast<int>(reinterpret_cast<std::intptr_t>(pNode));
+        const int imNodeId = static_cast<int>(reinterpret_cast<std::intptr_t>(node));
         (ImNodes::BeginNode(imNodeId));
         {
             //first initialize position.
@@ -66,22 +66,22 @@ void TaskGraphView::Render()
             if (size.x + size.y <= MGlobal::M_FLOAT_BIAS)
             {
                 ImVec2 initialPosition;
-                initialPosition.x = -tDepthTable[pNode] * 300;
-                initialPosition.y = vTaskColumn[tDepthTable[pNode]] * 200;
+                initialPosition.x = -tDepthTable[node] * 300;
+                initialPosition.y = vTaskColumn[tDepthTable[node]] * 200;
                 ImNodes::SetNodeEditorSpacePos(imNodeId, initialPosition);
 
-                vTaskColumn[tDepthTable[pNode]]++;
+                vTaskColumn[tDepthTable[node]]++;
             }
 
             //title
             ImNodes::BeginNodeTitleBar();
-            ImGui::TextUnformatted(pNode->GetNodeName().ToString().c_str());
+            ImGui::TextUnformatted(node->GetNodeName().ToString().c_str());
             ImNodes::EndNodeTitleBar();
 
             //input
-            for (size_t nIdx = 0; nIdx < pNode->GetInputSize(); ++nIdx)
+            for (size_t nIdx = 0; nIdx < node->GetInputSize(); ++nIdx)
             {
-                auto pNodeInput = pNode->GetInput(nIdx);
+                auto pNodeInput = node->GetInput(nIdx);
                 ImNodes::BeginInputAttribute(static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeInput)));
                 ImGui::Text("%s", pNodeInput->GetName().c_str());
                 ImNodes::EndInputAttribute();
@@ -89,12 +89,12 @@ void TaskGraphView::Render()
 
 #if MORTY_DEBUG
             //Context
-            ImGui::Text("avg time: %f", (static_cast<float>(pNode->m_debugTime) / 1000.0f));
+            ImGui::Text("avg time: %f", (static_cast<float>(node->m_debugTime) / 1000.0f));
 #endif
             //output
-            for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
+            for (size_t nIdx = 0; nIdx < node->GetOutputSize(); ++nIdx)
             {
-                auto pNodeOutput = pNode->GetOutput(nIdx);
+                auto pNodeOutput = node->GetOutput(nIdx);
                 ImNodes::BeginOutputAttribute(static_cast<int>(reinterpret_cast<std::intptr_t>(pNodeOutput)));
                 ImGui::Text("%s", pNodeOutput->GetName().ToString().c_str());
                 ImNodes::EndOutputAttribute();
@@ -104,16 +104,16 @@ void TaskGraphView::Render()
     }
 
     //link
-    for (auto& pNode: vAllNodes)
+    for (auto& node: vAllNodes)
     {
-        for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
+        for (size_t nInputIdx = 0; nInputIdx < node->GetInputSize(); ++nInputIdx)
         {
-            auto pInput  = pNode->GetInput(nInputIdx);
-            auto pOutput = pInput->GetLinkedOutput();
-            if (!pOutput) { continue; }
+            auto input  = node->GetInput(nInputIdx);
+            auto output = input->GetLinkedOutput();
+            if (!output) { continue; }
 
-            const int inputId  = static_cast<int>(reinterpret_cast<std::intptr_t>(pInput));
-            const int outputId = static_cast<int>(reinterpret_cast<std::intptr_t>(pOutput));
+            const int inputId  = static_cast<int>(reinterpret_cast<std::intptr_t>(input));
+            const int outputId = static_cast<int>(reinterpret_cast<std::intptr_t>(output));
 
             ImNodes::Link(inputId + outputId, outputId, inputId);
         }

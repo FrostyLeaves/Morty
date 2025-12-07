@@ -48,9 +48,11 @@ public:
 
     void SetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& temp) { m_materialTemplate = temp; }
 
-    [[nodiscard]] std::shared_ptr<MMaterialTemplate> GetMaterialTemplate() const { return m_materialTemplate; }
+    [[nodiscard]] std::shared_ptr<MMaterialTemplate>          GetMaterialTemplate() const { return m_materialTemplate; }
 
-    [[nodiscard]] bool                               IsEmpty() const { return m_materialTable.size() == 0; }
+    [[nodiscard]] bool                                        IsEmpty() const { return m_materialTable.size() == 0; }
+
+    [[nodiscard]] const std::shared_ptr<MShaderParameterSet>& GetParameterSet() const { return m_parameterSet; }
 
 private:
     std::shared_ptr<MMaterialTemplate>                         m_materialTemplate = nullptr;

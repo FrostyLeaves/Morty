@@ -26,9 +26,9 @@ MRenderSystem::MRenderSystem()
 
 MRenderSystem::~MRenderSystem() {}
 
-void MRenderSystem::Update(MTaskNode* pNode)
+void MRenderSystem::Update(MTaskNode* node)
 {
-    MORTY_UNUSED(pNode);
+    MORTY_UNUSED(node);
 
     m_device->Update();
 }
@@ -55,29 +55,29 @@ void MRenderSystem::Release()
     }
 }
 
-void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& n2Size)
+void MRenderSystem::ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& size)
 {
     for (MRenderTarget& tex: renderpass.m_renderTarget.backTargets)
     {
-        if (tex.texture->GetSize2D() != n2Size) { tex.texture->Resize(GetDevice(), n2Size); }
+        if (tex.texture->GetSize2D() != size) { tex.texture->Resize(GetDevice(), size); }
     }
 
     if (MTexturePtr pDepthTexture = renderpass.GetDepthTexture())
     {
-        if (pDepthTexture->GetSize2D() != n2Size) { pDepthTexture->Resize(GetDevice(), n2Size); }
+        if (pDepthTexture->GetSize2D() != size) { pDepthTexture->Resize(GetDevice(), size); }
     }
 
     if (auto pShadingRate = renderpass.GetShadingRateTexture())
     {
         Vector2i n2TexelSize       = m_device->GetShadingRateTextureTexelSize();
         Vector2i n2ShadingRateSize = {};
-        n2ShadingRateSize.x        = n2Size.x / n2TexelSize.x + ((n2Size.x % n2TexelSize.x) != 0);
-        n2ShadingRateSize.y        = n2Size.y / n2TexelSize.y + ((n2Size.y % n2TexelSize.y) != 0);
+        n2ShadingRateSize.x        = size.x / n2TexelSize.x + ((size.x % n2TexelSize.x) != 0);
+        n2ShadingRateSize.y        = size.y / n2TexelSize.y + ((size.y % n2TexelSize.y) != 0);
 
         if (pShadingRate->GetSize2D() != n2ShadingRateSize) { pShadingRate->Resize(GetDevice(), n2ShadingRateSize); }
     }
 
-    if (renderpass.GetFrameBufferSize() != n2Size) { renderpass.Resize(GetDevice()); }
+    if (renderpass.GetFrameBufferSize() != size) { renderpass.Resize(GetDevice()); }
 }
 
 void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture)
@@ -104,13 +104,13 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 }
 
 MCameraFrustum MRenderSystem::GetCameraFrustum(
-        MViewport*        pViewport,
+        MViewport*        viewport,
         MCameraComponent* pCameraComponent,
         MSceneComponent*  pSceneComponent
 )
 {
     MCameraFrustum cameraFrustum;
-    const Matrix4  matCameraInverseProj = GetCameraInverseProjection(pViewport, pCameraComponent, pSceneComponent);
+    const Matrix4  matCameraInverseProj = GetCameraInverseProjection(viewport, pCameraComponent, pSceneComponent);
     cameraFrustum.UpdateFromCameraInvProj(matCameraInverseProj);
 
     return cameraFrustum;
@@ -151,7 +151,7 @@ MRenderSystem::GetOrthoOffProjectionMatrix(const float fWidth, const float fHeig
 }
 
 Matrix4 MRenderSystem::GetCameraInverseProjection(
-        const MViewport*        pViewport,
+        const MViewport*        viewport,
         const MCameraComponent* pCameraComponent,
         MSceneComponent*        pSceneComponent
 )
@@ -159,8 +159,8 @@ Matrix4 MRenderSystem::GetCameraInverseProjection(
     return GetCameraInverseProjection(
             pCameraComponent,
             pSceneComponent,
-            pViewport->GetSize().x,
-            pViewport->GetSize().y,
+            viewport->GetSize().x,
+            viewport->GetSize().y,
             pCameraComponent->GetZNear(),
             pCameraComponent->GetZFar()
     );

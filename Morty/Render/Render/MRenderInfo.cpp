@@ -15,9 +15,9 @@
 
 using namespace morty;
 
-MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
+MRenderInfo MRenderInfo::CreateFromViewport(MViewport* viewport)
 {
-    MScene* scene = pViewport->GetScene();
+    MScene* scene = viewport->GetScene();
     MORTY_ASSERT(scene);
 
     MEntity* pCamera = scene->FindFirstEntityByComponent<MCameraComponent>();
@@ -33,23 +33,19 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* pViewport)
     MRenderInfo info;
     info.scene = scene;
 
-    info.f2ViewportLeftTop.x = pViewport->GetLeftTop().x;
-    info.f2ViewportLeftTop.y = pViewport->GetLeftTop().y;
-    info.f2ViewportSize.x    = pViewport->GetSize().x;
-    info.f2ViewportSize.y    = pViewport->GetSize().y;
-
+    info.viewportRect      = viewport->GetRect();
     info.m4CameraTransform = pCameraSceneComponent->GetWorldTransform();
     info.f2CameraNearFar   = pCameraComponent->GetZNearFar();
 
     info.m4ProjectionMatrix = MRenderSystem::GetCameraProjectionMatrix(
             pCameraComponent,
-            pViewport->GetSize().x,
-            pViewport->GetSize().y,
+            viewport->GetSize().x,
+            viewport->GetSize().y,
             pCameraComponent->GetZNear(),
             pCameraComponent->GetZFar()
     );
     const auto m4CameraInverseProj =
-            MRenderSystem::GetCameraInverseProjection(pViewport, pCameraComponent, pCameraSceneComponent);
+            MRenderSystem::GetCameraInverseProjection(viewport, pCameraComponent, pCameraSceneComponent);
     info.m4CameraInverseProjection = m4CameraInverseProj;
     info.cameraFrustum.UpdateFromCameraInvProj(m4CameraInverseProj);
 

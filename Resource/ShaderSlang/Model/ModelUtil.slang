@@ -35,7 +35,7 @@ public struct ModelUtil
 
         StorageBatchMeshData model;
 
-        MeshData data = model.GetMeshData(INSTANCE_ID);
+        MeshInstanceData data = model.GetMeshData(INSTANCE_ID);
 
         float4 positionCS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
         float4 positionWS = mul(positionCS, data.matWorld);

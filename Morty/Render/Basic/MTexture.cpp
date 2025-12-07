@@ -217,11 +217,11 @@ MTexturePtr MTexture::CreateVXGIMap(Vector3i n3Size = Vector3i::One)
     return texture;
 }
 
-void MTexture::Resize(MIDevice* pDevice, const Vector2i& n2Size)
+void MTexture::Resize(MIDevice* pDevice, const Vector2i& size)
 {
     DestroyBuffer(pDevice);
-    m_desc.n3Size.x = n2Size.x;
-    m_desc.n3Size.y = n2Size.y;
+    m_desc.n3Size.x = size.x;
+    m_desc.n3Size.y = size.y;
     GenerateBuffer(pDevice);
 }
 

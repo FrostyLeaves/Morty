@@ -1,5 +1,6 @@
 #include "MRenderTaskNodeInput.h"
 #include "MRenderTaskNode.h"
+#include "Utility/MUtils.h"
 
 using namespace morty;
 
@@ -15,6 +16,7 @@ MRenderTaskInputDesc MRenderTaskNodeInput::CreateSample(const MStringId& name, M
 {
     return {
             .name       = name,
+            .type       = MRenderNodeOutputType::RenderTarget,
             .format     = format,
             .allowEmpty = allowEmpty,
             .barrier    = METextureBarrierStage::EPixelShaderSample,
@@ -25,6 +27,7 @@ MRenderTaskNodeInput::CreatePixelWrite(const MStringId& name, METextureFormat fo
 {
     return {
             .name       = name,
+            .type       = MRenderNodeOutputType::RenderTarget,
             .format     = format,
             .allowEmpty = allowEmpty,
             .barrier    = METextureBarrierStage::EPixelShaderWrite,
@@ -35,8 +38,20 @@ MRenderTaskInputDesc MRenderTaskNodeInput::CreateDepth(const MStringId& name)
 {
     return {
             .name       = name,
+            .type       = MRenderNodeOutputType::RenderTarget,
             .format     = METextureFormat::Depth,
             .allowEmpty = false,
             .barrier    = METextureBarrierStage::EPixelShaderWrite,
     };
+}
+
+MHashCode MRenderTaskInputDesc::GetLinkHash() const
+{
+    MHashCode hash = 0;
+
+    MUtils::HashCombine(hash, type);
+    MUtils::HashCombine(hash, format);
+    MUtils::HashCombine(hash, dataType);
+
+    return hash;
 }

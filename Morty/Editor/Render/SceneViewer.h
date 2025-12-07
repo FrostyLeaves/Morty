@@ -23,7 +23,8 @@ public:
     void                      Initialize(const MString& viewName, MScene* scene, const MStringId& strRenderProgram);
     void                      OnDelete() override;
 
-    void                      UpdateTexture(IRenderCommand* pRenderCommand);
+    void                      Tick(float fDelta);
+    void                      Render(IRenderCommand* pRenderCommand);
     void                      SetRect(Vector2i pos, Vector2i size);
     void                      SetPauseUpdate(bool bPause) { m_pauseUpdate = bPause; }
 

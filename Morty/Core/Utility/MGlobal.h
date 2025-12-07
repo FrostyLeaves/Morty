@@ -72,6 +72,7 @@
 #include "Utility/MString.h"
 #include "doctest/doctest.h"
 
+
 using MObjectID   = unsigned long;
 using MResourceID = unsigned long;
 using MByte       = unsigned char;

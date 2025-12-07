@@ -2,6 +2,7 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "Math/MMath.h"
+#include "Utility/MRect.h"
 
 namespace morty
 {
@@ -37,19 +38,13 @@ template<size_t CmdType> struct MPipelineCmd : public IPipelineCmd {
 };
 
 struct MSetViewportCmd : public MPipelineCmd<1> {
-    float x        = 0;
-    float y        = 0;
-    float width    = 1;
-    float height   = 1;
-    float minDepth = 0;
-    float maxDepth = 1;
+    MRecti rect     = MRecti(0, 0, 1, 1);
+    float  minDepth = 0;
+    float  maxDepth = 1;
 };
 
 struct MSetScissorCmd : public MPipelineCmd<2> {
-    float x      = 0;
-    float y      = 0;
-    float width  = 1;
-    float height = 1;
+    MRecti rect = MRecti(0, 0, 1, 1);
 };
 
 struct MDrawMeshCmd : public MPipelineCmd<3> {

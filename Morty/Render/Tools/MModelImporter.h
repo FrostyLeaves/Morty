@@ -111,7 +111,7 @@ protected:
     /**
      * @brief Process scene node hierarchy
      */
-    void     ProcessNode(aiNode* pNode, const aiScene* scene);
+    void     ProcessNode(aiNode* node, const aiScene* scene);
 
     /**
      * @brief Process skeleton from scene
@@ -121,12 +121,12 @@ protected:
     /**
      * @brief Record bones from scene nodes
      */
-    void     RecordBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene);
+    void     RecordBones(MSkeleton* pSkeleton, aiNode* node, const aiScene* scene);
 
     /**
      * @brief Bind bones to hierarchy
      */
-    void     BindBones(MSkeleton* pSkeleton, aiNode* pNode, const aiScene* scene, MBone* pParent = nullptr);
+    void     BindBones(MSkeleton* pSkeleton, aiNode* node, const aiScene* scene, MBone* pParent = nullptr);
 
     /**
      * @brief Process lights from scene
@@ -156,7 +156,7 @@ protected:
     /**
      * @brief Get or create entity from Assimp node
      */
-    MEntity* GetEntityFromNode(const aiScene* scene, aiNode* pNode);
+    MEntity* GetEntityFromNode(const aiScene* scene, aiNode* node);
 
     /**
      * @brief Get or create material at index

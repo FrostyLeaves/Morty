@@ -1362,9 +1362,9 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
     if (pRenderPass->GetShadingRateTexture())
     {
         const auto     viewAndSize   = CreateFrameBufferViewFromRenderTarget(pRenderPass->m_renderTarget.shadingRate);
-        const Vector2i n2Size        = std::get<1>(viewAndSize);
+        const Vector2i size          = std::get<1>(viewAndSize);
         const Vector2i vkTexelSize   = GetShadingRateTextureTexelSize();
-        const Vector2i n2CompareSize = {n2Size.x * vkTexelSize.x, n2Size.y * vkTexelSize.y};
+        const Vector2i n2CompareSize = {size.x * vkTexelSize.x, size.y * vkTexelSize.y};
 
         if (n2CompareSize.x < nFrameBufferSize.x || n2CompareSize.y < nFrameBufferSize.y)
         {
@@ -1372,8 +1372,8 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
                     "MVulkanDevice::GenerateFrameBuffer error: shading rate texture size "
                     "not match: ({}, {}), attachment texel size is ({}, {}), frame "
                     "buffer size is ({}, {})",
-                    n2Size.x,
-                    n2Size.y,
+                    size.x,
+                    size.y,
                     vkTexelSize.x,
                     vkTexelSize.y,
                     nFrameBufferSize.x,
@@ -1794,7 +1794,7 @@ void MVulkanDevice::UploadBuffer(
     {
         MORTY_UNUSED(vkCommand);
 
-        size_t unMappingSize = (std::min)(unDataSize, pBuffer->GetSize() - unBeginOffset);
+        size_t unMappingSize = (std::min) (unDataSize, pBuffer->GetSize() - unBeginOffset);
         void*  dataMapping   = nullptr;
         vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
         memcpy(dataMapping, data, unMappingSize);

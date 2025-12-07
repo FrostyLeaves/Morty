@@ -25,9 +25,14 @@ class MRenderPass;
 
 struct MRenderTaskInputDesc {
     MStringId             name;
+    MRenderNodeOutputType type;
     METextureFormat       format     = METextureFormat::UNorm_RGBA8;
     bool                  allowEmpty = false;
     METextureBarrierStage barrier    = METextureBarrierStage::EPixelShaderSample;
+
+    const MType*          dataType = nullptr;
+
+    MHashCode             GetLinkHash() const;
 };
 
 class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput

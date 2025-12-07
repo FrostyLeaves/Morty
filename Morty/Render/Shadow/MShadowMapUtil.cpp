@@ -67,10 +67,10 @@ public:
     Vector3       m_direction;
 };
 
-MCascadedArray<MCascadedSplitData> MShadowMapUtil::CascadedSplitCameraFrustum(MViewport* pViewport)
+MCascadedArray<MCascadedSplitData> MShadowMapUtil::CascadedSplitCameraFrustum(MViewport* viewport)
 {
-    MScene*  scene         = pViewport->GetScene();
-    MEntity* pCameraEntity = pViewport->GetCamera();
+    MScene*  scene         = viewport->GetScene();
+    MEntity* pCameraEntity = viewport->GetCamera();
 
     MEntity* pDirectionalLightEntity = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
     if (!pDirectionalLightEntity)
@@ -156,7 +156,7 @@ MBoundsAABB ConvertAABB(const MBoundsAABB& aabb, Matrix4 mat)
 }
 
 MCascadedArray<MCascadedShadowRenderData> MShadowMapUtil::CalculateRenderData(
-        MViewport*                                pViewport,
+        MViewport*                                viewport,
         MEntity*                                  pCameraEntity,
         const MCascadedArray<MCascadedSplitData>& vCascadedData,
         const MCascadedArray<MBoundsSphere>&      vCascadedPsrBounds,
@@ -164,7 +164,7 @@ MCascadedArray<MCascadedShadowRenderData> MShadowMapUtil::CalculateRenderData(
 )
 {
 
-    MScene*  scene = pViewport->GetScene();
+    MScene*  scene = viewport->GetScene();
 
     MEntity* pDirectionalLightEntity = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
     if (!pDirectionalLightEntity) { return {}; }
@@ -215,10 +215,10 @@ MCascadedArray<MCascadedShadowRenderData> MShadowMapUtil::CalculateRenderData(
                 Vector3     max = lightFrustumInLightSpace.m_maxPoint;
                 for (size_t nIdx = 0; nIdx < 3; ++nIdx)
                 {
-                    min.m[nIdx] = (std::max)(min.m[nIdx], pscInLightSpace.m_minPoint.m[nIdx]);
-                    max.m[nIdx] = (std::min)(max.m[nIdx], pscInLightSpace.m_maxPoint.m[nIdx]);
+                    min.m[nIdx] = (std::max) (min.m[nIdx], pscInLightSpace.m_minPoint.m[nIdx]);
+                    max.m[nIdx] = (std::min) (max.m[nIdx], pscInLightSpace.m_maxPoint.m[nIdx]);
 
-                    min.m[nIdx] = (std::min)(min.m[nIdx], max.m[nIdx]);
+                    min.m[nIdx] = (std::min) (min.m[nIdx], max.m[nIdx]);
                 }
                 min.z = pscInLightSpace.m_minPoint.z;
                 max.z = std::min(pscInLightSpace.m_maxPoint.z, max.z);
@@ -307,12 +307,12 @@ MCascadedArray<MCascadedShadowRenderData> MShadowMapUtil::CalculateRenderData(
 }
 
 MCascadedArray<MBoundsSphere> MShadowMapUtil::GetCameraFrustumBounds(
-        MViewport*                                pViewport,
+        MViewport*                                viewport,
         const MCascadedArray<MCascadedSplitData>& vCascadedSplitData
 )
 {
-    MScene*  scene         = pViewport->GetScene();
-    MEntity* pCameraEntity = pViewport->GetCamera();
+    MScene*  scene         = viewport->GetScene();
+    MEntity* pCameraEntity = viewport->GetCamera();
 
     MEntity* pDirectionalLightEntity = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
     if (!pDirectionalLightEntity) { return {}; }
@@ -344,7 +344,7 @@ MCascadedArray<MBoundsSphere> MShadowMapUtil::GetCameraFrustumBounds(
         std::vector<Vector3> vCascadedFrustumPointsInWorldSpace(8);
         MRenderSystem::GetCameraFrustumPoints(
                 pCameraEntity,
-                pViewport->GetSize(),
+                viewport->GetSize(),
                 fCascadedNearZ,
                 fCascadedFarZ,
                 vCascadedFrustumPointsInWorldSpace
@@ -359,12 +359,12 @@ MCascadedArray<MBoundsSphere> MShadowMapUtil::GetCameraFrustumBounds(
 }
 
 MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetCameraFrustumCullingFilter(
-        MViewport*                                pViewport,
+        MViewport*                                viewport,
         const MCascadedArray<MCascadedSplitData>& vCascadedSplitData
 )
 {
-    MScene*                 scene         = pViewport->GetScene();
-    MEntity*                pCameraEntity = pViewport->GetCamera();
+    MScene*                 scene         = viewport->GetScene();
+    MEntity*                pCameraEntity = viewport->GetCamera();
 
     MEntity*                pDirectionalLightEntity = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
     const MCameraComponent* pCameraComponent        = pCameraEntity->GetComponent<MCameraComponent>();
@@ -401,8 +401,8 @@ MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetCame
                 Matrix4        m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(
                         pCameraComponent,
                         pCameraSceneComponent,
-                        pViewport->GetSize().x,
-                        pViewport->GetSize().y,
+                        viewport->GetSize().x,
+                        viewport->GetSize().y,
                         ele.fNearZ,
                         ele.fOverFarZ
                 );
@@ -416,9 +416,9 @@ MCascadedArray<std::unique_ptr<class IRenderableFilter>> MShadowMapUtil::GetCame
 }
 
 MCascadedArray<MBoundsSphere>
-MShadowMapUtil::GetVoxelMapBounds(MViewport* pViewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData)
+MShadowMapUtil::GetVoxelMapBounds(MViewport* viewport, const MCascadedArray<MCascadedSplitData>& vCascadedSplitData)
 {
-    MEntity*         pCameraEntity         = pViewport->GetCamera();
+    MEntity*         pCameraEntity         = viewport->GetCamera();
     MSceneComponent* pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
     if (!pCameraSceneComponent)
     {
@@ -450,9 +450,9 @@ MShadowMapUtil::GetVoxelMapBounds(MViewport* pViewport, const MCascadedArray<MCa
 }
 
 MCascadedArray<std::unique_ptr<class IRenderableFilter>>
-MShadowMapUtil::GetBoundsCullingFilter(MViewport* pViewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere)
+MShadowMapUtil::GetBoundsCullingFilter(MViewport* viewport, const MCascadedArray<MBoundsSphere>& vBoundsSphere)
 {
-    MScene*    scene                   = pViewport->GetScene();
+    MScene*    scene                   = viewport->GetScene();
     MEntity*   pDirectionalLightEntity = scene->FindFirstEntityByComponent<MDirectionalLightComponent>();
 
     const auto pLightSceneComponent = pDirectionalLightEntity->GetComponent<MSceneComponent>();

@@ -27,7 +27,7 @@ REFL_RENDER_NODE_CLASS MDeferredLightingRenderNode : public ISinglePassRenderNod
 public:
     void                      OnCreated() override;
     void                      Release() override;
-    void                      Render(const MRenderInfo& info) override;
+    void                      Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder & fbb) override;
     void                      Deserialize(flatbuffers::FlatBufferBuilder & fbb) override;
     void                      Deserialize(const void* flatbuffer) override;

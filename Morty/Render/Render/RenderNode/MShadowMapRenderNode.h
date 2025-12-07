@@ -27,8 +27,7 @@ REFL_RENDER_NODE_CLASS MShadowMapRenderNode : public ISinglePassRenderNode
     MORTY_CLASS(MShadowMapRenderNode)
 
 public:
-    void Render(const MRenderInfo& info) override;
-    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
+    void Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
 
 protected:
     void                               OnCreated() override;

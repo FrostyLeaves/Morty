@@ -2,10 +2,39 @@ implementing ModelModule;
 
 #include "Internal/PreDefine.slang"
 
-public struct MeshData
+public struct ClusterData
+{
+    uint indexOffset;
+    uint indexCount;
+    uint valid;
+
+    float3 position;
+    float radius;
+    float error;
+
+    uint meshInstanceIndex;  // 用于关联到具体的 MeshInstance
+};
+
+public struct ClusterGroupData
+{
+    uint parentGroupId;
+    uint firstGroupId;
+    uint childGroupCount;
+    
+    uint clusterBeginIndex;
+    uint clusterCount;
+
+    float3 position;
+    float radius;
+    float error;
+};
+
+public struct MeshInstanceData
 {
     public float4x4 matWorld;
     public float3x3 matNormal;
+    public int rootClusterGroupBeginIndex;
+    public int rootClusterGroupCount;
 };
 
 public struct VertexIn
@@ -38,7 +67,7 @@ public struct VertexOut
 
 public interface IBatchMeshData
 {
-    public MeshData GetMeshData(uint instanceId);
+    public MeshInstanceData GetMeshData(uint instanceId);
 }
 
 StructuredBuffer<float4x4> u_vBonesMatrix;

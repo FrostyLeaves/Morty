@@ -17,9 +17,14 @@ namespace morty
 
 class MScene;
 class MMaterial;
+class MRenderPassCmd;
+
 class MORTY_API MMeshInstanceSystem : public MISystem
 {
     MORTY_CLASS(MMeshInstanceSystem)
+
+
+    void DrawMeshInstances(MScene* scene, MRenderPassCmd* command);
 
     static MVariant CreateMaterialInstanceData(const MMaterial* temp);
 };

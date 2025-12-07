@@ -23,7 +23,7 @@ class MORTY_API MBasicPostProcessRenderNode : public ISinglePassRenderNode
 
     void                               Release() override;
 
-    void                               Render(const MRenderInfo& info) override;
+    void                               Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
 
     virtual std::shared_ptr<MMaterial> CreateMaterial() = 0;
 

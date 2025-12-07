@@ -6,6 +6,7 @@
 #include "Math/Vector.h"
 #include "Shader/MShaderParameterSet.h"
 #include "Utility/MBounds.h"
+#include "Utility/MRect.h"
 
 namespace morty
 {
@@ -72,16 +73,12 @@ struct MRenderInfo {
     //TODO remove scene pointer.
     const MScene*                scene = nullptr;
 
-    /************************** render **************************/
-    IRenderCommand*              pPrimaryRenderCommand = nullptr;
-
     /************************** basic **************************/
     uint32_t                     nFrameIndex = 0;
     float                        delta       = 0.0f;
     float                        fGameTime   = 0.0f;
 
-    Vector2                      f2ViewportLeftTop;
-    Vector2                      f2ViewportSize;
+    MRecti                       viewportRect;
 
     /************************** camera **************************/
     Vector2                      f2CameraNearFar;
@@ -99,7 +96,7 @@ struct MRenderInfo {
     std::vector<MPointLightData> vPointLight;
 
 public:
-    static MRenderInfo CreateFromViewport(MViewport* pViewport);
+    static MRenderInfo CreateFromViewport(MViewport* viewport);
 
     static void        FillVoxelMapSetting(const MVoxelMapSetting& setting, MVariantStruct& output);
 };

@@ -64,8 +64,8 @@ public:
     static const size_t               InvalidSlotId;
 
 private:
-    void AppendInput(MTaskNodeInput* pInput);
-    void AppendOutput(MTaskNodeOutput* pOutput);
+    void AppendInput(MTaskNodeInput* input);
+    void AppendOutput(MTaskNodeOutput* output);
 
 protected:
     friend class MTaskGraph;
@@ -89,18 +89,18 @@ template<typename TYPE> inline TYPE* MTaskNode::AppendInput()
 {
     if (!MTypeClass::IsType<TYPE, MTaskNodeInput>()) return nullptr;
 
-    TYPE* pInput = new TYPE();
-    AppendInput(pInput);
-    return pInput;
+    TYPE* input = new TYPE();
+    AppendInput(input);
+    return input;
 }
 
 template<typename TYPE /*= MTaskNodeOutput*/> TYPE* MTaskNode::AppendOutput()
 {
     if (!MTypeClass::IsType<TYPE, MTaskNodeOutput>()) return nullptr;
 
-    TYPE* pOutput = new TYPE();
-    AppendOutput(pOutput);
-    return pOutput;
+    TYPE* output = new TYPE();
+    AppendOutput(output);
+    return output;
 }
 
 }// namespace morty

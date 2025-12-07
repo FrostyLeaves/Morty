@@ -30,7 +30,7 @@ public:
 public:
     void         SetInputCallback(const MInputCallback& func) { m_funcInputCallback = func; }
 
-    virtual bool Input(MInputEvent* pEvent, MViewport* pViewport);
+    virtual bool Input(MInputEvent* pEvent, MViewport* viewport);
 
 private:
     MInputCallback m_funcInputCallback;

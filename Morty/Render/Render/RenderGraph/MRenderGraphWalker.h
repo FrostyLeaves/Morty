@@ -25,15 +25,14 @@ class MRenderTaskNode;
 class MORTY_API MRenderGraphWalker : public ITaskGraphWalker
 {
 public:
-    explicit MRenderGraphWalker(const MRenderInfo& info);
+    explicit MRenderGraphWalker(const MRenderInfo& info, IRenderCommand* primaryCommand);
 
     void operator()(MTaskGraph* pTaskGraph) override;
 
 
 private:
-    void               Render(MRenderTaskNode* pNode);
-
     const MRenderInfo& m_renderInfo;
+    IRenderCommand*    m_primaryCommand;
 };
 
 

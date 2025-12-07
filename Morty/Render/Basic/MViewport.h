@@ -14,6 +14,7 @@
 #include "Math/Vector.h"
 #include "Object/MObject.h"
 #include "Utility/MBounds.h"
+#include "Utility/MRect.h"
 
 namespace morty
 {
@@ -45,21 +46,17 @@ public:
 
     bool                   IsUseDefaultCamera() { return nullptr == m_userCamera; }
 
-    void                   SetLeftTop(const Vector2i& n2LeftTop) { m_leftTop = n2LeftTop; }
+    void                   SetLeftTop(const Vector2i& n2LeftTop) { m_rect.SetPosition(n2LeftTop); }
+    void                   SetSize(const Vector2i& size);
+    void                   SetRect(const MRecti& rect) { m_rect = rect; }
+    [[nodiscard]] Vector2i GetLeftTop() const { return m_rect.GetPosition(); }
+    [[nodiscard]] Vector2i GetSize() const { return m_rect.GetSize(); }
+    [[nodiscard]] float    GetLeft() const { return m_rect.GetLeft(); }
+    [[nodiscard]] float    GetTop() const { return m_rect.GetTop(); }
+    [[nodiscard]] float    GetWidth() const { return m_rect.GetWidth(); }
+    [[nodiscard]] float    GetHeight() const { return m_rect.GetHeight(); }
+    [[nodiscard]] MRecti   GetRect() const { return m_rect; }
 
-    [[nodiscard]] Vector2i GetLeftTop() const { return m_leftTop; }
-
-    void                   SetSize(const Vector2i& n2Size);
-
-    [[nodiscard]] Vector2i GetSize() const { return m_size; }
-
-    [[nodiscard]] float    GetLeft() const { return m_leftTop.x; }
-
-    [[nodiscard]] float    GetTop() const { return m_leftTop.y; }
-
-    [[nodiscard]] float    GetWidth() const { return m_size.x; }
-
-    [[nodiscard]] float    GetHeight() const { return m_size.y; }
 
     bool                   ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& v3Result);
 
@@ -93,8 +90,7 @@ private:
 
     MEntity* m_userCamera;
 
-    Vector2i m_leftTop;
-    Vector2i m_size;
+    MRecti   m_rect;
 
     Vector2i m_screenPosition;
     Vector2  m_screenScale;

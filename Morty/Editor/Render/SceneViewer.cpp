@@ -59,14 +59,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MS
     m_renderProgram->LoadGraph(renderGraphBuffer);
 
     m_updateTask = engine->GetMainGraph()->AddNode<MTaskNode>(MStringId("SceneView_" + viewName));
-    if (m_updateTask)
-    {
-        m_updateTask->SetThreadType(METhreadType::ERenderThread);
-
-        //GetScene()->GetManager<MMeshInstanceManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
-        //GetScene()->GetManager<MShadowMeshManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
-        //GetScene()->GetManager<MAnimationManager>()->GetUpdateTask()->ConnectTo(m_updateTask);
-    }
+    if (m_updateTask) { m_updateTask->SetThreadType(METhreadType::ERenderThread); }
 }
 
 void SceneViewer::OnDelete()
@@ -101,7 +94,13 @@ void SceneViewer::SetRect(Vector2i pos, Vector2i size)
     m_renderViewport->SetSize(size);
 }
 
-void SceneViewer::UpdateTexture(IRenderCommand* pRenderCommand)
+void SceneViewer::Tick(float fDelta)
+{
+    MORTY_UNUSED(fDelta);
+    m_renderProgram->Update();
+}
+
+void SceneViewer::Render(IRenderCommand* pRenderCommand)
 {
     if (m_pauseUpdate) { return; }
 

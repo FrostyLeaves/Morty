@@ -40,9 +40,9 @@ private:
 
     void                           FreeRenderTarget(MRenderTaskNode* pNode);
 
-    void                           AllocRenderTarget(MRenderTaskNodeOutput* pOutput);
+    void                           AllocRenderTarget(MRenderTaskNodeOutput* output);
 
-    void                           FreeRenderTarget(MRenderTaskNodeOutput* pOutput);
+    void                           FreeRenderTarget(MRenderTaskNodeOutput* output);
 
     bool                           IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode);
 

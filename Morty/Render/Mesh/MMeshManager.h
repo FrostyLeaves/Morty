@@ -19,6 +19,7 @@ class MScene;
 class MEngine;
 class MMaterial;
 class MComponent;
+class MMeshResource;
 class MMeshBufferAdapter;
 class MRenderMeshComponent;
 class MMeshManager : public IManager
@@ -63,6 +64,9 @@ public:
     };
 
 public:
+    [[nodiscard]] std::set<const MType*>              RegisterComponentType() const override;
+    void                                              UnregisterComponent(MComponent* component) override;
+
     bool                                              RegisterMesh(MIMesh* mesh);
     void                                              UnregisterMesh(MIMesh* mesh);
     bool                                              HasMesh(MIMesh* mesh) const;
@@ -73,6 +77,8 @@ public:
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
+    void                                         OnMeshChanged(MComponent* component);
+
     size_t                                       RegisterClusterGroup(const MClusterGroup& group);
     void                                         UnregisterClusterGroup(const size_t& groupIdx);
 
@@ -86,7 +92,7 @@ private:
 
     void                                         UploadPageData(size_t groupIdx, const MClusterPage& page);
 
-    void                                         UploadBufferTask(MTaskNode* pNode);
+    void                                         RenderUpdate(MTaskNode* node);
 
     const size_t                                 MeshVertexStructSize;
 
@@ -111,6 +117,9 @@ private:
     std::mutex                                   m_uploadMutex;
     std::vector<std::pair<size_t, MClusterPage>> m_uploadPageQueue;
     std::shared_ptr<MMeshBufferAdapter>          m_meshBufferAdapter = nullptr;
+
+
+    std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMeshResource>> m_meshResourceCache;
 };
 
 }// namespace morty

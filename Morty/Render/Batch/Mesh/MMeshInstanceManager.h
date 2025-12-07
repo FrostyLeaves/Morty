@@ -33,27 +33,31 @@ public:
     MORTY_INTERFACE(MMeshInstanceManager)
 
 public:
-    void                                 Initialize() override;
+    void                                                     Initialize() override;
 
-    void                                 Release() override;
+    void                                                     Release() override;
 
-    [[nodiscard]] std::set<const MType*> RegisterComponentType() const override;
+    [[nodiscard]] std::set<const MType*>                     RegisterComponentType() const override;
 
-    void                                 UnregisterComponent(MComponent* component) override;
+    void                                                     UnregisterComponent(MComponent* component) override;
 
-    void                                 RenderUpdate(MTaskNode* pNode);
+    void                                                     SceneTick(MScene* scene, const float& delta) override;
 
-    [[nodiscard]] MTaskNode*             GetUpdateTask() const { return m_updateTask; }
+    void                                                     RenderUpdate(MTaskNode* node);
 
-    void                                 OnMaterialChanged(MComponent* component);
+    [[nodiscard]] MTaskNode*                                 GetUpdateTask() const { return m_updateTask; }
 
-    void                                 OnMeshChanged(MComponent* component);
+    void                                                     OnMaterialChanged(MComponent* component);
 
-    void                                 OnSceneComponentChanged(MComponent* component);
+    void                                                     OnMeshChanged(MComponent* component);
 
-    void                                 OnRenderMeshChanged(MComponent* component);
+    void                                                     OnSceneComponentChanged(MComponent* component);
 
-    void                                 OnRemoveComponent(MRenderMeshComponent* component);
+    void                                                     OnRenderMeshChanged(MComponent* component);
+
+    void                                                     OnRemoveComponent(MRenderMeshComponent* component);
+
+    const std::vector<std::shared_ptr<MMaterialBatchGroup>>& GetBatchGroups() const { return m_renderData.batchGroups; }
 
 protected:
     void                     AddComponentToGroup(MRenderMeshComponent* component);
@@ -80,17 +84,20 @@ private:
 
     // Render thread data - for rendering
     struct RenderThreadData {
-        std::vector<MMeshInstanceRenderProxy> renderProxies;
-        MBuffer                               instanceBuffer;
+        std::vector<std::shared_ptr<MMaterialBatchGroup>> batchGroups;
+        std::vector<MMeshInstanceRenderProxy>             renderProxies;
+        MBuffer                                           instanceBuffer;
     };
 
     // Update queue, written by main thread and read by render thread
     struct UpdateCommand {
         enum class Type
         {
-            Add,
-            Remove,
-            Update
+            AddGroup,
+            RemoveGroup,
+            AddInstance,
+            RemoveInstance,
+            UpdateInstance
         };
 
         Type                                 type;
@@ -106,6 +113,7 @@ private:
 
     std::mutex                 m_updateMutex;
     std::vector<UpdateCommand> m_updateQueue;
+    std::vector<UpdateCommand> m_pendingCommands;
 };
 
 }// namespace morty

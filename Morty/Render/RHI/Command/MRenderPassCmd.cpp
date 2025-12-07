@@ -101,9 +101,7 @@ void MRenderPassCmd::SetScissor(const MSetScissorCmd& scissor)
 void MRenderPassCmd::SetViewportAndScissor(const MSetViewportCmd& viewport)
 {
     m_commandQueue.emplace_back(new MSetViewportCmd(viewport));
-    m_commandQueue.emplace_back(
-            new MSetScissorCmd{.x = viewport.x, .y = viewport.y, .width = viewport.width, .height = viewport.height}
-    );
+    m_commandQueue.emplace_back(new MSetScissorCmd{.rect = viewport.rect});
 }
 
 void MRenderPassCmd::NextSubPass()

@@ -39,32 +39,32 @@ void NodeTreeView::Initialize(MainEditor* pMainEditor) { BaseWidget::Initialize(
 
 void NodeTreeView::Release() {}
 
-void NodeTreeView::RenderNode(MEntity* pNode)
+void NodeTreeView::RenderNode(MEntity* node)
 {
-    if (!pNode) return;
+    if (!node) return;
 
-    MScene*            scene           = pNode->GetScene();
-    auto*              pSceneComponent = pNode->GetComponent<MSceneComponent>();
+    MScene*            scene           = node->GetScene();
+    auto*              pSceneComponent = node->GetComponent<MSceneComponent>();
 
 
     ImGuiTreeNodeFlags node_flags =
             ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
     if (!pSceneComponent || pSceneComponent->GetChildrenComponent().empty()) node_flags |= ImGuiTreeNodeFlags_Leaf;
-    if (SelectionContext::GetInstance()->GetSelectedEntity() == pNode) node_flags |= ImGuiTreeNodeFlags_Selected;
+    if (SelectionContext::GetInstance()->GetSelectedEntity() == node) node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
-    bool bOpened = ImGui::TreeNodeEx(pNode, node_flags, "%s", pNode->GetName().c_str());
+    bool bOpened = ImGui::TreeNodeEx(node, node_flags, "%s", node->GetName().c_str());
     if (ImGui::BeginPopupContextItem())
     {
-        if (ImGui::Selectable("Delete")) { pNode->DeleteSelf(); }
+        if (ImGui::Selectable("Delete")) { node->DeleteSelf(); }
         ImGui::EndPopup();
     }
 
     if (ImGui::IsItemClicked())
     {
-        SelectionContext::GetInstance()->SetSelectedEntity(pNode);
+        SelectionContext::GetInstance()->SetSelectedEntity(node);
         // Broadcast selection to all PropertyView panels
-        SelectionManager::GetInstance()->BroadcastSelection(Selection(pNode));
+        SelectionManager::GetInstance()->BroadcastSelection(Selection(node));
     }
     if (bOpened)
     {

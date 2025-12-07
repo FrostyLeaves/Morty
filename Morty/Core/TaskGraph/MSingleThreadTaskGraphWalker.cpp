@@ -17,5 +17,5 @@ void MSingleThreadTaskGraphWalker::operator()(MTaskGraph* pTaskGraph)
 
     std::vector<MTaskNode*> vNodes = pTaskGraph->GetOrderedNodes();
 
-    for (MTaskNode* pCurrentNode: vNodes) { pCurrentNode->Run(); }
+    for (MTaskNode* currentNode: vNodes) { currentNode->Run(); }
 }

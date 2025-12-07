@@ -34,7 +34,7 @@ public:
     virtual ~MRenderSystem();
 
 public:
-    void Update(MTaskNode* pNode);
+    void Update(MTaskNode* node);
 
 public:
     MIDevice* GetDevice() const;
@@ -46,15 +46,13 @@ public:
 
 
 public:
-
     void ResizeFrameBuffer(MRenderPass& renderpass, const Vector2i& v2Size);
 
     void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
     static MCameraFrustum
-    GetCameraFrustum(MViewport* pViewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
+    GetCameraFrustum(MViewport* viewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
 
-    
 
     static Matrix4 GetCameraViewMatrix(MSceneComponent* pSceneComponent);
 
@@ -70,7 +68,7 @@ public:
     GetOrthoOffProjectionMatrix(const float fWidth, const float fHeight, const float fNear, const float fRar);
 
     static Matrix4 GetCameraInverseProjection(
-            const MViewport*        pViewport,
+            const MViewport*        viewport,
             const MCameraComponent* pCameraComponent,
             MSceneComponent*        pSceneComponent
     );

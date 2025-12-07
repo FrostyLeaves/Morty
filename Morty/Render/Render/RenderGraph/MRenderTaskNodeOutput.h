@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
+#include "Utility/MRenderGlobal.h"
 #include "Basic/MTexture.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
@@ -31,15 +31,20 @@ using MESharedPolicy      = morty::fbs::SharedPolicy;
 
 struct MRenderTaskOutputDesc {
     MStringId              name;
-    MTextureDesc           texture;
-    MPassTargetDescription renderDesc;
+    MRenderNodeOutputType  type = MRenderNodeOutputType::RenderTarget;
 
+    MTextureDesc           texture      = {};
+    MPassTargetDescription renderDesc   = {};
     METextureSourceType    allocPolicy  = METextureSourceType::Allocate;
     MESharedPolicy         sharedPolicy = MESharedPolicy::Shared;
     MEResizePolicy         resizePolicy = MEResizePolicy::Scale;
     float                  scale        = 1.0f;
     size_t                 texelSize    = 1;
     size_t                 inputIdx     = 0;
+
+    const MType*           dataType = nullptr;
+
+    MHashCode              GetLinkHash() const;
 };
 
 class MORTY_API MRenderTaskNodeOutput : public MTaskNodeOutput
@@ -56,7 +61,7 @@ public:
     [[nodiscard]] MRenderTaskNodeOutput* GetActualOutput();
     [[nodiscard]] MTexturePtr            GetActualTexture() { return GetActualOutput()->GetRenderTexture(); }
 
-    bool                                 CanLink(const MTaskNodeInput* pInput) const override;
+    bool                                 CanLink(const MTaskNodeInput* input) const override;
 
     [[nodiscard]] MRenderTarget          CreateRenderTarget();
 

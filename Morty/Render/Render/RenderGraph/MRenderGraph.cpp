@@ -97,8 +97,8 @@ MTexturePtr MRenderGraph::GetFinalOutput() const
     auto pNode = FindRenderNode(m_finalOutputNodeId);
     if (pNode == nullptr) { return nullptr; }
 
-    auto pOutput = pNode->GetRenderOutput(m_finalOutputSlotId);
-    if (pOutput == nullptr) { return nullptr; }
+    auto output = pNode->GetRenderOutput(m_finalOutputSlotId);
+    if (output == nullptr) { return nullptr; }
 
-    return pOutput->GetRenderTexture();
+    return output->GetRenderTexture();
 }

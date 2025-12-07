@@ -44,8 +44,12 @@ class MORTY_API MRenderTaskNode : public MTaskNode
     using BarrierTextureTable = std::unordered_map<METextureBarrierStage, std::vector<MTexture*>>;
 
 public:
-    virtual void                                            Release() {}
-    virtual void                                            Render(const MRenderInfo& info) { MORTY_UNUSED(info); }
+    virtual void Release() {}
+    virtual void Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
+    {
+        MORTY_UNUSED(info);
+        MORTY_UNUSED(primaryCommand);
+    }
     virtual void                                            RenderSetup(const MRenderInfo& info) { MORTY_UNUSED(info); }
     virtual void                                            BindInOutTexture();
     virtual void                                            RegisterSetting() {}

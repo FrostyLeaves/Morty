@@ -32,9 +32,9 @@ public:
 
 
 protected:
-    static void  SetupLinkStyle(MRenderTaskNodeInput* pInput);
-    static void  SetupLinkStyle(MRenderTaskNodeOutput* pOutput);
-    static float GetNodeWidth(MRenderTaskNode* pNode);
+    static void  SetupLinkStyle(MRenderTaskNodeInput* input);
+    static void  SetupLinkStyle(MRenderTaskNodeOutput* output);
+    static float GetNodeWidth(MRenderTaskNode* node);
     static void  ResetLinkStyle();
 
 private:

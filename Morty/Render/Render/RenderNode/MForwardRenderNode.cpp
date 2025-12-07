@@ -31,24 +31,16 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MForwardRenderNode, ISinglePassRenderNode)
 
 
-void MForwardRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
-{
-    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
-    auto            command  = pCommand->BeginRenderPass(&m_renderPass);
-
-    const Vector2   v2LeftTop = info.f2ViewportLeftTop;
-    const Vector2   v2Size    = info.f2ViewportSize;
-    command.SetViewport({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
-    command.SetScissor({.x = 0.0f, .y = 0.0f, .width = v2Size.x, .height = v2Size.y});
-
-    for (IRenderable* pRenderable: vRenderable) { pRenderable->Render(&command); }
-
-    pCommand->EndRenderPass(command);
-}
-
-void MForwardRenderNode::Render(const MRenderInfo& info)
+void MForwardRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
     MORTY_UNUSED(info);
+    MORTY_UNUSED(primaryCommand);
+
+    auto command = primaryCommand->BeginRenderPass(&m_renderPass);
+
+    command.SetViewportAndScissor({.rect = info.viewportRect});
+
+    primaryCommand->EndRenderPass(command);
 }
 
 void MForwardRenderNode::BindInOutTexture()

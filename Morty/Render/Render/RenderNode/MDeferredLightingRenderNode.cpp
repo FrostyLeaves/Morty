@@ -27,8 +27,9 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MDeferredLightingRenderNode, ISinglePassRenderNode)
 
-void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
+void MDeferredLightingRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
+    MORTY_UNUSED(info);
     UpdateProperty();
 
     if (!m_lightningMaterial) { return; }
@@ -40,16 +41,13 @@ void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
         return;
     }
 
-    IRenderCommand* pCommand = info.pPrimaryRenderCommand;
-    auto            command  = pCommand->BeginRenderPass(&m_renderPass);
+    auto           command = primaryCommand->BeginRenderPass(&m_renderPass);
 
-    //pCommand->SetShadingRate({ 1, 1 }, { MEShadingRateCombinerOp::Keep, MEShadingRateCombinerOp::Replace });
+    //primaryCommand->SetShadingRate({ 1, 1 }, { MEShadingRateCombinerOp::Keep, MEShadingRateCombinerOp::Replace });
 
-    const Vector2i  n2Size = m_renderPass.GetFrameBufferSize();
+    const Vector2i size = m_renderPass.GetFrameBufferSize();
 
-    command.SetViewportAndScissor(
-            {.x = 0.0f, .y = 0.0f, .width = static_cast<float>(n2Size.x), .height = static_cast<float>(n2Size.y)}
-    );
+    command.SetViewportAndScissor({.rect = MRecti(0, 0, size.x, size.y)});
 
     command.SetMaterial(m_lightningMaterial.get(), m_lightningMaterial->GetTemplate()->GetDefaultPass());
     //auto pParameterSet = GetRenderGraph()->GetFrameProperty()->GetParameterSet();
@@ -57,7 +55,7 @@ void MDeferredLightingRenderNode::Render(const MRenderInfo& info)
 
     command.DrawMesh(pMeshManager->GetScreenRect());
 
-    pCommand->EndRenderPass(command);
+    primaryCommand->EndRenderPass(command);
 }
 
 void MDeferredLightingRenderNode::OnCreated() { Super::OnCreated(); }

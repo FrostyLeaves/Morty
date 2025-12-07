@@ -69,14 +69,16 @@ void ImGuiRenderer::InitializeFont()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     std::shared_ptr<MTextureResource> pFontTexture = resourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-    pFontTexture->Load(MTextureResourceUtil::LoadFromMemory(
-            "ImGUI_Font",
-            MSpan<MByte>(pixels, width * height * 4),
-            width,
-            height,
-            4,
-            MTexturePixelType::Byte8
-    ));
+    pFontTexture->Load(
+            MTextureResourceUtil::LoadFromMemory(
+                    "ImGUI_Font",
+                    MSpan<MByte>(pixels, width * height * 4),
+                    width,
+                    height,
+                    4,
+                    MTexturePixelType::Byte8
+            )
+    );
     m_FontTexture.SetResource(pFontTexture);
 
     // Store our identifier
@@ -162,7 +164,9 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
     float fb_height = (draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0) return;
 
-    pCommand->SetViewport({.x = 0.0f, .y = fb_height, .width = fb_width, .height = -fb_height});
+    pCommand->SetViewport(
+            {.rect = {0, static_cast<int>(fb_height), static_cast<int>(fb_width), -static_cast<int>(fb_height)}}
+    );
 
     Vector2 scale;
     scale.x = 2.0f / draw_data->DisplaySize.x;
@@ -220,10 +224,11 @@ void ImGuiRenderer::Render(MRenderPassCmd* pCommand)
                 if (clip_rect.y < 0.0f) clip_rect.y = 0.0f;
 
                 pCommand->SetScissor(
-                        {.x      = clip_rect.x,
-                         .y      = clip_rect.y,
-                         .width  = clip_rect.z - clip_rect.x,
-                         .height = clip_rect.w - clip_rect.y}
+                        {.rect =
+                                 MRecti(static_cast<int>(clip_rect.x),
+                                        static_cast<int>(clip_rect.y),
+                                        static_cast<int>(clip_rect.z - clip_rect.x),
+                                        static_cast<int>(clip_rect.w - clip_rect.y))}
                 );
 
                 pCommand->DrawMesh(

@@ -23,7 +23,7 @@ REFL_RENDER_NODE_CLASS MGBufferRenderNode : public ISinglePassRenderNode
     MORTY_CLASS(MGBufferRenderNode)
 
 public:
-    void                             Render(const MRenderInfo& info) override;
+    void                             Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
     void                             Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
     std::shared_ptr<IGBufferAdapter> CreateGBuffer();

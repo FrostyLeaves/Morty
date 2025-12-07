@@ -117,26 +117,26 @@ void MRenderTargetBindingWalker::operator()(MTaskGraph* pTaskGraph)
 
     while (!vNodeStack.empty())
     {
-        auto* pCurrentNode = vNodeStack.back()->DynamicCast<MRenderTaskNode>();
+        auto* currentNode = vNodeStack.back()->DynamicCast<MRenderTaskNode>();
         vNodeStack.pop_back();
 
-        AllocRenderTarget(pCurrentNode);
+        AllocRenderTarget(currentNode);
 
-        for (size_t nInputIdx = 0; nInputIdx < pCurrentNode->GetInputSize(); ++nInputIdx)
+        for (size_t nInputIdx = 0; nInputIdx < currentNode->GetInputSize(); ++nInputIdx)
         {
-            auto pInput           = pCurrentNode->GetInput(nInputIdx);
-            auto pPrevProcessNode = pInput->GetLinkedNode()->DynamicCast<MRenderTaskNode>();
+            auto input            = currentNode->GetInput(nInputIdx);
+            auto pPrevProcessNode = input->GetLinkedNode()->DynamicCast<MRenderTaskNode>();
 
             if (pPrevProcessNode && IsAllNextNodeHasAlloced(pPrevProcessNode)) { FreeRenderTarget(pPrevProcessNode); }
         }
 
-        for (size_t nOutputIdx = 0; nOutputIdx < pCurrentNode->GetOutputSize(); ++nOutputIdx)
+        for (size_t nOutputIdx = 0; nOutputIdx < currentNode->GetOutputSize(); ++nOutputIdx)
         {
-            auto pOutput = pCurrentNode->GetOutput(nOutputIdx);
+            auto output = currentNode->GetOutput(nOutputIdx);
 
-            for (auto pInput: pOutput->GetLinkedInputs())
+            for (auto input: output->GetLinkedInputs())
             {
-                auto pNextNode = pInput->GetTaskNode()->DynamicCast<MRenderTaskNode>();
+                auto pNextNode = input->GetTaskNode()->DynamicCast<MRenderTaskNode>();
 
                 if (pNextNode && IsAllPrevNodeHasAlloced(pNextNode)) { vNodeStack.push_back(pNextNode); }
             }
@@ -164,9 +164,9 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNode* pNode)
 
     for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
     {
-        auto pOutput = pNode->GetRenderOutput(nIdx);
+        auto output = pNode->GetRenderOutput(nIdx);
 
-        AllocRenderTarget(pOutput->GetActualOutput());
+        AllocRenderTarget(output->GetActualOutput());
     }
 }
 
@@ -176,60 +176,62 @@ void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNode* pNode)
 
     for (size_t nIdx = 0; nIdx < pNode->GetOutputSize(); ++nIdx)
     {
-        auto pOutput = pNode->GetRenderOutput(nIdx);
+        auto output = pNode->GetRenderOutput(nIdx);
 
-        FreeRenderTarget(pOutput);
+        FreeRenderTarget(output);
     }
 
     m_allocedNode[pNode] = AllocState::Free;
 }
 
-void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* pOutput)
+void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* output)
 {
-    if (pOutput == nullptr) return;
+    if (output == nullptr) return;
+
+    const auto& desc = output->GetOutputDesc();
+    if (desc.type != MRenderNodeOutputType::RenderTarget) return;
 
     const MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
-    const auto&          desc         = pOutput->GetOutputDesc();
-
     MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
 
     if (desc.sharedPolicy == MESharedPolicy::Exclusive || m_forceExclusive)
     {
         auto texture = MTexture::CreateTexture(desc.texture);
         texture->GenerateBuffer(renderSystem->GetDevice());
-        pOutput->SetRenderTexture(texture);
+        output->SetRenderTexture(texture);
 
         m_exclusiveTextures.push_back(texture);
     }
     else if (desc.sharedPolicy == MESharedPolicy::Shared)
     {
-        if (m_targetAllocCount.find(pOutput) == m_targetAllocCount.end())
+        if (m_targetAllocCount.find(output) == m_targetAllocCount.end())
         {
             auto texture = m_cacheQueue->AllocTexture(desc, renderSystem->GetDevice());
-            pOutput->SetRenderTexture(texture);
+            output->SetRenderTexture(texture);
 
-            m_targetAllocCount[pOutput] = 0;
+            m_targetAllocCount[output] = 0;
         }
-        m_targetAllocCount[pOutput]++;
+        m_targetAllocCount[output]++;
     }
     else { MORTY_ASSERT(false); }
 }
 
-void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNodeOutput* pOutput)
+void MRenderTargetBindingWalker::FreeRenderTarget(MRenderTaskNodeOutput* output)
 {
-    if (pOutput == nullptr) return;
+    if (output == nullptr) return;
 
-    const auto& desc = pOutput->GetOutputDesc();
+    const auto& desc = output->GetOutputDesc();
+    if (desc.type != MRenderNodeOutputType::RenderTarget) return;
 
     MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
 
     if (!m_forceExclusive && desc.sharedPolicy == MESharedPolicy::Shared)
     {
-        auto findCount = m_targetAllocCount.find(pOutput);
+        auto findCount = m_targetAllocCount.find(output);
         if (findCount == m_targetAllocCount.end()) { return; }
         if (findCount->second <= 1)
         {
-            auto texture = pOutput->GetRenderTexture();
+            auto texture = output->GetRenderTexture();
             m_cacheQueue->RecoveryTexture(desc, texture);
 
             m_targetAllocCount.erase(findCount);
@@ -242,12 +244,9 @@ bool MRenderTargetBindingWalker::IsAllPrevNodeHasAlloced(MRenderTaskNode* pNode)
 {
     for (size_t nInputIdx = 0; nInputIdx < pNode->GetInputSize(); ++nInputIdx)
     {
-        auto pInput    = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nInputIdx));
-        auto pPrevNode = pInput->GetLinkedNode();
-        if (!pInput->GetInputDesc().allowEmpty && m_allocedNode.find(pPrevNode) == m_allocedNode.end())
-        {
-            return false;
-        }
+        auto input    = static_cast<MRenderTaskNodeInput*>(pNode->GetInput(nInputIdx));
+        auto prevNode = input->GetLinkedNode();
+        if (!input->GetInputDesc().allowEmpty && m_allocedNode.find(prevNode) == m_allocedNode.end()) { return false; }
     }
 
     return true;
@@ -257,10 +256,10 @@ bool MRenderTargetBindingWalker::IsAllNextNodeHasAlloced(MRenderTaskNode* pNode)
 {
     for (size_t nOutputIdx = 0; nOutputIdx < pNode->GetOutputSize(); ++nOutputIdx)
     {
-        auto pOutput = pNode->GetOutput(nOutputIdx);
-        for (auto pInput: pOutput->GetLinkedInputs())
+        auto output = pNode->GetOutput(nOutputIdx);
+        for (auto input: output->GetLinkedInputs())
         {
-            auto pNextNode = pInput->GetTaskNode();
+            auto pNextNode = input->GetTaskNode();
             if (m_allocedNode.find(pNextNode) == m_allocedNode.end()) { return false; }
         }
     }

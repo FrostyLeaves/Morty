@@ -30,9 +30,9 @@ public:
 
     [[nodiscard]] const std::vector<MTaskNodeInput*>& GetLinkedInputs() const { return vLinkedInput; }
 
-    bool                                              LinkTo(MTaskNodeInput* pInput);
-    void                                              UnLink(MTaskNodeInput* pInput);
-    virtual bool                                      CanLink(const MTaskNodeInput* pInput) const;
+    bool                                              LinkTo(MTaskNodeInput* input);
+    void                                              UnLink(MTaskNodeInput* input);
+    virtual bool                                      CanLink(const MTaskNodeInput* input) const;
 
     void                                              SetName(const MStringId& strName) { m_strName = strName; }
     [[nodiscard]] const MStringId&                    GetName() const { return m_strName; }

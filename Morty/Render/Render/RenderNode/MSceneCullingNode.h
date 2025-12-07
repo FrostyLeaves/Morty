@@ -1,5 +1,5 @@
 /**
- * @File         MDebugRenderNode
+ * @File         MSceneCullingNode
  * 
  * @Created      2021-08-16 10:37:01
  *
@@ -8,28 +8,24 @@
 
 #pragma once
 
-#include "Utility/MGlobal.h"
-#include "Render/RenderGraph/MSinglePassRenderNode.h"
-
+#include "Utility/MRenderGlobal.h"
 #include "Basic/MCameraFrustum.h"
 #include "RHI/MRenderPass.h"
 #include "Render/MRenderInfo.h"
 #include "Render/RenderGraph/MRenderCommon.h"
+#include "Render/RenderGraph/MSinglePassRenderNode.h"
 
 namespace morty
 {
 
-REFL_RENDER_NODE_CLASS MDebugRenderNode : public ISinglePassRenderNode
+REFL_RENDER_NODE_CLASS MSceneCullingNode : public ISinglePassRenderNode
 {
-    MORTY_CLASS(MDebugRenderNode)
+    MORTY_CLASS(MSceneCullingNode)
 
 public:
     void Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
-    void Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable);
 
 protected:
-    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
-
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 

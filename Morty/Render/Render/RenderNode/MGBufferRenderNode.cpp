@@ -16,21 +16,6 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MGBufferRenderNode, ISinglePassRenderNode)
 
-
-void MGBufferRenderNode::Render(const MRenderInfo& info, const std::vector<IRenderable*>& vRenderable)
-{
-    IRenderCommand* pCommand  = info.pPrimaryRenderCommand;
-    const Vector2   v2LeftTop = info.f2ViewportLeftTop;
-    const Vector2   v2Size    = info.f2ViewportSize;
-
-    auto            command = pCommand->BeginRenderPass(&m_renderPass);
-    command.SetViewportAndScissor({.x = v2LeftTop.x, .y = v2LeftTop.y, .width = v2Size.x, .height = v2Size.y});
-
-    for (IRenderable* renderable: vRenderable) { renderable->Render(&command); }
-
-    pCommand->EndRenderPass(command);
-}
-
 class MORTY_API MGBufferTextures : public IGBufferAdapter
 {
 public:
@@ -50,10 +35,16 @@ std::shared_ptr<IGBufferAdapter> MGBufferRenderNode::CreateGBuffer()
     return pGBufferTextures;
 }
 
-void MGBufferRenderNode::Render(const MRenderInfo& info)
+void MGBufferRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
     MORTY_UNUSED(info);
-    //Camera frustum culling.
+    MORTY_UNUSED(primaryCommand);
+
+
+    auto command = primaryCommand->BeginRenderPass(&m_renderPass);
+    command.SetViewportAndScissor({.rect = info.viewportRect});
+
+    primaryCommand->EndRenderPass(command);
 
     //TODO
 }

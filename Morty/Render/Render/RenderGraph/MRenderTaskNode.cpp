@@ -13,16 +13,16 @@ METextureFormat MRenderTaskNode::DefaultLinearSpaceFormat = METextureFormat::Flo
 
 void            MRenderTaskNode::OnCreated()
 {
-    for (const auto& input: InitInputDesc())
+    for (const auto& desc: InitInputDesc())
     {
-        auto pInput = AppendInput<MRenderTaskNodeInput>();
-        pInput->SetInputDesc(input);
+        auto input = AppendInput<MRenderTaskNodeInput>();
+        input->SetInputDesc(desc);
     }
 
-    for (const auto& output: InitOutputDesc())
+    for (const auto& desc: InitOutputDesc())
     {
-        auto pOutput = AppendOutput<MRenderTaskNodeOutput>();
-        pOutput->SetOutputDesc(output);
+        auto output = AppendOutput<MRenderTaskNodeOutput>();
+        output->SetOutputDesc(desc);
     }
 
     SetThreadType(METhreadType::ERenderThread);
@@ -56,9 +56,9 @@ void MRenderTaskNode::Resize(Vector2i size)
 {
     const auto pDevice = GetEngine()->FindSystem<MRenderSystem>()->GetDevice();
 
-    for (auto pOutput: m_output)
+    for (auto output: m_output)
     {
-        auto        pRenderOutput = static_cast<MRenderTaskNodeOutput*>(pOutput);
+        auto        pRenderOutput = static_cast<MRenderTaskNodeOutput*>(output);
         auto        texture       = pRenderOutput->GetRenderTexture();
         const auto& desc          = pRenderOutput->GetOutputDesc();
         if (desc.allocPolicy == METextureSourceType::Allocate && desc.resizePolicy == MEResizePolicy::Scale && texture)
@@ -104,10 +104,10 @@ bool MRenderTaskNode::IsValidRenderNode()
 
     for (size_t idx = 0; idx < GetInputSize(); ++idx)
     {
-        auto pInput = static_cast<MRenderTaskNodeInput*>(GetInput(idx));
-        if (!pInput->GetInputDesc().allowEmpty)
+        auto input = static_cast<MRenderTaskNodeInput*>(GetInput(idx));
+        if (!input->GetInputDesc().allowEmpty)
         {
-            auto pConnOutput = static_cast<MRenderTaskNodeOutput*>(pInput->GetLinkedOutput());
+            auto pConnOutput = static_cast<MRenderTaskNodeOutput*>(input->GetLinkedOutput());
             if (pConnOutput == nullptr)
             {
                 m_validCacheFlag = ValidCacheFlag::EInvalid;

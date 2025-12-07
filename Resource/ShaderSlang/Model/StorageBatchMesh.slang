@@ -6,13 +6,16 @@ internal struct InstanceGroupData
     int instanceBeginIndex;
 };
 
-[MeshInstance] StructuredBuffer<MeshData> meshData;
+StructuredBuffer<ClusterData> clusters;
+StructuredBuffer<ClusterGroupData> clusterGroups;
+
+[MeshInstance] StructuredBuffer<MeshInstanceData> meshData;
 ParameterBlock<InstanceGroupData> instanceGroupData;
 
 struct StorageBatchMeshData : IBatchMeshData
 {
 
-    MeshData GetMeshData(uint instanceId)
+    MeshInstanceData GetMeshData(uint instanceId)
     {
         return meshData[instanceId - instanceGroupData.instanceBeginIndex];
     }

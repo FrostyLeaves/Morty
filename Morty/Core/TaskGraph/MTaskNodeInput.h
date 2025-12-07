@@ -22,7 +22,7 @@ class MORTY_API MTaskNodeInput : public MTypeClass
 public:
     MTaskNodeInput();
 
-    bool                           LinkTo(MTaskNodeOutput* pOutput);
+    bool                           LinkTo(MTaskNodeOutput* output);
     void                           UnLink();
 
     [[nodiscard]] size_t           GetIndex() const { return m_unIndex; }

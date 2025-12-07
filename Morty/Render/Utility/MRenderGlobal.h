@@ -90,6 +90,9 @@ public:
     static constexpr int      THREAD_ID_SUBMIT = 3;
 };
 
+using METextureType        = fbs::METextureType;
+using METextureFormat      = fbs::METextureFormat;
+using MEMipmapDataType     = fbs::MEMipmapDataType;
 using MECullMode           = fbs::MECullMode;
 using MEDepthFunc          = fbs::MEDepthFunc;
 using MEShaderType         = fbs::MEShaderType;
@@ -102,6 +105,8 @@ using MTexturePtr          = std::shared_ptr<MTexture>;
 using MTextureArray        = std::vector<MTexturePtr>;
 using MEntryNames          = std::array<MStringId, static_cast<int>(MEShaderType::TOTAL_NUM)>;
 using MIndicesType         = uint32_t;
+using METextureWriteUsage  = uint32_t;
+using METextureReadUsage   = uint32_t;
 
 enum class MECameraType
 {
@@ -134,6 +139,12 @@ enum class MEShadingRateCombinerOp
     Min,
     Max,
     Mul,
+};
+
+enum class MRenderNodeOutputType
+{
+    RenderTarget,
+    Data,
 };
 
 struct MShadingRateType {

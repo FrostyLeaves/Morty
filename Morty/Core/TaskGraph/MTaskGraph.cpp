@@ -73,37 +73,37 @@ bool MTaskGraph::Compile()
 
     for (const auto& pr: m_taskNode)
     {
-        auto pNode             = pr.second;
-        pNode->m_priorityLevel = 0;
+        auto node             = pr.second;
+        node->m_priorityLevel = 0;
 
-        if (pNode->IsStartNode()) { m_startTaskNode.push_back(pNode); }
+        if (node->IsStartNode()) { m_startTaskNode.push_back(node); }
 
-        if (pNode->IsFinalNode())
+        if (node->IsFinalNode())
         {
-            m_finalTaskNode.push_back(pNode);
-            queue.push(pNode);
+            m_finalTaskNode.push_back(node);
+            queue.push(node);
         }
 
-        pNode->OnPreCompile();
+        node->OnPreCompile();
     }
 
     if (queue.empty()) { return false; }
 
-    MTaskNode* pNode = nullptr;
+    MTaskNode* node = nullptr;
     while (!queue.empty())
     {
-        pNode = queue.front();
+        node = queue.front();
         queue.pop();
 
-        for (size_t i = 0; i < pNode->m_input.size(); ++i)
+        for (size_t i = 0; i < node->m_input.size(); ++i)
         {
-            if (MTaskNodeInput* pInput = pNode->m_input[i])
+            if (MTaskNodeInput* input = node->m_input[i])
             {
-                if (MTaskNode* pLinkedNode = pInput->GetLinkedNode())
+                if (MTaskNode* pLinkedNode = input->GetLinkedNode())
                 {
-                    if (pLinkedNode->m_priorityLevel < pNode->m_priorityLevel + 1)
+                    if (pLinkedNode->m_priorityLevel < node->m_priorityLevel + 1)
                     {
-                        pLinkedNode->m_priorityLevel = pNode->m_priorityLevel + 1;
+                        pLinkedNode->m_priorityLevel = node->m_priorityLevel + 1;
                         MORTY_ASSERT(pLinkedNode->m_priorityLevel < nTaskNodeNum);
                     }
 

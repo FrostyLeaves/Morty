@@ -56,9 +56,9 @@ public:
 
     void Input(MInputEvent* pEvent);
 
-    bool MainLoop(MTaskNode* pNode);
+    bool MainLoop(MTaskNode* node);
 
-    void Render(MTaskNode* pNode) override;
+    void Render(MTaskNode* node) override;
 
     void Resize(const int& nWidth, const int& nHeight);
 
