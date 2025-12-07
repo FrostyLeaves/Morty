@@ -57,7 +57,7 @@ bool          MRenderModule::Register(MEngine* engine)
 
     auto renderSystem = engine->RegisterSystem<MRenderSystem>();
 
-    if (auto resourceSystem = engine->FindSystem<MResourceSystem>())
+    if (auto resourceSystem = engine->GetSystem<MResourceSystem>())
     {
         resourceSystem->RegisterResourceLoader<MMeshResourceLoader>();
         resourceSystem->RegisterResourceLoader<MShaderResourceLoader>();
@@ -120,7 +120,7 @@ bool          MRenderModule::Register(MEngine* engine)
 
     engine->RegisterGlobalObject<MMeshManager>();
 
-    if (auto pComponentSystem = engine->FindSystem<MComponentSystem>())
+    if (auto pComponentSystem = engine->GetSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MModelComponent>();
         pComponentSystem->RegisterComponent<MCameraComponent>();
@@ -133,7 +133,7 @@ bool          MRenderModule::Register(MEngine* engine)
     }
 
 
-    if (auto objectSystem = engine->FindSystem<MObjectSystem>())
+    if (auto objectSystem = engine->GetSystem<MObjectSystem>())
     {
         objectSystem->RegisterPostCreateObject(MRenderModule::OnObjectPostCreate);
     }
@@ -167,6 +167,6 @@ void MRenderModule::OnObjectPostCreate(MObject* pObject)
 
 void MRenderModule::RegisterMaterial(MEngine* engine)
 {
-    MResourceSystem* resourceSystem = engine->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = engine->GetSystem<MResourceSystem>();
     MORTY_ASSERT(resourceSystem);
 }

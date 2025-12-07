@@ -74,7 +74,7 @@ void MShaderProgram::InitializeShaderParameterSet()
 
 void MShaderProgram::UnloadShader()
 {
-    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     for (size_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
     {
         m_shaderSets[i]->DestroyBuffer(renderSystem->GetDevice());
@@ -96,7 +96,7 @@ void MShaderProgram::CopyShaderParams(
         const std::shared_ptr<const MShaderParameterSet>& source
 )
 {
-    auto* renderSystem = engine->FindSystem<MRenderSystem>();
+    auto* renderSystem = engine->GetSystem<MRenderSystem>();
 
     target->DestroyBuffer(renderSystem->GetDevice());
 
@@ -160,7 +160,7 @@ void MShaderProgram::CompileShaderIfNeed()
 
         desc.nShaderIdx    = pShaderResource->FindShaderByMacroParam(m_entryNames[idx], shaderType, m_shaderMacro);
         desc.pShader       = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
-        auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+        auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
         if (desc.pShader && !desc.pShader->IsCompiled())
         {
             if (!desc.pShader->CompileShader(renderSystem->GetDevice()))

@@ -30,7 +30,7 @@ void GuizmoWidget::Render()
 
     MViewport*        viewport = GetViewport();
 
-    MRenderSystem*    renderSystem          = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem*    renderSystem          = GetEngine()->GetSystem<MRenderSystem>();
     MEntity*          pCameraEntity         = viewport->GetCamera();
     MSceneComponent*  pCameraSceneComponent = pCameraEntity->GetComponent<MSceneComponent>();
     MCameraComponent* pCameraComponent      = pCameraEntity->GetComponent<MCameraComponent>();

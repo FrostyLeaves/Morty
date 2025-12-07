@@ -10,7 +10,7 @@ MObjectSystem* MObject::GetObjectSystem()
 {
     if (nullptr == m_engine) return nullptr;
 
-    if (MISystem* pSystem = m_engine->FindSystem(MObjectSystem::GetClassType()))
+    if (MISystem* pSystem = m_engine->GetSystem(MObjectSystem::GetClassType()))
     {
         return pSystem->template DynamicCast<MObjectSystem>();
     }

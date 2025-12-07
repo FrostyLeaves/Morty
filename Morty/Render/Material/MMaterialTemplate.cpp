@@ -24,7 +24,7 @@ bool MMaterialTemplate::LoadShader(const std::shared_ptr<MResource>& pResource)
 
 bool MMaterialTemplate::LoadShader(const MString& strResource)
 {
-    auto* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strResource))
     {
         return LoadShader(pResource);

@@ -103,7 +103,7 @@ void MMeshInstanceManager::Release()
 
     Clean();
 
-    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     m_renderData.instanceBuffer.DestroyBuffer(renderSystem->GetDevice());
 
     Super::Release();
@@ -194,7 +194,7 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* node)
 
 void MMeshInstanceManager::UpdateStorageBufferIfNeeded()
 {
-    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->GetSystem<MRenderSystem>();
 
     if (m_renderData.instanceBuffer.GetSize() < m_renderData.renderProxies.size() * sizeof(MMeshInstanceRenderProxy))
     {

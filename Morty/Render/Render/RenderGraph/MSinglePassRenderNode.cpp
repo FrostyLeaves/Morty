@@ -33,7 +33,7 @@ ISinglePassRenderNode::ISinglePassRenderNode()
 
 void ISinglePassRenderNode::Release()
 {
-    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     m_renderPass.DestroyBuffer(renderSystem->GetDevice());
 }
 
@@ -77,7 +77,7 @@ void ISinglePassRenderNode::Resize(Vector2i size)
 {
     Super::Resize(size);
 
-    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
 
     if (m_renderPass.GetFrameBufferSize() != size) { m_renderPass.Resize(renderSystem->GetDevice()); }
 }
@@ -86,7 +86,7 @@ void ISinglePassRenderNode::SetRenderTarget(const MRenderTargetGroup& renderTarg
 {
     m_renderPass.SetRenderTarget(renderTarget);
 
-    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     m_renderPass.DestroyBuffer(renderSystem->GetDevice());
     m_renderPass.GenerateBuffer(renderSystem->GetDevice());
 }

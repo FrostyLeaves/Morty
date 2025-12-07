@@ -4,6 +4,8 @@
 
 using namespace morty;
 
+MORTY_CLASS_IMPLEMENT(MBuffer, MTypeClass)
+
 MBuffer::MBuffer(const MBuffer& other)
 {
 #if MORTY_DEBUG

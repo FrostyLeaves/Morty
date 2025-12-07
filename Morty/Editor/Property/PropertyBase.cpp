@@ -566,7 +566,7 @@ bool PropertyBase::EditMResource(
     if (m_engine == nullptr) { return false; }
 
     bool    modifyFlag     = false;
-    auto    resourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto    resourceSystem = m_engine->GetSystem<MResourceSystem>();
 
     //".mvs\0.mps\0\0",
     MString strSuffix;
@@ -650,7 +650,7 @@ void PropertyBase::EditSaveMResource(
 
         if (ImGui::Button(btn_name.c_str(), ImVec2(fWidth * 0.5f, 0)))
         {
-            auto resourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+            auto resourceSystem = pResource->GetEngine()->GetSystem<MResourceSystem>();
             resourceSystem->SaveResource(pResource);
         }
 
@@ -671,7 +671,7 @@ void PropertyBase::EditSaveMResource(
             if (ImGuiFileDialog::Instance()->IsOk() == true)
             {
                 std::string filePathName   = ImGuiFileDialog::Instance()->GetFilePathName();
-                auto        resourceSystem = pResource->GetEngine()->FindSystem<MResourceSystem>();
+                auto        resourceSystem = pResource->GetEngine()->GetSystem<MResourceSystem>();
                 resourceSystem->MoveTo(pResource, filePathName);
                 resourceSystem->SaveResource(pResource);
             }

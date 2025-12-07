@@ -159,14 +159,14 @@ bool MenuBar::LoadEntityFile(const std::string& filePath)
         return false;
     }
 
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     if (!resourceSystem)
     {
         GetEngine()->GetLogger()->Error("ResourceSystem not found");
         return false;
     }
 
-    MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
+    MEntitySystem* pEntitySystem = GetEngine()->GetSystem<MEntitySystem>();
     if (!pEntitySystem)
     {
         GetEngine()->GetLogger()->Error("EntitySystem not found");

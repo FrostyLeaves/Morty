@@ -29,7 +29,7 @@ MTextureResource::~MTextureResource() { UnloadTexture(); }
 
 void MTextureResource::UnloadTexture()
 {
-    auto* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     if (m_texture) { m_texture->DestroyBuffer(renderSystem->GetDevice()); }
     m_texture = nullptr;
 }
@@ -40,7 +40,7 @@ void MTextureResource::OnDelete()
 
     m_resourceData = nullptr;
 
-    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     m_texture->DestroyBuffer(renderSystem->GetDevice());
     m_texture = nullptr;
 }
@@ -52,7 +52,7 @@ bool MTextureResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     if (nullptr == pResourceData) { return true; }
     MORTY_ASSERT(m_texture == nullptr);
 
-    const MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
 
     auto                 pTextureData = static_cast<MTextureResourceData*>(pResourceData.get());
 
@@ -98,7 +98,7 @@ void MTextureResource::CreateCubeMapRenderTarget(
 {
     MORTY_ASSERT(m_texture == nullptr);
 
-    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
 
     if (nChannel == 2 || nChannel == 3) nChannel = 4;
 

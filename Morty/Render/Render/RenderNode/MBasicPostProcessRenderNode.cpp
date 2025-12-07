@@ -28,7 +28,7 @@ void MBasicPostProcessRenderNode::Execute(const MRenderInfo& info, IRenderComman
 {
     MORTY_UNUSED(info);
 
-    MIMesh*        pScreenMesh = GetEngine()->FindGlobalObject<MMeshManager>()->GetScreenRect();
+    MIMesh*        pScreenMesh = info.scene->GetManager<MMeshManager>()->GetScreenRect();
     const Vector2i size        = m_renderPass.GetFrameBufferSize();
     MRenderPassCmd command     = primaryCommand->BeginRenderPass(&m_renderPass);
 

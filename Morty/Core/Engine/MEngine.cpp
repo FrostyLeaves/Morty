@@ -83,9 +83,9 @@ void MEngine::Tick(const float& delta)
 
 void MEngine::RegisterSystem(const std::shared_ptr<MISystem>& system)
 {
-    if (FindSystem(system->GetType()))
+    if (GetSystem(system->GetType()))
     {
-        MORTY_ASSERT(!FindSystem(system->GetType()));
+        MORTY_ASSERT(!GetSystem(system->GetType()));
         return;
     }
 
@@ -99,11 +99,11 @@ void MEngine::RegisterGlobalObject(const MType* type)
 {
     if (FindGlobalObject(type)) return;
 
-    MObject* pObject     = FindSystem<MObjectSystem>()->CreateObject(type->m_strName);
+    MObject* pObject     = GetSystem<MObjectSystem>()->CreateObject(type->m_strName);
     m_globalObject[type] = pObject;
 }
 
-MISystem* MEngine::FindSystem(const MType* type)
+MISystem* MEngine::GetSystem(const MType* type)
 {
     auto find = m_systemTable.find(type);
     if (find != m_systemTable.end()) { return m_systemArray[find->second].get(); }

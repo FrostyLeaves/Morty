@@ -105,7 +105,7 @@ void MRenderMeshComponent::Deserialize(flatbuffers::FlatBufferBuilder& fbb)
 
 void MRenderMeshComponent::Deserialize(const void* pBufferPointer)
 {
-    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     auto component      = reinterpret_cast<const fbs::MRenderMeshComponent*>(pBufferPointer);
 
     Super::Deserialize(component->super());

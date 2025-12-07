@@ -54,7 +54,7 @@ MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx) cons
 
 void MRenderTaskNode::Resize(Vector2i size)
 {
-    const auto pDevice = GetEngine()->FindSystem<MRenderSystem>()->GetDevice();
+    const auto pDevice = GetEngine()->GetSystem<MRenderSystem>()->GetDevice();
 
     for (auto output: m_output)
     {

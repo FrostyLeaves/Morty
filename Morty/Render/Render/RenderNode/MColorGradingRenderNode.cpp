@@ -21,7 +21,7 @@ void                       MColorGradingRenderNode::Release() { Super::Release()
 
 std::shared_ptr<MMaterial> MColorGradingRenderNode::CreateMaterial()
 {
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     auto             material = resourceSystem->CreateResource<MMaterialTemplate>("Color Grading Material");
 

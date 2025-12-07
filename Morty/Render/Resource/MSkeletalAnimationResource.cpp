@@ -50,7 +50,7 @@ void MSkeletalAnimationResource::SetSkeletonResource(std::shared_ptr<MSkeletonRe
 
 bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
-    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     if (auto pAnimationData = static_cast<MSkeletalAnimationResourceData*>(pResourceData.get()))
     {

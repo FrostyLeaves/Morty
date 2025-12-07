@@ -147,7 +147,12 @@ void MainEditor::OnResize(Vector2 size) { MORTY_UNUSED(size); }
 
 void MainEditor::OnInput(MInputEvent* pEvent) { m_sceneViewer->GetViewport()->Input(pEvent); }
 
-void MainEditor::OnTick(float delta) { m_scene->Tick(delta); }
+void MainEditor::OnTick(float delta)
+{
+    m_scene->Tick(delta);
+
+    for (const auto& sceneViewer: m_sceneViewerSet) { sceneViewer->Tick(delta); }
+}
 
 void MainEditor::OnRender(IRenderCommand* pRenderCommand)
 {
@@ -163,7 +168,7 @@ void MainEditor::OnRender(IRenderCommand* pRenderCommand)
 
 SceneViewer* MainEditor::CreateSceneViewer(const MString& viewName, MScene* scene)
 {
-    auto sceneViewer = GetEngine()->FindSystem<MObjectSystem>()->CreateObject<SceneViewer>();
+    auto sceneViewer = GetEngine()->GetSystem<MObjectSystem>()->CreateObject<SceneViewer>();
     sceneViewer->Initialize(viewName, scene, MainEditor::GetRenderProgramName());
     m_sceneViewerSet.insert(sceneViewer);
 

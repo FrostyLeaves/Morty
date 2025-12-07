@@ -109,8 +109,8 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 {
     m_convertInfo = convertInfo;
 
-    auto objectSystem   = GetEngine()->FindSystem<MObjectSystem>();
-    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto objectSystem   = GetEngine()->GetSystem<MObjectSystem>();
+    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     m_scene             = objectSystem->CreateObject<MScene>();
     m_defaultMaterial   = resourceSystem->CreateResource<MMaterialTemplateResource>();
     m_defaultMaterial->LoadShader("ShaderSlang/Main/DeferredGBuffer.slang");
@@ -131,7 +131,7 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 
 bool MModelImporter::Load(const MString& strResourcePath)
 {
-    MResourceSystem*     resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*     resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     std::vector<MString> vSearchPath = resourceSystem->GetSearchPath();
 
@@ -193,7 +193,7 @@ bool MModelImporter::Load(const MString& strResourcePath)
 
 void MModelImporter::ProcessNode(aiNode* node, const aiScene* scene)
 {
-    MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
+    MEntitySystem* pEntitySystem = GetEngine()->GetSystem<MEntitySystem>();
 
     MSkeleton*     pSkeleton = m_skeletonResource ? m_skeletonResource->GetSkeleton() : nullptr;
 
@@ -239,7 +239,7 @@ void MModelImporter::ProcessBones(const aiScene* scene)
 
     if (pSkeletonData->skeleton.GetAllBones().empty()) { return; }
 
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     m_skeletonResource              = resourceSystem->CreateResource<MSkeletonResource>();
 
     pSkeletonData->skeleton.SortByDeep();
@@ -343,7 +343,7 @@ void MModelImporter::ProcessLights(const aiScene* scene)
 
 void MModelImporter::ProcessCameras(const aiScene* scene)
 {
-    MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
+    MEntitySystem* pEntitySystem = GetEngine()->GetSystem<MEntitySystem>();
 
     for (uint32_t i = 0; i < scene->mNumCameras; ++i)
     {
@@ -371,7 +371,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
 {
     if (!m_skeletonResource) { return; }
 
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     MSkeleton*       pSkeleton = m_skeletonResource->GetSkeleton();
     if (!pSkeleton)
@@ -456,7 +456,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
 
 void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMaterialIdx)
 {
-    MResourceSystem*                   resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*                   resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     std::shared_ptr<MMaterialResource> material = nullptr;
 
@@ -551,7 +551,7 @@ void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMate
 
 void MModelImporter::ProcessTexture(const aiScene* scene)
 {
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     for (size_t nTextureIdx = 0; nTextureIdx < scene->mNumTextures; ++nTextureIdx)
     {
@@ -562,12 +562,10 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
             // Embedded texture
             if (aiTexture->mHeight == 0)
             {
-                pTextureResource->Load(
-                        MTextureResourceUtil::ImportTextureFromMemory(
-                                MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
-                                MTextureImportInfo(MTexturePixelType::Byte8)
-                        )
-                );
+                pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(
+                        MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
+                        MTextureImportInfo(MTexturePixelType::Byte8)
+                ));
             }
             else
             {
@@ -588,16 +586,14 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
                     buffer[i + 3] = temp;
                 }
 
-                pTextureResource->Load(
-                        MTextureResourceUtil::LoadFromMemory(
-                                "RawTexture",
-                                buffer,
-                                static_cast<uint32_t>(nWidth),
-                                static_cast<uint32_t>(nHeight),
-                                4,
-                                MTexturePixelType::Byte8
-                        )
-                );
+                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory(
+                        "RawTexture",
+                        buffer,
+                        static_cast<uint32_t>(nWidth),
+                        static_cast<uint32_t>(nHeight),
+                        4,
+                        MTexturePixelType::Byte8
+                ));
             }
 
             m_rawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
@@ -607,7 +603,7 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
 
 MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* node)
 {
-    MEntitySystem* pEntitySystem = GetEngine()->FindSystem<MEntitySystem>();
+    MEntitySystem* pEntitySystem = GetEngine()->GetSystem<MEntitySystem>();
 
     if (m_nodeMaps.find(node) != m_nodeMaps.end()) { return m_nodeMaps[node]; }
 
@@ -644,8 +640,8 @@ std::shared_ptr<MMaterialResource> MModelImporter::GetMaterial(const aiScene* sc
 
 bool MModelImporter::SaveResources(const MString& strOutputDir, const MString& strOutputName)
 {
-    MResourceSystem* resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
-    MEntitySystem*   pEntitySystem  = GetEngine()->FindSystem<MEntitySystem>();
+    MResourceSystem* resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
+    MEntitySystem*   pEntitySystem  = GetEngine()->GetSystem<MEntitySystem>();
 
     MString          strPath = strOutputDir + "/" + strOutputName + "/";
 

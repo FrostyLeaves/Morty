@@ -27,9 +27,9 @@ void MaterialPropertyRenderer::Initialize(MainEditor* pMainEditor)
 {
     MEngine* pEngine = pMainEditor->GetEngine();
 
-    auto*    sceneSystem    = pEngine->FindSystem<MSceneSystem>();
-    auto*    objectSystem   = pEngine->FindSystem<MObjectSystem>();
-    auto*    resourceSystem = pEngine->FindSystem<MResourceSystem>();
+    auto*    sceneSystem    = pEngine->GetSystem<MSceneSystem>();
+    auto*    objectSystem   = pEngine->GetSystem<MObjectSystem>();
+    auto*    resourceSystem = pEngine->GetSystem<MResourceSystem>();
 
     m_scene = objectSystem->CreateObject<MScene>();
 
@@ -109,7 +109,7 @@ void MaterialPropertyRenderer::SetMaterial(std::shared_ptr<MMaterialResource> ma
 {
     if (m_material == material) return;
 
-    auto* sceneSystem = m_sceneViewer->GetViewport()->GetEngine()->FindSystem<MSceneSystem>();
+    auto* sceneSystem = m_sceneViewer->GetViewport()->GetEngine()->GetSystem<MSceneSystem>();
 
     m_material = material;
 

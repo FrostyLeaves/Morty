@@ -47,7 +47,7 @@ bool MShaderResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
 {
     auto           pShaderData = static_cast<MShaderResourceData*>(pResourceData.get());
 
-    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = m_engine->GetSystem<MRenderSystem>();
 
     for (MShader* pShader: m_shaders)
     {
@@ -70,7 +70,7 @@ bool MShaderResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
 
 void MShaderResource::OnDelete()
 {
-    MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = m_engine->GetSystem<MRenderSystem>();
     MORTY_ASSERT(renderSystem);
 
     for (MShader* pShader: m_shaders)

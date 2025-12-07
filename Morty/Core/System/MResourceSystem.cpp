@@ -99,7 +99,7 @@ std::shared_ptr<MResource> MResourceSystem::LoadResource(const MString& strResou
         pLoader->strResourcePath     = strResourcePath;
         pLoader->strResourceFullPath = strFullPath;
         pLoader->pResource           = pResource;
-        GetEngine()->FindSystem<MResourceAsyncLoadSystem>()->AddLoader(pLoader);
+        GetEngine()->GetSystem<MResourceAsyncLoadSystem>()->AddLoader(pLoader);
     }
     else
     {

@@ -206,7 +206,7 @@ void MMeshResource::OnDelete() { MResource::OnDelete(); }
 
 void MMeshResource::Clean()
 {
-    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     if (MIMesh* pMesh = GetMesh()) { pMesh->DestroyBuffer(renderSystem->GetDevice()); }
 }
 

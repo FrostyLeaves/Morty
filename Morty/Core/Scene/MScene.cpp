@@ -171,7 +171,7 @@ MComponent* MScene::AddComponent(MEntity* entity, const MType* pComponentType)
 
 MIComponentGroup* MScene::CreateComponents(const MType* pComponentType)
 {
-    if (MComponentSystem* pComponentSystem = GetEngine()->FindSystem<MComponentSystem>())
+    if (MComponentSystem* pComponentSystem = GetEngine()->GetSystem<MComponentSystem>())
     {
         MIComponentGroup* pGroup = pComponentSystem->CreateComponentGroup(pComponentType);
         if (pGroup) { pGroup->m_scene = this; }

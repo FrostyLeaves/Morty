@@ -95,7 +95,7 @@ MRenderTargetBindingWalker::MRenderTargetBindingWalker(MEngine* engine)
 
 MRenderTargetBindingWalker::~MRenderTargetBindingWalker()
 {
-    const MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = m_engine->GetSystem<MRenderSystem>();
     m_cacheQueue->Release(renderSystem->GetDevice());
     MORTY_SAFE_DELETE(m_cacheQueue);
 
@@ -191,7 +191,7 @@ void MRenderTargetBindingWalker::AllocRenderTarget(MRenderTaskNodeOutput* output
     const auto& desc = output->GetOutputDesc();
     if (desc.type != MRenderNodeOutputType::RenderTarget) return;
 
-    const MRenderSystem* renderSystem = m_engine->FindSystem<MRenderSystem>();
+    const MRenderSystem* renderSystem = m_engine->GetSystem<MRenderSystem>();
     MORTY_ASSERT(desc.allocPolicy != METextureSourceType::Input);
 
     if (desc.sharedPolicy == MESharedPolicy::Exclusive || m_forceExclusive)

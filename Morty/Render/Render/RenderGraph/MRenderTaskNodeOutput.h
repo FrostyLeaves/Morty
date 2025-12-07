@@ -86,6 +86,8 @@ public:
     static MRenderTaskOutputDesc
     CreateFromInput(const MStringId& name, const MPassTargetDescription& rtDesc, size_t nInputIdx);
 
+    static MRenderTaskOutputDesc CreateBuffer(const MStringId& name);
+
 private:
     MRenderTaskOutputDesc m_desc;
     MTexturePtr           m_renderTexture;

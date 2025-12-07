@@ -16,7 +16,7 @@ const MStringId            BlurDirectionName = MStringId("Gaussian Blur Vertical
 
 std::shared_ptr<MMaterial> MBlurRenderNode::CreateMaterial()
 {
-    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     auto pBlurMaterial = resourceSystem->FindResource<MMaterialTemplate>("blur");
 

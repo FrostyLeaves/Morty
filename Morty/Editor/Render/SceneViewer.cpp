@@ -30,7 +30,7 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MS
     m_scene = scene;
 
     MEngine* engine       = GetEngine();
-    auto*    objectSystem = engine->FindSystem<MObjectSystem>();
+    auto*    objectSystem = engine->GetSystem<MObjectSystem>();
 
     m_renderViewport = objectSystem->CreateObject<MViewport>();
     m_renderViewport->SetScene(m_scene);

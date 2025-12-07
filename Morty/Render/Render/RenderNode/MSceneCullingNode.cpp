@@ -2,47 +2,52 @@
 
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
+#include "Batch/Mesh/MMeshInstanceManager.h"
 #include "Engine/MEngine.h"
+#include "Material/MComputeDispatcher.h"
 #include "Mesh/MMeshManager.h"
+#include "RHI/Command/MRenderPassCmd.h"
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
-#include "Scene/MScene.h"
-
-#include "RHI/Command/MRenderPassCmd.h"
 #include "Render/RenderGraph/MRenderGraph.h"
+#include "Scene/MScene.h"
+#include "System/MObjectSystem.h"
 #include "TaskGraph/MTaskGraph.h"
 
 using namespace morty;
 
-MORTY_CLASS_IMPLEMENT(MSceneCullingNode, ISinglePassRenderNode)
+MORTY_CLASS_IMPLEMENT(MSceneCullingNode, MRenderTaskNode)
+
+void MSceneCullingNode::OnCreated()
+{
+    Super::OnCreated();
+
+    auto objectSystem = GetEngine()->GetSystem<MObjectSystem>();
+
+    m_cullingDispatcher = objectSystem->CreateObject<MComputeDispatcher>();
+    //m_cullingDispatcher->LoadComputeShader()
+}
+
+VOID MSceneCullingNode::OnDelete()
+{
+    m_cullingDispatcher->DeleteLater();
+    m_cullingDispatcher = nullptr;
+}
 
 void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
     MORTY_UNUSED(info);
     MORTY_UNUSED(primaryCommand);
-    //Camera frustum culling.
 
-    //TODO
+    auto instanceManager = info.scene->GetManager<MMeshInstanceManager>();
+    instanceManager->GetBatchGroups();
 }
 
 std::vector<MRenderTaskOutputDesc> MSceneCullingNode::InitOutputDesc()
 {
+    static const auto outputCullingResultId = MStringId("Culling output");
+
     return {
-            MRenderTaskNodeOutput::Create(
-                    MRenderGraphName::GBuffer[0],
-                    MRenderTaskNode::DefaultLinearSpaceFormat,
-                    {true, MColor::Black_T}
-            ),
-            MRenderTaskNodeOutput::Create(
-                    MRenderGraphName::GBuffer[1],
-                    MRenderTaskNode::DefaultLinearSpaceFormat,
-                    {true, MColor::Black_T}
-            ),
-            MRenderTaskNodeOutput::Create(
-                    MRenderGraphName::GBuffer[2],
-                    MRenderTaskNode::DefaultLinearSpaceFormat,
-                    {true, MColor::Black_T}
-            ),
-            MRenderTaskNodeOutput::CreateDepth(MRenderGraphName::DepthBuffer, {true, MColor::Black_T}),
+            MRenderTaskNodeOutput::CreateBuffer(outputCullingResultId),
     };
 }

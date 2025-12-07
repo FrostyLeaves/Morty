@@ -170,10 +170,14 @@ void RenderGraphView::DrawGraphView()
                 );
                 ImGui::TextUnformatted(pNodeOutput->GetName().ToString().c_str());
                 ImGui::SameLine(nodeWidth);
-                if (ImGui::Checkbox("", &check))
+
+                if (pNodeOutput->GetOutputDesc().type == MRenderNodeOutputType::RenderTarget)
                 {
-                    pRenderGraph->SetFinalOutput(node->GetNodeID(), nIdx);
-                    pRenderGraph->RequireCompile();
+                    if (ImGui::Checkbox("", &check))
+                    {
+                        pRenderGraph->SetFinalOutput(node->GetNodeID(), nIdx);
+                        pRenderGraph->RequireCompile();
+                    }
                 }
 
                 ImNodes::EndOutputAttribute();
@@ -381,14 +385,25 @@ ImColor GetColorFromTextureFormat(METextureFormat format)
     return FIND_OR_DEFAULT(ColorTable, format, DefaultLinkColor);
 }
 
+ImColor GetColorFromHash(MHashCode hash)
+{
+    static std::unordered_map<MHashCode, ImColor> ColorTable;
+    auto                                          findResult = ColorTable.find(hash);
+    if (findResult != ColorTable.end()) { return findResult->second; }
+
+    return ColorTable[hash] = ImColor(MMath::RandInt(0, 255), MMath::RandInt(0, 255), MMath::RandInt(0, 255));
+}
+
 void RenderGraphView::SetupLinkStyle(MRenderTaskNodeInput* input)
 {
-    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(input->GetFormat()));
+    auto hash = input->GetInputDesc().GetLinkHash();
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromHash(hash));
 }
 
 void RenderGraphView::SetupLinkStyle(MRenderTaskNodeOutput* output)
 {
-    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromTextureFormat(output->GetFormat()));
+    auto hash = output->GetOutputDesc().GetLinkHash();
+    ImNodes::PushColorStyle(ImNodesCol_Pin, GetColorFromHash(hash));
 }
 
 void  RenderGraphView::ResetLinkStyle() { ImNodes::PopColorStyle(); }

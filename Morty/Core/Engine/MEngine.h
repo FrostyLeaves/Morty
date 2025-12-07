@@ -73,12 +73,12 @@ public:
 public:
     template<typename TYPE> TYPE*               RegisterSystem();
 
-    template<typename TYPE> TYPE*               FindSystem();
+    template<typename TYPE> TYPE*               GetSystem();
 
     template<typename TYPE> std::weak_ptr<TYPE> FindSystemWeak();
     std::shared_ptr<MISystem>                   FindSystemShared(const MType* type);
 
-    MISystem*                                   FindSystem(const MType* type);
+    MISystem*                                   GetSystem(const MType* type);
 
     std::vector<std::shared_ptr<MISystem>>&     GetAllSystem() { return m_systemArray; }
 
@@ -115,9 +115,9 @@ private:
     MThreadPool                            m_threadPool;
 };
 
-template<typename TYPE> TYPE* MEngine::FindSystem()
+template<typename TYPE> TYPE* MEngine::GetSystem()
 {
-    if (auto system = FindSystem(TYPE::GetClassType())) { return system->template DynamicCast<TYPE>(); }
+    if (auto system = GetSystem(TYPE::GetClassType())) { return system->template DynamicCast<TYPE>(); }
 
     return nullptr;
 }

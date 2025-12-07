@@ -139,7 +139,7 @@ void SDLRenderView::AppendContent(RenderViewContent* pContent)
 
 void SDLRenderView::Input(MInputEvent* pEvent)
 {
-    if (MInputSystem* pInputSystem = GetEngine()->FindSystem<MInputSystem>()) { pInputSystem->Input(pEvent); }
+    if (MInputSystem* pInputSystem = GetEngine()->GetSystem<MInputSystem>()) { pInputSystem->Input(pEvent); }
 
     for (auto content: m_content) { content->OnInput(pEvent); }
 }
@@ -232,7 +232,7 @@ void SDLRenderView::BindSDLWindow()
 {
     if (m_sDLWindow) { UnbindSDLWindow(); }
 
-    MRenderSystem* renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     MVulkanDevice* pDevice      = dynamic_cast<MVulkanDevice*>(renderSystem->GetDevice());
 
     SDL_SetMainReady();
@@ -329,7 +329,7 @@ void SDLRenderView::Render(MTaskNode* node)
         m_windowResized = false;
     }
 
-    MRenderSystem*     renderSystem  = GetEngine()->FindSystem<MRenderSystem>();
+    MRenderSystem*     renderSystem  = GetEngine()->GetSystem<MRenderSystem>();
     MIDevice*          pDevice       = renderSystem->GetDevice();
     MViewRenderTarget* pRenderTarget = GetNextRenderTarget();
     if (!pRenderTarget) return;

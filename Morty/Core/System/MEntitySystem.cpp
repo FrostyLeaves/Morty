@@ -52,7 +52,7 @@ size_t GetSceneDepthFunction(MSceneComponent* pSceneComponent, std::map<MSceneCo
 
 std::shared_ptr<MResource> MEntitySystem::PackEntity(const std::vector<MEntity*>& vEntity)
 {
-    MResourceSystem*                   resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    MResourceSystem*                   resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     std::shared_ptr<MEntityResource>   pResource = resourceSystem->CreateResource<MEntityResource>();
 

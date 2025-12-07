@@ -60,7 +60,7 @@ void ImGuiRenderer::Initialize()
 
 void ImGuiRenderer::InitializeFont()
 {
-    auto           resourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto           resourceSystem = m_engine->GetSystem<MResourceSystem>();
 
     ImGuiIO&       io = ImGui::GetIO();
 
@@ -69,16 +69,14 @@ void ImGuiRenderer::InitializeFont()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     std::shared_ptr<MTextureResource> pFontTexture = resourceSystem->CreateResource<MTextureResource>("ImGUI_Font");
-    pFontTexture->Load(
-            MTextureResourceUtil::LoadFromMemory(
-                    "ImGUI_Font",
-                    MSpan<MByte>(pixels, width * height * 4),
-                    width,
-                    height,
-                    4,
-                    MTexturePixelType::Byte8
-            )
-    );
+    pFontTexture->Load(MTextureResourceUtil::LoadFromMemory(
+            "ImGUI_Font",
+            MSpan<MByte>(pixels, width * height * 4),
+            width,
+            height,
+            4,
+            MTexturePixelType::Byte8
+    ));
     m_FontTexture.SetResource(pFontTexture);
 
     // Store our identifier
@@ -97,7 +95,7 @@ void ImGuiRenderer::ReleaseFont() { m_FontTexture.SetResource(nullptr); }
 
 void ImGuiRenderer::InitializeMaterial()
 {
-    auto resourceSystem = m_engine->FindSystem<MResourceSystem>();
+    auto resourceSystem = m_engine->GetSystem<MResourceSystem>();
     auto pTemplate      = resourceSystem->CreateResource<MMaterialTemplate>();
     //pTemplate->LoadShader("ShaderSlang/Main/ImGui/ImGuiModule.slang");
     pTemplate->LoadShader("Shader/Imgui/imgui.hlsl");
@@ -131,7 +129,7 @@ void ImGuiRenderer::ReleaseMaterial()
 
 void ImGuiRenderer::ReleaseMesh()
 {
-    auto renderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto renderSystem = m_engine->GetSystem<MRenderSystem>();
     m_Mesh.DestroyBuffer(renderSystem->GetDevice());
 }
 
@@ -139,7 +137,7 @@ void ImGuiRenderer::Tick(const float& delta)
 {
     MORTY_UNUSED(delta);
 
-    auto renderSystem = m_engine->FindSystem<MRenderSystem>();
+    auto renderSystem = m_engine->GetSystem<MRenderSystem>();
     for (auto iter = m_imGuiDrawTexture.begin(); iter != m_imGuiDrawTexture.end();)
     {
         int& count = iter->second->nDestroyCount;

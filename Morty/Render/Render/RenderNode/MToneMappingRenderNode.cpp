@@ -16,7 +16,7 @@ MORTY_CLASS_IMPLEMENT(MToneMappingRenderNode, MBasicPostProcessRenderNode)
 
 std::shared_ptr<MMaterial> MToneMappingRenderNode::CreateMaterial()
 {
-    auto resourceSystem  = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem  = GetEngine()->GetSystem<MResourceSystem>();
     auto pToneMappingMat = resourceSystem->CreateResource<MMaterialTemplate>("PostProcess Edge Detection");
 
     //TODO

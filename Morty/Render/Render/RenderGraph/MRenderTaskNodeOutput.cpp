@@ -1,4 +1,5 @@
 #include "MRenderTaskNodeOutput.h"
+#include "Basic/MBuffer.h"
 #include "MRenderTaskNode.h"
 #include "Utility/MUtils.h"
 
@@ -102,6 +103,11 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateFixed(
             .sharedPolicy = MESharedPolicy::Exclusive,
             .resizePolicy = MEResizePolicy::Fixed,
     };
+}
+
+MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateBuffer(const MStringId& name)
+{
+    return {.name = name, .type = MRenderNodeOutputType::Data, .dataType = MBuffer::GetClassType()};
 }
 
 METextureFormat MRenderTaskNodeOutput::GetFormat() const

@@ -33,7 +33,7 @@ bool MComputeDispatcher::LoadComputeShader(const std::shared_ptr<MResource>& res
 
 bool MComputeDispatcher::LoadComputeShader(const MString& strResource, const MStringId& entryName)
 {
-    auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     if (std::shared_ptr<MResource> pResource = resourceSystem->LoadResource(strResource))
         return LoadComputeShader(pResource, entryName);
 

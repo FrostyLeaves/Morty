@@ -25,7 +25,7 @@ MMeshImporter::MMeshImporter(MEngine* engine)
     : m_engine(engine)
     , m_resourceSystem(nullptr)
 {
-    if (m_engine) { m_resourceSystem = m_engine->FindSystem<MResourceSystem>(); }
+    if (m_engine) { m_resourceSystem = m_engine->GetSystem<MResourceSystem>(); }
 }
 
 MMeshImporter::~MMeshImporter() = default;

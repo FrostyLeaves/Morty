@@ -39,7 +39,7 @@ void RunEditor(MEngine* engine)
     renderView.AppendContent(&editor);
 
     //create a scene.
-    auto scene = engine->FindSystem<MObjectSystem>()->CreateObject<MScene>();
+    auto scene = engine->GetSystem<MObjectSystem>()->CreateObject<MScene>();
     editor.SetScene(scene);
 
 

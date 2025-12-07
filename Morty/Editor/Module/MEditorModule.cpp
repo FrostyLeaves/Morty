@@ -16,7 +16,7 @@ bool MEditorModule::Register(MEngine* engine)
 
     engine->RegisterSystem<MMoveControllerSystem>();
 
-    if (MComponentSystem* pComponentSystem = engine->FindSystem<MComponentSystem>())
+    if (MComponentSystem* pComponentSystem = engine->GetSystem<MComponentSystem>())
     {
         pComponentSystem->RegisterComponent<MMoveControllerComponent>();
     }

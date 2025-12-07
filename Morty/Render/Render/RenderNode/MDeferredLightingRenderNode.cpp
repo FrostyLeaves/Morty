@@ -34,7 +34,7 @@ void MDeferredLightingRenderNode::Execute(const MRenderInfo& info, IRenderComman
 
     if (!m_lightningMaterial) { return; }
 
-    auto* pMeshManager = GetEngine()->FindGlobalObject<MMeshManager>();
+    auto* pMeshManager = info.scene->GetManager<MMeshManager>();
     if (!pMeshManager)
     {
         MORTY_ASSERT(pMeshManager);
@@ -64,7 +64,7 @@ void MDeferredLightingRenderNode::Release()
 {
     m_lightningMaterial = nullptr;
 
-    auto renderSystem = GetEngine()->FindSystem<MRenderSystem>();
+    auto renderSystem = GetEngine()->GetSystem<MRenderSystem>();
 
     if (auto pShadingRateTexture = m_renderPass.GetShadingRateTexture())
     {

@@ -42,12 +42,12 @@ class Collector(reflector_collector.Basic):
         self.m_node_list.append( attr )
 
     def output(self, source_path):
-        write_path = source_path + "/../Editor/Reflection/MRenderGraphNodeList.gen"
+        write_path = source_path + "/Render/Reflection/MRenderGraphNodeList.gen"
         if not os.path.exists(write_path) and len(self.m_node_list) == 0:
             return;
 
-        if not os.path.exists(source_path + "/../Editor/Reflection"):
-            os.makedirs(source_path + "/../Editor/Reflection")
+        if not os.path.exists(source_path + "/Render/Reflection"):
+            os.makedirs(source_path + "/Render/Reflection")
     
         fo = open(write_path, "w")
 

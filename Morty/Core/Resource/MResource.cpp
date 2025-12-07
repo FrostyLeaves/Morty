@@ -127,7 +127,7 @@ MResourceSystem* MResource::GetResourceSystem()
 {
     if (nullptr == m_engine) return nullptr;
 
-    if (MISystem* pSystem = m_engine->FindSystem(MResourceSystem::GetClassType()))
+    if (MISystem* pSystem = m_engine->GetSystem(MResourceSystem::GetClassType()))
     {
         return pSystem->template DynamicCast<MResourceSystem>();
     }

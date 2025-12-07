@@ -20,7 +20,7 @@ MMoveControllerSystem::~MMoveControllerSystem() {}
 
 void MMoveControllerSystem::SceneTick(MScene* scene, const float& delta)
 {
-    MInputSystem* pInputSystem = GetEngine()->FindSystem<MInputSystem>();
+    MInputSystem* pInputSystem = GetEngine()->GetSystem<MInputSystem>();
     if (!pInputSystem) return;
 
     MComponentGroup<MMoveControllerComponent>* pComponents = scene->FindComponents<MMoveControllerComponent>();

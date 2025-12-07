@@ -29,7 +29,7 @@ void ResourceView::Render()
     ProcessDialog();
 
 
-    auto        resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+    auto        resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     const auto& resources   = resourceSystem->GetAllResources();
     size_t      ITEMS_COUNT = resources.size();
@@ -143,7 +143,7 @@ void ResourceView::ProcessDialog()
         {
             m_createResourcePath = ImGuiFileDialog::Instance()->GetFilePathName();
 
-            auto resourceSystem = GetEngine()->FindSystem<MResourceSystem>();
+            auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
             auto newResource = resourceSystem->CreateResource(m_createResourceType);
             resourceSystem->MoveTo(newResource, m_createResourcePath);

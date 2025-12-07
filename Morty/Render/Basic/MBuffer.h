@@ -10,14 +10,17 @@
 
 #include "Utility/MRenderGlobal.h"
 #include "RHI/Abstract/MBufferRHI.h"
+#include "Type/MType.h"
 
 namespace morty
 {
 
 class MIDevice;
-class MORTY_API MBuffer
+class MORTY_API MBuffer : MTypeClass
 {
 public:
+    MORTY_CLASS(MBuffer)
+
     enum class MMemoryType
     {
         EUnknow      = 0,
@@ -44,10 +47,10 @@ public:
 
 
 public:
-                   MBuffer() = default;
-                   MBuffer(const MBuffer& other);
+    MBuffer() = default;
+    MBuffer(const MBuffer& other);
     const MBuffer& operator=(const MBuffer& other);
-    ~              MBuffer() = default;
+    ~MBuffer() = default;
 
     static MBuffer CreateBuffer(MMemoryType memory, uint32_t usage, const char* debugName = nullptr);
 
