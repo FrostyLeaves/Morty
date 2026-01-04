@@ -149,6 +149,20 @@ bool MShaderParameterSet::HasValue(const uint32_t& unBinding, const uint32_t& un
     return false;
 }
 
+bool MShaderParameterSet::SetBuffer(const MStringId& name, const MBuffer* buffer)
+{
+    for (auto& param: m_storages)
+    {
+        if (param->strName == name)
+        {
+            param->SetBuffer(buffer);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void MShaderParameterSet::GenerateBuffer(MIDevice* pDevice) { pDevice->GenerateShaderParameterSet(this); }
 
 void MShaderParameterSet::DestroyBuffer(MIDevice* pDevice)

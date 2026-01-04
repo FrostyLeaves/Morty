@@ -25,8 +25,8 @@ void NodeTreeView::Render()
     auto vEntity = GetScene()->GetAllEntity();
     for (MEntity* pEntity: vEntity)
     {
-        auto* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-        if (!pSceneComponent || !pSceneComponent->GetParent())
+        auto* sceneComponent = pEntity->GetComponent<MSceneComponent>();
+        if (!sceneComponent || !sceneComponent->GetParent())
         {
             //ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
             RenderNode(pEntity);
@@ -44,12 +44,12 @@ void NodeTreeView::RenderNode(MEntity* node)
     if (!node) return;
 
     MScene*            scene           = node->GetScene();
-    auto*              pSceneComponent = node->GetComponent<MSceneComponent>();
+    auto*              sceneComponent = node->GetComponent<MSceneComponent>();
 
 
     ImGuiTreeNodeFlags node_flags =
             ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding;
-    if (!pSceneComponent || pSceneComponent->GetChildrenComponent().empty()) node_flags |= ImGuiTreeNodeFlags_Leaf;
+    if (!sceneComponent || sceneComponent->GetChildrenComponent().empty()) node_flags |= ImGuiTreeNodeFlags_Leaf;
     if (SelectionContext::GetInstance()->GetSelectedEntity() == node) node_flags |= ImGuiTreeNodeFlags_Selected;
 
 
@@ -68,9 +68,9 @@ void NodeTreeView::RenderNode(MEntity* node)
     }
     if (bOpened)
     {
-        if (pSceneComponent)
+        if (sceneComponent)
         {
-            for (const auto& child: pSceneComponent->GetChildrenComponent())
+            for (const auto& child: sceneComponent->GetChildrenComponent())
             {
                 MComponent* component = scene->GetComponent(child);
                 RenderNode(component->GetEntity());

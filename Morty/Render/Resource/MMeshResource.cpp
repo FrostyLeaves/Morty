@@ -36,19 +36,19 @@ MIMesh* MMeshResource::GetMesh() const
 {
     if (m_resourceData == nullptr) { return nullptr; }
 
-    return static_cast<MMeshResourceData*>(m_resourceData.get())->pMesh.get();
+    return static_cast<MMeshResourceData*>(m_resourceData.get())->mesh.get();
 }
 
 MIMesh* MMeshResource::GetLevelMesh(const uint32_t unLevel)
 {
     if (MRenderGlobal::MESH_LOD_LEVEL_RANGE <= unLevel) return GetMesh();
 
-    if (MIMesh* pMesh = GetMesh())
+    if (MIMesh* mesh = GetMesh())
     {
         if (nullptr == m_meshDetailMap)
         {
             m_meshDetailMap = new MMultiLevelMesh();
-            m_meshDetailMap->BindMesh(pMesh);
+            m_meshDetailMap->BindMesh(mesh);
         }
 
         return m_meshDetailMap->GetLevel(unLevel);
@@ -82,35 +82,35 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
 {
     const auto                                                  fbObb    = boundsOBB.Serialize(fbb);
     const auto                                                  fbSphere = boundsSphere.Serialize(fbb);
-    const auto                                                  fbVertex = fbb.CreateVector(pMesh->GetVerticesVector());
-    const auto                                                  fbIndex  = fbb.CreateVector(pMesh->GetIndicesVector());
+    const auto                                                  fbVertex = fbb.CreateVector(mesh->GetVerticesVector());
+    const auto                                                  fbIndex  = fbb.CreateVector(mesh->GetIndicesVector());
 
-    std::vector<flatbuffers::Offset<morty::fbs::MCluster>>      fbClusterArray(pMesh->GetClusters().size());
-    std::vector<flatbuffers::Offset<morty::fbs::MClusterGroup>> fbGroupArray(pMesh->GetClusterGroup().size());
-    std::vector<flatbuffers::Offset<morty::fbs::MSlice>>        fbLodArray(pMesh->GetClusterLodData().size());
-    std::vector<flatbuffers::Offset<morty::fbs::MClusterPage>>  fbPageArray(pMesh->GetClusterPages().size());
+    std::vector<flatbuffers::Offset<morty::fbs::MCluster>>      fbClusterArray(mesh->GetClusters().size());
+    std::vector<flatbuffers::Offset<morty::fbs::MClusterGroup>> fbGroupArray(mesh->GetClusterGroup().size());
+    std::vector<flatbuffers::Offset<morty::fbs::MSlice>>        fbLodArray(mesh->GetClusterLodData().size());
+    std::vector<flatbuffers::Offset<morty::fbs::MClusterPage>>  fbPageArray(mesh->GetClusterPages().size());
 
     std::transform(
-            pMesh->GetClusters().begin(),
-            pMesh->GetClusters().end(),
+            mesh->GetClusters().begin(),
+            mesh->GetClusters().end(),
             fbClusterArray.begin(),
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
     std::transform(
-            pMesh->GetClusterGroup().begin(),
-            pMesh->GetClusterGroup().end(),
+            mesh->GetClusterGroup().begin(),
+            mesh->GetClusterGroup().end(),
             fbGroupArray.begin(),
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
     std::transform(
-            pMesh->GetClusterLodData().begin(),
-            pMesh->GetClusterLodData().end(),
+            mesh->GetClusterLodData().begin(),
+            mesh->GetClusterLodData().end(),
             fbLodArray.begin(),
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
     std::transform(
-            pMesh->GetClusterPages().begin(),
-            pMesh->GetClusterPages().end(),
+            mesh->GetClusterPages().begin(),
+            mesh->GetClusterPages().end(),
             fbPageArray.begin(),
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
@@ -140,15 +140,15 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
     const fbs::MMeshResource* fbData = fbs::GetMMeshResource(pBufferPointer);
 
     eVertexType = static_cast<MEMeshVertexType>(fbData->vertex_type());
-    pMesh       = MMeshUtil::CreateMeshFromType(eVertexType);
+    mesh       = MMeshUtil::CreateMeshFromType(eVertexType);
 
-    const auto nVertexNum = static_cast<uint32_t>(fbData->vertex()->size() / pMesh->GetVertexStructSize());
-    pMesh->ResizeVertices(nVertexNum);
-    memcpy(pMesh->GetVertices(), fbData->vertex()->data(), nVertexNum * pMesh->GetVertexStructSize());
+    const auto nVertexNum = static_cast<uint32_t>(fbData->vertex()->size() / mesh->GetVertexStructSize());
+    mesh->ResizeVertices(nVertexNum);
+    memcpy(mesh->GetVertices(), fbData->vertex()->data(), nVertexNum * mesh->GetVertexStructSize());
 
     const auto nIndexNum = static_cast<uint32_t>(fbData->index()->size() / sizeof(uint32_t));
-    pMesh->ResizeIndices(nIndexNum, 1);
-    memcpy(pMesh->GetIndices(), fbData->index()->data(), nIndexNum * sizeof(uint32_t));
+    mesh->ResizeIndices(nIndexNum, 1);
+    memcpy(mesh->GetIndices(), fbData->index()->data(), nIndexNum * sizeof(uint32_t));
 
     boundsOBB.Deserialize(fbData->bounds_obb());
     boundsSphere.Deserialize(fbData->bounds_sphere());
@@ -182,10 +182,10 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
         return page;
     });
 
-    pMesh->GetClusters()       = std::move(clusters);
-    pMesh->GetClusterGroup()   = std::move(groups);
-    pMesh->GetClusterLodData() = std::move(lods);
-    pMesh->GetClusterPages()   = std::move(pages);
+    mesh->GetClusters()       = std::move(clusters);
+    mesh->GetClusterGroup()   = std::move(groups);
+    mesh->GetClusterLodData() = std::move(lods);
+    mesh->GetClusterPages()   = std::move(pages);
 }
 
 bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
@@ -207,25 +207,25 @@ void MMeshResource::OnDelete() { MResource::OnDelete(); }
 void MMeshResource::Clean()
 {
     MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
-    if (MIMesh* pMesh = GetMesh()) { pMesh->DestroyBuffer(renderSystem->GetDevice()); }
+    if (MIMesh* mesh = GetMesh()) { mesh->DestroyBuffer(renderSystem->GetDevice()); }
 }
 
 void MMeshResource::ResetBounds()
 {
-    if (MIMesh* pMesh = GetMesh())
+    if (MIMesh* mesh = GetMesh())
     {
         auto pMeshData = static_cast<MMeshResourceData*>(m_resourceData.get());
         pMeshData->boundsOBB.SetPoints(
-                (const MByte*) pMesh->GetVertices(),
-                pMesh->GetVerticesNum(),
+                (const MByte*) mesh->GetVertices(),
+                mesh->GetVerticesNum(),
                 0,
-                pMesh->GetVertexStructSize()
+                mesh->GetVertexStructSize()
         );
         pMeshData->boundsSphere.SetPoints(
-                (const MByte*) pMesh->GetVertices(),
-                pMesh->GetVerticesNum(),
+                (const MByte*) mesh->GetVertices(),
+                mesh->GetVerticesNum(),
                 0,
-                pMesh->GetVertexStructSize()
+                mesh->GetVertexStructSize()
         );
     }
 }

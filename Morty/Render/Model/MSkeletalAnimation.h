@@ -104,7 +104,7 @@ public:
 
     virtual ~MSkeletalAnimController();
 
-    bool Initialize(MSkeletonInstance* pSkeletonIns, std::shared_ptr<MSkeletalAnimationResource> pAnimationResource);
+    bool Initialize(MSkeletonInstance* pSkeletonIns, std::shared_ptr<MSkeletalAnimationResource> animationResource);
 
 public:
     virtual void                                Play() override;

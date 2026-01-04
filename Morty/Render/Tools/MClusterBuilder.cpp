@@ -212,6 +212,11 @@ int32_t MClusterBuilder::OutputGroup(
     group.clusterNum     = clusterInGroup.size();
     group.bounds         = simplified;
 
+    // Initialize hierarchy fields
+    group.parentGroupId     = MGlobal::M_INVALID_RESULT;
+    group.firstChildGroupId = MGlobal::M_INVALID_RESULT;
+    group.childGroupCount   = 0;
+
     std::vector<uint32_t> clusterIndices(clusterInGroup.size());
     // Extract cluster's independent vertex and index data
     ExtractClusterData(
@@ -517,7 +522,33 @@ void MClusterBuilder::BuildCluster(const InputData& input)
                                 error * SimplifyErrorMergeAdditive;
 
             // output the new group with all clusters; the resulting id will be recorded in new clusters as clodCluster::refined
-            auto refined = OutputGroup(input, clusters, groups[i], groupBounds);
+            auto    refined = OutputGroup(input, clusters, groups[i], groupBounds);
+
+            // Get the parent group ID from the first cluster in the group
+            int32_t parentGroupId = MGlobal::M_INVALID_RESULT;
+            if (!groups[i].empty())
+            {
+                const auto& firstCluster = clusters[groups[i][0]];
+                if (firstCluster.group != -1) { parentGroupId = firstCluster.group; }
+            }
+
+            // Update parent-child relationships
+            if (parentGroupId != MGlobal::M_INVALID_RESULT)
+            {
+                MClusterGroup& parentGroup = m_allGroups[parentGroupId];
+
+                // Set the first child if not already set
+                if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_RESULT)
+                {
+                    parentGroup.firstChildGroupId = refined;
+                }
+
+                // Increment child count
+                parentGroup.childGroupCount++;
+
+                // Set parent reference in the refined group
+                m_allGroups[refined].parentGroupId = parentGroupId;
+            }
 
             // discard clusters from the group - they won't be used anymore
             for (size_t j = 0; j < groups[i].size(); ++j) clusters[groups[i][j]].indices = std::vector<unsigned int>();
@@ -530,6 +561,7 @@ void MClusterBuilder::BuildCluster(const InputData& input)
             for (auto& cluster: split)
             {
                 cluster.refined = refined;
+                cluster.group   = refined;// Set the group to the refined group ID
 
                 // update cluster group bounds to the group-merged bounds; this ensures that we compute the group bounds for whatever group this cluster will be part of conservatively
                 cluster.bounds = groupBounds;
@@ -552,6 +584,23 @@ void MClusterBuilder::BuildCluster(const InputData& input)
         auto        bounds = cluster.bounds;
         bounds.error       = FLT_MAX;// terminal group, won't simplify further
 
-        OutputGroup(input, clusters, pending, bounds);
+        auto    rootGroupId = OutputGroup(input, clusters, pending, bounds);
+
+        // Update parent-child relationship for the root group
+        int32_t parentGroupId = MGlobal::M_INVALID_RESULT;
+        if (cluster.group != -1) { parentGroupId = cluster.group; }
+
+        if (parentGroupId != MGlobal::M_INVALID_RESULT)
+        {
+            MClusterGroup& parentGroup = m_allGroups[parentGroupId];
+
+            if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_RESULT)
+            {
+                parentGroup.firstChildGroupId = rootGroupId;
+            }
+
+            parentGroup.childGroupCount++;
+            m_allGroups[rootGroupId].parentGroupId = parentGroupId;
+        }
     }
 }

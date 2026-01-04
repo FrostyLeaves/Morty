@@ -36,18 +36,18 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MS
     m_renderViewport->SetScene(m_scene);
     m_renderViewport->SetSize(Vector2i(256, 256));
 
-    MEntity* pDefaultCamera = m_scene->CreateEntity();
+    MEntity* defaultCamera = m_scene->CreateEntity();
 
-    pDefaultCamera->SetName("Camera");
-    if (auto* pSceneComponent = pDefaultCamera->RegisterComponent<MSceneComponent>())
+    defaultCamera->SetName("Camera");
+    if (auto* sceneComponent = defaultCamera->RegisterComponent<MSceneComponent>())
     {
-        pSceneComponent->SetPosition(Vector3(0, 20, 0));
-        pSceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
+        sceneComponent->SetPosition(Vector3(0, 20, 0));
+        sceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
     }
-    pDefaultCamera->RegisterComponent<MCameraComponent>();
-    pDefaultCamera->RegisterComponent<MMoveControllerComponent>();
+    defaultCamera->RegisterComponent<MCameraComponent>();
+    defaultCamera->RegisterComponent<MMoveControllerComponent>();
 
-    m_renderViewport->SetCamera(pDefaultCamera);
+    m_renderViewport->SetCamera(defaultCamera);
 
 
     MObject* pRenderProgramObject = objectSystem->CreateObject(strRenderProgram);

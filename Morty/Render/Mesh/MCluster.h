@@ -12,6 +12,7 @@
 #include "Basic/MBuffer.h"
 #include "Math/Vector.h"
 #include "Utility/MBounds.h"
+#include "Utility/MMemoryPool.h"
 
 namespace morty
 {
@@ -49,6 +50,10 @@ struct MClusterGroup {
     uint32_t                  clusterNum;
     MClusterBounds            bounds;
 
+    int32_t                   parentGroupId     = MGlobal::M_INVALID_RESULT;
+    int32_t                   firstChildGroupId = MGlobal::M_INVALID_RESULT;
+    uint32_t                  childGroupCount   = 0;
+
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const void* pBufferPointer);
 };
@@ -60,5 +65,47 @@ struct MClusterLodData {
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const void* pBufferPointer);
 };
+
+
+struct MClusterRenderData {
+    uint32_t indexOffset = 0;
+    uint32_t indexCount  = 0;
+    uint32_t valid       = 0;
+
+    Vector3  position;
+    float    radius;
+    float    error;
+};
+
+// Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
+struct MMeshResourceData {
+    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INDEX;
+    int32_t rootClusterGroupCount      = 0;
+};
+
+struct MMeshRenderData {
+    uint32_t rootClusterOffset = MGlobal::M_INVALID_UINDEX;
+    uint32_t rootClusterCount  = 0;
+};
+
+struct MClusterGroupData {
+    MemoryInfo              vertexMemoryInfo;
+    MemoryInfo              indexMemoryInfo;
+    MClusterGroupRenderData renderData;
+    bool                    valid = false;  // whether valid (vertex/index data loaded)
+};
+
+struct MClusterGroupRenderData {
+    uint32_t valid = false;
+    uint32_t parentGroupId;
+    uint32_t firstGroupId;
+    uint32_t childGroupCount;
+    uint32_t clusterBeginIndex;
+    uint32_t clusterCount;
+    Vector3  position;
+    float    radius;
+    float    error;
+};
+
 
 }// namespace morty

@@ -76,10 +76,12 @@ void MResourceAsyncLoadSystem::MainThreadLoad(const std::list<std::shared_ptr<MR
 {
     for (auto& pLoader: vLoader)
     {
+        pLoader->pResource->OnPreLoad();
+
         if (!pLoader->pResource->Load(std::move(pLoader->pResourceData)))
         {
             GetEngine()->GetLogger()->Error("Load Resource failed: [path: {}]", pLoader->strResourcePath.c_str());
         }
-        else { pLoader->pResource->OnReload(); }
+        else { pLoader->pResource->OnPostLoad(); }
     }
 }

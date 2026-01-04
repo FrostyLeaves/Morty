@@ -79,7 +79,7 @@ void        MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pT
     };
 
     m_materialTemplate.SetResource(pTemplate);
-    m_materialTemplate.SetResChangedCallback(reloadFunc);
+    m_materialTemplate.SetPostLoadCallback(reloadFunc);
 
     reloadFunc();
 }

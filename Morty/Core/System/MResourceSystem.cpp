@@ -21,7 +21,7 @@ MResourceSystem::MResourceSystem()
     , m_searchPath({""})
 {}
 
-MResourceSystem::~MResourceSystem() {}
+MResourceSystem::~         MResourceSystem() {}
 
 std::shared_ptr<MResource> MResourceSystem::CreateResource(const MType* type)
 {
@@ -170,8 +170,9 @@ void MResourceSystem::Reload(const MString& strResourcePath)
         {
             if (auto pResourceData = pLoader->LoadResource(strFullPath))
             {
+                iter->second->OnPreLoad();
                 iter->second->Load(std::move(pResourceData));
-                iter->second->OnReload();
+                iter->second->OnPostLoad();
             }
         }
     }
@@ -201,7 +202,7 @@ void MResourceSystem::MoveTo(std::shared_ptr<MResource> pResource, const MString
     {
         //Set As Memory Resource
         pTargetResource->m_strResourcePath = "";
-        for (MResourceRef* pKeeper: pTargetResource->m_keeper) { pKeeper->SetResource(pResource); }
+        for (MResourceRef* owner: pTargetResource->m_owner) { owner->SetResource(pResource); }
     }
 }
 

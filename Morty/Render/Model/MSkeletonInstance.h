@@ -31,7 +31,7 @@ public:
 
     ~MSkeletonInstance() = default;
 
-    void                SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
+    void                SetSkeletonResource(std::shared_ptr<MSkeletonResource> skeletionResource);
 
     const MSkeleton*    GetSkeletonTemplate() const { return m_skeletonTemplate; }
 

@@ -50,7 +50,7 @@ std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkele
         ProcessMeshIndices(pAiMesh, pBonesMesh);
         BindVertexAndBones(pSkeleton, pAiMesh, pBonesMesh);
 
-        pMeshResourceData->pMesh.reset(pBonesMesh);
+        pMeshResourceData->mesh.reset(pBonesMesh);
         pMeshResourceData->eVertexType = MEMeshVertexType::Skeleton;
     }
     else
@@ -60,7 +60,7 @@ std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkele
         ProcessMeshVertices(pAiMesh, pStaticMesh);
         ProcessMeshIndices(pAiMesh, pStaticMesh);
 
-        pMeshResourceData->pMesh.reset(pStaticMesh);
+        pMeshResourceData->mesh.reset(pStaticMesh);
         pMeshResourceData->eVertexType = MEMeshVertexType::Normal;
     }
 
@@ -73,119 +73,119 @@ std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkele
     return pMeshResource;
 }
 
-void MMeshImporter::ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertex>* pMMesh)
+void MMeshImporter::ProcessMeshVertices(aiMesh* mesh, MMesh<MVertex>* pMMesh)
 {
-    pMMesh->CreateVertices(pMesh->mNumVertices);
+    pMMesh->CreateVertices(mesh->mNumVertices);
 
-    for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
+    for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
     {
         MVertex& vertex = pMMesh->GetVertices()[i];
 
         // Position
-        vertex.position.x = pMesh->mVertices[i].x;
-        vertex.position.y = pMesh->mVertices[i].y;
-        vertex.position.z = pMesh->mVertices[i].z;
+        vertex.position.x = mesh->mVertices[i].x;
+        vertex.position.y = mesh->mVertices[i].y;
+        vertex.position.z = mesh->mVertices[i].z;
 
         // Normal
-        if (pMesh->mNormals)
+        if (mesh->mNormals)
         {
-            vertex.normal.x = pMesh->mNormals[i].x;
-            vertex.normal.y = pMesh->mNormals[i].y;
-            vertex.normal.z = pMesh->mNormals[i].z;
+            vertex.normal.x = mesh->mNormals[i].x;
+            vertex.normal.y = mesh->mNormals[i].y;
+            vertex.normal.z = mesh->mNormals[i].z;
         }
 
         // Texture coordinates
-        if (pMesh->mTextureCoords[0])
+        if (mesh->mTextureCoords[0])
         {
-            vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
-            vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
+            vertex.texCoords.x = mesh->mTextureCoords[0][i].x;
+            vertex.texCoords.y = mesh->mTextureCoords[0][i].y;
         }
 
         // Tangent
-        if (pMesh->mTangents)
+        if (mesh->mTangents)
         {
-            vertex.tangent.x = pMesh->mTangents[i].x;
-            vertex.tangent.y = pMesh->mTangents[i].y;
-            vertex.tangent.z = pMesh->mTangents[i].z;
+            vertex.tangent.x = mesh->mTangents[i].x;
+            vertex.tangent.y = mesh->mTangents[i].y;
+            vertex.tangent.z = mesh->mTangents[i].z;
         }
 
         // Bitangent
-        if (pMesh->mBitangents)
+        if (mesh->mBitangents)
         {
-            vertex.bitangent.x = pMesh->mBitangents[i].x;
-            vertex.bitangent.y = pMesh->mBitangents[i].y;
-            vertex.bitangent.z = pMesh->mBitangents[i].z;
+            vertex.bitangent.x = mesh->mBitangents[i].x;
+            vertex.bitangent.y = mesh->mBitangents[i].y;
+            vertex.bitangent.z = mesh->mBitangents[i].z;
         }
     }
 }
 
-void MMeshImporter::ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh)
+void MMeshImporter::ProcessMeshVertices(aiMesh* mesh, MMesh<MVertexWithBones>* pMMesh)
 {
-    pMMesh->CreateVertices(pMesh->mNumVertices);
+    pMMesh->CreateVertices(mesh->mNumVertices);
 
-    for (uint32_t i = 0; i < pMesh->mNumVertices; ++i)
+    for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
     {
         MVertexWithBones& vertex = pMMesh->GetVertices()[i];
 
         // Position
-        vertex.position.x = pMesh->mVertices[i].x;
-        vertex.position.y = pMesh->mVertices[i].y;
-        vertex.position.z = pMesh->mVertices[i].z;
+        vertex.position.x = mesh->mVertices[i].x;
+        vertex.position.y = mesh->mVertices[i].y;
+        vertex.position.z = mesh->mVertices[i].z;
 
         // Normal
-        if (pMesh->mNormals)
+        if (mesh->mNormals)
         {
-            vertex.normal.x = pMesh->mNormals[i].x;
-            vertex.normal.y = pMesh->mNormals[i].y;
-            vertex.normal.z = pMesh->mNormals[i].z;
+            vertex.normal.x = mesh->mNormals[i].x;
+            vertex.normal.y = mesh->mNormals[i].y;
+            vertex.normal.z = mesh->mNormals[i].z;
         }
 
         // Texture coordinates
-        if (pMesh->mTextureCoords[0])
+        if (mesh->mTextureCoords[0])
         {
-            vertex.texCoords.x = pMesh->mTextureCoords[0][i].x;
-            vertex.texCoords.y = pMesh->mTextureCoords[0][i].y;
+            vertex.texCoords.x = mesh->mTextureCoords[0][i].x;
+            vertex.texCoords.y = mesh->mTextureCoords[0][i].y;
         }
 
         // Tangent
-        if (pMesh->mTangents)
+        if (mesh->mTangents)
         {
-            vertex.tangent.x = pMesh->mTangents[i].x;
-            vertex.tangent.y = pMesh->mTangents[i].y;
-            vertex.tangent.z = pMesh->mTangents[i].z;
+            vertex.tangent.x = mesh->mTangents[i].x;
+            vertex.tangent.y = mesh->mTangents[i].y;
+            vertex.tangent.z = mesh->mTangents[i].z;
         }
 
         // Bitangent
-        if (pMesh->mBitangents)
+        if (mesh->mBitangents)
         {
-            vertex.bitangent.x = pMesh->mBitangents[i].x;
-            vertex.bitangent.y = pMesh->mBitangents[i].y;
-            vertex.bitangent.z = pMesh->mBitangents[i].z;
+            vertex.bitangent.x = mesh->mBitangents[i].x;
+            vertex.bitangent.y = mesh->mBitangents[i].y;
+            vertex.bitangent.z = mesh->mBitangents[i].z;
         }
     }
 }
 
-void MMeshImporter::ProcessMeshIndices(aiMesh* pMesh, MIMesh* pMMesh)
+void MMeshImporter::ProcessMeshIndices(aiMesh* mesh, MIMesh* pMMesh)
 {
     // Note: Assumes triangulated mesh (3 indices per face)
-    pMMesh->CreateIndices(pMesh->mNumFaces, 3);
+    pMMesh->CreateIndices(mesh->mNumFaces, 3);
 
-    for (uint32_t i = 0; i < pMesh->mNumFaces; ++i)
+    for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
     {
-        const aiFace& face = pMesh->mFaces[i];
+        const aiFace& face = mesh->mFaces[i];
 
         for (uint32_t j = 0; j < face.mNumIndices; ++j) { pMMesh->GetIndices()[i * 3 + j] = face.mIndices[j]; }
     }
 }
 
-void MMeshImporter::BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh)
+void MMeshImporter::BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* mesh, MMesh<MVertexWithBones>* pMMesh)
 {
-    if (!pSkeleton || !pMesh->HasBones()) { return; }
+    if (!pSkeleton || !mesh->HasBones()) { return; }
 
     // Bind bone weights to vertices
-    for (uint32_t i = 0; i < pMesh->mNumBones; ++i)
+    for (uint32_t i = 0; i < mesh->mNumBones; ++i)
     {
-        aiBone* pBone = pMesh->mBones[i];
+        aiBone* pBone = mesh->mBones[i];
         if (!pBone) { continue; }
 
         MString      strBoneName(pBone->mName.data);

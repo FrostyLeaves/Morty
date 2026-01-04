@@ -23,13 +23,13 @@ class MORTY_API MShaderParameterSet final
 public:
     friend class MShaderProgram;
 
-    explicit MShaderParameterSet();
+    explicit                   MShaderParameterSet();
 
-    ~MShaderParameterSet() = default;
+    ~                          MShaderParameterSet() = default;
 
-    explicit MShaderParameterSet(IShaderProgram* pShaderProgram, const uint32_t& unKey);
+    explicit                   MShaderParameterSet(IShaderProgram* pShaderProgram, const uint32_t& unKey);
 
-    MShaderParameterSet(const MShaderParameterSet& other);
+                               MShaderParameterSet(const MShaderParameterSet& other);
 
     const MShaderParameterSet& operator=(const MShaderParameterSet& other) = delete;
 
@@ -47,6 +47,8 @@ public:
     bool                         SetTexture(const MStringId& strName, const MTexturePtr& texture);
 
     bool                         HasValue(const uint32_t& unBinding, const uint32_t& unSet);
+
+    bool                         SetBuffer(const MStringId& name, const MBuffer* buffer);
 
 public:
     MShaderUniformParam* FindConstantParam(const MShaderUniformParam* param)

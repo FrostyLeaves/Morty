@@ -257,12 +257,22 @@ MMeshInstanceRenderProxy MMeshInstanceManager::CreateProxyFromComponent(MRenderM
     proxy.proxyId = static_cast<MMeshInstanceKey>(component->GetComponentID().nIdx);
 
     // Get visibility
-    if (auto* pSceneComponent = component->GetEntity()->GetComponent<MSceneComponent>())
+    if (auto* sceneComponent = component->GetEntity()->GetComponent<MSceneComponent>())
     {
-        proxy.visible        = pSceneComponent->GetVisibleRecursively();
-        proxy.worldTransform = pSceneComponent->GetWorldTransform();
+        proxy.visible        = sceneComponent->GetVisibleRecursively();
+        proxy.worldTransform = sceneComponent->GetWorldTransform();
     }
     else { proxy.visible = false; }
+
+    // Get mesh resource ID from MMeshManager
+    if (auto* mesh = component->GetMesh())
+    {
+        auto* meshManager = GetScene()->GetManager<MMeshManager>();
+        if (meshManager)
+        {
+            proxy.meshResourceId = meshManager->GetMeshResourceId(mesh);
+        }
+    }
 
     return proxy;
 }

@@ -39,7 +39,7 @@ public:
     MORTY_CLASS(MRenderMeshComponent)
 
 public:
-    MRenderMeshComponent();
+     MRenderMeshComponent();
     ~MRenderMeshComponent() override = default;
 
 public:
@@ -57,23 +57,25 @@ public:
 
 
 public:
-    MIMesh*      GetDrawMesh();
+    MIMesh*         GetDrawMesh();
 
-    void         SetShadowType(const MEShadowType& eType) { m_shadowType = eType; }
+    void            SetShadowType(const MEShadowType& eType) { m_shadowType = eType; }
 
-    MEShadowType GetShadowType() { return m_shadowType; }
+    MEShadowType    GetShadowType() { return m_shadowType; }
 
-    void         SetGenerateDirLightShadow(const bool& bGenerate);
+    void            SetGenerateDirLightShadow(const bool& bGenerate);
 
-    bool         GetGenerateDirLightShadow() const { return m_generateDirLightShadow; }
+    bool            GetGenerateDirLightShadow() const { return m_generateDirLightShadow; }
 
-    void         SetSceneCullEnable(bool bEnable);
+    void            SetSceneCullEnable(bool bEnable);
 
-    bool         GetSceneCullEnable() const { return m_sceneCullEnable; }
+    bool            GetSceneCullEnable() const { return m_sceneCullEnable; }
 
-    MComponentID GetAttachedModelComponentID() const { return m_modelComponent; }
+    MComponentID    GetAttachedModelComponentID() const { return m_modelComponent; }
 
-    void         SetAttachedModelComponentID(MComponentID idx);
+    void            SetAttachedModelComponentID(MComponentID idx);
+
+    MMeshRenderData GetClusterRenderData() const { return m_clusterRenderData; }
 
 public:
     virtual flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) override;
@@ -83,15 +85,18 @@ public:
     virtual void                      Deserialize(const void* pBufferPointer) override;
 
 protected:
-    PROPERTY_RESOURCE(MMeshResource) MResourceRef m_mesh;
-    PROPERTY_RESOURCE(MMaterialResource) MResourceRef m_material;
-    PROPERTY_ENUM MEShadowType m_shadowType;
+                               PROPERTY_RESOURCE(MMeshResource) MResourceRef m_mesh         = {};
+                               PROPERTY_RESOURCE(MMaterialResource) MResourceRef m_material = {};
+
+    PROPERTY_ENUM MEShadowType m_shadowType = MEShadowType::ENone;
     PROPERTY_STRUCT MVariant   m_instancingData;
 
     MComponentID               m_modelComponent;
 
     bool                       m_sceneCullEnable        = true;
     PROPERTY_VARIANT bool      m_generateDirLightShadow = true;
+
+    MMeshRenderData            m_clusterRenderData = {};
 };
 
 }// namespace morty

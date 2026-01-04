@@ -250,12 +250,12 @@ void MModelImporter::RecordBones(MSkeleton* pSkeleton, aiNode* node, const aiSce
 {
     for (uint32_t i = 0; i < node->mNumMeshes; ++i)
     {
-        aiMesh* pMesh = scene->mMeshes[node->mMeshes[i]];
-        if (pMesh->HasBones())
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        if (mesh->HasBones())
         {
-            for (uint32_t j = 0; j < pMesh->mNumBones; ++j)
+            for (uint32_t j = 0; j < mesh->mNumBones; ++j)
             {
-                if (aiBone* pBone = pMesh->mBones[j])
+                if (aiBone* pBone = mesh->mBones[j])
                 {
                     MString strBoneName(pBone->mName.data);
                     MBone*  pMBone = pSkeleton->FindBoneByName(strBoneName);
@@ -304,31 +304,31 @@ void MModelImporter::ProcessLights(const aiScene* scene)
         switch (pLight->mType)
         {
             case aiLightSourceType::aiLightSource_POINT: {
-                MSceneComponent*      pSceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MSceneComponent*      sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
                 MPointLightComponent* pLightComponent = m_scene->AddComponent<MPointLightComponent>(pLightEntity);
 
-                pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
+                sceneComponent->SetPosition(GetVector3(pLight->mPosition));
                 pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
                 break;
             }
 
             case aiLightSourceType::aiLightSource_DIRECTIONAL: {
-                MSceneComponent*            pSceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MSceneComponent*            sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
                 MDirectionalLightComponent* pLightComponent =
                         m_scene->AddComponent<MDirectionalLightComponent>(pLightEntity);
 
-                pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
-                pSceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+                sceneComponent->SetPosition(GetVector3(pLight->mPosition));
+                sceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
                 pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
                 break;
             }
 
             case aiLightSourceType::aiLightSource_SPOT: {
-                MSceneComponent*     pSceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MSceneComponent*     sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
                 MSpotLightComponent* pLightComponent = m_scene->AddComponent<MSpotLightComponent>(pLightEntity);
 
-                pSceneComponent->SetPosition(GetVector3(pLight->mPosition));
-                pSceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
+                sceneComponent->SetPosition(GetVector3(pLight->mPosition));
+                sceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
                 pLightComponent->SetColor(GetColor(pLight->mColorDiffuse));
 
                 pLightComponent->SetInnerCutOff(pLight->mAngleInnerCone);
@@ -352,7 +352,7 @@ void MModelImporter::ProcessCameras(const aiScene* scene)
 
         MEntity*  pCameraEntity = m_scene->CreateEntity();
         pCameraEntity->SetName(strName);
-        MSceneComponent*  pSceneComponent  = m_scene->AddComponent<MSceneComponent>(pCameraEntity);
+        MSceneComponent*  sceneComponent  = m_scene->AddComponent<MSceneComponent>(pCameraEntity);
         MCameraComponent* pCameraComponent = m_scene->AddComponent<MCameraComponent>(pCameraEntity);
 
         pCameraComponent->SetCameraType(MECameraType::EPerspective);
@@ -360,8 +360,8 @@ void MModelImporter::ProcessCameras(const aiScene* scene)
         pCameraComponent->SetZFar(pCamera->mClipPlaneFar);
         pCameraComponent->SetFov(pCamera->mHorizontalFOV);
 
-        pSceneComponent->SetPosition(GetVector3(pCamera->mPosition));
-        pSceneComponent->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
+        sceneComponent->SetPosition(GetVector3(pCamera->mPosition));
+        sceneComponent->LookAt(GetVector3(pCamera->mLookAt), GetVector3(pCamera->mUp));
 
         pEntitySystem->AddChild(GetEntityFromNode(scene, scene->mRootNode), pCameraEntity);
     }
@@ -439,7 +439,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
             }
         }
 
-        std::shared_ptr<MSkeletalAnimationResource> pAnimationResource =
+        std::shared_ptr<MSkeletalAnimationResource> animationResource =
                 resourceSystem->CreateResource<MSkeletalAnimationResource>();
 
         std::unique_ptr<MResourceData> resourceData = std::make_unique<MSkeletalAnimationResourceData>();
@@ -447,10 +447,10 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
         {
             pAnimationResourceData->skeletonAnimation = animationData;
         }
-        pAnimationResource->Load(std::move(resourceData));
-        pAnimationResource->SetSkeletonResource(m_skeletonResource);
+        animationResource->Load(std::move(resourceData));
+        animationResource->SetSkeletonResource(m_skeletonResource);
 
-        m_skeletalAnimation.push_back(pAnimationResource);
+        m_skeletalAnimation.push_back(animationResource);
     }
 }
 
@@ -611,10 +611,10 @@ MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* node)
     CopyMatrix4(&matTransform, &node->mTransformation);
 
     MEntity*         pEntity         = m_scene->CreateEntity();
-    MSceneComponent* pSceneComponent = m_scene->AddComponent<MSceneComponent>(pEntity);
+    MSceneComponent* sceneComponent = m_scene->AddComponent<MSceneComponent>(pEntity);
 
     pEntity->SetName(node->mName.C_Str());
-    pSceneComponent->SetTransform(MTransform(matTransform));
+    sceneComponent->SetTransform(MTransform(matTransform));
 
     if (node->mParent)
     {

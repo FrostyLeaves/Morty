@@ -29,7 +29,7 @@ struct MORTY_API MMeshResourceData : public MFbResourceData {
 public:
     //RawData
     MEMeshVertexType          eVertexType = MEMeshVertexType::Normal;
-    std::shared_ptr<MIMesh>   pMesh       = nullptr;
+    std::shared_ptr<MIMesh>   mesh       = nullptr;
     MBoundsOBB                boundsOBB;
     MBoundsSphere             boundsSphere;
 

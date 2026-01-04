@@ -59,17 +59,15 @@ public:
 
     const std::vector<std::shared_ptr<MMaterialBatchGroup>>& GetBatchGroups() const { return m_renderData.batchGroups; }
 
+    const MBuffer* GetInstanceBuffer() const { return &m_renderData.instanceBuffer; }
+
 protected:
     void                     AddComponentToGroup(MRenderMeshComponent* component);
-
     void                     RemoveComponentFromGroup(MRenderMeshComponent* component);
-
     void                     UpdateMeshInstance(MRenderMeshComponent* component, MMeshInstanceRenderProxy proxy);
-
     void                     Clean();
 
     MMeshInstanceRenderProxy CreateProxyFromComponent(MRenderMeshComponent* component);
-
     void                     UpdateStorageBufferIfNeeded();
 
 private:

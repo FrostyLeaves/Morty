@@ -110,8 +110,8 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateMeshFromType(MEMeshVertexType eType)
 
 std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
 {
-    auto pMesh = MMeshUtil::CreateMeshFromType(eVertexType);
-    pMesh->ResizeVertices(4);
+    auto mesh = MMeshUtil::CreateMeshFromType(eVertexType);
+    mesh->ResizeVertices(4);
 
     /*
         0 -------- 1
@@ -129,8 +129,8 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
 
     if (MEMeshVertexType::Normal == eVertexType)
     {
-        MVertex* vVertex = (MVertex*) pMesh->GetVertices();
-        memcpy(pMesh->GetVertices(), plane, sizeof(MVertex) * 4);
+        MVertex* vVertex = (MVertex*) mesh->GetVertices();
+        memcpy(mesh->GetVertices(), plane, sizeof(MVertex) * 4);
         for (int i = 0; i < 4; ++i)
         {
             vVertex[i].position.x *= 1.0f;
@@ -141,7 +141,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
     {
         for (int i = 0; i < 4; ++i)
         {
-            MVertexWithBones* vVertex = (MVertexWithBones*) pMesh->GetVertices();
+            MVertexWithBones* vVertex = (MVertexWithBones*) mesh->GetVertices();
             memcpy(reinterpret_cast<void*>(&vVertex[i]),
                    reinterpret_cast<const void*>(&plane[i]),
                    sizeof(MVertexWithBones));
@@ -160,10 +160,10 @@ std::unique_ptr<MIMesh> MMeshUtil::CreatePlane(MEMeshVertexType eVertexType)
             2,
     };
 
-    pMesh->ResizeIndices(2, 3);
-    memcpy(pMesh->GetIndices(), indices, sizeof(indices));
+    mesh->ResizeIndices(2, 3);
+    memcpy(mesh->GetIndices(), indices, sizeof(indices));
 
-    return pMesh;
+    return mesh;
 }
 
 
@@ -260,31 +260,31 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateCube(MEMeshVertexType eVertexType)
     const uint32_t indices[36] = {0,  1,  2,  1,  3,  2,  4,  5,  6,  5,  7,  6,  8,  9,  10, 9,  11, 10,
                                   12, 13, 14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22};
 
-    auto           pMesh = MMeshUtil::CreateMeshFromType(eVertexType);
+    auto           mesh = MMeshUtil::CreateMeshFromType(eVertexType);
 
     if (MEMeshVertexType::Normal == eVertexType)
     {
-        pMesh->ResizeVertices(24);
-        memcpy(pMesh->GetVertices(), cube, sizeof(MVertex) * 24);
+        mesh->ResizeVertices(24);
+        memcpy(mesh->GetVertices(), cube, sizeof(MVertex) * 24);
     }
     else if (MEMeshVertexType::Skeleton == eVertexType)
     {
-        pMesh->ResizeVertices(24);
+        mesh->ResizeVertices(24);
         for (int i = 0; i < 24; ++i)
         {
-            MVertexWithBones* vVertex = (MVertexWithBones*) pMesh->GetVertices();
+            MVertexWithBones* vVertex = (MVertexWithBones*) mesh->GetVertices();
             memcpy(reinterpret_cast<void*>(&vVertex[i]),
                    reinterpret_cast<const void*>(&cube[i]),
                    sizeof(MVertexWithBones));
         }
     }
 
-    pMesh->ResizeIndices(12, 3);
+    mesh->ResizeIndices(12, 3);
 
-    uint32_t* vIndices = pMesh->GetIndices();
+    uint32_t* vIndices = mesh->GetIndices();
     memcpy(vIndices, indices, sizeof(indices));
 
-    return pMesh;
+    return mesh;
 }
 
 
@@ -293,20 +293,20 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
     MSphereFactory sphereFactory;
     sphereFactory(3);
 
-    auto  pMesh = MMeshUtil::CreateMeshFromType(eVertexType);
+    auto  mesh = MMeshUtil::CreateMeshFromType(eVertexType);
 
     auto& vPoints = sphereFactory.m_vertex;
 
     auto& vIndices = sphereFactory.m_indices;
 
-    pMesh->ResizeVertices(static_cast<uint32_t>(vPoints.size()));
+    mesh->ResizeVertices(static_cast<uint32_t>(vPoints.size()));
 
     if (eVertexType == MEMeshVertexType::Normal)
     {
         for (size_t i = 0; i < vPoints.size(); ++i)
         {
 
-            MVertex& vertex = ((MVertex*) pMesh->GetVertices())[i];
+            MVertex& vertex = ((MVertex*) mesh->GetVertices())[i];
             vPoints[i].Normalize();
 
             vertex.position = vPoints[i];
@@ -342,7 +342,7 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
         for (size_t i = 0; i < vPoints.size(); ++i)
         {
 
-            MVertexWithBones& vertex = ((MVertexWithBones*) pMesh->GetVertices())[i];
+            MVertexWithBones& vertex = ((MVertexWithBones*) mesh->GetVertices())[i];
             vPoints[i].Normalize();
 
             vertex.position = vPoints[i];
@@ -360,9 +360,9 @@ std::unique_ptr<MIMesh> MMeshUtil::CreateSphere(MEMeshVertexType eVertexType)
         }
     }
 
-    pMesh->ResizeIndices(static_cast<uint32_t>(vIndices.size()), 1);
-    memcpy(pMesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
+    mesh->ResizeIndices(static_cast<uint32_t>(vIndices.size()), 1);
+    memcpy(mesh->GetIndices(), vIndices.data(), sizeof(uint32_t) * vIndices.size());
 
 
-    return pMesh;
+    return mesh;
 }

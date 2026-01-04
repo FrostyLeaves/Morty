@@ -44,10 +44,10 @@ bool MViewport::ConvertWorldPointToViewport(const Vector3& v3WorldPos, Vector3& 
     MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
     if (!pCameraComponent) { return false; }
 
-    MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) { return false; }
+    MSceneComponent* sceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+    if (!sceneComponent) { return false; }
 
-    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, sceneComponent);
 
 
     Vector4 pos = m4CameraInvProj * Vector4(v3WorldPos, 1.0f);
@@ -64,10 +64,10 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
     MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
     if (!pCameraComponent) { return; }
 
-    MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) { return; }
+    MSceneComponent* sceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+    if (!sceneComponent) { return; }
 
-    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, sceneComponent);
 
     Matrix4 mat = m4CameraInvProj.Inverse();
 
@@ -76,7 +76,7 @@ void MViewport::ConvertViewportPointToWorld(const Vector2& v2ViewportPos, const 
 
     Vector4 pos4 = mat * Vector4(x, y, pCameraComponent->GetZNear(), 1.0f);
     Vector3 pos  = pos4 / pos4.w;
-    Vector3 dir  = pos - pSceneComponent->GetWorldPosition();
+    Vector3 dir  = pos - sceneComponent->GetWorldPosition();
     dir.Normalize();
 
     v3Result = pos + dir * fDepth;
@@ -92,10 +92,10 @@ bool MViewport::ConvertWorldLineToNormalizedDevice(
     MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
     if (!pCameraComponent) { return false; }
 
-    MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) { return false; }
+    MSceneComponent* sceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+    if (!sceneComponent) { return false; }
 
-    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, sceneComponent);
 
 
     Vector4 v4Pos1 = m4CameraInvProj * Vector4(v3Pos1, 1.0f);
@@ -128,10 +128,10 @@ bool MViewport::ConvertWorldPointToNormalizedDevice(const Vector3& v3Pos, Vector
     MCameraComponent* pCameraComponent = GetCamera()->GetComponent<MCameraComponent>();
     if (!pCameraComponent) { return false; }
 
-    MSceneComponent* pSceneComponent = GetCamera()->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) { return false; }
+    MSceneComponent* sceneComponent = GetCamera()->GetComponent<MSceneComponent>();
+    if (!sceneComponent) { return false; }
 
-    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, pSceneComponent);
+    Matrix4 m4CameraInvProj = MRenderSystem::GetCameraInverseProjection(this, pCameraComponent, sceneComponent);
 
     Vector4 v4Rst = m4CameraInvProj * Vector4(v3Pos, 1.0f);
     if (fabs(v4Rst.w) > 1e-6)

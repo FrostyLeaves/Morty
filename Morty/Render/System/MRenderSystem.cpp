@@ -106,19 +106,19 @@ void MRenderSystem::ReleaseRenderpass(MRenderPass& renderpass, bool bClearTextur
 MCameraFrustum MRenderSystem::GetCameraFrustum(
         MViewport*        viewport,
         MCameraComponent* pCameraComponent,
-        MSceneComponent*  pSceneComponent
+        MSceneComponent*  sceneComponent
 )
 {
     MCameraFrustum cameraFrustum;
-    const Matrix4  matCameraInverseProj = GetCameraInverseProjection(viewport, pCameraComponent, pSceneComponent);
+    const Matrix4  matCameraInverseProj = GetCameraInverseProjection(viewport, pCameraComponent, sceneComponent);
     cameraFrustum.UpdateFromCameraInvProj(matCameraInverseProj);
 
     return cameraFrustum;
 }
 
-Matrix4 MRenderSystem::GetCameraViewMatrix(MSceneComponent* pSceneComponent)
+Matrix4 MRenderSystem::GetCameraViewMatrix(MSceneComponent* sceneComponent)
 {
-    return pSceneComponent->GetWorldTransform().Inverse();
+    return sceneComponent->GetWorldTransform().Inverse();
 }
 
 Matrix4 MRenderSystem::GetPerspectiveProjectionMatrix(
@@ -153,12 +153,12 @@ MRenderSystem::GetOrthoOffProjectionMatrix(const float fWidth, const float fHeig
 Matrix4 MRenderSystem::GetCameraInverseProjection(
         const MViewport*        viewport,
         const MCameraComponent* pCameraComponent,
-        MSceneComponent*        pSceneComponent
+        MSceneComponent*        sceneComponent
 )
 {
     return GetCameraInverseProjection(
             pCameraComponent,
-            pSceneComponent,
+            sceneComponent,
             viewport->GetSize().x,
             viewport->GetSize().y,
             pCameraComponent->GetZNear(),
@@ -190,7 +190,7 @@ Matrix4 MRenderSystem::GetCameraProjectionMatrix(
 
 Matrix4 MRenderSystem::GetCameraInverseProjection(
         const MCameraComponent* pCameraComponent,
-        MSceneComponent*        pSceneComponent,
+        MSceneComponent*        sceneComponent,
         float                   fViewWidth,
         float                   fViewHeight,
         float                   fZNear,
@@ -200,7 +200,7 @@ Matrix4 MRenderSystem::GetCameraInverseProjection(
     //Update Camera and Projection Matrix.
     const Matrix4 m4Projection = GetCameraProjectionMatrix(pCameraComponent, fViewWidth, fViewHeight, fZNear, fZFar);
 
-    return m4Projection * pSceneComponent->GetWorldTransform().Inverse();
+    return m4Projection * sceneComponent->GetWorldTransform().Inverse();
 }
 
 void MRenderSystem::GetCameraFrustumPoints(
@@ -246,8 +246,8 @@ void MRenderSystem::GetCameraFrustumPoints(
     MCameraComponent* pCameraComponent = pCamera->GetComponent<MCameraComponent>();
     if (nullptr == pCameraComponent) return;
 
-    MSceneComponent* pSceneComponent = pCamera->GetComponent<MSceneComponent>();
-    if (nullptr == pSceneComponent) return;
+    MSceneComponent* sceneComponent = pCamera->GetComponent<MSceneComponent>();
+    if (nullptr == sceneComponent) return;
 
     if (MECameraType::EPerspective == pCameraComponent->GetCameraType())
     {
@@ -255,7 +255,7 @@ void MRenderSystem::GetCameraFrustumPoints(
         const float fHalfHeightDivideZ = (pCameraComponent->GetFov() * 0.5f * M_PI / 180.0f);
         const float fHalfWidthDivideZ  = fHalfHeightDivideZ * fAspect;
 
-        Matrix4     localToWorld = pSceneComponent->GetWorldTransform();
+        Matrix4     localToWorld = sceneComponent->GetWorldTransform();
 
         v3NearTopLeft     = localToWorld * (Vector3(-fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
         v3NearTopRight    = localToWorld * (Vector3(+fHalfWidthDivideZ, +fHalfHeightDivideZ, 1) * fZNear);
@@ -272,7 +272,7 @@ void MRenderSystem::GetCameraFrustumPoints(
         float   fHalfWidth  = pCameraComponent->GetWidth() * 0.5f;
         float   fHalfHeight = pCameraComponent->GetHeight() * 0.5f;
 
-        Matrix4 localToWorld = pSceneComponent->GetWorldTransform();
+        Matrix4 localToWorld = sceneComponent->GetWorldTransform();
 
         v3NearTopLeft     = localToWorld * Vector3(-fHalfWidth, +fHalfHeight, fZNear);
         v3NearTopRight    = localToWorld * Vector3(+fHalfWidth, +fHalfHeight, fZNear);

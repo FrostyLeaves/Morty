@@ -45,8 +45,10 @@ public struct ModelUtil
         output.positionWS = positionWS.xyz;
         output.depth = output.pos.z;
 
-        output.normal = normalize(mul(input.normal, data.matNormal));
-        output.tangent = normalize(mul(input.tangent, data.matNormal));
+        // matNormal computed dynamically: transpose(inverse(matWorld))
+        float3x3 matNormal = transpose(inverse((float3x3)data.matWorld));
+        output.normal = normalize(mul(input.normal, matNormal));
+        output.tangent = normalize(mul(input.tangent, matNormal));
         output.bitangent = normalize(cross(output.tangent, output.normal));
 
         output.instanceId = INSTANCE_ID;

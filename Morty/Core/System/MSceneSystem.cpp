@@ -15,9 +15,9 @@ MSceneSystem::~MSceneSystem() {}
 
 void MSceneSystem::SetVisible(MEntity* pEntity, const bool& bVisible)
 {
-    MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+    MSceneComponent* sceneComponent = pEntity->GetComponent<MSceneComponent>();
 
-    if (!pSceneComponent) return;
+    if (!sceneComponent) return;
 
-    pSceneComponent->SetVisible(bVisible);
+    sceneComponent->SetVisible(bVisible);
 }

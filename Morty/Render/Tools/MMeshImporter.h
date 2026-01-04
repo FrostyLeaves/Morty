@@ -54,22 +54,22 @@ private:
     /**
      * @brief Process mesh vertices (static mesh)
      */
-    void ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertex>* pMMesh);
+    void ProcessMeshVertices(aiMesh* mesh, MMesh<MVertex>* pMMesh);
 
     /**
      * @brief Process mesh vertices (skeletal mesh)
      */
-    void ProcessMeshVertices(aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh);
+    void ProcessMeshVertices(aiMesh* mesh, MMesh<MVertexWithBones>* pMMesh);
 
     /**
      * @brief Process mesh indices
      */
-    void ProcessMeshIndices(aiMesh* pMesh, MIMesh* pMMesh);
+    void ProcessMeshIndices(aiMesh* mesh, MIMesh* pMMesh);
 
     /**
      * @brief Bind vertex weights to bones
      */
-    void BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* pMesh, MMesh<MVertexWithBones>* pMMesh);
+    void BindVertexAndBones(MSkeleton* pSkeleton, aiMesh* mesh, MMesh<MVertexWithBones>* pMMesh);
 
 private:
     MEngine*                                                    m_engine;

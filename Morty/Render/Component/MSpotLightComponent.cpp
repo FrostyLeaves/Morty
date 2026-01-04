@@ -43,10 +43,10 @@ Vector3 MSpotLightComponent::GetWorldDirection()
     MEntity* pEntity = GetEntity();
     if (!pEntity) return Vector3(0.0f, 0.0f, 1.0f);
 
-    MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) return Vector3(0.0f, 0.0f, 1.0f);
+    MSceneComponent* sceneComponent = pEntity->GetComponent<MSceneComponent>();
+    if (!sceneComponent) return Vector3(0.0f, 0.0f, 1.0f);
 
-    return pSceneComponent->GetWorldTransform().GetRotatePart() * Vector3(0.0f, 0.0f, 1.0f);
+    return sceneComponent->GetWorldTransform().GetRotatePart() * Vector3(0.0f, 0.0f, 1.0f);
 }
 
 flatbuffers::Offset<void> MSpotLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)

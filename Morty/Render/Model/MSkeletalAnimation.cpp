@@ -21,7 +21,7 @@ MSkeletalAnimation::MSkeletalAnimation()
 
 MSkeletalAnimation::~MSkeletalAnimation() {}
 
-void MSkeletalAnimation::SamplePose(
+void                 MSkeletalAnimation::SamplePose(
         MSkeletonPose&          outputPose,
         const float&            fTime,
         MSkeletonInstance*      pSkeletonIns,
@@ -254,18 +254,18 @@ MSkeletalAnimController::MSkeletalAnimController()
 
 MSkeletalAnimController::~MSkeletalAnimController() {}
 
-bool MSkeletalAnimController::Initialize(
+bool                      MSkeletalAnimController::Initialize(
         MSkeletonInstance*                          pSkeletonIns,
-        std::shared_ptr<MSkeletalAnimationResource> pAnimationResource
+        std::shared_ptr<MSkeletalAnimationResource> animationResource
 )
 {
-    if (!pAnimationResource) return false;
+    if (!animationResource) return false;
 
     if (m_initialized) return false;
 
-    m_skeletonIns  = pSkeletonIns;
-    m_AnimResource = pAnimationResource;
-    m_animation    = pAnimationResource->GetAnimation();
+    m_skeletonIns = pSkeletonIns;
+    m_AnimResource.SetResource(animationResource);
+    m_animation = animationResource->GetAnimation();
 
     BindMapping();
 

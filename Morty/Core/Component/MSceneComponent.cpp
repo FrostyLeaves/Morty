@@ -252,9 +252,9 @@ void    MSceneComponent::CallRecursivelyFunction(MEntity* pEntity, std::function
     const auto& children = component->GetChildrenComponent();
     for (const auto& child: children)
     {
-        if (MSceneComponent* pSceneComponent = scene->GetComponent(child)->template DynamicCast<MSceneComponent>())
+        if (MSceneComponent* sceneComponent = scene->GetComponent(child)->template DynamicCast<MSceneComponent>())
         {
-            CallRecursivelyFunction(pSceneComponent->GetEntity(), func);
+            CallRecursivelyFunction(sceneComponent->GetEntity(), func);
         }
     }
 }
@@ -341,10 +341,10 @@ void MSceneComponent::WorldTransformDirtyRecursively()
     {
         if (MComponent* component = GetScene()->GetComponent(id))
         {
-            if (MSceneComponent* pSceneComponent = component->template DynamicCast<MSceneComponent>())
+            if (MSceneComponent* sceneComponent = component->template DynamicCast<MSceneComponent>())
             {
-                pSceneComponent->WorldTransformDirty();
-                pSceneComponent->WorldTransformDirtyRecursively();
+                sceneComponent->WorldTransformDirty();
+                sceneComponent->WorldTransformDirtyRecursively();
             }
         }
     }

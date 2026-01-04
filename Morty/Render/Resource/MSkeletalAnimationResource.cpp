@@ -42,10 +42,10 @@ MSkeleton* MSkeletalAnimationResource::GetSkeleton() const
 
 const MSkeletalAnimation* MSkeletalAnimationResource::GetAnimation() const { return &m_skeletonAnimation; }
 
-void MSkeletalAnimationResource::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonResource)
+void MSkeletalAnimationResource::SetSkeletonResource(std::shared_ptr<MSkeletonResource> skeletionResource)
 {
-    m_skeletonResource = pSkeletonResource;
-    m_skeletonAnimation.SetSkeletonTemplate(pSkeletonResource->GetSkeleton());
+    m_skeletonResource.SetResource(skeletionResource);
+    m_skeletonAnimation.SetSkeletonTemplate(skeletionResource->GetSkeleton());
 }
 
 bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
@@ -57,9 +57,9 @@ bool MSkeletalAnimationResource::Load(std::unique_ptr<MResourceData>&& pResource
         m_skeletonAnimation = pAnimationData->skeletonAnimation;
 
         const auto pResource = resourceSystem->LoadResource(pAnimationData->skeletonResource);
-        if (const auto pSkeletonResource = MTypeClass::DynamicCast<MSkeletonResource>(pResource))
+        if (const auto skeletionResource = MTypeClass::DynamicCast<MSkeletonResource>(pResource))
         {
-            SetSkeletonResource(pSkeletonResource);
+            SetSkeletonResource(skeletionResource);
         }
     }
 

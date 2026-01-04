@@ -23,9 +23,9 @@ class MObject;
 class MORTY_API MResourceData
 {
 public:
-    MResourceData() = default;
+                               MResourceData() = default;
 
-    virtual ~MResourceData() = default;
+    virtual ~                  MResourceData() = default;
 
     virtual void               LoadBuffer(const std::vector<MByte>& buffer) = 0;
 
@@ -68,9 +68,9 @@ class MORTY_API MResource : public MTypeClass
 {
     MORTY_INTERFACE(MResource)
 public:
-    MResource();
+                               MResource();
 
-    virtual ~MResource();
+    virtual ~                  MResource();
 
     static MString             GetSuffix(const MString& strPath);
 
@@ -111,7 +111,8 @@ public:
         return false;
     }
 
-    void OnReload();
+    void OnPreLoad();
+    void OnPostLoad();
 
 protected:
     friend class MResourceSystem;
@@ -124,7 +125,7 @@ protected:
     MResourceID                m_unResourceID;
     MEngine*                   m_engine;
 
-    std::vector<MResourceRef*> m_keeper;
+    std::vector<MResourceRef*> m_owner;
 
     std::weak_ptr<MResource>   m_self;
 };
@@ -132,37 +133,33 @@ protected:
 class MORTY_API MResourceRef final
 {
 public:
-    typedef std::function<bool()> MResChangedFunction;
+    typedef std::function<void()> ResourceLoadCallback;
 
 public:
-    MResourceRef();
+                                             MResourceRef() = default;
 
-    MResourceRef(std::shared_ptr<MResource> pResource);
+    explicit                                 MResourceRef(std::shared_ptr<MResource> pResource);
 
-    MResourceRef(const MResourceRef& cHolder);
+                                             MResourceRef(const MResourceRef& cHolder);
 
-    virtual ~MResourceRef();
+    virtual ~                                MResourceRef();
 
-    MString                    GetResourcePath() const { return m_resource ? m_resource->GetResourcePath() : ""; }
+    [[nodiscard]] MString                    GetResourcePath() const;
 
-    void                       SetResource(std::shared_ptr<MResource> pResource);
+    void                                     SetResource(std::shared_ptr<MResource> pResource);
 
-    std::shared_ptr<MResource> GetResource() const { return m_resource; }
+    [[nodiscard]] std::shared_ptr<MResource> GetResource() const { return m_resource; }
 
-    [[nodiscard]] MHashCode    GetHashCode() const;
+    [[nodiscard]] MHashCode                  GetHashCode() const;
 
-    const MResourceRef&        operator=(const MResourceRef& keeper);
+    MResourceRef&                            operator=(const MResourceRef& keeper);
 
-    std::shared_ptr<MResource> operator=(std::shared_ptr<MResource> pResource);
+    bool                                     operator==(const MResourceRef& other) const;
 
-    bool operator==(const MResourceRef& other) const { return GetResource() == other.GetResource(); }
+    template<class T> std::shared_ptr<T>     GetResource() const;
 
-    template<class T> std::shared_ptr<T> GetResource() const
-    {
-        return m_resource ? std::dynamic_pointer_cast<T>(m_resource) : nullptr;
-    }
-
-    void SetResChangedCallback(const MResChangedFunction& function) { m_funcReloadCallback = function; }
+    void SetPreLoadCallback(const ResourceLoadCallback& function) { m_funcPreFunction = function; }
+    void SetPostLoadCallback(const ResourceLoadCallback& function) { m_funcPostLoadFunction = function; }
 
 public:
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
@@ -172,9 +169,14 @@ public:
 private:
     friend class MResource;
 
-    MResChangedFunction        m_funcReloadCallback;
-
-    std::shared_ptr<MResource> m_resource;
+    ResourceLoadCallback       m_funcPostLoadFunction = nullptr;
+    ResourceLoadCallback       m_funcPreFunction      = nullptr;
+    std::shared_ptr<MResource> m_resource             = nullptr;
 };
+
+template<class T> std::shared_ptr<T> MResourceRef::GetResource() const
+{
+    return m_resource ? std::dynamic_pointer_cast<T>(m_resource) : nullptr;
+}
 
 }// namespace morty

@@ -51,7 +51,7 @@ bool MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
         };
 
         m_shaderResource.SetResource(pResource);
-        m_shaderResource.SetResChangedCallback(LoadFunc);
+        m_shaderResource.SetPostLoadCallback(LoadFunc);
 
         LoadFunc();
         return true;
@@ -256,7 +256,7 @@ void MTextureResourceParam::SetTexture(const std::shared_ptr<MTextureResource>& 
     if (m_TextureRef.GetResource<MTextureResource>() == pTextureResource) { return; }
 
     m_TextureRef.SetResource(pTextureResource);
-    m_TextureRef.SetResChangedCallback(onResourceChangedFunction);
+    m_TextureRef.SetPostLoadCallback(onResourceChangedFunction);
     SetDirty();
 }
 

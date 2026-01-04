@@ -41,7 +41,7 @@ public:
 
     ~MMultiLevelMesh() = default;
 
-    void    BindMesh(const MIMesh* pMesh);
+    void    BindMesh(const MIMesh* mesh);
 
     MIMesh* GetLevel(uint32_t unLevel);
 

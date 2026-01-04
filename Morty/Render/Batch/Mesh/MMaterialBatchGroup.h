@@ -20,24 +20,20 @@ class MMaterialTemplate;
 class MShaderParameterSet;
 class MRenderMeshComponent;
 
+// GPU upload data, corresponds to MeshInstanceData on shader side
 struct MORTY_API MMeshInstanceRenderProxy {
-    bool                 visible        = false;
-    MMeshInstanceKey     proxyId        = MGlobal::M_INVALID_INDEX;
-    MMaterialInstanceKey materialId     = MGlobal::M_INVALID_INDEX;
-    Matrix4              worldTransform = Matrix4::IdentityMatrix;
-};
-
-struct MORTY_API MeshInstanceRenderData {
-    Matrix4  worldTransform = Matrix4::IdentityMatrix;
-    Matrix3  normalMatrix   = Matrix3::IdentityMatrix;
-    uint32_t clusterIdx     = 0;
+    Matrix4              worldTransform = Matrix4::IdentityMatrix;  // float4x4 matWorld
+    int32_t              meshResourceId = MGlobal::M_INVALID_INDEX; // int meshResourceId
+    int32_t              materialId     = MGlobal::M_INVALID_INDEX; // int materialId
+    MMeshInstanceKey     proxyId        = MGlobal::M_INVALID_INDEX; // int proxyId (reserved)
+    int32_t              visible        = false;                    // int visible (reserved)
 };
 
 // Batch group for mesh instances with the same material template
 class MORTY_API MMaterialBatchGroup
 {
 public:
-    MMaterialBatchGroup(const std::shared_ptr<MShaderParameterSet>& parameterSet, const MStringId& name);
+     MMaterialBatchGroup(const std::shared_ptr<MShaderParameterSet>& parameterSet, const MStringId& name);
     ~MMaterialBatchGroup() = default;
 
     MMaterialInstanceKey               AddInstance(MMeshInstanceKey proxyId);

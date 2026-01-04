@@ -22,10 +22,10 @@ void    MDirectionalLightComponent::SetDirection(const Vector3& v3Direction) { m
 
 Vector3 MDirectionalLightComponent::GetWorldDirection()
 {
-    MSceneComponent* pSceneComponent = GetEntity()->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) return Vector3(0.0f, 0.0f, 1.0f);
+    MSceneComponent* sceneComponent = GetEntity()->GetComponent<MSceneComponent>();
+    if (!sceneComponent) return Vector3(0.0f, 0.0f, 1.0f);
 
-    return pSceneComponent->GetWorldTransform().GetRotatePart() * m_direction;
+    return sceneComponent->GetWorldTransform().GetRotatePart() * m_direction;
 }
 
 flatbuffers::Offset<void> MDirectionalLightComponent::Serialize(flatbuffers::FlatBufferBuilder& fbb)

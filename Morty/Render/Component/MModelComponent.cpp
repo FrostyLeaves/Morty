@@ -29,7 +29,7 @@ MModelComponent::MModelComponent()
 
 MModelComponent::~MModelComponent() {}
 
-void MModelComponent::Release()
+void              MModelComponent::Release()
 {
     if (m_skeleton)
     {
@@ -38,7 +38,7 @@ void MModelComponent::Release()
     }
 }
 
-void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource)
+void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> skeletionResource)
 {
     if (!m_skeleton)
     {
@@ -46,9 +46,9 @@ void MModelComponent::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSk
         m_skeleton        = objectSystem->CreateObject<MSkeletonInstance>();
     }
 
-    if (m_skeleton) { m_skeleton->SetSkeletonResource(pSkeletonRsource); }
+    if (m_skeleton) { m_skeleton->SetSkeletonResource(skeletionResource); }
 
-    m_SkeletonResource = pSkeletonRsource;
+    m_SkeletonResource.SetResource(skeletionResource);
 
     SendComponentNotify(MRenderNotify::NOTIFY_ANIMATION_POSE_CHANGED);
 }

@@ -81,12 +81,12 @@ MRenderInfo MRenderInfo::CreateFromViewport(MViewport* viewport)
         const MPointLightComponent* pPointLightComponent = &lightComponent;
 
         MEntity*                    pEntity         = pPointLightComponent->GetEntity();
-        MSceneComponent*            pSceneComponent = pEntity->GetComponent<MSceneComponent>();
+        MSceneComponent*            sceneComponent = pEntity->GetComponent<MSceneComponent>();
 
-        if (!pSceneComponent) { continue; }
+        if (!sceneComponent) { continue; }
 
         MPointLightData lightData;
-        lightData.f3LightPosition = pSceneComponent->GetWorldPosition();
+        lightData.f3LightPosition = sceneComponent->GetWorldPosition();
         lightData.f3LightIntensity =
                 pPointLightComponent->GetColor().ToVector3() * pPointLightComponent->GetLightIntensity();
         lightData.fConstant  = pPointLightComponent->GetConstant();

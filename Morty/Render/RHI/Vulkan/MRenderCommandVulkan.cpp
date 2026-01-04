@@ -320,23 +320,23 @@ void MRenderCommandVulkan::InternalEndRenderPass()
 
 /*
 void MRenderCommandVulkan::DrawMesh(
-        MIMesh*         pMesh,
+        MIMesh*         mesh,
         const uint32_t& nIdxOffset,
         const uint32_t& nIdxCount,
         const uint32_t& nVrtOffset
 )
 {
-    if (!pMesh) return;
+    if (!mesh) return;
 
     if (0 == nIdxCount) return;
 
-    MBuffer* pVertexBuffer = pMesh->GetVertexBuffer();
-    MBuffer* pIndexBuffer  = pMesh->GetIndexBuffer();
+    MBuffer* pVertexBuffer = mesh->GetVertexBuffer();
+    MBuffer* pIndexBuffer  = mesh->GetIndexBuffer();
 
     if (!pVertexBuffer || !pIndexBuffer) { return; }
 
-    UpdateBuffer(pVertexBuffer, pMesh->GetVerticesVector().data(), pMesh->GetVerticesVector().size());
-    UpdateBuffer(pIndexBuffer, pMesh->GetIndicesVector().data(), pMesh->GetIndicesVector().size());
+    UpdateBuffer(pVertexBuffer, mesh->GetVerticesVector().data(), mesh->GetVerticesVector().size());
+    UpdateBuffer(pIndexBuffer, mesh->GetIndicesVector().data(), mesh->GetIndicesVector().size());
 
     DrawMesh(pVertexBuffer, pIndexBuffer, nVrtOffset, nIdxOffset, nIdxCount);
 }

@@ -4,12 +4,12 @@ __include "../Model/CommonModel";
 __include "../Internal/CommonStruct";
 __include "../Internal/Utils";
 
-// ==================== Nanite 常量和配置 ====================
+// ==================== Nanite Constants and Configuration ====================
 
 public static const uint NANITE_MAX_TRAVERSAL_DEPTH = 16;
-public static const float NANITE_ERROR_THRESHOLD = 1.0; // 屏幕空间误差阈值（像素）
+public static const float NANITE_ERROR_THRESHOLD = 1.0; // Screen-space error threshold (pixels)
 
-// ==================== Nanite 工具结构 ====================
+// ==================== Nanite Utility Structures ====================
 
 public struct NaniteRenderData
 {
@@ -20,11 +20,11 @@ public struct NaniteRenderData
     float nearClip;
     float farClip;
 
-    // 视锥体平面
+    // Frustum planes
     FrustumUtils.Plane frustumPlanes[6];
 };
 
-// 候选 Cluster 结构（用于 LOD 选择后的输出）
+// Candidate Cluster structure (output after LOD selection)
 public struct CandidateCluster
 {
     uint clusterIndex;
@@ -32,11 +32,11 @@ public struct CandidateCluster
     float distanceToCamera;
 };
 
-// ==================== Nanite LOD 选择工具 ====================
+// ==================== Nanite LOD Selection Utilities ====================
 
 public struct NaniteLODSelector
 {
-    // 计算屏幕空间投影误差
+    // Calculate screen-space projection error
     public static float CalculateScreenSpaceError(
         float3 worldPosition,
         float worldSpaceError,
@@ -44,20 +44,20 @@ public struct NaniteLODSelector
         float2 screenSize,
         float4x4 viewProjMatrix)
     {
-        // 计算投影误差
+        // Calculate projection error
         float4 projPos = mul(viewProjMatrix, float4(worldPosition, 1.0));
 
-        // 透视除法
+        // Perspective division
         if (projPos.w > 0.0001)
         {
             float screenRadius = (worldSpaceError / projPos.w) * screenSize.y * 0.5;
             return screenRadius;
         }
 
-        return 10000.0; // 如果在相机后面，返回一个大值
+        return 10000.0; // Return large value if behind camera
     }
 
-    // 判断是否需要细分到子节点
+    // Determine if subdivision to child nodes is needed
     public static bool ShouldSubdivide(
         ClusterGroupData group,
         float3 cameraPos,
@@ -65,14 +65,14 @@ public struct NaniteLODSelector
         float4x4 viewProjMatrix,
         float errorThreshold)
     {
-        // 如果没有子节点，不需要细分
+        // No subdivision needed if no child nodes
         if (group.childGroupCount == 0)
             return false;
 
-        // 计算到相机的距离
+        // Calculate distance to camera
         float distanceToCamera = length(group.position - cameraPos);
 
-        // 计算屏幕空间误差
+        // Calculate screen-space error
         float screenError = CalculateScreenSpaceError(
             group.position,
             group.error,
@@ -81,16 +81,16 @@ public struct NaniteLODSelector
             viewProjMatrix
         );
 
-        // 如果误差大于阈值，需要细分
+        // Subdivide if error exceeds threshold
         return screenError > errorThreshold;
     }
 };
 
-// ==================== Nanite 视锥体剔除工具 ====================
+// ==================== Nanite Frustum Culling Utilities ====================
 
 public struct NaniteCulling
 {
-    // 球体视锥体剔除
+    // Sphere-frustum culling test
     public static bool SphereInFrustum(
         float3 center,
         float radius,
@@ -105,78 +105,79 @@ public struct NaniteCulling
         return true;
     }
 
-    // 对 Cluster 进行剔除测试
+    // Perform culling test on Cluster
     public static bool CullCluster(
         ClusterData cluster,
         float4x4 worldMatrix,
         FrustumUtils.Plane frustumPlanes[6])
     {
-        // 将 cluster 的包围球变换到世界空间
+        // Transform cluster bounding sphere to world space
         float3 worldCenter = mul(worldMatrix, float4(cluster.position, 1.0)).xyz;
 
-        // 获取缩放因子（用于调整半径）
+        // Get scale factor (for radius adjustment)
         float3 scaleX = float3(worldMatrix[0][0], worldMatrix[1][0], worldMatrix[2][0]);
         float3 scaleY = float3(worldMatrix[0][1], worldMatrix[1][1], worldMatrix[2][1]);
         float3 scaleZ = float3(worldMatrix[0][2], worldMatrix[1][2], worldMatrix[2][2]);
         float maxScale = max(max(length(scaleX), length(scaleY)), length(scaleZ));
         float worldRadius = cluster.radius * maxScale;
 
-        // 视锥体剔除
+        // Frustum culling
         return SphereInFrustum(worldCenter, worldRadius, frustumPlanes);
     }
 
-    // 对 ClusterGroup 进行剔除测试
+    // Perform culling test on ClusterGroup
     public static bool CullClusterGroup(
         ClusterGroupData group,
         float4x4 worldMatrix,
         FrustumUtils.Plane frustumPlanes[6])
     {
-        // 将 group 的包围球变换到世界空间
+        // Transform group bounding sphere to world space
         float3 worldCenter = mul(worldMatrix, float4(group.position, 1.0)).xyz;
 
-        // 获取缩放因子
+        // Get scale factor
         float3 scaleX = float3(worldMatrix[0][0], worldMatrix[1][0], worldMatrix[2][0]);
         float3 scaleY = float3(worldMatrix[0][1], worldMatrix[1][1], worldMatrix[2][1]);
         float3 scaleZ = float3(worldMatrix[0][2], worldMatrix[1][2], worldMatrix[2][2]);
         float maxScale = max(max(length(scaleX), length(scaleY)), length(scaleZ));
         float worldRadius = group.radius * maxScale;
 
-        // 视锥体剔除
+        // Frustum culling
         return SphereInFrustum(worldCenter, worldRadius, frustumPlanes);
     }
 };
 
-// ==================== Nanite 遍历工具 ====================
+// ==================== Nanite Traversal Utilities ====================
 
 public struct NaniteTraversal
 {
-    // 遍历栈节点
+    // Traversal stack node
     public struct StackNode
     {
         uint groupIndex;
         uint depth;
     };
 
-    // BFS 遍历 ClusterGroup 树，选择合适的 LOD
+    // BFS traverse ClusterGroup tree and select appropriate LOD
     public static void TraverseLODTree(
         uint meshInstanceIndex,
         MeshInstanceData meshInstance,
+        MeshResourceData meshResource,  // Mesh resource data (contains ClusterGroup root node info)
         StructuredBuffer<ClusterGroupData> clusterGroups,
         StructuredBuffer<ClusterData> clusters,
         NaniteRenderData renderData,
         RWStructuredBuffer<CandidateCluster> outCandidateClusters,
         RWStructuredBuffer<uint> outCandidateCount)
     {
-        // 初始化遍历栈
+        // Initialize traversal stack
         StackNode stack[NANITE_MAX_TRAVERSAL_DEPTH];
         uint stackSize = 0;
 
-        // 将所有 root ClusterGroup 压入栈
-        for (int i = 0; i < meshInstance.rootClusterGroupCount; ++i)
+        // Push all root ClusterGroups to stack (indirect lookup via MeshResourceData)
+        for (int i = 0; i < meshResource.rootClusterGroupCount; ++i)
         {
-            uint rootGroupIndex = meshInstance.rootClusterGroupBeginIndex + i;
+            uint rootGroupIndex = meshResource.rootClusterGroupBeginIndex + i;
 
-            // 首先检查 root group 是否可见
+            // First check if root group is visible
             if (NaniteCulling.CullClusterGroup(
                 clusterGroups[rootGroupIndex],
                 meshInstance.matWorld,
@@ -188,15 +189,15 @@ public struct NaniteTraversal
             }
         }
 
-        // BFS 遍历
+        // BFS traversal
         while (stackSize > 0)
         {
-            // 弹出栈顶节点
+            // Pop top node from stack
             stackSize--;
             StackNode currentNode = stack[stackSize];
             ClusterGroupData currentGroup = clusterGroups[currentNode.groupIndex];
 
-            // 判断是否需要细分到子节点
+            // Determine if subdivision to child nodes is needed
             bool shouldSubdivide = NaniteLODSelector.ShouldSubdivide(
                 currentGroup,
                 renderData.cameraPositionWS,
@@ -207,18 +208,18 @@ public struct NaniteTraversal
 
             if (shouldSubdivide && currentNode.depth < NANITE_MAX_TRAVERSAL_DEPTH - 1)
             {
-                // 遍历子 ClusterGroup
+                // Traverse child ClusterGroups
                 for (uint i = 0; i < currentGroup.childGroupCount; ++i)
                 {
                     uint childGroupIndex = currentGroup.firstGroupId + i;
 
-                    // 视锥体剔除
+                    // Frustum culling
                     if (NaniteCulling.CullClusterGroup(
                         clusterGroups[childGroupIndex],
                         meshInstance.matWorld,
                         renderData.frustumPlanes))
                     {
-                        // 压入栈
+                        // Push to stack
                         if (stackSize < NANITE_MAX_TRAVERSAL_DEPTH)
                         {
                             stack[stackSize].groupIndex = childGroupIndex;
@@ -230,23 +231,23 @@ public struct NaniteTraversal
             }
             else
             {
-                // 不需要细分，输出当前 group 的所有 clusters
+                // No subdivision needed, output all clusters of current group
                 for (uint i = 0; i < currentGroup.clusterCount; ++i)
                 {
                     uint clusterIndex = currentGroup.clusterBeginIndex + i;
                     ClusterData cluster = clusters[clusterIndex];
 
-                    // 跳过无效的 cluster
+                    // Skip invalid clusters
                     if (cluster.valid == 0)
                         continue;
 
-                    // 视锥体剔除
+                    // Frustum culling
                     if (NaniteCulling.CullCluster(
                         cluster,
                         meshInstance.matWorld,
                         renderData.frustumPlanes))
                     {
-                        // 输出候选 cluster
+                        // Output candidate cluster
                         uint candidateIndex;
                         InterlockedAdd(outCandidateCount[0], 1, candidateIndex);
 
@@ -254,7 +255,7 @@ public struct NaniteTraversal
                         candidate.clusterIndex = clusterIndex;
                         candidate.meshInstanceIndex = meshInstanceIndex;
 
-                        // 计算到相机的距离（用于后续排序）
+                        // Calculate distance to camera (for later sorting)
                         float3 worldPos = mul(meshInstance.matWorld, float4(cluster.position, 1.0)).xyz;
                         candidate.distanceToCamera = length(worldPos - renderData.cameraPositionWS);
 

@@ -41,13 +41,13 @@ void MEntitySystem::AddChild(MEntity* pParent, MEntity* pChild)
     pChildComp->SetParentComponent(pParentComp->GetComponentID());
 }
 
-size_t GetSceneDepthFunction(MSceneComponent* pSceneComponent, std::map<MSceneComponent*, size_t>& tDepthCache)
+size_t GetSceneDepthFunction(MSceneComponent* sceneComponent, std::map<MSceneComponent*, size_t>& tDepthCache)
 {
-    if (pSceneComponent == nullptr) { return 0; }
+    if (sceneComponent == nullptr) { return 0; }
 
-    if (tDepthCache.find(pSceneComponent) != tDepthCache.end()) { return tDepthCache[pSceneComponent]; }
+    if (tDepthCache.find(sceneComponent) != tDepthCache.end()) { return tDepthCache[sceneComponent]; }
 
-    return tDepthCache[pSceneComponent] = GetSceneDepthFunction(pSceneComponent->GetParent(), tDepthCache) + 1;
+    return tDepthCache[sceneComponent] = GetSceneDepthFunction(sceneComponent->GetParent(), tDepthCache) + 1;
 }
 
 std::shared_ptr<MResource> MEntitySystem::PackEntity(const std::vector<MEntity*>& vEntity)
@@ -169,10 +169,10 @@ void MEntitySystem::FindAllComponentRecursively(
         vResult.push_back(pFindResult->GetComponentID());
     }
 
-    MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) return;
+    MSceneComponent* sceneComponent = pEntity->GetComponent<MSceneComponent>();
+    if (!sceneComponent) return;
 
-    for (const MComponentID& childID: pSceneComponent->GetChildrenComponent())
+    for (const MComponentID& childID: sceneComponent->GetChildrenComponent())
     {
         if (MComponent* pChildComponent = scene->GetComponent(childID))
         {

@@ -11,16 +11,15 @@ public struct ClusterData
     float3 position;
     float radius;
     float error;
-
-    uint meshInstanceIndex;  // 用于关联到具体的 MeshInstance
 };
 
 public struct ClusterGroupData
 {
+    uint valid;
     uint parentGroupId;
     uint firstGroupId;
     uint childGroupCount;
-    
+
     uint clusterBeginIndex;
     uint clusterCount;
 
@@ -29,12 +28,20 @@ public struct ClusterGroupData
     float error;
 };
 
+// Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
+public struct MeshResourceData
+{
+    int rootClusterGroupBeginIndex;
+    int rootClusterGroupCount;
+};
+
 public struct MeshInstanceData
 {
     public float4x4 matWorld;
-    public float3x3 matNormal;
-    public int rootClusterGroupBeginIndex;
-    public int rootClusterGroupCount;
+    public int meshResourceId;    // index into MeshResourceData buffer
+    public int materialId;
+    public int proxyId;           // reserved
+    public int visible;           // reserved
 };
 
 public struct VertexIn

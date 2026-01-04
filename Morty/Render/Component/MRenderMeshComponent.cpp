@@ -5,6 +5,7 @@
 #include "Engine/MEngine.h"
 #include "MRenderNotify.h"
 #include "Material/MMaterial.h"
+#include "Mesh/MMeshManager.h"
 #include "Resource/MMaterialResource.h"
 #include "Resource/MMeshResource.h"
 #include "Scene/MEntity.h"
@@ -20,8 +21,7 @@ using namespace morty;
 MORTY_CLASS_IMPLEMENT(MRenderMeshComponent, MComponent)
 
 MRenderMeshComponent::MRenderMeshComponent()
-    : MComponent()
-    , m_shadowType(MEShadowType::ENone)
+    : Super()
 {}
 
 void MRenderMeshComponent::Release() { Super::Release(); }
@@ -30,7 +30,7 @@ void MRenderMeshComponent::SetMaterial(const std::shared_ptr<MMaterialResource>&
 {
     if (m_material.GetResource() == material) return;
 
-    m_material       = material;
+    m_material.SetResource(material);
     m_instancingData = MMeshInstanceSystem::CreateMaterialInstanceData(material.get());
 
     SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
@@ -45,7 +45,29 @@ void MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
 {
     if (!mesh) return;
 
+    auto preLoadFunction = [this]() {
+        if (auto meshResource = m_mesh.GetResource()->DynamicCast<MMeshResource>())
+        {
+            GetScene()->GetManager<MMeshManager>()->UnregisterMesh(meshResource->GetMesh());
+        }
+    };
+
+    auto postLoadFunction = [this]() {
+        if (auto meshResource = m_mesh.GetResource()->DynamicCast<MMeshResource>())
+        {
+            auto meshManager = GetScene()->GetManager<MMeshManager>();
+            meshManager->RegisterMesh(meshResource->GetMesh());
+            m_clusterRenderData = meshManager->GetClusterRenderData(meshResource->GetMesh());
+        }
+    };
+
+    m_mesh.SetPreLoadCallback(preLoadFunction);
+    m_mesh.SetPostLoadCallback(postLoadFunction);
+
+    preLoadFunction();
     m_mesh.SetResource(mesh);
+    postLoadFunction();
+
     SendComponentNotify(MRenderNotify::NOTIFY_MESH_CHANGED);
 }
 

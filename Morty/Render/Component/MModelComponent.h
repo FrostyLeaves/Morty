@@ -32,7 +32,7 @@ public:
 public:
     void               Release() override;
 
-    void               SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource);
+    void               SetSkeletonResource(std::shared_ptr<MSkeletonResource> skeletionResource);
 
     void               SetSkeletonResourcePath(const MString& strSkeletonPath);
 

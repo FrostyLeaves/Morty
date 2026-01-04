@@ -84,7 +84,7 @@ MResource::MResource()
 
 MResource::~MResource()
 {
-    for (MResourceRef* pKeeper: m_keeper) { pKeeper->m_resource = nullptr; }
+    for (MResourceRef* owner: m_owner) { owner->m_resource = nullptr; }
 }
 
 MString MResource::GetSuffix(const MString& strPath)
@@ -143,66 +143,54 @@ const char* MResource::GetDebugName() const { return GetResourcePath().c_str(); 
 
 #endif
 
-void MResource::OnReload()
+void MResource::OnPreLoad()
 {
-    for (MResourceRef* pKeeper: m_keeper)
+    for (MResourceRef* owner: m_owner)
     {
-        if (pKeeper->m_funcReloadCallback) pKeeper->m_funcReloadCallback();
+        if (owner->m_funcPreFunction) owner->m_funcPreFunction();
     }
 }
 
-MResourceRef::MResourceRef()
-    : m_funcReloadCallback(nullptr)
-    , m_resource(nullptr)
-{}
 
-MResourceRef::MResourceRef(std::shared_ptr<MResource> pResource)
-    : m_funcReloadCallback(nullptr)
-    , m_resource(nullptr)
+void MResource::OnPostLoad()
 {
-    SetResource(pResource);
+    for (MResourceRef* owner: m_owner)
+    {
+        if (owner->m_funcPostLoadFunction) owner->m_funcPostLoadFunction();
+    }
 }
 
-MResourceRef::MResourceRef(const MResourceRef& cHolder)
-    : m_funcReloadCallback(cHolder.m_funcReloadCallback)
-    , m_resource(nullptr)
-{
-    SetResource(cHolder.m_resource);
-}
+MResourceRef:: MResourceRef(std::shared_ptr<MResource> pResource) { SetResource(pResource); }
+
+MResourceRef:: MResourceRef(const MResourceRef& other) { SetResource(other.m_resource); }
 
 MResourceRef::~MResourceRef() { SetResource(nullptr); }
 
-void MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
+MString        MResourceRef::GetResourcePath() const { return m_resource ? m_resource->GetResourcePath() : ""; }
+
+void           MResourceRef::SetResource(std::shared_ptr<MResource> pResource)
 {
     std::shared_ptr<MResource> pOldResource = m_resource;
     if (m_resource)
     {
         std::vector<MResourceRef*>::iterator iter =
-                std::find(m_resource->m_keeper.begin(), m_resource->m_keeper.end(), this);
-        if (m_resource->m_keeper.end() != iter) { m_resource->m_keeper.erase(iter); }
+                std::find(m_resource->m_owner.begin(), m_resource->m_owner.end(), this);
+        if (m_resource->m_owner.end() != iter) { m_resource->m_owner.erase(iter); }
     }
 
     m_resource = pResource;
-    if (m_resource) { m_resource->m_keeper.push_back(this); }
+    if (m_resource) { m_resource->m_owner.push_back(this); }
 }
 
-MHashCode           MResourceRef::GetHashCode() const { return MUtils::Hash(GetResourcePath()); }
+MHashCode     MResourceRef::GetHashCode() const { return MUtils::Hash(GetResourcePath()); }
 
-const MResourceRef& MResourceRef::operator=(const MResourceRef& keeper)
+MResourceRef& MResourceRef::operator=(const MResourceRef& keeper)
 {
-    m_funcReloadCallback = keeper.m_funcReloadCallback;
     SetResource(keeper.m_resource);
-
-    return keeper;
+    return *this;
 }
 
-std::shared_ptr<MResource> MResourceRef::operator=(std::shared_ptr<MResource> pResource)
-{
-    m_funcReloadCallback = nullptr;
-    SetResource(pResource);
-
-    return pResource;
-}
+bool MResourceRef::operator==(const MResourceRef& other) const { return GetResource() == other.GetResource(); }
 
 flatbuffers::Offset<void> MResourceRef::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
 {

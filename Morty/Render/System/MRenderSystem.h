@@ -51,10 +51,10 @@ public:
     void ReleaseRenderpass(MRenderPass& renderpass, bool bClearTexture);
 
     static MCameraFrustum
-    GetCameraFrustum(MViewport* viewport, MCameraComponent* pCameraComponent, MSceneComponent* pSceneComponent);
+    GetCameraFrustum(MViewport* viewport, MCameraComponent* pCameraComponent, MSceneComponent* sceneComponent);
 
 
-    static Matrix4 GetCameraViewMatrix(MSceneComponent* pSceneComponent);
+    static Matrix4 GetCameraViewMatrix(MSceneComponent* sceneComponent);
 
     static Matrix4 GetPerspectiveProjectionMatrix(
             const float fViewportWidth,
@@ -70,7 +70,7 @@ public:
     static Matrix4 GetCameraInverseProjection(
             const MViewport*        viewport,
             const MCameraComponent* pCameraComponent,
-            MSceneComponent*        pSceneComponent
+            MSceneComponent*        sceneComponent
     );
 
     static Matrix4 GetCameraProjectionMatrix(
@@ -83,7 +83,7 @@ public:
 
     static Matrix4 GetCameraInverseProjection(
             const MCameraComponent* pCameraComponent,
-            MSceneComponent*        pSceneComponent,
+            MSceneComponent*        sceneComponent,
             float                   fViewWidth,
             float                   fViewHeight,
             float                   fZNear,

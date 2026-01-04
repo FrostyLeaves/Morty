@@ -3,21 +3,22 @@ implementing InternalModule;
 __include "NaniteCulling";
 
 // ==================== Compute Shader: Nanite Instance Culling ====================
-// 第一阶段：遍历所有 MeshInstance，进行 LOD 选择和视锥体剔除
+// Phase 1: Iterate all MeshInstances, perform LOD selection and frustum culling
 
 [shader("compute")]
 [numthreads(64, 1, 1)]
 public void NaniteInstanceCullingCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
 
-    // 输入
+    // Input
     uniform NaniteRenderData renderData,
     uniform uint instanceCount,
     StructuredBuffer<MeshInstanceData> meshInstances,
+    StructuredBuffer<MeshResourceData> meshResources,  // Mesh resource data buffer
     StructuredBuffer<ClusterGroupData> clusterGroups,
     StructuredBuffer<ClusterData> clusters,
 
-    // 输出
+    // Output
     RWStructuredBuffer<CandidateCluster> outCandidateClusters,
     RWStructuredBuffer<uint> outCandidateCount  // [0] = count
 )
@@ -28,10 +29,14 @@ public void NaniteInstanceCullingCS(
 
     MeshInstanceData meshInstance = meshInstances[instanceIndex];
 
-    // 遍历 LOD 树，选择合适的 cluster
+    // Look up MeshResourceData indirectly via meshResourceId
+    MeshResourceData meshResource = meshResources[meshInstance.meshResourceId];
+
+    // Traverse LOD tree and select appropriate clusters
     NaniteTraversal.TraverseLODTree(
         instanceIndex,
         meshInstance,
+        meshResource,  // Pass MeshResourceData
         clusterGroups,
         clusters,
         renderData,
@@ -41,21 +46,21 @@ public void NaniteInstanceCullingCS(
 }
 
 // ==================== Compute Shader: Generate Indirect Draw Commands ====================
-// 第二阶段：将候选 Cluster 转换为 DrawIndexedIndirect 命令
+// Phase 2: Convert candidate Clusters to DrawIndexedIndirect commands
 
 [shader("compute")]
 [numthreads(64, 1, 1)]
 public void NaniteGenerateIndirectDrawCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
 
-    // 输入
+    // Input
     StructuredBuffer<CandidateCluster> candidateClusters,
     StructuredBuffer<uint> candidateCount,
     StructuredBuffer<ClusterData> clusters,
 
-    // 输出
+    // Output
     RWStructuredBuffer<IndexedIndirectCommand> outIndirectCommands,
-    RWStructuredBuffer<uint> outInstanceIndices  // 用于在绘制时查找对应的 MeshInstance
+    RWStructuredBuffer<uint> outInstanceIndices  // Used to look up corresponding MeshInstance during draw
 )
 {
     uint candidateIndex = dispatchThreadID.x;
@@ -67,20 +72,20 @@ public void NaniteGenerateIndirectDrawCS(
     CandidateCluster candidate = candidateClusters[candidateIndex];
     ClusterData cluster = clusters[candidate.clusterIndex];
 
-    // 构建 DrawIndexedIndirect 命令
+    // Build DrawIndexedIndirect command
     IndexedIndirectCommand cmd;
     cmd.indexCount = cluster.indexCount;
     cmd.instanceCount = 1;
     cmd.firstIndex = cluster.indexOffset;
     cmd.vertexOffset = 0;
-    cmd.firstInstance = candidateIndex;  // 使用候选索引作为 instance ID
+    cmd.firstInstance = candidateIndex;  // Use candidate index as instance ID
 
     outIndirectCommands[candidateIndex] = cmd;
     outInstanceIndices[candidateIndex] = candidate.meshInstanceIndex;
 }
 
 // ==================== Compute Shader: Initialize Buffers ====================
-// 初始化阶段：清空计数器
+// Initialization phase: Clear counters
 
 [shader("compute")]
 [numthreads(1, 1, 1)]
@@ -92,7 +97,7 @@ public void NaniteInitBuffersCS(
 }
 
 // ==================== Compute Shader: Prepare Indirect Dispatch ====================
-// 准备间接派发：计算需要的线程组数量
+// Prepare indirect dispatch: Calculate required thread group count
 
 [shader("compute")]
 [numthreads(1, 1, 1)]

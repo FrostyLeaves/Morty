@@ -8,9 +8,9 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MSkeletonInstance, MObject)
 
-void MSkeletonInstance::SetSkeletonResource(std::shared_ptr<MSkeletonResource> pSkeletonRsource)
+void MSkeletonInstance::SetSkeletonResource(std::shared_ptr<MSkeletonResource> skeletionResource)
 {
-    m_skeletonResource = pSkeletonRsource;
+    m_skeletonResource.SetResource(skeletionResource);
 
     if (auto pResource = m_skeletonResource.GetResource<MSkeletonResource>())
     {

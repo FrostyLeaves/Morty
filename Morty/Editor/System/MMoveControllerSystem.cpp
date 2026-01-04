@@ -41,16 +41,16 @@ void MMoveControllerSystem::UpdateTransform(
     MEntity* pEntity = component->GetEntity();
     if (!pEntity) return;
 
-    MSceneComponent* pSceneComponent = pEntity->GetComponent<MSceneComponent>();
-    if (!pSceneComponent) return;
+    MSceneComponent* sceneComponent = pEntity->GetComponent<MSceneComponent>();
+    if (!sceneComponent) return;
 
     const float speed       = component->GetMaxSpeed();
     Vector3     v3MoveSpeed = component->GetMoveSpeed();
 
-    if (true == MKeyBoardInputEvent::IsKeyDown('w')) { v3MoveSpeed += pSceneComponent->GetForward() * speed * delta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('s')) { v3MoveSpeed += pSceneComponent->GetForward() * -speed * delta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('a')) { v3MoveSpeed += pSceneComponent->GetRight() * -speed * delta; }
-    if (true == MKeyBoardInputEvent::IsKeyDown('d')) { v3MoveSpeed += pSceneComponent->GetRight() * speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('w')) { v3MoveSpeed += sceneComponent->GetForward() * speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('s')) { v3MoveSpeed += sceneComponent->GetForward() * -speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('a')) { v3MoveSpeed += sceneComponent->GetRight() * -speed * delta; }
+    if (true == MKeyBoardInputEvent::IsKeyDown('d')) { v3MoveSpeed += sceneComponent->GetRight() * speed * delta; }
     if (true == MKeyBoardInputEvent::IsKeyDown('q')) { v3MoveSpeed += Vector3(0, 1, 0) * -speed * delta; }
     if (true == MKeyBoardInputEvent::IsKeyDown('e')) { v3MoveSpeed += Vector3(0, 1, 0) * speed * delta; }
     else if (MMouseInputEvent::IsButtonDown(MMouseInputEvent::MEMouseDownButton::RightButton) &&
@@ -59,10 +59,10 @@ void MMoveControllerSystem::UpdateTransform(
 
         Vector3 up = Vector3(0, 1, 0);
 
-        Vector3 right          = pSceneComponent->GetRight();
-        Vector3 rotatedForward = pSceneComponent->GetForward() * Quaternion(up, -v2MouseAddi.x * 0.25f) *
+        Vector3 right          = sceneComponent->GetRight();
+        Vector3 rotatedForward = sceneComponent->GetForward() * Quaternion(up, -v2MouseAddi.x * 0.25f) *
                                  Quaternion(right, -v2MouseAddi.y * 0.25f);
-        pSceneComponent->LookAt(pSceneComponent->GetWorldPosition() + rotatedForward, up);
+        sceneComponent->LookAt(sceneComponent->GetWorldPosition() + rotatedForward, up);
     }
 
     float fLength = v3MoveSpeed.Length();
@@ -74,5 +74,5 @@ void MMoveControllerSystem::UpdateTransform(
 
     component->SetMoveSpeed(v3MoveSpeed * 0.8f);
 
-    if (abs(fLength) > 1e-3) { pSceneComponent->SetPosition(pSceneComponent->GetPosition() + v3MoveSpeed); }
+    if (abs(fLength) > 1e-3) { sceneComponent->SetPosition(sceneComponent->GetPosition() + v3MoveSpeed); }
 }

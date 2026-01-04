@@ -21,67 +21,38 @@ class MMaterial;
 class MComponent;
 class MMeshResource;
 class MMeshBufferAdapter;
-class MRenderMeshComponent;
 class MMeshManager : public IManager
 {
     MORTY_CLASS(MMeshManager)
-public:
-    explicit MMeshManager();
-    void Initialize() override;
-    void Release() override;
 
-    struct MClusterData {
-
-        MClusterBounds bounds;
-    };
-
-    struct MClusterRenderData {
-        uint32_t indexOffset = 0;
-        uint32_t indexCount  = 0;
-        uint32_t parent      = MGlobal::M_INVALID_UINDEX;
-        uint32_t firstChild  = MGlobal::M_INVALID_UINDEX;
-        uint32_t childCount  = 0;
-        uint32_t valid       = 0;
-
-        Vector3  position;
-        float    radius;
-        float    error;
-    };
-
-    struct MMeshRenderData {
-        uint32_t rootClusterOffset = MGlobal::M_INVALID_UINDEX;
-        uint32_t rootClusterCount  = 0;
-    };
-
-    struct MClusterGroupData {
-        bool       valid = false;
-        MemoryInfo vertexMemoryInfo;
-        MemoryInfo indexMemoryInfo;
-    };
 
     struct MMeshData {
-        std::vector<size_t> clusterGroupIDs;
+        MemoryInfo clusterInfo;
+        MemoryInfo clusterGroupInfo;
+        size_t     referenceNum = 0;
     };
 
 public:
-    [[nodiscard]] std::set<const MType*>              RegisterComponentType() const override;
-    void                                              UnregisterComponent(MComponent* component) override;
+    explicit                                          MMeshManager();
+    void                                              Initialize() override;
+    void                                              Release() override;
 
     bool                                              RegisterMesh(MIMesh* mesh);
     void                                              UnregisterMesh(MIMesh* mesh);
     bool                                              HasMesh(MIMesh* mesh) const;
     size_t                                            GetRenderIndex(MIMesh* mesh) const;
+    [[nodiscard]] int32_t                             GetMeshResourceId(MIMesh* mesh) const;
     [[nodiscard]] MIMesh*                             GetScreenRect() const;
     [[nodiscard]] const MBuffer*                      GetVertexBuffer() const { return &m_vertexBuffer; }
     [[nodiscard]] const MBuffer*                      GetIndexBuffer() const { return &m_indexBuffer; }
+    [[nodiscard]] const MBuffer*                      GetClusterGroupBuffer() const { return &m_clusterGroupBuffer; }
+    [[nodiscard]] const MBuffer*                      GetClusterBuffer() const { return &m_clusterBuffer; }
+    [[nodiscard]] const MBuffer*                      GetMeshResourceBuffer() const { return &m_meshResourceBuffer; }
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
+    MMeshRenderData                                   GetClusterRenderData(MIMesh* mesh) const;
+
 private:
-    void                                         OnMeshChanged(MComponent* component);
-
-    size_t                                       RegisterClusterGroup(const MClusterGroup& group);
-    void                                         UnregisterClusterGroup(const size_t& groupIdx);
-
     void                                         LoadClusterPage(size_t groupIdx, const MClusterPage& page);
     void                                         UnloadClusterPage(const size_t& groupIdx);
 
@@ -91,6 +62,7 @@ private:
     size_t                                       RoundIndexSize(size_t nIndexSize);
 
     void                                         UploadPageData(size_t groupIdx, const MClusterPage& page);
+    void                                         UploadClusterData();
 
     void                                         RenderUpdate(MTaskNode* node);
 
@@ -108,18 +80,28 @@ private:
 
     std::unique_ptr<MIMesh>                      m_screenRect = nullptr;
 
-
     std::vector<MClusterGroupData>               m_clusterGroupDatas;
-    MReusableIDPool<size_t>                      m_clusterGroupDataIDPool;
+    MMemoryPool                                  m_clusterGroupDataIDPool;
 
+    std::vector<MCluster>                        m_clusters;
+    MMemoryPool                                  m_clusterPool;
+
+    // Mesh resource data buffer
+    std::vector<MMeshResourceData>               m_meshResourceDatas;
+    MBuffer                                      m_meshResourceBuffer;
+
+    // GPU buffers for cluster culling
+    MBuffer                                      m_clusterGroupBuffer;
+    MBuffer                                      m_clusterBuffer;
+
+    // Dirty flag for cluster data upload
+    bool                                         m_clustersDirty = false;
 
     // render thread.
     std::mutex                                   m_uploadMutex;
     std::vector<std::pair<size_t, MClusterPage>> m_uploadPageQueue;
     std::shared_ptr<MMeshBufferAdapter>          m_meshBufferAdapter = nullptr;
 
-
-    std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMeshResource>> m_meshResourceCache;
 };
 
 }// namespace morty

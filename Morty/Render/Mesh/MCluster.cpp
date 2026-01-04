@@ -78,6 +78,9 @@ flatbuffers::Offset<void> MClusterGroup::Serialize(flatbuffers::FlatBufferBuilde
     builder.add_cluster_offset(clusterOffset);
     builder.add_cluster_num(clusterNum);
     builder.add_bounds(fbBounds.o);
+    builder.add_parent_group_id(parentGroupId);
+    builder.add_first_child_group_id(firstChildGroupId);
+    builder.add_child_group_count(childGroupCount);
 
     return builder.Finish().Union();
 }
@@ -88,6 +91,9 @@ void MClusterGroup::Deserialize(const void* pBufferPointer)
     clusterOffset      = fbData->cluster_offset();
     clusterNum         = fbData->cluster_num();
     bounds.Deserialize(fbData->bounds());
+    parentGroupId      = fbData->parent_group_id();
+    firstChildGroupId  = fbData->first_child_group_id();
+    childGroupCount    = fbData->child_group_count();
 }
 
 
