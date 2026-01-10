@@ -76,6 +76,7 @@ private:
     bool                            m_windowResized   = false;
     bool                            m_windowClosed    = false;
     SDL_Window*                     m_sDLWindow       = nullptr;
+    MTaskNode*                      m_updateTask      = nullptr;
     MTaskNode*                      m_renderTask      = nullptr;
     ImGuiRenderer*                  m_imGuiRender     = nullptr;
 

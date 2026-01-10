@@ -7,6 +7,7 @@
 #include "Engine/MEngine.h"
 #include "Material/MComputeDispatcher.h"
 #include "Mesh/MMeshManager.h"
+#include "Mesh/MVertex.h"
 #include "RHI/Abstract/MIDevice.h"
 #include "RHI/Command/MRenderPassCmd.h"
 #include "RHI/IRenderCommand.h"
@@ -16,6 +17,7 @@
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "Render/MRenderer.h"
 
 using namespace morty;
 
@@ -30,14 +32,21 @@ static const MStringId CandidateClustersNameId  = MStringId("outCandidateCluster
 static const MStringId CandidateCountNameId     = MStringId("outCandidateCount");
 static const MStringId InstanceCountNameId      = MStringId("instanceCount");
 static const MStringId CullingEntryNameId       = MStringId("NaniteInstanceCullingCS");
+static const MStringId BuildDrawCallEntryNameId       = MStringId("BuildDrawCallFillCS");
+
+static const MStringId CandidateClustersInNameId = MStringId("candidateClusters");
+static const MStringId CandidateCountInNameId    = MStringId("candidateCount");
+static const MStringId DrawIndirectNameId             = MStringId("outDrawIndirect");
+static const MStringId DrawGroupCountBufferNameId     = MStringId("outDrawGroupCount");
+static const MStringId DrawGroupCountUniformNameId    = MStringId("drawGroupCount");
 
 // NaniteRenderData uniform member names
-static const MStringId ViewProjMatrixNameId     = MStringId("viewProjMatrix");
-static const MStringId ViewMatrixNameId         = MStringId("viewMatrix");
-static const MStringId CameraPositionNameId     = MStringId("cameraPositionWS");
-static const MStringId ScreenSizeNameId         = MStringId("screenSize");
-static const MStringId NearClipNameId           = MStringId("nearClip");
-static const MStringId FarClipNameId            = MStringId("farClip");
+static const MStringId ViewProjMatrixNameId = MStringId("viewProjMatrix");
+static const MStringId ViewMatrixNameId     = MStringId("viewMatrix");
+static const MStringId CameraPositionNameId = MStringId("cameraPositionWS");
+static const MStringId ScreenSizeNameId     = MStringId("screenSize");
+static const MStringId NearClipNameId       = MStringId("nearClip");
+static const MStringId FarClipNameId        = MStringId("farClip");
 
 void                   MSceneCullingNode::OnCreated()
 {
@@ -47,10 +56,15 @@ void                   MSceneCullingNode::OnCreated()
     auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     auto renderSystem   = GetEngine()->GetSystem<MRenderSystem>();
 
-    m_cullingDispatcher = objectSystem->CreateObject<MComputeDispatcher>();
+    m_cullingDispatcher              = objectSystem->CreateObject<MComputeDispatcher>();
+    m_buildDrawCallDispatcher       = objectSystem->CreateObject<MComputeDispatcher>();
+    m_renderer                      = std::make_unique<MIndexedIndirectCountRenderer>();
 
     auto cullingShader = resourceSystem->LoadResource("ShaderSlang/Culling/MeshInstanceCullingModule.slang");
     m_cullingDispatcher->LoadComputeShader(cullingShader, CullingEntryNameId);
+
+    auto buildDrawCallShader = resourceSystem->LoadResource("ShaderSlang/Culling/BuildDrawCallModule.slang");
+    m_buildDrawCallDispatcher->LoadComputeShader(buildDrawCallShader, BuildDrawCallEntryNameId);
 
     // Initialize output buffers
     m_candidateClustersBuffer = MBuffer::CreateStorageBuffer("MSceneCullingNode::CandidateClusters");
@@ -60,6 +74,17 @@ void                   MSceneCullingNode::OnCreated()
     m_candidateCountBuffer = MBuffer::CreateStorageBuffer("MSceneCullingNode::CandidateCount");
     m_candidateCountBuffer.ReallocMemory(sizeof(uint32_t));
     m_candidateCountBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
+
+    m_drawIndirectBuffer = MBuffer::CreateIndirectDrawBuffer("MSceneCullingNode::DrawIndirect");
+    m_drawIndirectBuffer.ReallocMemory(MaxDrawCallsPerGroup * sizeof(MDrawIndexedIndirectData));
+    m_drawIndirectBuffer.DestroyBuffer(renderSystem->GetDevice());
+    m_drawIndirectBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
+
+    m_drawCallGroupBuffer = MBuffer::CreateBuffer(
+            MBuffer::MMemoryType::EHostVisible,
+            MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect,
+            "MSceneCullingNode::DrawCallGroupCount"
+    );
 }
 
 void MSceneCullingNode::OnDelete()
@@ -68,12 +93,82 @@ void MSceneCullingNode::OnDelete()
 
     m_candidateClustersBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_candidateCountBuffer.DestroyBuffer(renderSystem->GetDevice());
-
+    m_drawIndirectBuffer.DestroyBuffer(renderSystem->GetDevice());
+    m_drawCallGroupBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_cullingDispatcher->DeleteLater();
     m_cullingDispatcher = nullptr;
+
+    m_buildDrawCallDispatcher->DeleteLater();
+    m_buildDrawCallDispatcher = nullptr;
+
+    m_renderer = nullptr;
 }
 
 void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCommand)
+{
+    auto instanceManager = info.scene->GetManager<MMeshInstanceManager>();
+    auto meshManager     = info.scene->GetManager<MMeshManager>();
+
+    NaniteCulling(info, primaryCommand);
+
+    {
+        std::vector<const MBufferRHI*> barrierBuffers;
+        if (m_candidateClustersBuffer.m_bufferRHI)
+        {
+            barrierBuffers.push_back(m_candidateClustersBuffer.m_bufferRHI.get());
+        }
+        if (m_candidateCountBuffer.m_bufferRHI) { barrierBuffers.push_back(m_candidateCountBuffer.m_bufferRHI.get()); }
+        if (!barrierBuffers.empty())
+        {
+            primaryCommand->AddBufferMemoryBarrier(
+                    barrierBuffers,
+                    MEBufferBarrierStage::EComputeShaderWrite,
+                    MEBufferBarrierStage::EComputeShaderRead
+            );
+        }
+    }
+
+    BuildDrawCall(info, primaryCommand);
+
+
+    if (m_drawIndirectBuffer.m_bufferRHI)
+    {
+        primaryCommand->AddBufferMemoryBarrier(
+                {m_drawIndirectBuffer.m_bufferRHI.get()},
+                MEBufferBarrierStage::EComputeShaderWrite,
+                MEBufferBarrierStage::EDrawIndirectRead
+        );
+    }
+    if (m_drawCallGroupBuffer.m_bufferRHI)
+    {
+        primaryCommand->AddBufferMemoryBarrier(
+                {m_drawCallGroupBuffer.m_bufferRHI.get()},
+                MEBufferBarrierStage::EComputeShaderWrite,
+                MEBufferBarrierStage::EDrawIndirectRead
+        );
+    }
+
+    if (m_renderer)
+    {
+        m_renderer->vertexBuffer = meshManager->GetVertexBuffer();
+        m_renderer->indexBuffer  = meshManager->GetIndexBuffer();
+        m_renderer->indirectBuffer = &m_drawIndirectBuffer;
+        m_renderer->countBuffer    = &m_drawCallGroupBuffer;
+
+        const auto& batchGroups = instanceManager->GetBatchGroups();
+        m_renderer->drawCalls.resize(batchGroups.size());
+        std::transform(batchGroups.begin(), batchGroups.end(), m_renderer->drawCalls.begin(),
+            [](const MMaterialBatchGroup* group) {
+                return MIndexedIndirectCountRenderer::DrawCall{.commandOffset = group->GetBatchId() * MaxDrawCallsPerGroup,
+                        .countOffset   = group->GetBatchId(),
+                        .maxCount      = MaxDrawCallsPerGroup};
+            });
+        GetRenderOutput(0)->SetData(m_renderer.get());
+    }
+
+}
+
+void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand)
 {
     // Get managers
     auto instanceManager = info.scene->GetManager<MMeshInstanceManager>();
@@ -99,17 +194,13 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
     renderData.viewProjMatrix = info.m4ProjectionMatrix * renderData.viewMatrix;
 
     // Camera position is the translation part of camera transform
-    renderData.cameraPositionWS = Vector3(
-            info.m4CameraTransform.m[3][0],
-            info.m4CameraTransform.m[3][1],
-            info.m4CameraTransform.m[3][2]
-    );
+    renderData.cameraPositionWS =
+            Vector3(info.m4CameraTransform.m[3][0], info.m4CameraTransform.m[3][1], info.m4CameraTransform.m[3][2]);
 
     // Screen size from viewport rect
-    renderData.screenSize = Vector2(
-            static_cast<float>(info.viewportRect.GetWidth()),
-            static_cast<float>(info.viewportRect.GetHeight())
-    );
+    renderData.screenSize =
+            Vector2(static_cast<float>(info.viewportRect.GetWidth()),
+                    static_cast<float>(info.viewportRect.GetHeight()));
 
     // Near/far clip planes
     renderData.nearClip = info.f2CameraNearFar.x;
@@ -118,7 +209,7 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
     // Extract frustum planes from MCameraFrustum
     for (size_t i = 0; i < 6; ++i)
     {
-        MPlane plane                    = info.cameraFrustum.GetPlane(i);
+        MPlane plane                         = info.cameraFrustum.GetPlane(i);
         renderData.frustumPlanes[i].normal   = Vector3(plane.m_plane.x, plane.m_plane.y, plane.m_plane.z);
         renderData.frustumPlanes[i].distance = plane.m_plane.w;
     }
@@ -158,11 +249,88 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
     primaryCommand->DispatchComputeJob(m_cullingDispatcher, CullingEntryNameId, groupCountX, 1, 1);
 }
 
+void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* primaryCommand)
+{
+    auto instanceManager = info.scene->GetManager<MMeshInstanceManager>();
+    auto meshManager     = info.scene->GetManager<MMeshManager>();
+    if (!instanceManager || !meshManager || !m_buildDrawCallDispatcher)
+    {
+        return;
+    }
+
+    const auto&  batchGroups = instanceManager->GetBatchGroups();
+    const size_t groupCount  = batchGroups.size();
+    if (groupCount == 0) { return; }
+
+    auto         renderSystem = GetEngine()->GetSystem<MRenderSystem>();
+
+    const size_t drawBufferSize = groupCount * MaxDrawCallsPerGroup * sizeof(MDrawIndexedIndirectData);
+    if (m_drawIndirectBuffer.GetSize() < drawBufferSize)
+    {
+        m_drawIndirectBuffer.ReallocMemory(drawBufferSize);
+        m_drawIndirectBuffer.DestroyBuffer(renderSystem->GetDevice());
+        m_drawIndirectBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
+    }
+
+    const size_t groupBufferSize = groupCount * sizeof(uint32_t);
+    if (m_drawCallGroupBuffer.GetSize() != groupBufferSize)
+    {
+        m_drawCallGroupBuffer.ReallocMemory(groupBufferSize);
+        m_drawCallGroupBuffer.DestroyBuffer(renderSystem->GetDevice());
+        m_drawCallGroupBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
+    }
+    std::vector<uint32_t> groupCounts(groupCount);
+    m_drawCallGroupBuffer.UploadBuffer(
+            renderSystem->GetDevice(),
+            reinterpret_cast<const MByte*>(groupCounts.data()),
+            groupBufferSize
+    );
+
+    auto setupParameters = [&](const std::shared_ptr<MShaderParameterSet>& parameterSet) {
+        parameterSet->SetBuffer(CandidateClustersInNameId, &m_candidateClustersBuffer);
+        parameterSet->SetBuffer(CandidateCountInNameId, &m_candidateCountBuffer);
+        parameterSet->SetBuffer(InstanceDataNameId, instanceManager->GetInstanceBuffer());
+        parameterSet->SetBuffer(ClustersNameId, meshManager->GetClusterBuffer());
+        parameterSet->SetBuffer(DrawIndirectNameId, &m_drawIndirectBuffer);
+        parameterSet->SetBuffer(DrawGroupCountBufferNameId, &m_drawCallGroupBuffer);
+        parameterSet->SetValue(DrawGroupCountUniformNameId, static_cast<uint32_t>(groupCount));
+    };
+
+    setupParameters(m_buildDrawCallDispatcher->GetShaderParameterSet(0));
+
+    constexpr uint32_t ThreadsPerGroup = 64;
+    uint32_t           groupCountX     = (MaxCandidateClusters + ThreadsPerGroup - 1) / ThreadsPerGroup;
+    primaryCommand->DispatchComputeJob(
+            m_buildDrawCallDispatcher,
+            BuildDrawCallEntryNameId,
+            groupCountX,
+            1,
+            1
+    );
+
+    if (m_drawIndirectBuffer.m_bufferRHI)
+    {
+        primaryCommand->AddBufferMemoryBarrier(
+                {m_drawIndirectBuffer.m_bufferRHI.get()},
+                MEBufferBarrierStage::EComputeShaderWrite,
+                MEBufferBarrierStage::EDrawIndirectRead
+        );
+    }
+    if (m_drawCallGroupBuffer.m_bufferRHI)
+    {
+        primaryCommand->AddBufferMemoryBarrier(
+                {m_drawCallGroupBuffer.m_bufferRHI.get()},
+                MEBufferBarrierStage::EComputeShaderWrite,
+                MEBufferBarrierStage::EDrawIndirectRead
+        );
+    }
+}
+
 std::vector<MRenderTaskOutputDesc> MSceneCullingNode::InitOutputDesc()
 {
-    static const auto outputCullingResultId = MStringId("Culling output");
+    static const auto outputCullingResultId = MStringId("Renderer");
 
     return {
-            MRenderTaskNodeOutput::CreateBuffer(outputCullingResultId),
+            MRenderTaskNodeOutput::CreateData<IRenderer>(outputCullingResultId),
     };
 }

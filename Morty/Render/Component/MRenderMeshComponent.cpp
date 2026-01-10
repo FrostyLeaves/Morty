@@ -57,7 +57,6 @@ void MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
         {
             auto meshManager = GetScene()->GetManager<MMeshManager>();
             meshManager->RegisterMesh(meshResource->GetMesh());
-            m_clusterRenderData = meshManager->GetClusterRenderData(meshResource->GetMesh());
         }
     };
 

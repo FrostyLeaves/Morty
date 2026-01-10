@@ -72,6 +72,7 @@ public:
     [[nodiscard]] MRenderGraph*                             GetRenderGraph() const;
     [[nodiscard]] MTexturePtr                               GetInputTexture(const size_t& nIdx) const;
     [[nodiscard]] MTexturePtr                               GetOutputTexture(const size_t& nIdx) const;
+    [[nodiscard]] MRenderTaskNodeInput*                     GetRenderInput(const size_t& nIdx) const;
     [[nodiscard]] MRenderTaskNodeOutput*                    GetRenderOutput(const size_t& nIdx) const;
     [[nodiscard]] bool                                      IsValidRenderNode();
 

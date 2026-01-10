@@ -44,7 +44,7 @@ static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MS
     auto attrName = attribute->getName();
     auto argCount = attribute->getArgumentCount();
 
-    MLogger().Log("[{}], {}", attrName, argCount);
+    MLogger::GetInstance()->Log("[{}], {}", attrName, argCount);
 
     if (MString(attrName) == "Property")
     {
@@ -81,7 +81,7 @@ static void ReflectionDefaultFromSlang(
     auto type_layout = parameter->getTypeLayout()->getName();
 
     auto space = std::string(reflectionDepth * 4, ' ');
-    MLogger().Log(
+    MLogger::GetInstance()->Log(
             "{}name: {}, type: {}, set: {}, binding: {}, offest: {}, type layout: {}",
             space,
             name,
@@ -127,7 +127,7 @@ ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock
     if (auto type = parameter->getType())
     {
 
-        MLogger().Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
+        MLogger::GetInstance()->Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
 
         for (auto attrIdx = 0u; attrIdx < type->getUserAttributeCount(); ++attrIdx)
         {
@@ -272,7 +272,7 @@ bool                                   MSlangCompiler::Compile()
     if (diagnostics)
     {
         MString diagnosticsLog = (const char*) diagnostics->getBufferPointer();
-        INFO(diagnosticsLog.c_str());
+        MLogger::GetInstance()->Information(diagnosticsLog.c_str());
     }
     MORTY_ASSERT(module);
 
@@ -332,9 +332,9 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].buffer = std::move(buffer);
     }
 
-    MLogger().Log("==== Slang Reflection Result ====");
+    MLogger::GetInstance()->Log("==== Slang Reflection Result ====");
     ReflectionSlang(linkedProgram, m_reflection);
-    MLogger().Log("==== Slang Reflection End ====");
+    MLogger::GetInstance()->Log("==== Slang Reflection End ====");
 
     return true;
 }

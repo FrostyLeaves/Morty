@@ -213,7 +213,7 @@ int MVulkanPhysicalDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyF
         }
     }
 
-    return MGlobal::M_INVALID_RESULT;
+    return MGlobal::M_INVALID_INT;
 }
 
 VkFormat MVulkanPhysicalDevice::FindSupportedFormat(
@@ -423,9 +423,11 @@ bool MVulkanPhysicalDevice::InitVulkanInstance()
 
     if (result == VK_ERROR_INCOMPATIBLE_DRIVER)
     {
-        GetEngine()->GetLogger()->Error("Cannot find a compatible Vulkan installable client "
-                                        "driver (ICD). Please make sure your driver supports "
-                                        "Vulkan before continuing. The call to vkCreateInstance failed.");
+        GetEngine()->GetLogger()->Error(
+                "Cannot find a compatible Vulkan installable client "
+                "driver (ICD). Please make sure your driver supports "
+                "Vulkan before continuing. The call to vkCreateInstance failed."
+        );
         return false;
     }
     else if (result != VK_SUCCESS)

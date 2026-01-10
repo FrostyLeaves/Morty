@@ -27,8 +27,8 @@ struct MClusterBounds {
 };
 
 struct MCluster {
-    int32_t                   group         = MGlobal::M_INVALID_RESULT;
-    int32_t                   refined       = MGlobal::M_INVALID_RESULT;
+    int32_t                   group         = MGlobal::M_INVALID_INT;
+    int32_t                   refined       = MGlobal::M_INVALID_INT;
     uint32_t                  indicesOffset = 0;//offset in MClusterGroup index array
     uint32_t                  indicesNum    = 0;//number of indices in MClusterGroup index array
     MClusterBounds            bounds;
@@ -50,8 +50,8 @@ struct MClusterGroup {
     uint32_t                  clusterNum;
     MClusterBounds            bounds;
 
-    int32_t                   parentGroupId     = MGlobal::M_INVALID_RESULT;
-    int32_t                   firstChildGroupId = MGlobal::M_INVALID_RESULT;
+    int32_t                   parentGroupId     = MGlobal::M_INVALID_INT;
+    int32_t                   firstChildGroupId = MGlobal::M_INVALID_INT;
     uint32_t                  childGroupCount   = 0;
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
@@ -78,21 +78,14 @@ struct MClusterRenderData {
 };
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
-struct MMeshResourceData {
-    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INDEX;
+struct MMeshResourceRenderData {
+    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INT;
     int32_t rootClusterGroupCount      = 0;
 };
 
 struct MMeshRenderData {
     uint32_t rootClusterOffset = MGlobal::M_INVALID_UINDEX;
     uint32_t rootClusterCount  = 0;
-};
-
-struct MClusterGroupData {
-    MemoryInfo              vertexMemoryInfo;
-    MemoryInfo              indexMemoryInfo;
-    MClusterGroupRenderData renderData;
-    bool                    valid = false;  // whether valid (vertex/index data loaded)
 };
 
 struct MClusterGroupRenderData {
@@ -105,6 +98,13 @@ struct MClusterGroupRenderData {
     Vector3  position;
     float    radius;
     float    error;
+};
+
+struct MClusterGroupData {
+    MemoryInfo              vertexMemoryInfo;
+    MemoryInfo              indexMemoryInfo;
+    MClusterGroupRenderData renderData;
+    bool                    valid = false;// whether valid (vertex/index data loaded)
 };
 
 

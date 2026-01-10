@@ -154,15 +154,19 @@ void MMeshInstanceManager::RenderUpdate(MTaskNode* node)
                 if (!cmd.batchGroup) { break; }
                 storageBufferNeedsUpdate = true;
 
-                m_renderData.batchGroups.push_back(cmd.batchGroup);
+                if (cmd.batchId >= m_renderData.batchGroups.size())
+                {
+                    m_renderData.batchGroups.resize(cmd.batchId + 1);
+                }
+                m_renderData.batchGroups[cmd.batchId] = cmd.batchGroup;
+
                 break;
             }
             case UpdateCommand::Type::RemoveGroup: {
                 if (!cmd.batchGroup) { break; }
                 storageBufferNeedsUpdate = true;
 
-                auto it = std::find(m_renderData.batchGroups.begin(), m_renderData.batchGroups.end(), cmd.batchGroup);
-                if (it != m_renderData.batchGroups.end()) { m_renderData.batchGroups.erase(it); }
+                if (cmd.batchId < m_renderData.batchGroups.size()) { m_renderData.batchGroups[cmd.batchId] = nullptr; }
                 break;
             }
             case UpdateCommand::Type::AddInstance: {
@@ -265,13 +269,10 @@ MMeshInstanceRenderProxy MMeshInstanceManager::CreateProxyFromComponent(MRenderM
     else { proxy.visible = false; }
 
     // Get mesh resource ID from MMeshManager
-    if (auto* mesh = component->GetMesh())
+    if (auto mesh = component->GetMesh())
     {
         auto* meshManager = GetScene()->GetManager<MMeshManager>();
-        if (meshManager)
-        {
-            proxy.meshResourceId = meshManager->GetMeshResourceId(mesh);
-        }
+        if (meshManager) { proxy.meshResourceId = meshManager->GetMeshResourceId(mesh->GetMesh()); }
     }
 
     return proxy;
@@ -293,9 +294,9 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* component)
     m_mainThreadData.componentToMaterialTemplate[proxyId] = pMaterialTemplate;
 
     // Check if batch group already exists in main thread cache
-    auto                                 it = m_mainThreadData.materialTemplateToBatchGroup.find(pMaterialTemplate);
-    std::shared_ptr<MMaterialBatchGroup> batchGroup;
-    MMaterialInstanceKey                 materialInstanceKey = 0;
+    auto                 it                  = m_mainThreadData.materialTemplateToBatchGroup.find(pMaterialTemplate);
+    MMaterialBatchGroup* batchGroup          = nullptr;
+    MMaterialInstanceKey materialInstanceKey = 0;
 
     if (it == m_mainThreadData.materialTemplateToBatchGroup.end())
     {
@@ -310,13 +311,16 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* component)
         auto parameterSet     = pMaterialTemplate->CreateParameterSet(0);
 
         // Create batch group on main thread
-        batchGroup = std::make_shared<MMaterialBatchGroup>(parameterSet, instanceDataName);
+        batchGroup   = new MMaterialBatchGroup(parameterSet, instanceDataName);
+        auto batchId = m_mainThreadData.batchGroups.Emplace(batchGroup);
+        batchGroup->SetBatchId(batchId);
         batchGroup->SetMaterialTemplate(pMaterialTemplate);
 
         // Cache in main thread
         m_mainThreadData.materialTemplateToBatchGroup[pMaterialTemplate] = batchGroup;
         UpdateCommand cmd;
         cmd.type       = UpdateCommand::Type::AddGroup;
+        cmd.batchId    = batchId;
         cmd.batchGroup = batchGroup;
         m_pendingCommands.push_back(cmd);
     }
@@ -325,11 +329,12 @@ void MMeshInstanceManager::AddComponentToGroup(MRenderMeshComponent* component)
 
     // Create add command
     UpdateCommand cmd;
-    cmd.type             = UpdateCommand::Type::AddInstance;
-    cmd.proxyId          = proxyId;
-    cmd.proxy            = CreateProxyFromComponent(component);
-    cmd.proxy.materialId = materialInstanceKey;
-    cmd.batchGroup       = batchGroup;
+    cmd.type                     = UpdateCommand::Type::AddInstance;
+    cmd.proxyId                  = proxyId;
+    cmd.proxy                    = CreateProxyFromComponent(component);
+    cmd.proxy.batchGroupId       = batchGroup->GetBatchId();
+    cmd.proxy.materialInstanceId = materialInstanceKey;
+    cmd.batchGroup               = batchGroup;
     m_pendingCommands.push_back(cmd);
 }
 
@@ -355,10 +360,11 @@ void MMeshInstanceManager::RemoveComponentFromGroup(MRenderMeshComponent* compon
         if (batchGroup->IsEmpty())
         {
             UpdateCommand cmd;
-            cmd.type       = UpdateCommand::Type::RemoveGroup;
-            cmd.batchGroup = batchGroup;
+            cmd.type    = UpdateCommand::Type::RemoveGroup;
+            cmd.batchId = batchGroup->GetBatchId();
             m_pendingCommands.push_back(cmd);
             m_mainThreadData.materialTemplateToBatchGroup.erase(findResult);
+            m_mainThreadData.batchGroups.Release(batchGroup->GetBatchId());
         }
     }
 
@@ -384,11 +390,12 @@ void MMeshInstanceManager::UpdateMeshInstance(MRenderMeshComponent* component, M
 
     // Create update command
     UpdateCommand cmd;
-    cmd.type             = UpdateCommand::Type::UpdateInstance;
-    cmd.proxyId          = proxy.proxyId;
-    cmd.proxy            = proxy;
-    cmd.proxy.materialId = batchGroup->GetInstanceKey(proxy.proxyId);
-    cmd.batchGroup       = batchGroup;
+    cmd.type                     = UpdateCommand::Type::UpdateInstance;
+    cmd.proxyId                  = proxy.proxyId;
+    cmd.proxy                    = proxy;
+    cmd.proxy.batchGroupId       = batchGroup->GetBatchId();
+    cmd.proxy.materialInstanceId = batchGroup->GetInstanceKey(proxy.proxyId);
+    cmd.batchGroup               = batchGroup;
     m_pendingCommands.push_back(cmd);
 }
 

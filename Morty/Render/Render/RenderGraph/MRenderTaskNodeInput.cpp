@@ -1,6 +1,7 @@
 #include "MRenderTaskNodeInput.h"
 #include "MRenderTaskNode.h"
 #include "Utility/MUtils.h"
+#include "MRenderTaskNodeOutput.h"
 
 using namespace morty;
 
@@ -10,6 +11,12 @@ void MRenderTaskNodeInput::SetInputDesc(const MRenderTaskInputDesc& desc)
 {
     m_desc = desc;
     SetName(desc.name);
+}
+
+const MTypeClass* MRenderTaskNodeInput::GetDataInternal() const
+{
+    auto output = GetLinkedOutput();
+    return output ? static_cast<MRenderTaskNodeOutput*>(output)->GetDataInternal() : nullptr;
 }
 
 MRenderTaskInputDesc MRenderTaskNodeInput::CreateSample(const MStringId& name, METextureFormat format, bool allowEmpty)
@@ -42,6 +49,15 @@ MRenderTaskInputDesc MRenderTaskNodeInput::CreateDepth(const MStringId& name)
             .format     = METextureFormat::Depth,
             .allowEmpty = false,
             .barrier    = METextureBarrierStage::EPixelShaderWrite,
+    };
+}
+
+MRenderTaskInputDesc MRenderTaskNodeInput::CreateData(const MStringId& name, const MType* dataType)
+{
+    return {
+            .name     = name,
+            .type     = MRenderNodeOutputType::Data,
+            .dataType = dataType,
     };
 }
 

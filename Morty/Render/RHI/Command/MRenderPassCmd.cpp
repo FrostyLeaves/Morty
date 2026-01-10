@@ -51,6 +51,27 @@ void MRenderPassCmd::DrawIndexedIndirect(
     });
 }
 
+void MRenderPassCmd::DrawIndexedIndirectCount(
+        const MBuffer* vertexBuffer,
+        const MBuffer* indexBuffer,
+        const MBuffer* commandsBuffer,
+        const MBuffer* countBuffer,
+        size_t         commandOffset,
+        size_t         countOffset,
+        size_t         maxCount
+)
+{
+    m_commandQueue.emplace_back(new MDrawIndexedIndirectCountCmd{
+            .vertexBuffer   = vertexBuffer->m_bufferRHI.get(),
+            .indexBuffer    = indexBuffer->m_bufferRHI.get(),
+            .commandsBuffer = commandsBuffer->m_bufferRHI.get(),
+            .countBuffer    = countBuffer->m_bufferRHI.get(),
+            .commandOffset  = commandOffset,
+            .countOffset    = countOffset,
+            .maxCount       = maxCount
+    });
+}
+
 void MRenderPassCmd::SetGraphPipeline(const MGraphicsPipeline* pipeline, size_t subPassIdx)
 {
     m_commandQueue.emplace_back(new MSetGraphPipelineCmd{

@@ -100,7 +100,7 @@ namespace morty
 class MORTY_API MGlobal
 {
 public:
-    static constexpr int      M_INVALID_RESULT = -1;
+    static constexpr int32_t  M_INVALID_INT    = -1;
     static constexpr size_t   M_INVALID_INDEX  = -1;
     static constexpr uint32_t M_INVALID_UINDEX = -1;
     static constexpr float    M_FLOAT_BIAS     = 1e-6;

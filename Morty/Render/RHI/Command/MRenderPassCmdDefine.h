@@ -33,7 +33,7 @@ struct IPipelineCmd {
 };
 
 template<size_t CmdType> struct MPipelineCmd : public IPipelineCmd {
-    MPipelineCmd() { type = CmdType; }
+                  MPipelineCmd() { type = CmdType; }
     static size_t GetType() { return CmdType; }
 };
 
@@ -63,28 +63,41 @@ struct MDrawIndexedIndirectCmd : public MPipelineCmd<4> {
     size_t            count          = 0;
 };
 
-struct MSetGraphPipelineCmd : public MPipelineCmd<5> {
+struct MDrawIndexedIndirectCountCmd : public MPipelineCmd<5> {
+    const MBufferRHI* vertexBuffer   = nullptr;
+    const MBufferRHI* indexBuffer    = nullptr;
+    const MBufferRHI* commandsBuffer = nullptr;
+    const MBufferRHI* countBuffer    = nullptr;
+    size_t            commandOffset  = 0;
+    size_t            countOffset    = 0;
+    size_t            maxCount       = 0;
+};
+
+struct MSetGraphPipelineCmd : public MPipelineCmd<6> {
     const MGraphicsPipeline* pipeline   = nullptr;
     const size_t             subPassIdx = 0;
 };
 
-struct MSetShaderParameterSetCmd : public MPipelineCmd<6> {
+struct MSetShaderParameterSetCmd : public MPipelineCmd<7> {
     const MPipeline*     pipeline           = nullptr;
     MShaderParameterSet* property           = nullptr;
     bool                 allocDescriptorSet = false;
 };
 
-struct MAddTextureBarrierCmd : public MPipelineCmd<7> {
+struct MAddTextureBarrierCmd : public MPipelineCmd<8> {
     const std::vector<MTexture*> textures;
     const METextureBarrierStage  dstStage = METextureBarrierStage::EPixelShaderSample;
 };
 
-struct MNextSubPassCmd : public MPipelineCmd<8> {
+struct MNextSubPassCmd : public MPipelineCmd<9> {
 };
 
-struct MSetShadingRateCmd : public MPipelineCmd<9> {
+struct MSetShadingRateCmd : public MPipelineCmd<10> {
     Vector2i                               shadingRate{};
     std::array<MEShadingRateCombinerOp, 2> combineOp{};
+};
+
+struct MMaxCommandCount : public MPipelineCmd<11> {
 };
 
 }// namespace morty

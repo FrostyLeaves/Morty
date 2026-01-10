@@ -41,6 +41,7 @@
 #include "Widget/RenderSettingView.h"
 #include "Widget/ResourceView.h"
 #include "Widget/TaskGraphView.h"
+#include "Widget/LogWidget.h"
 
 using namespace morty;
 
@@ -65,6 +66,7 @@ bool      MainEditor::Initialize(MEngine* engine)
     m_childView.push_back(new ResourceView());
     m_childView.push_back(new ModelImportView());
     m_childView.push_back(new MainView());
+    m_childView.push_back(new LogWidget());
 
     auto pTaskGraphView = new TaskGraphView("Task Graph");
     pTaskGraphView->SetTaskGraph(GetEngine()->GetMainGraph());

@@ -61,6 +61,10 @@ public:
     [[nodiscard]] MRenderTaskNodeOutput* GetActualOutput();
     [[nodiscard]] MTexturePtr            GetActualTexture() { return GetActualOutput()->GetRenderTexture(); }
 
+    void                                 SetData(const MTypeClass* data) { m_data = data; }
+    template<typename T> const T*        GetData() const { return m_data->DynamicCast<T>(); }
+    const MTypeClass*                    GetDataInternal() const { return m_data; }
+
     bool                                 CanLink(const MTaskNodeInput* input) const override;
 
     [[nodiscard]] MRenderTarget          CreateRenderTarget();
@@ -88,9 +92,13 @@ public:
 
     static MRenderTaskOutputDesc CreateBuffer(const MStringId& name);
 
+    template<typename T> static MRenderTaskOutputDesc CreateData(const MStringId& name) { return CreateData(name, T::GetClassType()); }
+    static MRenderTaskOutputDesc CreateData(const MStringId& name, const MType* dataType);
+
 private:
     MRenderTaskOutputDesc m_desc;
     MTexturePtr           m_renderTexture;
+    const MTypeClass*     m_data = nullptr;
 };
 
 }// namespace morty

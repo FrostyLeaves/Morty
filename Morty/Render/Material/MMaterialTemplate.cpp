@@ -76,7 +76,7 @@ std::shared_ptr<MShaderParameterSet> MMaterialTemplate::CreateParameterSet(size_
 
 MHashCode MMaterialTemplate::GetHashCode() const
 {
-    MHashCode hash;
+    MHashCode hash = 0;
 
     MUtils::HashCombine(hash, m_shaderMacro.GetHashCode());
     MUtils::HashCombine(hash, m_shaderResource.GetHashCode());

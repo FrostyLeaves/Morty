@@ -83,6 +83,7 @@ private:
     void                              SetScissor(const MSetScissorCmd* scissor) const;
     void                              DrawMesh(const MDrawMeshCmd* cmd);
     void                              DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cmd);
+    void                              DrawIndexedIndirectCount(const MDrawIndexedIndirectCountCmd* cmd);
     void                              SetGraphPipeline(const MSetGraphPipelineCmd* cmd);
     void                              SetShaderParameterSet(const MSetShaderParameterSetCmd* cmd);
     void                              AddBarrierForPixelSample(const MSetShaderParameterSetCmd* cmd);

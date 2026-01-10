@@ -16,7 +16,7 @@ namespace morty
 {
 
 class MIDevice;
-class MORTY_API MBuffer : MTypeClass
+class MORTY_API MBuffer : public MTypeClass
 {
 public:
     MORTY_CLASS(MBuffer)
@@ -47,10 +47,10 @@ public:
 
 
 public:
-    MBuffer() = default;
-    MBuffer(const MBuffer& other);
+                   MBuffer() = default;
+                   MBuffer(const MBuffer& other);
     const MBuffer& operator=(const MBuffer& other);
-    ~MBuffer() = default;
+    ~              MBuffer() = default;
 
     static MBuffer CreateBuffer(MMemoryType memory, uint32_t usage, const char* debugName = nullptr);
 
@@ -83,6 +83,17 @@ public:
     void   DestroyBuffer(MIDevice* pDevice);
 
     void   DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
+
+    template<typename T> void ApplyData(MIDevice* device, const std::vector<T>& data)
+    {
+        if (data.size() * sizeof(T) > m_unDataSize)
+        {
+            ReallocMemory(data.size() * sizeof(T));
+            DestroyBuffer(device);
+            GenerateBuffer(device, reinterpret_cast<const MByte*>(data.data()), data.size() * sizeof(T));
+        }
+        else { UploadBuffer(device, reinterpret_cast<const MByte*>(data.data()), data.size() * sizeof(T)); }
+    }
 
 
 #if MORTY_DEBUG

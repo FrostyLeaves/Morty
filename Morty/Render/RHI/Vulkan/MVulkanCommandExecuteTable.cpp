@@ -9,7 +9,7 @@ using namespace morty;
 
 morty::MVulkanCommandExecuteTable::MVulkanCommandExecuteTable()
 {
-    size_t maxCommandNum = 10;
+    size_t maxCommandNum = MMaxCommandCount::GetType();
     m_commandFunction.resize(maxCommandNum);
     m_perProcessFunction.resize(maxCommandNum);
 
@@ -27,6 +27,10 @@ morty::MVulkanCommandExecuteTable::MVulkanCommandExecuteTable()
 
     m_commandFunction[MDrawIndexedIndirectCmd::GetType()] = [](auto* self, auto* cmd) {
         self->DrawIndexedIndirect((const MDrawIndexedIndirectCmd*) cmd);
+    };
+
+    m_commandFunction[MDrawIndexedIndirectCountCmd::GetType()] = [](auto* self, auto* cmd) {
+        self->DrawIndexedIndirectCount((const MDrawIndexedIndirectCountCmd*) cmd);
     };
 
     m_commandFunction[MSetGraphPipelineCmd::GetType()] = [](auto* self, auto* cmd) {

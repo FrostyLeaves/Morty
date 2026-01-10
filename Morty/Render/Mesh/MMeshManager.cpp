@@ -26,6 +26,8 @@ MORTY_CLASS_IMPLEMENT(MMeshManager, IManager)
 
 constexpr size_t VertexMemoryMaxSize = 1024 * 1024 * 20;
 constexpr size_t IndexMemoryMaxSize  = 1024 * 1024 * 80;
+constexpr size_t ClusterGroupMaxSize = 1024 * 256;
+constexpr size_t ClusterMaxSize      = 1024 * 1024 * 4;
 constexpr size_t ClusterSize         = 64u * 3u;
 
 class MeshManagerBuffer : public MMeshBufferAdapter
@@ -49,6 +51,8 @@ MMeshManager::MMeshManager()
     : MeshVertexStructSize(sizeof(MVertex))
     , m_vertexMemoryPool(VertexMemoryMaxSize * MeshVertexStructSize)
     , m_indexMemoryPool(IndexMemoryMaxSize * sizeof(uint32_t))
+    , m_clusterGroupDataIDPool(ClusterGroupMaxSize)
+    , m_clusterPool(ClusterMaxSize)
 {
     m_meshBufferAdapter = std::make_shared<MeshManagerBuffer>(this);
 }
@@ -61,10 +65,12 @@ void MMeshManager::Initialize()
 
     m_vertexBuffer = MBuffer::CreateVertexBuffer("MeshManager VertexBuffer");
     m_vertexBuffer.ReallocMemory(m_vertexMemoryPool.GetMaxMemorySize());
+    m_vertexBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_vertexBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
     m_indexBuffer = MBuffer::CreateIndexBuffer("MeshManager VertexBuffer");
     m_indexBuffer.ReallocMemory(m_indexMemoryPool.GetMaxMemorySize());
+    m_indexBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_indexBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
     m_clusterGroupBuffer = MBuffer::CreateStorageBuffer("MeshManager ClusterGroupBuffer");
@@ -73,13 +79,19 @@ void MMeshManager::Initialize()
 
     InitializeScreenRect();
 
-    auto* pUploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_UPLOAD_MESH_UPDATE);
-    pUploadBufferTask->SetThreadType(METhreadType::ERenderThread);
-    pUploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::RenderUpdate, this));
+    m_uploadBufferTask = GetEngine()->GetMainGraph()->AddNode<MTaskNode>(MRenderGlobal::TASK_UPLOAD_MESH_UPDATE);
+    m_uploadBufferTask->SetThreadType(METhreadType::ERenderThread);
+    m_uploadBufferTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(MMeshManager::RenderUpdate, this));
 }
 
 void MMeshManager::Release()
 {
+    if (m_uploadBufferTask)
+    {
+        GetEngine()->GetMainGraph()->DestroyNode(m_uploadBufferTask);
+        m_uploadBufferTask = nullptr;
+    }
+
     ReleaseScreenRect();
 
     const MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
@@ -92,14 +104,6 @@ void MMeshManager::Release()
 
 
     Super::Release();
-}
-
-MMeshRenderData MMeshManager::GetClusterRenderData(MIMesh* mesh) const
-{
-    auto findResult = m_meshTable.find(mesh);
-    if (findResult == m_meshTable.end()) { return {}; }
-
-    return m_meshDatas[findResult->second];
 }
 
 void MMeshManager::LoadClusterPage(size_t groupIdx, const MClusterPage& page)
@@ -163,6 +167,7 @@ void MMeshManager::InitializeScreenRect()
 
 
     MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
+    m_screenRect->DestroyBuffer(renderSystem->GetDevice());
     m_screenRect->GenerateBuffer(renderSystem->GetDevice());
 }
 
@@ -215,9 +220,7 @@ void MMeshManager::UploadClusterData()
 
         if (!clusterGroupShaderData.empty())
         {
-            const size_t dataSize = clusterGroupShaderData.size() * sizeof(MClusterGroupRenderData);
-            m_clusterGroupBuffer.ReallocMemory(dataSize);
-            m_clusterGroupBuffer.GenerateBuffer(pDevice, clusterGroupShaderData.data(), dataSize);
+            m_clusterGroupBuffer.ApplyData(pDevice, clusterGroupShaderData);
         }
     }
 
@@ -239,17 +242,13 @@ void MMeshManager::UploadClusterData()
             clusterShaderData.push_back(shaderData);
         }
 
-        const size_t dataSize = clusterShaderData.size() * sizeof(MClusterRenderData);
-        m_clusterBuffer.ReallocMemory(dataSize);
-        m_clusterBuffer.GenerateBuffer(pDevice, clusterShaderData.data(), dataSize);
+        m_clusterBuffer.ApplyData(pDevice, clusterShaderData);
     }
 
     // Upload MeshResourceData
     if (!m_meshResourceDatas.empty())
     {
-        const size_t dataSize = m_meshResourceDatas.size() * sizeof(MMeshResourceData);
-        m_meshResourceBuffer.ReallocMemory(dataSize);
-        m_meshResourceBuffer.GenerateBuffer(pDevice, m_meshResourceDatas.data(), dataSize);
+        m_meshResourceBuffer.ApplyData(pDevice, m_meshResourceDatas);
     }
 
     m_clustersDirty = false;
@@ -283,62 +282,67 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
     auto findResult = m_meshTable.find(mesh);
     if (findResult != m_meshTable.end())
     {
-        m_meshDatas[findResult->second].referenceNum++;
+        auto* meshData = m_meshDataPool.Get(findResult->second);
+        MORTY_ASSERT(meshData);
+        if (!meshData) { return false; }
+        meshData->referenceNum++;
         return true;
     }
 
-    auto id = m_meshTable[mesh] = m_meshDataIDPool.AllocateID();
+    auto id = m_meshDataPool.Emplace();
+    m_meshTable[mesh] = id;
 
     // Populate MeshResourceData for this mesh
     if (m_meshResourceDatas.size() <= id) { m_meshResourceDatas.resize(id + 1); }
 
-    if (m_meshDatas.size() <= id) { m_meshDatas.resize(id + 1); }
     const auto& clusters = mesh->GetClusters();
 
-    auto&       meshData = m_meshDatas[id] = MMeshData();
+    auto*       meshData = m_meshDataPool.Get(id);
+    MORTY_ASSERT(meshData);
+    if (!meshData) { return false; }
+    *meshData = MMeshData();
 
-    m_clusterPool.AllocMemory(clusters.size(), meshData.clusterInfo);
-    meshData.referenceNum = 1;
+    m_clusterPool.AllocMemory(clusters.size(), meshData->clusterInfo);
+    meshData->referenceNum = 1;
 
     //fill cluster data
-    if (m_clusters.size() < meshData.clusterInfo.begin + clusters.size())
+    if (m_clusters.size() < meshData->clusterInfo.begin + clusters.size())
     {
-        m_clusters.resize(meshData.clusterInfo.begin + clusters.size());
+        m_clusters.resize(meshData->clusterInfo.begin + clusters.size());
     }
-    memcpy(&m_clusters[meshData.clusterInfo.begin], clusters.data(), clusters.size() * sizeof(MCluster));
-
+    std::copy(clusters.begin(), clusters.end(), m_clusters.begin() + meshData->clusterInfo.begin);
 
     // Allocate cluster group IDs
-    m_clusterGroupDataIDPool.AllocMemory(mesh->GetClusterGroup().size(), meshData.clusterGroupInfo);
+    m_clusterGroupDataIDPool.AllocMemory(mesh->GetClusterGroup().size(), meshData->clusterGroupInfo);
 
     // Fill MeshResourceData - store root cluster group info
-    m_meshResourceDatas[id].rootClusterGroupBeginIndex = static_cast<int32_t>(meshData.clusterGroupInfo.begin);
+    m_meshResourceDatas[id].rootClusterGroupBeginIndex = static_cast<int32_t>(meshData->clusterGroupInfo.begin);
     // Root groups are at LOD level 0
     const auto& lods = mesh->GetClusterLodData();
-    if (!lods.empty()) {
-        m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(lods[0].groupNum);
-    } else {
+    if (!lods.empty()) { m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(lods[0].groupNum); }
+    else
+    {
         // No LOD data, treat all groups as root groups
         m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(mesh->GetClusterGroup().size());
     }
 
-    if (m_clusterGroupDatas.size() < meshData.clusterGroupInfo.begin + meshData.clusterGroupInfo.size)
+    if (m_clusterGroupDatas.size() < meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size)
     {
-        m_clusterGroupDatas.resize(meshData.clusterGroupInfo.begin + meshData.clusterGroupInfo.size);
+        m_clusterGroupDatas.resize(meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size);
     }
 
     //fill cluster group render data
     for (size_t i = 0; i < mesh->GetClusterGroup().size(); ++i)
     {
-        MClusterGroupData& data   = m_clusterGroupDatas[meshData.clusterGroupInfo.begin + i];
+        MClusterGroupData& data   = m_clusterGroupDatas[meshData->clusterGroupInfo.begin + i];
         auto&              source = mesh->GetClusterGroup()[i];
 
         data.renderData.childGroupCount   = source.childGroupCount;
-        data.renderData.clusterBeginIndex = meshData.clusterInfo.begin + source.clusterOffset;
+        data.renderData.clusterBeginIndex = meshData->clusterInfo.begin + source.clusterOffset;
         data.renderData.clusterCount      = source.clusterNum;
         data.renderData.error             = source.bounds.error;
-        data.renderData.firstGroupId      = meshData.clusterGroupInfo.begin + source.firstChildGroupId;
-        data.renderData.parentGroupId     = meshData.clusterGroupInfo.begin + source.parentGroupId;
+        data.renderData.firstGroupId      = meshData->clusterGroupInfo.begin + source.firstChildGroupId;
+        data.renderData.parentGroupId     = meshData->clusterGroupInfo.begin + source.parentGroupId;
         data.renderData.position          = source.bounds.position;
         data.renderData.radius            = source.bounds.radius;
         data.renderData.valid             = 0;
@@ -346,7 +350,7 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
 
     //load vertex and index data
     const auto& pages = mesh->GetClusterPages();
-    for (size_t i = 0; i < pages.size(); ++i) { LoadClusterPage(meshData.clusterGroupInfo.begin + i, pages[i]); }
+    for (size_t i = 0; i < pages.size(); ++i) { LoadClusterPage(meshData->clusterGroupInfo.begin + i, pages[i]); }
 
     return true;
 }
@@ -366,13 +370,15 @@ void MMeshManager::UnregisterMesh(MIMesh* mesh)
         return;
     }
 
-    auto& meshData = m_meshDatas[findResult->second];
-    meshData.referenceNum--;
+    auto* meshData = m_meshDataPool.Get(findResult->second);
+    MORTY_ASSERT(meshData);
+    if (!meshData) { return; }
+    meshData->referenceNum--;
 
-    if (meshData.referenceNum != 0) { return; }
+    if (meshData->referenceNum != 0) { return; }
 
-    for (auto groupIdx = meshData.clusterGroupInfo.begin;
-         groupIdx < meshData.clusterGroupInfo.begin + meshData.clusterGroupInfo.size;
+    for (auto groupIdx = meshData->clusterGroupInfo.begin;
+         groupIdx < meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size;
          ++groupIdx)
     {
         MORTY_ASSERT(groupIdx < m_clusterGroupDatas.size());
@@ -380,7 +386,10 @@ void MMeshManager::UnregisterMesh(MIMesh* mesh)
         UnloadClusterPage(groupIdx);
     }
 
+    const auto meshId = findResult->second;
+    m_meshResourceDatas[meshId] = MMeshResourceRenderData();
     m_meshTable.erase(findResult);
+    m_meshDataPool.Release(meshId);
 }
 
 bool    MMeshManager::HasMesh(MIMesh* mesh) const { return m_meshTable.find(mesh) != m_meshTable.end(); }
@@ -389,10 +398,10 @@ MIMesh* MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
 
 std::shared_ptr<MMeshBufferAdapter> MMeshManager::GetMeshBuffer() const { return m_meshBufferAdapter; }
 
-int32_t MMeshManager::GetMeshResourceId(MIMesh* mesh) const
+int32_t                             MMeshManager::GetMeshResourceId(MIMesh* mesh) const
 {
     auto findResult = m_meshTable.find(mesh);
-    if (findResult == m_meshTable.end()) { return MGlobal::M_INVALID_INDEX; }
+    if (findResult == m_meshTable.end()) { return MGlobal::M_INVALID_INT; }
     return static_cast<int32_t>(findResult->second);
 }
 

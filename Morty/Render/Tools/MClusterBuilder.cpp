@@ -213,8 +213,8 @@ int32_t MClusterBuilder::OutputGroup(
     group.bounds         = simplified;
 
     // Initialize hierarchy fields
-    group.parentGroupId     = MGlobal::M_INVALID_RESULT;
-    group.firstChildGroupId = MGlobal::M_INVALID_RESULT;
+    group.parentGroupId     = MGlobal::M_INVALID_INT;
+    group.firstChildGroupId = MGlobal::M_INVALID_INT;
     group.childGroupCount   = 0;
 
     std::vector<uint32_t> clusterIndices(clusterInGroup.size());
@@ -525,7 +525,7 @@ void MClusterBuilder::BuildCluster(const InputData& input)
             auto    refined = OutputGroup(input, clusters, groups[i], groupBounds);
 
             // Get the parent group ID from the first cluster in the group
-            int32_t parentGroupId = MGlobal::M_INVALID_RESULT;
+            int32_t parentGroupId = MGlobal::M_INVALID_INT;
             if (!groups[i].empty())
             {
                 const auto& firstCluster = clusters[groups[i][0]];
@@ -533,12 +533,12 @@ void MClusterBuilder::BuildCluster(const InputData& input)
             }
 
             // Update parent-child relationships
-            if (parentGroupId != MGlobal::M_INVALID_RESULT)
+            if (parentGroupId != MGlobal::M_INVALID_INT)
             {
                 MClusterGroup& parentGroup = m_allGroups[parentGroupId];
 
                 // Set the first child if not already set
-                if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_RESULT)
+                if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_INT)
                 {
                     parentGroup.firstChildGroupId = refined;
                 }
@@ -587,14 +587,14 @@ void MClusterBuilder::BuildCluster(const InputData& input)
         auto    rootGroupId = OutputGroup(input, clusters, pending, bounds);
 
         // Update parent-child relationship for the root group
-        int32_t parentGroupId = MGlobal::M_INVALID_RESULT;
+        int32_t parentGroupId = MGlobal::M_INVALID_INT;
         if (cluster.group != -1) { parentGroupId = cluster.group; }
 
-        if (parentGroupId != MGlobal::M_INVALID_RESULT)
+        if (parentGroupId != MGlobal::M_INVALID_INT)
         {
             MClusterGroup& parentGroup = m_allGroups[parentGroupId];
 
-            if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_RESULT)
+            if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_INT)
             {
                 parentGroup.firstChildGroupId = rootGroupId;
             }

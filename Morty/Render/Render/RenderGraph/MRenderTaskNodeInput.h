@@ -43,9 +43,15 @@ class MORTY_API MRenderTaskNodeInput : public MTaskNodeInput
     [[nodiscard]] MRenderTaskInputDesc GetInputDesc() const { return m_desc; }
     [[nodiscard]] METextureFormat      GetFormat() const { return m_desc.format; }
 
+    template<typename T> [[nodiscard]] const T*        GetData() const { return GetDataInternal()->DynamicCast<T>(); }
+    [[nodiscard]] const MTypeClass*                                     GetDataInternal() const;
+
     static MRenderTaskInputDesc        CreateSample(const MStringId& name, METextureFormat format, bool allowEmpty);
     static MRenderTaskInputDesc        CreatePixelWrite(const MStringId& name, METextureFormat format, bool allowEmpty);
     static MRenderTaskInputDesc        CreateDepth(const MStringId& name);
+
+    template<typename T> static MRenderTaskInputDesc CreateData(const MStringId& name) { return CreateData(name, T::GetClassType()); }
+    static MRenderTaskInputDesc CreateData(const MStringId& name, const MType* dataType);
 
 private:
     MRenderTaskInputDesc m_desc;

@@ -2,11 +2,11 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MBuffer.h"
+#include "Container/MItemPool.h"
 #include "MMaterialBatchGroup.h"
 #include "Material/MMaterial.h"
 #include "Scene/MManager.h"
 #include "Variant/MVariant.h"
-
 
 #include <mutex>
 #include <unordered_map>
@@ -33,33 +33,33 @@ public:
     MORTY_INTERFACE(MMeshInstanceManager)
 
 public:
-    void                                                     Initialize() override;
+    void                                     Initialize() override;
 
-    void                                                     Release() override;
+    void                                     Release() override;
 
-    [[nodiscard]] std::set<const MType*>                     RegisterComponentType() const override;
+    [[nodiscard]] std::set<const MType*>     RegisterComponentType() const override;
 
-    void                                                     UnregisterComponent(MComponent* component) override;
+    void                                     UnregisterComponent(MComponent* component) override;
 
-    void                                                     SceneTick(MScene* scene, const float& delta) override;
+    void                                     SceneTick(MScene* scene, const float& delta) override;
 
-    void                                                     RenderUpdate(MTaskNode* node);
+    void                                     RenderUpdate(MTaskNode* node);
 
-    [[nodiscard]] MTaskNode*                                 GetUpdateTask() const { return m_updateTask; }
+    [[nodiscard]] MTaskNode*                 GetUpdateTask() const { return m_updateTask; }
 
-    void                                                     OnMaterialChanged(MComponent* component);
+    void                                     OnMaterialChanged(MComponent* component);
 
-    void                                                     OnMeshChanged(MComponent* component);
+    void                                     OnMeshChanged(MComponent* component);
 
-    void                                                     OnSceneComponentChanged(MComponent* component);
+    void                                     OnSceneComponentChanged(MComponent* component);
 
-    void                                                     OnRenderMeshChanged(MComponent* component);
+    void                                     OnRenderMeshChanged(MComponent* component);
 
-    void                                                     OnRemoveComponent(MRenderMeshComponent* component);
+    void                                     OnRemoveComponent(MRenderMeshComponent* component);
 
-    const std::vector<std::shared_ptr<MMaterialBatchGroup>>& GetBatchGroups() const { return m_renderData.batchGroups; }
+    const std::vector<MMaterialBatchGroup*>& GetBatchGroups() const { return m_renderData.batchGroups; }
 
-    const MBuffer* GetInstanceBuffer() const { return &m_renderData.instanceBuffer; }
+    const MBuffer*                           GetInstanceBuffer() const { return &m_renderData.instanceBuffer; }
 
 protected:
     void                     AddComponentToGroup(MRenderMeshComponent* component);
@@ -74,17 +74,18 @@ private:
     // Main thread data - for receiving notifications and updates
     struct MainThreadData {
         // Mapping from component ID to material template for fast group lookup
-        std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>> componentToMaterialTemplate;
+        std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>>     componentToMaterialTemplate;
         // Cache of batch groups created on main thread
-        std::unordered_map<std::shared_ptr<MMaterialTemplate>, std::shared_ptr<MMaterialBatchGroup>>
-                materialTemplateToBatchGroup;
+        std::unordered_map<std::shared_ptr<MMaterialTemplate>, MMaterialBatchGroup*> materialTemplateToBatchGroup;
+
+        MItemPool<MMaterialBatchGroup*>                                              batchGroups;
     };
 
     // Render thread data - for rendering
     struct RenderThreadData {
-        std::vector<std::shared_ptr<MMaterialBatchGroup>> batchGroups;
-        std::vector<MMeshInstanceRenderProxy>             renderProxies;
-        MBuffer                                           instanceBuffer;
+        std::vector<MMaterialBatchGroup*>     batchGroups;
+        std::vector<MMeshInstanceRenderProxy> renderProxies;
+        MBuffer                               instanceBuffer;
     };
 
     // Update queue, written by main thread and read by render thread
@@ -98,10 +99,11 @@ private:
             UpdateInstance
         };
 
-        Type                                 type;
-        MMeshInstanceKey                     proxyId;
-        MMeshInstanceRenderProxy             proxy;
-        std::shared_ptr<MMaterialBatchGroup> batchGroup;// Pre-created batch group from main thread
+        Type                     type;
+        size_t                   batchId;
+        MMeshInstanceKey         proxyId;
+        MMeshInstanceRenderProxy proxy;
+        MMaterialBatchGroup*     batchGroup = nullptr;// Pre-created batch group from main thread
     };
 
     MTaskNode*                 m_updateTask = nullptr;

@@ -7,8 +7,8 @@
 #include "Object/MObject.h"
 #include "Scene/MManager.h"
 #include "Utility/MBounds.h"
-#include "Utility/MIDPool.h"
 #include "Utility/MMemoryPool.h"
+#include "Container/MItemPool.h"
 
 namespace morty
 {
@@ -33,7 +33,7 @@ class MMeshManager : public IManager
     };
 
 public:
-    explicit                                          MMeshManager();
+    explicit MMeshManager();
     void                                              Initialize() override;
     void                                              Release() override;
 
@@ -49,8 +49,6 @@ public:
     [[nodiscard]] const MBuffer*                      GetClusterBuffer() const { return &m_clusterBuffer; }
     [[nodiscard]] const MBuffer*                      GetMeshResourceBuffer() const { return &m_meshResourceBuffer; }
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
-
-    MMeshRenderData                                   GetClusterRenderData(MIMesh* mesh) const;
 
 private:
     void                                         LoadClusterPage(size_t groupIdx, const MClusterPage& page);
@@ -75,8 +73,7 @@ private:
     MMemoryPool                                  m_indexMemoryPool;
 
     std::unordered_map<MIMesh*, size_t>          m_meshTable;
-    std::vector<MMeshData>                       m_meshDatas;
-    MReusableIDPool<size_t>                      m_meshDataIDPool;
+    MItemPool<MMeshData>                         m_meshDataPool;
 
     std::unique_ptr<MIMesh>                      m_screenRect = nullptr;
 
@@ -87,7 +84,7 @@ private:
     MMemoryPool                                  m_clusterPool;
 
     // Mesh resource data buffer
-    std::vector<MMeshResourceData>               m_meshResourceDatas;
+    std::vector<MMeshResourceRenderData>         m_meshResourceDatas;
     MBuffer                                      m_meshResourceBuffer;
 
     // GPU buffers for cluster culling
@@ -102,6 +99,7 @@ private:
     std::vector<std::pair<size_t, MClusterPage>> m_uploadPageQueue;
     std::shared_ptr<MMeshBufferAdapter>          m_meshBufferAdapter = nullptr;
 
+    MTaskNode*                                   m_uploadBufferTask  = nullptr;
 };
 
 }// namespace morty

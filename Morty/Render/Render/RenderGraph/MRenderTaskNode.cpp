@@ -47,6 +47,11 @@ MTexturePtr MRenderTaskNode::GetOutputTexture(const size_t& nIdx) const
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>()->GetRenderTexture();
 }
 
+MRenderTaskNodeInput* MRenderTaskNode::GetRenderInput(const size_t& nIdx) const
+{
+    return GetInput(nIdx)->DynamicCast<MRenderTaskNodeInput>();
+}
+
 MRenderTaskNodeOutput* MRenderTaskNode::GetRenderOutput(const size_t& nIdx) const
 {
     return GetOutput(nIdx)->DynamicCast<MRenderTaskNodeOutput>();

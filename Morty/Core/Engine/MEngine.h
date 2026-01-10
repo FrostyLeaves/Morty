@@ -68,6 +68,8 @@ public:
 
     void         Stop();
 
+    bool         IsRunning() const { return m_stage == EngineStage::RUNNING; }
+
     void         Update();
 
 public:

@@ -109,6 +109,40 @@ void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cm
     ++m_drawCallCount;
 }
 
+void MRenderCommandVulkan::DrawIndexedIndirectCount(const MDrawIndexedIndirectCountCmd* cmd)
+{
+    auto vertex   = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
+    auto indices  = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
+    auto commands = static_cast<const MBufferRHIVulkan*>(cmd->commandsBuffer);
+    auto count    = static_cast<const MBufferRHIVulkan*>(cmd->countBuffer);
+
+    if (pUsingVertex != vertex)
+    {
+        const VkBuffer         vertexBuffers[] = {vertex->vkBuffer};
+        constexpr VkDeviceSize offsets[]       = {0};
+        vkCmdBindVertexBuffers(m_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
+        pUsingVertex = vertex;
+    }
+
+    if (pUsingIndex != indices)
+    {
+        vkCmdBindIndexBuffer(m_vkCommandBuffer, indices->vkBuffer, 0, VK_INDEX_TYPE_UINT32);
+        pUsingIndex = indices;
+    }
+
+    vkCmdDrawIndexedIndirectCount(
+            m_vkCommandBuffer,
+            commands->vkBuffer,
+            cmd->commandOffset,
+            count->vkBuffer,
+            cmd->countOffset,
+            static_cast<uint32_t>(cmd->maxCount),
+            sizeof(VkDrawIndexedIndirectCommand)
+    );
+
+    ++m_drawCallCount;
+}
+
 void MRenderCommandVulkan::SetGraphPipeline(const MSetGraphPipelineCmd* cmd)
 {
     VkPipeline vkPipeline = cmd->pipeline->GetSubpassPipeline(cmd->subPassIdx);

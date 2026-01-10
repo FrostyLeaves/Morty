@@ -125,7 +125,7 @@ void MShaderMacro::Deserialize(const void* pBufferPointer)
 
 MHashCode MShaderMacro::GetHashCode() const
 {
-    MHashCode hash;
+    MHashCode hash = 0;
 
     for (const auto& pair: m_macroParams)
     {

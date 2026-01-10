@@ -110,6 +110,11 @@ MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateBuffer(const MStringId& name)
     return {.name = name, .type = MRenderNodeOutputType::Data, .dataType = MBuffer::GetClassType()};
 }
 
+MRenderTaskOutputDesc MRenderTaskNodeOutput::CreateData(const MStringId& name, const MType* dataType)
+{
+    return {.name = name, .type = MRenderNodeOutputType::Data, .dataType = dataType};
+}
+
 METextureFormat MRenderTaskNodeOutput::GetFormat() const
 {
     if (m_desc.allocPolicy == METextureSourceType::Input)

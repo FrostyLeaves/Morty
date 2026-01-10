@@ -44,11 +44,21 @@ public:
     void DrawMesh(MIMesh* mesh);
 
     void DrawIndexedIndirect(
-            const MBuffer* pVertexBuffer,
-            const MBuffer* pIndexBuffer,
-            const MBuffer* pCommandsBuffer,
+            const MBuffer* vertexBuffer,
+            const MBuffer* indexBuffer,
+            const MBuffer* commandsBuffer,
             size_t         offset,
             size_t         count
+    );
+
+    void DrawIndexedIndirectCount(
+            const MBuffer* vertexBuffer,
+            const MBuffer* indexBuffer,
+            const MBuffer* commandsBuffer,
+            const MBuffer* countBuffer,
+            size_t         commandOffset,
+            size_t         countOffset,
+            size_t         maxCount
     );
 
     void SetGraphPipeline(const MGraphicsPipeline* pipeline, size_t subPassIdx);

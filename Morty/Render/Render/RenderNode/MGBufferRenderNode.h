@@ -32,6 +32,7 @@ public:
 protected:
     void                               BindInOutTexture() override;
 
+    std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 };
 

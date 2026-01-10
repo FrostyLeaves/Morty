@@ -20,15 +20,13 @@ namespace morty
 {
 
 // Frustum plane for GPU culling (matches FrustumUtils.Plane in shader)
-struct MFrustumPlaneData
-{
+struct MFrustumPlaneData {
     Vector3 normal   = Vector3(0.0f, 0.0f, 0.0f);
     float   distance = 0.0f;
 };
 
 // NaniteRenderData for GPU culling (matches NaniteRenderData in shader)
-struct MNaniteRenderData
-{
+struct MNaniteRenderData {
     Matrix4           viewProjMatrix;
     Matrix4           viewMatrix;
     Vector3           cameraPositionWS = Vector3(0.0f, 0.0f, 0.0f);
@@ -40,37 +38,48 @@ struct MNaniteRenderData
 };
 
 // CandidateCluster output structure (matches CandidateCluster in shader)
-struct MCandidateCluster
-{
+struct MCandidateCluster {
     uint32_t clusterIndex;
     uint32_t meshInstanceIndex;
     float    distanceToCamera;
     uint32_t padding;
 };
 
+class MIndexedIndirectCountRenderer;
 REFL_RENDER_NODE_CLASS MSceneCullingNode : public MRenderTaskNode
 {
     MORTY_CLASS(MSceneCullingNode)
 
 public:
-    void OnCreated() override;
-    void OnDelete() override;
-    void Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
+    void           OnCreated() override;
+    void           OnDelete() override;
+    void           Execute(const MRenderInfo& info, IRenderCommand* primaryCommand) override;
 
     const MBuffer* GetCandidateClustersBuffer() const { return &m_candidateClustersBuffer; }
     const MBuffer* GetCandidateCountBuffer() const { return &m_candidateCountBuffer; }
+    const MBuffer* GetDrawIndirectBuffer() const { return &m_drawIndirectBuffer; }
+    const MBuffer* GetDrawCallGroupBuffer() const { return &m_drawCallGroupBuffer; }
 
 protected:
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
 
-    MComputeDispatcher*                m_cullingDispatcher = nullptr;
+    void                               NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand);
+    void                               BuildDrawCall(const MRenderInfo& info, IRenderCommand* primaryCommand);
+
+    MComputeDispatcher*                m_cullingDispatcher              = nullptr;
+    MComputeDispatcher*                m_buildDrawCallDispatcher       = nullptr;
+    std::unique_ptr<MIndexedIndirectCountRenderer>       m_renderer                      = nullptr;
 
     // Output buffers for culling results
     MBuffer                            m_candidateClustersBuffer;
     MBuffer                            m_candidateCountBuffer;
+    MBuffer                            m_drawIndirectBuffer;
+    MBuffer                            m_drawCallGroupBuffer;
 
     // Max candidate clusters for buffer sizing
     static constexpr size_t            MaxCandidateClusters = 1024 * 64;
+    // Must match MAX_DRAW_CALLS_PER_GROUP in BuildDrawCallModule.slang
+    static constexpr size_t            MaxDrawCallsPerGroup = 1024;
 };
 
 }// namespace morty

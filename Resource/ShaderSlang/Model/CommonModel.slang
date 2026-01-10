@@ -39,7 +39,8 @@ public struct MeshInstanceData
 {
     public float4x4 matWorld;
     public int meshResourceId;    // index into MeshResourceData buffer
-    public int materialId;
+    public int batchGroupId;      // index into MaterialBatchGroup buffer
+    public int materialInstanceId;
     public int proxyId;           // reserved
     public int visible;           // reserved
 };

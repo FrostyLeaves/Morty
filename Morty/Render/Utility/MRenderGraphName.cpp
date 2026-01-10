@@ -14,7 +14,7 @@ const MStringId MRenderGraphName::TextureAO     = MStringId("AO");
 
 const MStringId MRenderGraphName::TransparentFront = MStringId("Transparent Front");
 const MStringId MRenderGraphName::TransparentBack  = MStringId("Transparent Back");
-
+const MStringId MRenderGraphName::Renderer         = MStringId("Renderer");
 
 const MStringId MRenderGraphName::GBuffer[3] = {
         MStringId("Albedo Metallic"),

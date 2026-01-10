@@ -22,8 +22,6 @@
         "VCPKG_HOST_TRIPLET": "x64-windows",
         "MORTY_BUILD_TARGET": "WIN",
         "MORTY_SHADER_COMPILER": "glslang",
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "MORTY_GENERATOR_FOR_CLANGD": "ON",
         "MORTY_PROFILER": "ON"
       }
@@ -106,12 +104,21 @@
       }
     },
     {
-      "name": "Windows-VS",
+      "name": "Windows-msvc",
       "inherits": "Windows",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/../Build/windows-vs",
+      "binaryDir": "${sourceDir}/../Build/windows-msvc",
       "cacheVariables": {
-        "MORTY_GENERATOR_FOR_CLANGD": "OFF"
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "Windows-clang",
+      "inherits": "Windows",
+      "binaryDir": "${sourceDir}/../Build/windows-clang",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       }
     }
   ],

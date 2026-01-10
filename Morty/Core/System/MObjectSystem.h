@@ -52,6 +52,19 @@ public:
 
     void     CleanRemoveObject();
 
+    template<typename OBJECT_TYPE> std::vector<OBJECT_TYPE*> FindAllObjectsOfType()
+    {
+        std::vector<OBJECT_TYPE*> result;
+        for (const auto& [id, obj]: m_objects)
+        {
+            if (obj && obj->GetType() == OBJECT_TYPE::GetClassType())
+            {
+                if (auto* typed = obj->template DynamicCast<OBJECT_TYPE>()) { result.push_back(typed); }
+            }
+        }
+        return result;
+    }
+
 public:
     typedef std::function<void(MObject*)> PostCreateObjectFunction;
 

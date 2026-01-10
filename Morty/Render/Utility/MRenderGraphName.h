@@ -19,6 +19,7 @@ struct MORTY_API MRenderGraphName {
     static const MStringId TextureAO;
     static const MStringId TransparentFront;
     static const MStringId TransparentBack;
+    static const MStringId Renderer;
 
     static const MStringId GBuffer[3];
 };

@@ -1,5 +1,6 @@
 implementing ModelModule;
 #include "Internal/PreDefine.slang"
+#include "Internal/Utils.slang"
 
 
 public struct ModelUtil
@@ -46,7 +47,7 @@ public struct ModelUtil
         output.depth = output.pos.z;
 
         // matNormal computed dynamically: transpose(inverse(matWorld))
-        float3x3 matNormal = transpose(inverse((float3x3)data.matWorld));
+        float3x3 matNormal = transpose(MathUtils.Inverse3x3((float3x3)data.matWorld));
         output.normal = normalize(mul(input.normal, matNormal));
         output.tangent = normalize(mul(input.tangent, matNormal));
         output.bitangent = normalize(cross(output.tangent, output.normal));

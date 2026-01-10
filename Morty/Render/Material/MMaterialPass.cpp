@@ -384,7 +384,7 @@ MHashCode MMaterialPass::GetHashCode() const
 
 MHashCode MBlendState::GetHashCode() const
 {
-    MHashCode hash;
+    MHashCode hash = 0;
 
     MUtils::HashCombine(hash, BlendEnable);
     MUtils::HashCombine(hash, (int) SrcColorBlend);
@@ -430,7 +430,7 @@ void MBlendState::Deserialize(const fbs::MBlendState* fbsBlendState)
 
 MHashCode MDepthStencilState::GetHashCode() const
 {
-    MHashCode hash;
+    MHashCode hash = 0;
 
     MUtils::HashCombine(hash, DepthTest);
     MUtils::HashCombine(hash, DepthWrite);

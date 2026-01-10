@@ -11,7 +11,7 @@ std::unique_ptr<MResourceData> MMeshResourceUtil::CreatePlane(MEMeshVertexType e
 {
     auto pMeshData                       = std::make_unique<MMeshResourceData>();
     pMeshData->eVertexType               = eVertexType;
-    pMeshData->mesh                     = MMeshUtil::CreatePlane(eVertexType);
+    pMeshData->mesh                      = MMeshUtil::CreatePlane(eVertexType);
     pMeshData->boundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
     pMeshData->boundsOBB.m_halfLength    = Vector3(1.0f, 1.0f, 0.001f);
     pMeshData->boundsOBB.m_minPoint      = -Vector3(-1.0f, -1.0f, -0.001f);
@@ -27,7 +27,7 @@ std::unique_ptr<MResourceData> MMeshResourceUtil::CreateCube(MEMeshVertexType eV
     auto pMeshData = std::make_unique<MMeshResourceData>();
 
     pMeshData->eVertexType               = eVertexType;
-    pMeshData->mesh                     = MMeshUtil::CreateCube(eVertexType);
+    pMeshData->mesh                      = MMeshUtil::CreateCube(eVertexType);
     pMeshData->boundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
     pMeshData->boundsOBB.m_halfLength    = Vector3::One;
     pMeshData->boundsOBB.m_minPoint      = -Vector3::One;
@@ -43,7 +43,7 @@ std::unique_ptr<MResourceData> MMeshResourceUtil::CreateSphere(MEMeshVertexType 
     auto pMeshData = std::make_unique<MMeshResourceData>();
 
     pMeshData->eVertexType               = eVertexType;
-    pMeshData->mesh                     = MMeshUtil::CreateSphere(eVertexType);
+    pMeshData->mesh                      = MMeshUtil::CreateSphere(eVertexType);
     pMeshData->boundsOBB.m_matEigVectors = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
     pMeshData->boundsOBB.m_halfLength    = Vector3(1.0f, 1.0f, 1.0f);
     pMeshData->boundsOBB.m_minPoint      = Vector3(-1.0f, -1.0f, -1.0f);

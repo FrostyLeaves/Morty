@@ -7,10 +7,11 @@
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
 #include "Scene/MScene.h"
-
+#include "Render/MRenderer.h"
 #include "RHI/Command/MRenderPassCmd.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "TaskGraph/MTaskGraph.h"
+#include "Render/MRenderer.h"
 
 using namespace morty;
 
@@ -44,15 +45,24 @@ void MGBufferRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primar
     auto command = primaryCommand->BeginRenderPass(&m_renderPass);
     command.SetViewportAndScissor({.rect = info.viewportRect});
 
+    if (auto renderer = GetRenderInput(0)->GetData<IRenderer>())
+    {
+        renderer->Execute(&command);
+    }
+
     primaryCommand->EndRenderPass(command);
 
-    //TODO
 }
 
 void MGBufferRenderNode::BindInOutTexture()
 {
     Super::AutoBindBarrierTexture();
     SetRenderTarget(AutoBindTargetWithVRS());
+}
+
+std::vector<MRenderTaskInputDesc> MGBufferRenderNode::InitInputDesc()
+{
+    return { MRenderTaskNodeInput::CreateData<IRenderer>(MRenderGraphName::Renderer) };
 }
 
 std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()

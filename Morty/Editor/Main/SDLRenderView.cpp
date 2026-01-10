@@ -74,10 +74,10 @@ void    SDLRenderView::Initialize(MEngine* engine)
     m_imGuiRender = new ImGuiRenderer(engine);
     m_imGuiRender->Initialize();
 
-    MTaskGraph* pMainGraph  = GetEngine()->GetMainGraph();
-    MTaskNode*  pEditorTask = pMainGraph->AddNode<MTaskNode>(MStringId("Window_Update"));
-    pEditorTask->SetThreadType(METhreadType::ECurrentThread);
-    pEditorTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::MainLoop, this));
+    MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
+    m_updateTask           = pMainGraph->AddNode<MTaskNode>(MStringId("Window_Update"));
+    m_updateTask->SetThreadType(METhreadType::ECurrentThread);
+    m_updateTask->BindTaskFunction(M_CLASS_FUNCTION_BIND_0_1(SDLRenderView::MainLoop, this));
 
     m_renderTask = pMainGraph->AddNode<MTaskNode>(MStringId("Window_Render"));
     m_renderTask->SetThreadType(METhreadType::ERenderThread);
@@ -86,6 +86,21 @@ void    SDLRenderView::Initialize(MEngine* engine)
 
 void SDLRenderView::Release()
 {
+    MTaskGraph* pMainGraph = GetEngine()->GetMainGraph();
+    if (pMainGraph)
+    {
+        if (m_updateTask)
+        {
+            pMainGraph->DestroyNode(m_updateTask);
+            m_updateTask = nullptr;
+        }
+        if (m_renderTask)
+        {
+            pMainGraph->DestroyNode(m_renderTask);
+            m_renderTask = nullptr;
+        }
+    }
+
     ImGui::SaveIniSettingsToDisk(m_imGUISettingFileName.c_str());
     ImNodes::SaveCurrentEditorStateToIniFile(m_imNodesSettingFileName.c_str());
 
