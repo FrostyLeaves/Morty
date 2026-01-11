@@ -15,6 +15,7 @@
 #include "RHI/IRenderCommand.h"
 #include "RHI/Vulkan/MVulkanCommandExecuteTable.h"
 #include "RHI/Vulkan/MVulkanDevice.h"
+#include "RHI/Vulkan/MVulkanRenderState.h"
 
 namespace morty
 {
@@ -105,6 +106,12 @@ public:
     std::vector<std::function<void()>>                m_renderFinishedCallback = {};
 
     std::vector<std::shared_ptr<MShaderParameterSet>> m_propertyBlockStack;
+
+    // Graphics pipeline binding state tracking (defined in MVulkanRenderState.h)
+    MGraphicsPipelineState                            m_pipelineState;
+
+    // Deprecated: use m_pipelineState.pipelineBound instead
+    bool                                              m_graphicsPipelineValid = false;
 };
 
 class MORTY_API MVulkanSecondaryRenderCommand : public MRenderCommandVulkan

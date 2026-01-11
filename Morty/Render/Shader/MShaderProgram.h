@@ -100,7 +100,7 @@ protected:
 
     void                   CompileShaderIfNeed();
 
-    void                   BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType);
+    void                   BindShaderBuffer(MShaderBuffer* buffer, const MEShaderType& eType);
     void                   UnbindShaderBuffer(const MEShaderType& eType, MIDevice* device);
 
     std::array<std::shared_ptr<MShaderParameterSet>, MRenderGlobal::SHADER_PARAM_SET_NUM> m_shaderSets;

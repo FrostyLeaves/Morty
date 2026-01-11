@@ -475,16 +475,16 @@ bool MVulkanDevice::InitDescriptorPool()
     return true;
 }
 
-void MVulkanDevice::GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize)
+void MVulkanDevice::GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize)
 {
-    GenerateBuffer(VK_NULL_HANDLE, pBuffer, initialData, unDataSize);
+    GenerateBuffer(VK_NULL_HANDLE, buffer, initialData, unDataSize);
 }
 
-void MVulkanDevice::DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize)
+void MVulkanDevice::DownloadBuffer(MBuffer* buffer, MByte* outputData, const size_t& nSize)
 {
-    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType && pBuffer->m_bufferRHI)
+    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType && buffer->m_bufferRHI)
     {
-        const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
+        const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
 
         void*       pMapMemory = nullptr;
         vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, 0, nSize, 0, &pMapMemory);
@@ -494,26 +494,26 @@ void MVulkanDevice::DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const si
     else { MORTY_ASSERT(false); }
 }
 
-void MVulkanDevice::DestroyBuffer(MBuffer* pBuffer)
+void MVulkanDevice::DestroyBuffer(MBuffer* buffer)
 {
-    if (!pBuffer || !pBuffer->m_bufferRHI) { return; }
-    const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
+    if (!buffer || !buffer->m_bufferRHI) { return; }
+    const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
 
     GetRecycleBin()->DestroyBufferLater(bufferRHI->vkBuffer);
     GetRecycleBin()->DestroyDeviceMemoryLater(bufferRHI->vkDeviceMemory);
 
-    pBuffer->m_stageType = MBuffer::MStageType::EUnknow;
-    pBuffer->m_bufferRHI = nullptr;
+    buffer->m_stageType = MBuffer::MStageType::EUnknow;
+    buffer->m_bufferRHI = nullptr;
 }
 
 void MVulkanDevice::UploadBuffer(
-        MBuffer*      pBuffer,
+        MBuffer*      buffer,
         const size_t& unBeginOffset,
         const MByte*  data,
         const size_t& unDataSize
 )
 {
-    UploadBuffer(VK_NULL_HANDLE, pBuffer, unBeginOffset, data, unDataSize);
+    UploadBuffer(VK_NULL_HANDLE, buffer, unBeginOffset, data, unDataSize);
 }
 
 void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer)
@@ -835,24 +835,24 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     MShaderBuffer* pShaderBuffer = nullptr;
     if (MEShaderType::EVertex == pShader->GetShaderType())
     {
-        auto* pBuffer = new MVertexShaderBuffer();
-        m_ShaderReflector.GetVertexInputState(compiler, pBuffer);
-        pShaderBuffer = pBuffer;
+        auto* buffer = new MVertexShaderBuffer();
+        m_ShaderReflector.GetVertexInputState(compiler, buffer);
+        pShaderBuffer = buffer;
     }
     else if (MEShaderType::EPixel == pShader->GetShaderType())
     {
-        auto* pBuffer = new MPixelShaderBuffer();
-        pShaderBuffer = pBuffer;
+        auto* buffer  = new MPixelShaderBuffer();
+        pShaderBuffer = buffer;
     }
     else if (MEShaderType::ECompute == pShader->GetShaderType())
     {
-        auto* pBuffer = new MComputeShaderBuffer();
-        pShaderBuffer = pBuffer;
+        auto* buffer  = new MComputeShaderBuffer();
+        pShaderBuffer = buffer;
     }
     else if (MEShaderType::EGeometry == pShader->GetShaderType())
     {
-        auto* pBuffer = new MGeometryShaderBuffer();
-        pShaderBuffer = pBuffer;
+        auto* buffer  = new MGeometryShaderBuffer();
+        pShaderBuffer = buffer;
     }
 
     MORTY_ASSERT(pShaderBuffer);
@@ -873,11 +873,11 @@ void MVulkanDevice::CleanShader(MShader* pShader)
 {
     if (!pShader) return;
 
-    auto pBuffer = pShader->GetBuffer();
-    if (!pBuffer) return;
+    auto buffer = pShader->GetBuffer();
+    if (!buffer) return;
 
-    GetRecycleBin()->DestroyShaderModuleLater(pBuffer->m_vkShaderModule);
-    delete pBuffer;
+    GetRecycleBin()->DestroyShaderModuleLater(buffer->m_vkShaderModule);
+    delete buffer;
 }
 
 void MVulkanDevice::UpdateShaderParam(MShaderUniformParam* param)
@@ -939,7 +939,7 @@ bool MVulkanDevice::SyncParameterSet(MShaderParameterSet* propertyBlock)
 
     for (const auto& pParam: propertyBlock->GetStorageParams())
     {
-        void* pStoreIdent = pParam->pBuffer->m_bufferRHI.get();
+        void* pStoreIdent = pParam->buffer ? pParam->buffer->m_bufferRHI.get() : nullptr;
         if (pParam->pImageIdent != pStoreIdent)
         {
             bNeedAllocDescriptorSet = true;
@@ -1480,7 +1480,8 @@ void MVulkanDevice::RecoveryRenderCommand(IRenderCommand* pRenderCommand)
 
     if (!pCommand) return;
 
-    while (vkGetFenceStatus(m_vkDevice, pCommand->m_vkRenderFinishedFence) != VK_SUCCESS);
+    while (vkGetFenceStatus(m_vkDevice, pCommand->m_vkRenderFinishedFence) != VK_SUCCESS)
+        ;
 
     if (pCommand->m_vkCommandBuffer)
     {
@@ -1712,21 +1713,21 @@ void MVulkanDevice::CopyImageBuffer(
 
 void MVulkanDevice::GenerateBuffer(
         VkCommandBuffer vkCommand,
-        MBuffer*        pBuffer,
+        MBuffer*        buffer,
         const MByte*    initialData,
         const size_t&   unDataSize
 )
 {
-    VkDeviceSize          unBufferSize = static_cast<uint64_t>(pBuffer->GetSize());
+    VkDeviceSize          unBufferSize = static_cast<uint64_t>(buffer->GetSize());
 
     void*                 pMapMemory     = nullptr;
     VkBuffer              vkBuffer       = VK_NULL_HANDLE;
     VkDeviceMemory        vkDeviceMemory = VK_NULL_HANDLE;
 
-    VkBufferUsageFlags    vkBufferUsageFlags = GetBufferUsageFlags(pBuffer);
-    VkMemoryPropertyFlags vkMemoryFlags      = GetMemoryFlags(pBuffer);
+    VkBufferUsageFlags    vkBufferUsageFlags = GetBufferUsageFlags(buffer);
+    VkMemoryPropertyFlags vkMemoryFlags      = GetMemoryFlags(buffer);
 
-    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType)
+    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType)
     {
         GenerateBuffer(unBufferSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
 
@@ -1737,7 +1738,7 @@ void MVulkanDevice::GenerateBuffer(
             vkUnmapMemory(m_vkDevice, vkDeviceMemory);
         }
     }
-    else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_memoryType)
+    else if (MBuffer::MMemoryType::EDeviceLocal == buffer->m_memoryType)
     {
         GenerateBuffer(unBufferSize, vkBufferUsageFlags, vkMemoryFlags, vkBuffer, vkDeviceMemory);
 
@@ -1766,41 +1767,41 @@ void MVulkanDevice::GenerateBuffer(
     else { MORTY_ASSERT(false); }
 
 #ifdef MORTY_DEBUG
-    SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, pBuffer->GetDebugName());
+    SetDebugName(reinterpret_cast<uint64_t>(vkBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, buffer->GetDebugName());
 #endif
 
     MORTY_ASSERT(vkDeviceMemory != VK_NULL_HANDLE);
-    MORTY_ASSERT(!pBuffer->m_bufferRHI);
+    MORTY_ASSERT(!buffer->m_bufferRHI);
 
     auto bufferRHI            = std::make_unique<MBufferRHIVulkan>();
     bufferRHI->vkBuffer       = vkBuffer;
     bufferRHI->vkDeviceMemory = vkDeviceMemory;
-    pBuffer->m_bufferRHI      = std::move(bufferRHI);
-    pBuffer->m_stageType      = MBuffer::MStageType::ESynced;
+    buffer->m_bufferRHI       = std::move(bufferRHI);
+    buffer->m_stageType       = MBuffer::MStageType::ESynced;
 }
 
 void MVulkanDevice::UploadBuffer(
         VkCommandBuffer vkCommand,
-        MBuffer*        pBuffer,
+        MBuffer*        buffer,
         const size_t&   unBeginOffset,
         const MByte*    data,
         const size_t&   unDataSize
 )
 {
-    if (!pBuffer || !pBuffer->m_bufferRHI) { return; }
-    auto* bufferRHI = static_cast<MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
+    if (!buffer || !buffer->m_bufferRHI) { return; }
+    auto* bufferRHI = static_cast<MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
 
-    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType)
+    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType)
     {
         MORTY_UNUSED(vkCommand);
 
-        size_t unMappingSize = (std::min) (unDataSize, pBuffer->GetSize() - unBeginOffset);
+        size_t unMappingSize = (std::min)(unDataSize, buffer->GetSize() - unBeginOffset);
         void*  dataMapping   = nullptr;
         vkMapMemory(m_vkDevice, bufferRHI->vkDeviceMemory, unBeginOffset, unMappingSize, 0, &dataMapping);
         memcpy(dataMapping, data, unMappingSize);
         vkUnmapMemory(m_vkDevice, bufferRHI->vkDeviceMemory);
 
-        pBuffer->m_stageType = MBuffer::MStageType::ESynced;
+        buffer->m_stageType = MBuffer::MStageType::ESynced;
     }
     else
     {
@@ -2123,26 +2124,23 @@ void MVulkanDevice::CreateImage(
     vkBindImageMemory(m_vkDevice, image, imageMemory, 0);
 }
 
-VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* pBuffer) const
+VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* buffer) const
 {
-    if (pBuffer->m_usageType == 0) { MORTY_ASSERT(false); }
+    if (buffer->m_usageType == 0) { MORTY_ASSERT(false); }
 
     VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-    if (MBuffer::MUsageType::EVertex & pBuffer->m_usageType)
-    {
-        vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    }
-    if (MBuffer::MUsageType::EIndex & pBuffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }
-    if (MBuffer::MUsageType::EStorage & pBuffer->m_usageType)
+    if (MBuffer::MUsageType::EVertex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
+    if (MBuffer::MUsageType::EIndex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }
+    if (MBuffer::MUsageType::EStorage & buffer->m_usageType)
     {
         vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     }
-    if (MBuffer::MUsageType::EUniform & pBuffer->m_usageType)
+    if (MBuffer::MUsageType::EUniform & buffer->m_usageType)
     {
         vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     }
-    if (MBuffer::MUsageType::EIndirect & pBuffer->m_usageType)
+    if (MBuffer::MUsageType::EIndirect & buffer->m_usageType)
     {
         vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
     }
@@ -2151,16 +2149,13 @@ VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* pBuffer) const
     return vkBufferUsageFlags;
 }
 
-VkMemoryPropertyFlags MVulkanDevice::GetMemoryFlags(MBuffer* pBuffer) const
+VkMemoryPropertyFlags MVulkanDevice::GetMemoryFlags(MBuffer* buffer) const
 {
-    if (MBuffer::MMemoryType::EHostVisible == pBuffer->m_memoryType)
+    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType)
     {
         return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     }
-    else if (MBuffer::MMemoryType::EDeviceLocal == pBuffer->m_memoryType)
-    {
-        return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    }
+    else if (MBuffer::MMemoryType::EDeviceLocal == buffer->m_memoryType) { return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; }
     else { MORTY_ASSERT(false); }
 
     return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;

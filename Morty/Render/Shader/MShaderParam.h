@@ -97,12 +97,12 @@ struct MShaderStorageParam : public MShaderParam {
     MShaderStorageParam();
 
 public:
-    const MBuffer* pBuffer     = nullptr;
+    const MBuffer* buffer      = nullptr;
     bool           bWritable   = false;
     void*          pImageIdent = nullptr;
     MVariant       var;
 
-    void           SetBuffer(const MBuffer* buf) { pBuffer = buf; }
+    void           SetBuffer(const MBuffer* buf) { buffer = buf; }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkDescriptorBufferInfo m_vkBufferInfo = {VK_NULL_HANDLE, 0, 0};

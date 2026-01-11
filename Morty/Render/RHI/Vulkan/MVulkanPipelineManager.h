@@ -118,12 +118,15 @@ public:
 
     MTexturePtr GetDefaultTexture(MShaderTextureParam* pParam);
 
+    const MBuffer* GetDefaultBuffer(MShaderStorageParam* pParam);
+
 private:
     std::map<MPipelineKey, std::shared_ptr<MPipeline>>               m_pipelineTable;
 
     MVulkanDevice*                                                   m_device;
 
     std::map<std::pair<MESamplerFormat, METextureType>, MTexturePtr> m_defaultTexture;
+    std::map<bool, std::shared_ptr<MBuffer>>                         m_defaultBuffer; // key: bWritable
 };
 
 }// namespace morty

@@ -1,6 +1,6 @@
-implementing InternalModule;
-
-__include "NaniteCulling";
+import InternalModule;
+import Model.ModelModule;
+import Culling.CullingModule;
 
 // ==================== 可见性压缩工具 ====================
 // 这个着色器用于进一步优化，将多个小的 cluster 合并成更大的 draw call
@@ -109,13 +109,15 @@ public void NaniteOcclusionCullingCS(
     StructuredBuffer<CandidateCluster> candidateClusters,
     StructuredBuffer<ClusterData> clusters,
     StructuredBuffer<MeshInstanceData> meshInstances,
-    uniform NaniteRenderData renderData,
 
     // 输出
     RWStructuredBuffer<uint> outVisibilityMask  // 位掩码，标记可见的候选
 )
 {
     uint candidateIndex = dispatchThreadID.x;
+
+    // Use naniteCullingParams.renderData from CullingModule
+    NaniteRenderData renderData = naniteCullingParams.renderData;
 
     // TODO: 实现 Hi-Z 遮挡剔除
     // 1. 将 cluster 的包围球投影到屏幕空间

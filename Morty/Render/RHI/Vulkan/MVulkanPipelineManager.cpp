@@ -41,6 +41,13 @@ void MVulkanPipelineManager::Release()
     }
 
     m_defaultTexture.clear();
+
+    for (auto& pr: m_defaultBuffer)
+    {
+        if (pr.second) { pr.second->DestroyBuffer(m_device); }
+    }
+
+    m_defaultBuffer.clear();
 }
 
 std::shared_ptr<MGraphicsPipeline>
@@ -179,6 +186,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
 
     std::vector<VkDescriptorSetLayout>        vSetLayouts;
     std::vector<VkDescriptorSetLayoutBinding> vParamBinding[MRenderGlobal::SHADER_PARAM_SET_NUM];
+    uint32_t                                  requiredSetsMask = 0;
 
     for (uint32_t unSetIdx = 0; unSetIdx < MRenderGlobal::SHADER_PARAM_SET_NUM; ++unSetIdx)
     {
@@ -238,6 +246,8 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
             vParamBinding[unSetIdx].push_back(uboLayoutBinding);
         }
 
+        if (!vParamBinding[unSetIdx].empty()) { requiredSetsMask |= (1u << unSetIdx); }
+
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
@@ -265,6 +275,7 @@ void MVulkanPipelineManager::GeneratePipelineLayout(
 
     pPipeline->m_pipelineLayout.vkPipelineLayout      = pipelineLayout;
     pPipeline->m_pipelineLayout.vDescriptorSetLayouts = std::move(vSetLayouts);
+    pPipeline->m_pipelineLayout.requiredSetsMask      = requiredSetsMask;
 }
 
 void MVulkanPipelineManager::DestroyPipelineLayout(const std::shared_ptr<MPipeline>& pPipeline)
@@ -807,19 +818,20 @@ void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* param, VkWrit
 
 void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)
 {
-    const MBuffer* pBuffer   = pParam->pBuffer;
-    const auto*    bufferRHI = static_cast<const MBufferRHIVulkan*>(pBuffer->m_bufferRHI.get());
+    const MBuffer* buffer = pParam->buffer;
 
-    if (!pBuffer || !bufferRHI)
+    // Use default buffer if buffer or bufferRHI is null
+    if (!buffer || !buffer->m_bufferRHI)
     {
-        MORTY_ASSERT(pBuffer && bufferRHI);
-        return;
+        buffer = GetDefaultBuffer(pParam);
     }
+
+    const auto* bufferRHI = static_cast<const MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
 
     VkDescriptorBufferInfo& bufferInfo = pParam->m_vkBufferInfo;
     bufferInfo.buffer                  = bufferRHI->vkBuffer;
     bufferInfo.offset                  = 0;
-    bufferInfo.range                   = pBuffer->GetSize();
+    bufferInfo.range                   = buffer->GetSize();
 
     descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrite.dstBinding      = pParam->unBinding;
@@ -863,6 +875,29 @@ MTexturePtr MVulkanPipelineManager::GetDefaultTexture(MShaderTextureParam* pPara
 
     m_defaultTexture[{pParam->eFormat, pParam->eType}] = texture;
     return texture;
+}
+
+const MBuffer* MVulkanPipelineManager::GetDefaultBuffer(MShaderStorageParam* pParam)
+{
+    const bool bWritable = pParam->bWritable;
+    const auto findResult = m_defaultBuffer.find(bWritable);
+    if (findResult != m_defaultBuffer.end()) { return findResult->second.get(); }
+
+    // Create a default buffer with minimal size (16 bytes for alignment)
+    constexpr size_t defaultBufferSize = 16;
+
+    auto buffer = std::make_shared<MBuffer>(MBuffer::CreateStorageBuffer("Shader Default Buffer"));
+    buffer->ReallocMemory(defaultBufferSize);
+
+    // Initialize with zeros
+    std::vector<MByte> zeroData(defaultBufferSize, 0);
+    buffer->GenerateBuffer(m_device, zeroData.data(), defaultBufferSize);
+
+    MORTY_ASSERT(buffer);
+    MORTY_ASSERT(buffer->m_bufferRHI);
+
+    m_defaultBuffer[bWritable] = buffer;
+    return buffer.get();
 }
 
 

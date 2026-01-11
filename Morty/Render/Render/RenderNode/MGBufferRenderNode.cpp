@@ -1,4 +1,5 @@
 #include "MGBufferRenderNode.h"
+#include "MFrameParameterSetAdapter.h"
 
 #include "Basic/MTexture.h"
 #include "Basic/MViewport.h"
@@ -10,8 +11,9 @@
 #include "Render/MRenderer.h"
 #include "RHI/Command/MRenderPassCmd.h"
 #include "Render/RenderGraph/MRenderGraph.h"
+#include "Shader/MShaderParameterSet.h"
 #include "TaskGraph/MTaskGraph.h"
-#include "Render/MRenderer.h"
+#include "Utility/MRenderGraphName.h"
 
 using namespace morty;
 
@@ -45,13 +47,30 @@ void MGBufferRenderNode::Execute(const MRenderInfo& info, IRenderCommand* primar
     auto command = primaryCommand->BeginRenderPass(&m_renderPass);
     command.SetViewportAndScissor({.rect = info.viewportRect});
 
-    if (auto renderer = GetRenderInput(0)->GetData<IRenderer>())
+    // Push frame parameter set if available
+    if (auto adapter = GetRenderInput(FrameParamSetInputIdx)->GetData<MFrameParameterSetAdapter>())
+    {
+        if (auto paramSet = adapter->GetParameterSet())
+        {
+            command.PushShaderParameterSet(paramSet.get());
+        }
+    }
+
+    if (auto renderer = GetRenderInput(RendererInputIdx)->GetData<IRenderer>())
     {
         renderer->Execute(&command);
     }
 
-    primaryCommand->EndRenderPass(command);
+    // Pop frame parameter set if it was pushed
+    if (auto adapter = GetRenderInput(FrameParamSetInputIdx)->GetData<MFrameParameterSetAdapter>())
+    {
+        if (adapter->GetParameterSet())
+        {
+            command.PopShaderParameterSet();
+        }
+    }
 
+    primaryCommand->EndRenderPass(command);
 }
 
 void MGBufferRenderNode::BindInOutTexture()
@@ -62,7 +81,10 @@ void MGBufferRenderNode::BindInOutTexture()
 
 std::vector<MRenderTaskInputDesc> MGBufferRenderNode::InitInputDesc()
 {
-    return { MRenderTaskNodeInput::CreateData<IRenderer>(MRenderGraphName::Renderer) };
+    return {
+            MRenderTaskNodeInput::CreateData<IRenderer>(MRenderGraphName::Renderer),
+            MRenderTaskNodeInput::CreateData<MFrameParameterSetAdapter>(MRenderGraphName::FrameParamSet),
+    };
 }
 
 std::vector<MRenderTaskOutputDesc> MGBufferRenderNode::InitOutputDesc()

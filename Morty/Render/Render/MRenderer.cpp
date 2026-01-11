@@ -12,13 +12,7 @@ void MIndexedIndirectRenderer::Execute(MRenderPassCmd* primaryCommand) const
         return;
     }
 
-    primaryCommand->DrawIndexedIndirect(
-            indexBuffer,
-            vertexBuffer,
-            indirectBuffer,
-            indirectOffset,
-            instanceCount
-    );
+    primaryCommand->DrawIndexedIndirect(indexBuffer, vertexBuffer, indirectBuffer, indirectOffset, instanceCount);
 }
 
 void MIndexedIndirectCountRenderer::Execute(MRenderPassCmd* primaryCommand) const
@@ -28,11 +22,15 @@ void MIndexedIndirectCountRenderer::Execute(MRenderPassCmd* primaryCommand) cons
         return;
     }
 
-    for(const auto& drawCall : drawCalls)
+    for (const auto& drawCall: drawCalls)
     {
+        primaryCommand->SetGraphPipeline(drawCall.pass);
+        primaryCommand->ApplyPushedShaderParameterSets();
+        primaryCommand->SetShaderParameterSet(drawCall.parameterSet);
+
         primaryCommand->DrawIndexedIndirectCount(
-                indexBuffer,
                 vertexBuffer,
+                indexBuffer,
                 indirectBuffer,
                 countBuffer,
                 drawCall.commandOffset,

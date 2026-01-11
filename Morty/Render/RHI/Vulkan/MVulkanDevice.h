@@ -47,14 +47,14 @@ public:
 
     void Release() override;
 
-    void GenerateBuffer(MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize) override;
+    void GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize) override;
 
-    void DestroyBuffer(MBuffer* pBuffer) override;
+    void DestroyBuffer(MBuffer* buffer) override;
 
     void
-    UploadBuffer(MBuffer* pBuffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
+    UploadBuffer(MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
 
-    void DownloadBuffer(MBuffer* pBuffer, MByte* outputData, const size_t& nSize) override;
+    void DownloadBuffer(MBuffer* buffer, MByte* outputData, const size_t& nSize) override;
 
     void GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer) override;
 
@@ -145,24 +145,23 @@ public:
 
     uint32_t                           GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) const;
 
-    VkBufferUsageFlags                 GetBufferUsageFlags(MBuffer* pBuffer) const;
+    VkBufferUsageFlags                 GetBufferUsageFlags(MBuffer* buffer) const;
 
-    VkMemoryPropertyFlags              GetMemoryFlags(MBuffer* pBuffer) const;
+    VkMemoryPropertyFlags              GetMemoryFlags(MBuffer* buffer) const;
 
     VkFragmentShadingRateCombinerOpKHR GetShadingRateCombinerOp(MEShadingRateCombinerOp op) const;
 
-    void
-    GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* pBuffer, const MByte* initialData, const size_t& unDataSize);
+    void GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const MByte* initialData, const size_t& unDataSize);
 
     void UploadBuffer(
             VkCommandBuffer vkCommand,
-            MBuffer*        pBuffer,
+            MBuffer*        buffer,
             const size_t&   unBeginOffset,
             const MByte*    data,
             const size_t&   unDataSize
     );
 
-    void GenerateMipmaps(MTexture* pBuffer, const uint32_t& unMipLevels, VkCommandBuffer buffer = VK_NULL_HANDLE);
+    void GenerateMipmaps(MTexture* texture, const uint32_t& unMipLevels, VkCommandBuffer buffer = VK_NULL_HANDLE);
 
     bool GenerateBuffer(
             VkDeviceSize          size,

@@ -260,8 +260,8 @@ public struct FrustumUtils
 {
     public struct Plane
     {
-        float3 normal;
-        float distance;
+        public float3 normal;
+        public float distance;
     }
 
     public struct Frustum

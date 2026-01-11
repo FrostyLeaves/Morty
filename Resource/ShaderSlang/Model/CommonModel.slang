@@ -4,35 +4,35 @@ implementing ModelModule;
 
 public struct ClusterData
 {
-    uint indexOffset;
-    uint indexCount;
-    uint valid;
+    public uint indexOffset;
+    public uint indexCount;
+    public uint valid;
 
-    float3 position;
-    float radius;
-    float error;
+    public float3 position;
+    public float radius;
+    public float error;
 };
 
 public struct ClusterGroupData
 {
-    uint valid;
-    uint parentGroupId;
-    uint firstGroupId;
-    uint childGroupCount;
+    public uint valid;
+    public uint parentGroupId;
+    public uint firstGroupId;
+    public uint childGroupCount;
 
-    uint clusterBeginIndex;
-    uint clusterCount;
+    public uint clusterBeginIndex;
+    public uint clusterCount;
 
-    float3 position;
-    float radius;
-    float error;
+    public float3 position;
+    public float radius;
+    public float error;
 };
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
 public struct MeshResourceData
 {
-    int rootClusterGroupBeginIndex;
-    int rootClusterGroupCount;
+    public int rootClusterGroupBeginIndex;
+    public int rootClusterGroupCount;
 };
 
 public struct MeshInstanceData

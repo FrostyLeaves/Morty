@@ -1,8 +1,4 @@
-implementing InternalModule;
-
-__include "../Model/CommonModel";
-__include "../Internal/CommonStruct";
-__include "../Internal/Utils";
+implementing CullingModule;
 
 // ==================== Nanite Constants and Configuration ====================
 
@@ -27,9 +23,9 @@ public struct NaniteRenderData
 // Candidate Cluster structure (output after LOD selection)
 public struct CandidateCluster
 {
-    uint clusterIndex;
-    uint meshInstanceIndex;
-    float distanceToCamera;
+    public uint clusterIndex;
+    public uint meshInstanceIndex;
+    public float distanceToCamera;
 };
 
 // ==================== Nanite LOD Selection Utilities ====================

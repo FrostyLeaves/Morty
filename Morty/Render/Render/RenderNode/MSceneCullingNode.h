@@ -37,6 +37,13 @@ struct MNaniteRenderData {
     MFrustumPlaneData frustumPlanes[6];
 };
 
+// NaniteCullingParams for GPU culling (matches NaniteCullingParams in shader)
+struct MNaniteCullingParams {
+    MNaniteRenderData renderData;
+    uint32_t          instanceCount;
+    uint32_t          padding[3];// Padding for 16-byte alignment
+};
+
 // CandidateCluster output structure (matches CandidateCluster in shader)
 struct MCandidateCluster {
     uint32_t clusterIndex;
@@ -66,20 +73,20 @@ protected:
     void                               NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand);
     void                               BuildDrawCall(const MRenderInfo& info, IRenderCommand* primaryCommand);
 
-    MComputeDispatcher*                m_cullingDispatcher              = nullptr;
-    MComputeDispatcher*                m_buildDrawCallDispatcher       = nullptr;
-    std::unique_ptr<MIndexedIndirectCountRenderer>       m_renderer                      = nullptr;
+    MComputeDispatcher*                m_cullingDispatcher       = nullptr;
+    MComputeDispatcher*                m_buildDrawCallDispatcher = nullptr;
+    std::unique_ptr<MIndexedIndirectCountRenderer> m_renderer    = nullptr;
 
     // Output buffers for culling results
-    MBuffer                            m_candidateClustersBuffer;
-    MBuffer                            m_candidateCountBuffer;
-    MBuffer                            m_drawIndirectBuffer;
-    MBuffer                            m_drawCallGroupBuffer;
+    MBuffer                                        m_candidateClustersBuffer;
+    MBuffer                                        m_candidateCountBuffer;
+    MBuffer                                        m_drawIndirectBuffer;
+    MBuffer                                        m_drawCallGroupBuffer;
 
     // Max candidate clusters for buffer sizing
-    static constexpr size_t            MaxCandidateClusters = 1024 * 64;
+    static constexpr size_t                        MaxCandidateClusters = 1024 * 64;
     // Must match MAX_DRAW_CALLS_PER_GROUP in BuildDrawCallModule.slang
-    static constexpr size_t            MaxDrawCallsPerGroup = 1024;
+    static constexpr size_t                        MaxDrawCallsPerGroup = 1024;
 };
 
 }// namespace morty

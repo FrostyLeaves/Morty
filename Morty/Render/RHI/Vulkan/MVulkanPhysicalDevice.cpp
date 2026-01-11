@@ -387,7 +387,7 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(
     {
         auto pVulkanInstance = static_cast<MVulkanPhysicalDevice*>(pUserData);
         pVulkanInstance->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
-        MORTY_ASSERT(false);
+        //MORTY_ASSERT(false);
     }
     return VK_FALSE;
 }
@@ -423,11 +423,9 @@ bool MVulkanPhysicalDevice::InitVulkanInstance()
 
     if (result == VK_ERROR_INCOMPATIBLE_DRIVER)
     {
-        GetEngine()->GetLogger()->Error(
-                "Cannot find a compatible Vulkan installable client "
-                "driver (ICD). Please make sure your driver supports "
-                "Vulkan before continuing. The call to vkCreateInstance failed."
-        );
+        GetEngine()->GetLogger()->Error("Cannot find a compatible Vulkan installable client "
+                                        "driver (ICD). Please make sure your driver supports "
+                                        "Vulkan before continuing. The call to vkCreateInstance failed.");
         return false;
     }
     else if (result != VK_SUCCESS)

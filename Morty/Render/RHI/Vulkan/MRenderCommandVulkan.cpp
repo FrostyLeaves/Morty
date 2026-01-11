@@ -8,6 +8,7 @@
 #include "Mesh/MMesh.h"
 #include "RHI/Command/MRenderPassCmd.h"
 #include "RHI/Vulkan/MTextureRHIVulkan.h"
+#include "Utility/MLogger.h"
 
 using namespace morty;
 
@@ -39,6 +40,23 @@ void MRenderCommandVulkan::SetScissor(const MSetScissorCmd* scissor) const
 
 void MRenderCommandVulkan::DrawMesh(const MDrawMeshCmd* cmd)
 {
+    if (!m_pipelineState.pipelineBound)
+    {
+        MLogger::GetInstance()->Error("DrawMesh called without binding graphics pipeline. "
+                                      "Call SetGraphPipeline before drawing.");
+        return;
+    }
+
+    if (!m_pipelineState.IsValid())
+    {
+        MLogger::GetInstance()->Error(
+                "DrawMesh called with missing descriptor sets. "
+                "Missing set(s): {}. "
+                "Call SetShaderParameterSet for all required descriptor sets before drawing.",
+                m_pipelineState.GetMissingSetsString());
+        return;
+    }
+
     auto vertex  = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
     auto indices = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
 
@@ -65,6 +83,23 @@ void MRenderCommandVulkan::DrawMesh(const MDrawMeshCmd* cmd)
 
 void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cmd)
 {
+    if (!m_pipelineState.pipelineBound)
+    {
+        MLogger::GetInstance()->Error("DrawIndexedIndirect called without binding graphics pipeline. "
+                                      "Call SetGraphPipeline before drawing.");
+        return;
+    }
+
+    if (!m_pipelineState.IsValid())
+    {
+        MLogger::GetInstance()->Error(
+                "DrawIndexedIndirect called with missing descriptor sets. "
+                "Missing set(s): {}. "
+                "Call SetShaderParameterSet for all required descriptor sets before drawing.",
+                m_pipelineState.GetMissingSetsString());
+        return;
+    }
+
     auto vertex   = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
     auto indices  = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
     auto commands = static_cast<const MBufferRHIVulkan*>(cmd->commandsBuffer);
@@ -111,6 +146,23 @@ void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cm
 
 void MRenderCommandVulkan::DrawIndexedIndirectCount(const MDrawIndexedIndirectCountCmd* cmd)
 {
+    if (!m_pipelineState.pipelineBound)
+    {
+        MLogger::GetInstance()->Error("DrawIndexedIndirectCount called without binding graphics pipeline. "
+                                      "Call SetGraphPipeline before drawing.");
+        return;
+    }
+
+    if (!m_pipelineState.IsValid())
+    {
+        MLogger::GetInstance()->Error(
+                "DrawIndexedIndirectCount called with missing descriptor sets. "
+                "Missing set(s): {}. "
+                "Call SetShaderParameterSet for all required descriptor sets before drawing.",
+                m_pipelineState.GetMissingSetsString());
+        return;
+    }
+
     auto vertex   = static_cast<const MBufferRHIVulkan*>(cmd->vertexBuffer);
     auto indices  = static_cast<const MBufferRHIVulkan*>(cmd->indexBuffer);
     auto commands = static_cast<const MBufferRHIVulkan*>(cmd->commandsBuffer);
@@ -152,6 +204,9 @@ void MRenderCommandVulkan::SetGraphPipeline(const MSetGraphPipelineCmd* cmd)
 
     pUsingVertex = nullptr;
     pUsingIndex  = nullptr;
+
+    m_pipelineState.SetPipelineBound(cmd->pipeline->m_pipelineLayout.requiredSetsMask);
+    m_graphicsPipelineValid = true;
 }
 
 void MRenderCommandVulkan::SetShaderParameterSet(const MSetShaderParameterSetCmd* cmd)
@@ -226,6 +281,12 @@ void MRenderCommandVulkan::SetShaderParameterSet(const MSetShaderParameterSetCmd
             static_cast<uint32_t>(vDynamicOffsets.size()),
             vDynamicOffsets.data()
     );
+
+    // Track bound descriptor set for graphics pipeline
+    if (vkPipelineBindPoint == VK_PIPELINE_BIND_POINT_GRAPHICS)
+    {
+        m_pipelineState.SetDescriptorSetBound(pParameterSet->m_unKey);
+    }
 }
 
 void MRenderCommandVulkan::AddBarrierForPixelSample(const MSetShaderParameterSetCmd* cmd)
@@ -344,12 +405,16 @@ void MRenderCommandVulkan::InternalBeginRenderPass(MRenderPass* pRenderPass)
 
     //Begin RenderPass
     vkCmdBeginRenderPass(m_vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    m_graphicsPipelineValid = false;
 }
 
 void MRenderCommandVulkan::InternalEndRenderPass()
 {
     //End Render Pass
     vkCmdEndRenderPass(m_vkCommandBuffer);
+
+    m_graphicsPipelineValid = false;
 }
 
 /*

@@ -19,6 +19,7 @@ class MShaderParameterSet;
 struct MORTY_API MPipelineLayout {
     VkPipelineLayout                   vkPipelineLayout;
     std::vector<VkDescriptorSetLayout> vDescriptorSetLayouts;
+    uint32_t                           requiredSetsMask = 0;
 };
 
 class MORTY_API MPipeline

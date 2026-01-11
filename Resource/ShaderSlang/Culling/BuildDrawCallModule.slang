@@ -1,6 +1,8 @@
-implementing InternalModule;
+module BuildDrawCallModule;
 
-__include "NaniteCulling";
+import InternalModule;
+import Model.ModelModule;
+import Culling.CullingModule;
 
 static const uint MAX_DRAW_CALLS_PER_GROUP = 1024;
 
@@ -17,8 +19,7 @@ public void BuildDrawCallFillCS(
 
     // Output
     RWStructuredBuffer<IndexedIndirectCommand> outDrawIndirect,
-    RWStructuredBuffer<uint> outDrawGroupCount,
-    uniform uint drawGroupCount
+    RWStructuredBuffer<uint> outDrawGroupCount
 )
 {
     uint candidateIndex = dispatchThreadID.x;
@@ -29,7 +30,7 @@ public void BuildDrawCallFillCS(
     CandidateCluster candidate = candidateClusters[candidateIndex];
     // batchGroupId is treated as the batch group index.
     uint groupId = (uint)meshInstances[candidate.meshInstanceIndex].batchGroupId;
-    if (groupId >= drawGroupCount)
+    if (groupId >= buildDrawCallParams.drawGroupCount)
         return;
 
     uint localIndex;

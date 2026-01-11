@@ -275,12 +275,12 @@ std::unique_ptr<MShaderTextureParam> MTextureResourceParam::Clone() const
     return std::make_unique<MTextureResourceParam>(*this);
 }
 
-void MShaderProgram::BindShaderBuffer(MShaderBuffer* pBuffer, const MEShaderType& eType)
+void MShaderProgram::BindShaderBuffer(MShaderBuffer* buffer, const MEShaderType& eType)
 {
     uint32_t bitType = 1 << static_cast<size_t>(eType);
     for (uint32_t i = 0; i < MRenderGlobal::SHADER_PARAM_SET_NUM; ++i)
     {
-        std::shared_ptr<MShaderParameterSet>& pPropertyTemplate = pBuffer->m_shaderSets[i];
+        std::shared_ptr<MShaderParameterSet>& pPropertyTemplate = buffer->m_shaderSets[i];
         std::shared_ptr<MShaderParameterSet>& pProgramProperty  = m_shaderSets[i];
 
         for (const auto& pBufferParam: pPropertyTemplate->m_uniforms)

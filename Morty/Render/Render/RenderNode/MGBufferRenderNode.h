@@ -34,6 +34,10 @@ protected:
 
     std::vector<MRenderTaskInputDesc>  InitInputDesc() override;
     std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+
+private:
+    static constexpr size_t RendererInputIdx      = 0;
+    static constexpr size_t FrameParamSetInputIdx = 1;
 };
 
 }// namespace morty

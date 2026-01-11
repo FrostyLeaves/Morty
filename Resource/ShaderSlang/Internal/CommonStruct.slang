@@ -35,11 +35,11 @@ public struct SurfaceData
 
 public struct IndexedIndirectCommand
 {
-    uint indexCount;
-    uint instanceCount;
-    uint firstIndex;
-    uint vertexOffset;
-    uint firstInstance;
+    public uint indexCount;
+    public uint instanceCount;
+    public uint firstIndex;
+    public uint vertexOffset;
+    public uint firstInstance;
 };
 
 public struct CameraData

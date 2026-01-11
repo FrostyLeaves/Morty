@@ -12,12 +12,12 @@
 #include "RHI/Command/MRenderPassCmd.h"
 #include "RHI/IRenderCommand.h"
 #include "RHI/MRenderPass.h"
+#include "Render/MRenderer.h"
 #include "Render/RenderGraph/MRenderGraph.h"
 #include "Scene/MScene.h"
 #include "System/MObjectSystem.h"
 #include "System/MRenderSystem.h"
 #include "TaskGraph/MTaskGraph.h"
-#include "Render/MRenderer.h"
 
 using namespace morty;
 
@@ -30,23 +30,23 @@ static const MStringId ClusterGroupsNameId      = MStringId("clusterGroups");
 static const MStringId ClustersNameId           = MStringId("clusters");
 static const MStringId CandidateClustersNameId  = MStringId("outCandidateClusters");
 static const MStringId CandidateCountNameId     = MStringId("outCandidateCount");
-static const MStringId InstanceCountNameId      = MStringId("instanceCount");
 static const MStringId CullingEntryNameId       = MStringId("NaniteInstanceCullingCS");
-static const MStringId BuildDrawCallEntryNameId       = MStringId("BuildDrawCallFillCS");
+static const MStringId BuildDrawCallEntryNameId = MStringId("BuildDrawCallFillCS");
 
-static const MStringId CandidateClustersInNameId = MStringId("candidateClusters");
-static const MStringId CandidateCountInNameId    = MStringId("candidateCount");
-static const MStringId DrawIndirectNameId             = MStringId("outDrawIndirect");
-static const MStringId DrawGroupCountBufferNameId     = MStringId("outDrawGroupCount");
-static const MStringId DrawGroupCountUniformNameId    = MStringId("drawGroupCount");
+static const MStringId CandidateClustersInNameId   = MStringId("candidateClusters");
+static const MStringId CandidateCountInNameId      = MStringId("candidateCount");
+static const MStringId DrawIndirectNameId          = MStringId("outDrawIndirect");
+static const MStringId DrawGroupCountBufferNameId  = MStringId("outDrawGroupCount");
+static const MStringId DrawGroupCountUniformNameId = MStringId("drawGroupCount");
 
-// NaniteRenderData uniform member names
+// Culling params constant buffer member names (for recursive struct member lookup)
 static const MStringId ViewProjMatrixNameId = MStringId("viewProjMatrix");
 static const MStringId ViewMatrixNameId     = MStringId("viewMatrix");
 static const MStringId CameraPositionNameId = MStringId("cameraPositionWS");
 static const MStringId ScreenSizeNameId     = MStringId("screenSize");
 static const MStringId NearClipNameId       = MStringId("nearClip");
 static const MStringId FarClipNameId        = MStringId("farClip");
+static const MStringId InstanceCountNameId  = MStringId("instanceCount");
 
 void                   MSceneCullingNode::OnCreated()
 {
@@ -56,9 +56,9 @@ void                   MSceneCullingNode::OnCreated()
     auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     auto renderSystem   = GetEngine()->GetSystem<MRenderSystem>();
 
-    m_cullingDispatcher              = objectSystem->CreateObject<MComputeDispatcher>();
-    m_buildDrawCallDispatcher       = objectSystem->CreateObject<MComputeDispatcher>();
-    m_renderer                      = std::make_unique<MIndexedIndirectCountRenderer>();
+    m_cullingDispatcher       = objectSystem->CreateObject<MComputeDispatcher>();
+    m_buildDrawCallDispatcher = objectSystem->CreateObject<MComputeDispatcher>();
+    m_renderer                = std::make_unique<MIndexedIndirectCountRenderer>();
 
     auto cullingShader = resourceSystem->LoadResource("ShaderSlang/Culling/MeshInstanceCullingModule.slang");
     m_cullingDispatcher->LoadComputeShader(cullingShader, CullingEntryNameId);
@@ -150,22 +150,29 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
 
     if (m_renderer)
     {
-        m_renderer->vertexBuffer = meshManager->GetVertexBuffer();
-        m_renderer->indexBuffer  = meshManager->GetIndexBuffer();
+        m_renderer->vertexBuffer   = meshManager->GetVertexBuffer();
+        m_renderer->indexBuffer    = meshManager->GetIndexBuffer();
         m_renderer->indirectBuffer = &m_drawIndirectBuffer;
         m_renderer->countBuffer    = &m_drawCallGroupBuffer;
 
         const auto& batchGroups = instanceManager->GetBatchGroups();
         m_renderer->drawCalls.resize(batchGroups.size());
-        std::transform(batchGroups.begin(), batchGroups.end(), m_renderer->drawCalls.begin(),
-            [](const MMaterialBatchGroup* group) {
-                return MIndexedIndirectCountRenderer::DrawCall{.commandOffset = group->GetBatchId() * MaxDrawCallsPerGroup,
-                        .countOffset   = group->GetBatchId(),
-                        .maxCount      = MaxDrawCallsPerGroup};
-            });
+        std::transform(
+                batchGroups.begin(),
+                batchGroups.end(),
+                m_renderer->drawCalls.begin(),
+                [](const MMaterialBatchGroup* group) {
+                    return MIndexedIndirectCountRenderer::DrawCall{
+                            .pass          = group->GetMaterialTemplate()->GetDefaultPass(),
+                            .parameterSet  = group->GetParameterSet().get(),
+                            .commandOffset = group->GetBatchId() * MaxDrawCallsPerGroup,
+                            .countOffset   = group->GetBatchId(),
+                            .maxCount      = MaxDrawCallsPerGroup
+                    };
+                }
+        );
         GetRenderOutput(0)->SetData(m_renderer.get());
     }
-
 }
 
 void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand)
@@ -186,50 +193,53 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
 
     if (instanceCount == 0) { return; }
 
-    // Build NaniteRenderData from MRenderInfo
-    MNaniteRenderData renderData;
+    // Build NaniteCullingParams from MRenderInfo
+    MNaniteCullingParams cullingParams;
 
     // View matrix is inverse of camera transform
-    renderData.viewMatrix     = info.m4CameraTransform.Inverse();
-    renderData.viewProjMatrix = info.m4ProjectionMatrix * renderData.viewMatrix;
+    cullingParams.renderData.viewMatrix     = info.m4CameraTransform.Inverse();
+    cullingParams.renderData.viewProjMatrix = info.m4ProjectionMatrix * cullingParams.renderData.viewMatrix;
 
     // Camera position is the translation part of camera transform
-    renderData.cameraPositionWS =
+    cullingParams.renderData.cameraPositionWS =
             Vector3(info.m4CameraTransform.m[3][0], info.m4CameraTransform.m[3][1], info.m4CameraTransform.m[3][2]);
 
     // Screen size from viewport rect
-    renderData.screenSize =
+    cullingParams.renderData.screenSize =
             Vector2(static_cast<float>(info.viewportRect.GetWidth()),
                     static_cast<float>(info.viewportRect.GetHeight()));
 
     // Near/far clip planes
-    renderData.nearClip = info.f2CameraNearFar.x;
-    renderData.farClip  = info.f2CameraNearFar.y;
+    cullingParams.renderData.nearClip = info.f2CameraNearFar.x;
+    cullingParams.renderData.farClip  = info.f2CameraNearFar.y;
 
     // Extract frustum planes from MCameraFrustum
     for (size_t i = 0; i < 6; ++i)
     {
-        MPlane plane                         = info.cameraFrustum.GetPlane(i);
-        renderData.frustumPlanes[i].normal   = Vector3(plane.m_plane.x, plane.m_plane.y, plane.m_plane.z);
-        renderData.frustumPlanes[i].distance = plane.m_plane.w;
+        MPlane plane                                       = info.cameraFrustum.GetPlane(i);
+        cullingParams.renderData.frustumPlanes[i].normal   = Vector3(plane.m_plane.x, plane.m_plane.y, plane.m_plane.z);
+        cullingParams.renderData.frustumPlanes[i].distance = plane.m_plane.w;
     }
+
+    // Set instance count
+    cullingParams.instanceCount = instanceCount;
 
     // Get shader parameter set
     auto parameterSet = m_cullingDispatcher->GetShaderParameterSet(0);
 
-    // Set uniform values for NaniteRenderData struct
-    parameterSet->SetValue(ViewProjMatrixNameId, renderData.viewProjMatrix);
-    parameterSet->SetValue(ViewMatrixNameId, renderData.viewMatrix);
-    parameterSet->SetValue(CameraPositionNameId, renderData.cameraPositionWS);
-    parameterSet->SetValue(ScreenSizeNameId, renderData.screenSize);
-    parameterSet->SetValue(NearClipNameId, renderData.nearClip);
-    parameterSet->SetValue(FarClipNameId, renderData.farClip);
+    // Set values for the params constant buffer (using recursive struct member lookup)
+    // The shader has: ConstantBuffer<NaniteCullingParams> params
+    // The SetValue function will recursively find members in nested structs
+    parameterSet->SetValue(ViewProjMatrixNameId, cullingParams.renderData.viewProjMatrix);
+    parameterSet->SetValue(ViewMatrixNameId, cullingParams.renderData.viewMatrix);
+    parameterSet->SetValue(CameraPositionNameId, cullingParams.renderData.cameraPositionWS);
+    parameterSet->SetValue(ScreenSizeNameId, cullingParams.renderData.screenSize);
+    parameterSet->SetValue(NearClipNameId, cullingParams.renderData.nearClip);
+    parameterSet->SetValue(FarClipNameId, cullingParams.renderData.farClip);
+    parameterSet->SetValue(InstanceCountNameId, cullingParams.instanceCount);
 
-    // TODO: frustumPlanes array needs to be set - may require extending shader param system
-    // For now, frustum culling in shader will use these planes from the uniform buffer
-
-    // Set instance count uniform
-    parameterSet->SetValue(InstanceCountNameId, instanceCount);
+    // TODO: frustumPlanes array still needs to be handled
+    // The recursive SetValue doesn't support arrays yet
 
     // Set input buffers
     parameterSet->SetBuffer(InstanceDataNameId, instanceManager->GetInstanceBuffer());
@@ -253,10 +263,7 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
 {
     auto instanceManager = info.scene->GetManager<MMeshInstanceManager>();
     auto meshManager     = info.scene->GetManager<MMeshManager>();
-    if (!instanceManager || !meshManager || !m_buildDrawCallDispatcher)
-    {
-        return;
-    }
+    if (!instanceManager || !meshManager || !m_buildDrawCallDispatcher) { return; }
 
     const auto&  batchGroups = instanceManager->GetBatchGroups();
     const size_t groupCount  = batchGroups.size();
@@ -300,13 +307,7 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
 
     constexpr uint32_t ThreadsPerGroup = 64;
     uint32_t           groupCountX     = (MaxCandidateClusters + ThreadsPerGroup - 1) / ThreadsPerGroup;
-    primaryCommand->DispatchComputeJob(
-            m_buildDrawCallDispatcher,
-            BuildDrawCallEntryNameId,
-            groupCountX,
-            1,
-            1
-    );
+    primaryCommand->DispatchComputeJob(m_buildDrawCallDispatcher, BuildDrawCallEntryNameId, groupCountX, 1, 1);
 
     if (m_drawIndirectBuffer.m_bufferRHI)
     {

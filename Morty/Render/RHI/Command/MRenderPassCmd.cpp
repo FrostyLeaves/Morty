@@ -101,6 +101,11 @@ void MRenderPassCmd::PushShaderParameterSet(MShaderParameterSet* pParameterSet)
 
 void MRenderPassCmd::PopShaderParameterSet() { m_propertyBlockStack.pop_back(); }
 
+void MRenderPassCmd::ApplyPushedShaderParameterSets()
+{
+    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderParameterSet(pPushedProperty); }
+}
+
 void MRenderPassCmd::AddTextureBarrier(const std::vector<MTexture*>& vTextures, METextureBarrierStage dstStage)
 {
     m_commandQueue.emplace_back(new MAddTextureBarrierCmd{
@@ -189,7 +194,7 @@ void MRenderPassCmd::SetMaterial(const MMaterial* material, const MMaterialPass*
 
     if (auto propertyBlock = material->GetMaterialParameterSet()) { SetShaderParameterSet(propertyBlock); }
 
-    for (const auto& pPushedProperty: m_propertyBlockStack) { SetShaderParameterSet(pPushedProperty); }
+    ApplyPushedShaderParameterSets();
 }
 
 void MRenderPassCmd::SetMaterial(const MMaterial* material, const MStringId& passName)
@@ -201,14 +206,14 @@ void MRenderPassCmd::SetMaterial(const MMaterial* material, const MStringId& pas
     SetMaterial(material, pass);
 }
 
-void MRenderPassCmd::UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size)
+void MRenderPassCmd::UpdateBuffer(MBuffer* buffer, const MByte* data, const size_t& size)
 {
-    if (!pBuffer) { return; }
+    if (!buffer) { return; }
 
-    if (pBuffer->m_stageType == MBuffer::MStageType::EWaitAllow)
+    if (buffer->m_stageType == MBuffer::MStageType::EWaitAllow)
     {
-        pBuffer->DestroyBuffer(m_device);
-        pBuffer->GenerateBuffer(m_device, data, size);
+        buffer->DestroyBuffer(m_device);
+        buffer->GenerateBuffer(m_device, data, size);
     }
-    else if (pBuffer->m_stageType == MBuffer::MStageType::EWaitSync) { pBuffer->UploadBuffer(m_device, data, size); }
+    else if (buffer->m_stageType == MBuffer::MStageType::EWaitSync) { buffer->UploadBuffer(m_device, data, size); }
 }

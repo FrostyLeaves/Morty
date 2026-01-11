@@ -16,15 +16,14 @@ void LogWidget::Initialize(MainEditor* pMainEditor)
 {
     BaseWidget::Initialize(pMainEditor);
 
+    /*
     MLogger::GetInstance()->SetPrintFunction(
             [this](MLogType type, const char* message) { AddLog(type, MString(message)); }
     );
+*/
 }
 
-void LogWidget::Release()
-{
-    MLogger::GetInstance()->SetPrintFunction(nullptr);
-}
+void LogWidget::Release() { MLogger::GetInstance()->SetPrintFunction(nullptr); }
 
 void LogWidget::AddLog(MLogType type, const MString& message)
 {

@@ -1,6 +1,8 @@
-implementing InternalModule;
+module MeshInstanceCullingModule;
 
-__include "NaniteCulling";
+import InternalModule;
+import Model.ModelModule;
+import Culling.CullingModule;
 
 // ==================== Compute Shader: Nanite Instance Culling ====================
 // Phase 1: Iterate all MeshInstances, perform LOD selection and frustum culling
@@ -11,8 +13,6 @@ public void NaniteInstanceCullingCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
 
     // Input
-    uniform NaniteRenderData renderData,
-    uniform uint instanceCount,
     StructuredBuffer<MeshInstanceData> meshInstances,
     StructuredBuffer<MeshResourceData> meshResources,  // Mesh resource data buffer
     StructuredBuffer<ClusterGroupData> clusterGroups,
@@ -24,7 +24,7 @@ public void NaniteInstanceCullingCS(
 )
 {
     uint instanceIndex = dispatchThreadID.x;
-    if (instanceIndex >= instanceCount)
+    if (instanceIndex >= naniteCullingParams.instanceCount)
         return;
 
     MeshInstanceData meshInstance = meshInstances[instanceIndex];
@@ -39,7 +39,7 @@ public void NaniteInstanceCullingCS(
         meshResource,  // Pass MeshResourceData
         clusterGroups,
         clusters,
-        renderData,
+        naniteCullingParams.renderData,
         outCandidateClusters,
         outCandidateCount
     );

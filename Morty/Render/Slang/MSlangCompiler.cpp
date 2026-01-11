@@ -42,9 +42,6 @@ MEShaderType ConvertShaderType(SlangStage stage)
 static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MShaderPropertyBlock& output)
 {
     auto attrName = attribute->getName();
-    auto argCount = attribute->getArgumentCount();
-
-    MLogger::GetInstance()->Log("[{}], {}", attrName, argCount);
 
     if (MString(attrName) == "Property")
     {
@@ -73,24 +70,6 @@ static void ReflectionDefaultFromSlang(
 {
     auto name = parameter->getName();
 
-
-    auto set         = parameter->getBindingSpace();
-    auto binding     = parameter->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
-    auto type        = parameter->getType()->getName();
-    auto offset      = parameter->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
-    auto type_layout = parameter->getTypeLayout()->getName();
-
-    auto space = std::string(reflectionDepth * 4, ' ');
-    MLogger::GetInstance()->Log(
-            "{}name: {}, type: {}, set: {}, binding: {}, offest: {}, type layout: {}",
-            space,
-            name,
-            type,
-            set,
-            binding,
-            offset,
-            type_layout
-    );
     // Output user-defined attributes
     auto variable = parameter->getVariable();
     if (variable)
@@ -126,9 +105,7 @@ ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock
 
     if (auto type = parameter->getType())
     {
-
-        MLogger::GetInstance()->Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
-
+        //MLogger::GetInstance()->Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
         for (auto attrIdx = 0u; attrIdx < type->getUserAttributeCount(); ++attrIdx)
         {
             auto attribute = type->getUserAttributeByIndex(attrIdx);
@@ -154,6 +131,18 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
 
         switch (bindingType)
         {
+            case slang::BindingType::PushConstant: {
+                // Push constants are not supported - report error early
+                auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
+                auto typeName            = parameterTypeLayout ? parameterTypeLayout->getName() : "unknown";
+                MLogger::GetInstance()->Error(
+                        "Push constant '{}' detected in shader. "
+                        "Push constants are not supported. "
+                        "Use ParameterBlock<T> with [[vk::binding(N, M)]] instead of 'uniform' parameters.",
+                        typeName ? typeName : "unknown"
+                );
+            }
+            break;
             case slang::BindingType::ParameterBlock:
             case slang::BindingType::ConstantBuffer: {
                 auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
@@ -175,6 +164,17 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
 
             switch (bindingType)
             {
+                case slang::BindingType::PushConstant: {
+                    // Push constants are not supported - report error early
+                    MLogger::GetInstance()->Error(
+                            "Push constant detected in descriptor set {} range {}. "
+                            "Push constants are not supported. "
+                            "Use ParameterBlock<T> with [[vk::binding(N, M)]] instead of 'uniform' parameters.",
+                            relativeSetIndex,
+                            rangeIdx
+                    );
+                }
+                break;
                 case slang::BindingType::RawBuffer: {
                     // RawBuffer is for StructuredBuffer and RWStructuredBuffer
                     ReflectionDefaultFromSlang(typeLayout, output);
@@ -274,7 +274,7 @@ bool                                   MSlangCompiler::Compile()
         MString diagnosticsLog = (const char*) diagnostics->getBufferPointer();
         MLogger::GetInstance()->Information(diagnosticsLog.c_str());
     }
-    MORTY_ASSERT(module);
+    if (module == nullptr) { return false; }
 
     Slang::ComPtr<SlangCompileRequest> compileRequest;
     MORTY_ASSERT(SLANG_SUCCEEDED(session->createCompileRequest(compileRequest.writeRef())));
@@ -332,9 +332,9 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].buffer = std::move(buffer);
     }
 
-    MLogger::GetInstance()->Log("==== Slang Reflection Result ====");
+    //MLogger::GetInstance()->Log("==== Slang Reflection Result ====");
     ReflectionSlang(linkedProgram, m_reflection);
-    MLogger::GetInstance()->Log("==== Slang Reflection End ====");
+    //MLogger::GetInstance()->Log("==== Slang Reflection End ====");
 
     return true;
 }

@@ -20,6 +20,7 @@ struct MORTY_API MRenderGraphName {
     static const MStringId TransparentFront;
     static const MStringId TransparentBack;
     static const MStringId Renderer;
+    static const MStringId FrameParamSet;
 
     static const MStringId GBuffer[3];
 };

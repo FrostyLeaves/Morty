@@ -71,8 +71,8 @@ public:
     void SetShaderParameterSet(MShaderParameterSet* pParameterSet);
 
     void PushShaderParameterSet(MShaderParameterSet* pParameterSet);
-
     void PopShaderParameterSet();
+    void ApplyPushedShaderParameterSets();
 
     void AddTextureBarrier(const std::vector<MTexture*>& vTextures, METextureBarrierStage dstStage);
 
@@ -83,7 +83,7 @@ public:
     [[nodiscard]] const std::vector<IPipelineCmd*>& GetCommand() const { return m_commandQueue; }
 
 private:
-    void UpdateBuffer(MBuffer* pBuffer, const MByte* data, const size_t& size);
+    void UpdateBuffer(MBuffer* buffer, const MByte* data, const size_t& size);
 
 private:
     MIDevice*                         m_device        = nullptr;
