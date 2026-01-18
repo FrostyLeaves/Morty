@@ -95,19 +95,3 @@ void MClusterGroup::Deserialize(const void* pBufferPointer)
 }
 
 
-flatbuffers::Offset<void> MClusterLodData::Serialize(flatbuffers::FlatBufferBuilder& fbb) const
-{
-    fbs::MSliceBuilder builder(fbb);
-
-    builder.add_offset(groupOffset);
-    builder.add_num(groupNum);
-
-    return builder.Finish().Union();
-}
-
-void MClusterLodData::Deserialize(const void* pBufferPointer)
-{
-    const auto* fbData = reinterpret_cast<const fbs::MSlice*>(pBufferPointer);
-    groupOffset        = fbData->offset();
-    groupNum           = fbData->num();
-}

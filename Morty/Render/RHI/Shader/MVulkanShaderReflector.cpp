@@ -23,7 +23,7 @@ MVulkanShaderReflector::MVulkanShaderReflector(MVulkanDevice* pDevice)
 
 MVulkanShaderReflector::~MVulkanShaderReflector() {}
 
-bool                     MVulkanShaderReflector::Initialize() { return true; }
+bool MVulkanShaderReflector::Initialize() { return true; }
 
 
 enum class ShaderReflectorType
@@ -54,17 +54,12 @@ ShaderReflectorType GetReflectorTypeFromName(const std::string& name)
     return ShaderReflectorType::Undefine;
 }
 
-std::tuple<VkFormat, uint32_t>
-MVulkanShaderReflector::GetVertexInputDescription(const std::string& name, spirv_cross::SPIRType type) const
+std::tuple<VkFormat, uint32_t> MVulkanShaderReflector::GetVertexInputDescription(const std::string& name, spirv_cross::SPIRType type) const
 {
     if (spirv_cross::SPIRType::BaseType::Float == type.basetype)
     {
-        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping = {
-                std::make_tuple(VK_FORMAT_R32_SFLOAT, 4),
-                {VK_FORMAT_R32G32_SFLOAT, 8},
-                {VK_FORMAT_R32G32B32_SFLOAT, 12},
-                {VK_FORMAT_R32G32B32A32_SFLOAT, 16}
-        };
+        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping =
+                {std::make_tuple(VK_FORMAT_R32_SFLOAT, 4), {VK_FORMAT_R32G32_SFLOAT, 8}, {VK_FORMAT_R32G32B32_SFLOAT, 12}, {VK_FORMAT_R32G32B32A32_SFLOAT, 16}};
 
         if (4 == type.vecsize)
         {
@@ -83,12 +78,8 @@ MVulkanShaderReflector::GetVertexInputDescription(const std::string& name, spirv
     }
     if (spirv_cross::SPIRType::BaseType::Int == type.basetype)
     {
-        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping = {
-                std::make_tuple(VK_FORMAT_R32_SINT, 4),
-                {VK_FORMAT_R32G32_SINT, 8},
-                {VK_FORMAT_R32G32B32_SINT, 12},
-                {VK_FORMAT_R32G32B32A32_SINT, 16}
-        };
+        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping =
+                {std::make_tuple(VK_FORMAT_R32_SINT, 4), {VK_FORMAT_R32G32_SINT, 8}, {VK_FORMAT_R32G32B32_SINT, 12}, {VK_FORMAT_R32G32B32A32_SINT, 16}};
         if (type.vecsize >= sFormatMapping.size())
         {
             MORTY_ASSERT(type.vecsize <= sFormatMapping.size());
@@ -100,12 +91,8 @@ MVulkanShaderReflector::GetVertexInputDescription(const std::string& name, spirv
     }
     if (spirv_cross::SPIRType::BaseType::UInt == type.basetype)
     {
-        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping = {
-                std::make_tuple(VK_FORMAT_R32_UINT, 4),
-                {VK_FORMAT_R32G32_UINT, 8},
-                {VK_FORMAT_R32G32B32_UINT, 12},
-                {VK_FORMAT_R32G32B32A32_UINT, 16}
-        };
+        static std::array<std::tuple<VkFormat, uint32_t>, 4> sFormatMapping =
+                {std::make_tuple(VK_FORMAT_R32_UINT, 4), {VK_FORMAT_R32G32_UINT, 8}, {VK_FORMAT_R32G32B32_UINT, 12}, {VK_FORMAT_R32G32B32A32_UINT, 16}};
         if (type.vecsize >= sFormatMapping.size())
         {
             MORTY_ASSERT(type.vecsize <= sFormatMapping.size());
@@ -120,10 +107,7 @@ MVulkanShaderReflector::GetVertexInputDescription(const std::string& name, spirv
     return {VK_FORMAT_UNDEFINED, 0};
 }
 
-void MVulkanShaderReflector::GetVertexInputState(
-        const spirv_cross::Compiler& compiler,
-        MVertexShaderBuffer*         pShaderBuffer
-) const
+void MVulkanShaderReflector::GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer) const
 {
     spirv_cross::ShaderResources                   shaderResources = compiler.get_shader_resources();
 
@@ -165,11 +149,7 @@ void MVulkanShaderReflector::GetVertexInputState(
     pShaderBuffer->m_bindingDescs   = {bindingDescription};
 }
 
-bool MVulkanShaderReflector::GetShaderParam(
-        const spirv_cross::Compiler& compiler,
-        const MShaderPropertyBlock*  propertyBlock,
-        MShaderBuffer*               pShaderBuffer
-)
+bool MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compiler, const MShaderPropertyBlock* propertyBlock, MShaderBuffer* pShaderBuffer)
 {
     spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
 
@@ -182,7 +162,7 @@ bool MVulkanShaderReflector::GetShaderParam(
 
         const std::string& uav_name = compiler.get_name(res.id);
         param->strName              = MStringId(uav_name.c_str());
-        param->strName = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
+        param->strName              = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
         param->bWritable                 = !buffer_flags.get(spv::DecorationNonWritable);
@@ -309,11 +289,7 @@ bool MVulkanShaderReflector::GetShaderParam(
     return ValidateBindingConflicts(pShaderBuffer);
 }
 
-void MVulkanShaderReflector::BuildVariant(
-        const spirv_cross::Compiler& compiler,
-        const spirv_cross::SPIRType& type,
-        MVariant&                    variant
-)
+void MVulkanShaderReflector::BuildVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant)
 {
     MVariant tempVariant;
 
@@ -334,7 +310,10 @@ void MVulkanShaderReflector::BuildVariant(
             builder.AppendVariant(MStringId(strMemberName.c_str()), memberVariant);
         }
         builder.Finish();
-        tempVariant = MVariant(srt);
+
+        static const MStringId DataNameId = MStringId("data");//TODO: shader slang
+        if (srt.GetMember().size() == 1 && srt.HasVariant(DataNameId)) { tempVariant = MVariant(srt.GetVariant<MVariant>(DataNameId)); }
+        else { tempVariant = MVariant(srt); }
     }
     else { BuildBasicVariant(type, tempVariant); }
 
@@ -406,10 +385,7 @@ bool MVulkanShaderReflector::BuildBasicVariant(const spirv_cross::SPIRType& type
     return false;
 }
 
-spirv_cross::SPIRType MVulkanShaderReflector::GetStorageBufferType(
-        const spirv_cross::Compiler& compiler,
-        const spirv_cross::SPIRType& type
-) const
+spirv_cross::SPIRType MVulkanShaderReflector::GetStorageBufferType(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type) const
 {
     //storage buffer is a dynamic array that array size == 0.
     if (!type.array.empty() && type.array[0] == 0) { return type; }
@@ -436,13 +412,13 @@ bool MVulkanShaderReflector::ValidateBindingConflicts(MShaderBuffer* pShaderBuff
         // Map: binding -> (param name, descriptor type name)
         std::map<uint32_t, std::pair<MStringId, const char*>> bindingMap;
 
-        auto checkAndAddBinding = [&](uint32_t binding, const MStringId& name, const char* typeName) {
+        auto                                                  checkAndAddBinding = [&](uint32_t binding, const MStringId& name, const char* typeName) {
             auto it = bindingMap.find(binding);
             if (it != bindingMap.end())
             {
                 m_device->GetEngine()->GetLogger()->Error(
                         "Shader binding conflict detected in set {}: binding {} is used by both '{}' ({}) and '{}' "
-                        "({})",
+                                                                         "({})",
                         setIndex,
                         binding,
                         it->second.first.ToString().c_str(),
@@ -455,25 +431,13 @@ bool MVulkanShaderReflector::ValidateBindingConflicts(MShaderBuffer* pShaderBuff
             else { bindingMap[binding] = {name, typeName}; }
         };
 
-        for (const auto& param: paramSet->GetConstantParams())
-        {
-            checkAndAddBinding(param->unBinding, param->strName, "UniformBuffer");
-        }
+        for (const auto& param: paramSet->GetConstantParams()) { checkAndAddBinding(param->unBinding, param->strName, "UniformBuffer"); }
 
-        for (const auto& param: paramSet->GetStorageParams())
-        {
-            checkAndAddBinding(param->unBinding, param->strName, "StorageBuffer");
-        }
+        for (const auto& param: paramSet->GetStorageParams()) { checkAndAddBinding(param->unBinding, param->strName, "StorageBuffer"); }
 
-        for (const auto& param: paramSet->GetTextureParams())
-        {
-            checkAndAddBinding(param->unBinding, param->strName, "Texture/Image");
-        }
+        for (const auto& param: paramSet->GetTextureParams()) { checkAndAddBinding(param->unBinding, param->strName, "Texture/Image"); }
 
-        for (const auto& param: paramSet->GetSampleParams())
-        {
-            checkAndAddBinding(param->unBinding, param->strName, "Sampler");
-        }
+        for (const auto& param: paramSet->GetSampleParams()) { checkAndAddBinding(param->unBinding, param->strName, "Sampler"); }
     }
 
     return !hasConflict;

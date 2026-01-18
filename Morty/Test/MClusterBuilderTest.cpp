@@ -207,13 +207,18 @@ TEST_SUITE("MClusterBuilder")
             }
         }
 
-        SUBCASE("LOD data is generated")
+        SUBCASE("Root groups are generated")
         {
             builder.Generate(mesh);
 
-            CHECK(mesh->GetClusterLodData().size() > 0);
+            // Root groups should exist (DAG entry points with error = FLT_MAX)
+            CHECK(mesh->GetRootGroups().size() > 0);
 
-            for (const auto& lod: mesh->GetClusterLodData()) { CHECK(lod.groupNum > 0); }
+            // Each root group ID should be valid
+            for (const auto& rootId: mesh->GetRootGroups())
+            {
+                CHECK(rootId < mesh->GetClusterGroup().size());
+            }
         }
 
         delete mesh;
@@ -230,46 +235,32 @@ TEST_SUITE("MClusterBuilder")
 
             CHECK(mesh->GetClusters().size() > 0);
             CHECK(mesh->GetClusterGroup().size() > 0);
-            CHECK(mesh->GetClusterLodData().size() > 0);
+            CHECK(mesh->GetRootGroups().size() > 0);
         }
 
-        SUBCASE("LOD hierarchy is correct")
+        SUBCASE("DAG structure is correct")
         {
             builder.Generate(mesh);
 
-            const auto& lods   = mesh->GetClusterLodData();
-            const auto& groups = mesh->GetClusterGroup();
+            const auto& groups     = mesh->GetClusterGroup();
+            const auto& rootGroups = mesh->GetRootGroups();
+            const auto& groupLinks = mesh->GetGroupLinks();
 
-            // Verify LOD hierarchy
-            for (const auto& lod: lods) { CHECK(lod.groupOffset + lod.groupNum <= groups.size()); }
-
-            // LOD levels should generally decrease in cluster count (or stay at 1)
-            if (lods.size() > 1)
+            // Verify root groups have error = FLT_MAX
+            for (const auto& rootId: rootGroups)
             {
-                for (size_t i = 0; i < lods.size() - 1; ++i)
-                {
-                    // Later LODs should have same or fewer groups
-                    CHECK(lods[i + 1].groupNum <= lods[i].groupNum);
-                }
+                CHECK(groups[rootId].bounds.error == FLT_MAX);
             }
-        }
 
-        SUBCASE("Error increases with LOD levels")
-        {
-            builder.Generate(mesh);
-
-            const auto& lods   = mesh->GetClusterLodData();
-            const auto& groups = mesh->GetClusterGroup();
-
-            if (lods.size() > 1)
+            // Verify group links are valid
+            for (const auto& group: groups)
             {
-                for (size_t i = 0; i < lods.size() - 1; ++i)
+                for (uint32_t i = 0; i < group.groupLinkCount; ++i)
                 {
-                    const auto& currentLodFirstGroup = groups[lods[i].groupOffset];
-                    const auto& nextLodFirstGroup    = groups[lods[i + 1].groupOffset];
-
-                    // Higher LOD levels should have equal or greater error
-                    CHECK(nextLodFirstGroup.bounds.error >= currentLodFirstGroup.bounds.error);
+                    uint32_t childIdx = group.groupLinkOffset + i;
+                    CHECK(childIdx < groupLinks.size());
+                    CHECK(groupLinks[childIdx] >= 0);
+                    CHECK(static_cast<size_t>(groupLinks[childIdx]) < groups.size());
                 }
             }
         }
@@ -347,9 +338,9 @@ TEST_SUITE("MClusterBuilder")
             CHECK(mesh1->GetClusterGroup().size() == mesh2->GetClusterGroup().size());
         }
 
-        SUBCASE("Produces consistent LOD count")
+        SUBCASE("Produces consistent root group count")
         {
-            CHECK(mesh1->GetClusterLodData().size() == mesh2->GetClusterLodData().size());
+            CHECK(mesh1->GetRootGroups().size() == mesh2->GetRootGroups().size());
         }
 
         delete mesh1;

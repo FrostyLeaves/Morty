@@ -16,8 +16,8 @@ public struct NaniteRenderData
     float nearClip;
     float farClip;
 
-    // Frustum planes
-    FrustumUtils.Plane frustumPlanes[6];
+    // Frustum
+    FrustumUtils.Frustum frustum;
 };
 
 // Candidate Cluster structure (output after LOD selection)
@@ -90,11 +90,11 @@ public struct NaniteCulling
     public static bool SphereInFrustum(
         float3 center,
         float radius,
-        FrustumUtils.Plane frustumPlanes[6])
+        FrustumUtils.Frustum frustum)
     {
         for (int i = 0; i < 6; ++i)
         {
-            float distance = dot(frustumPlanes[i].normal, center) + frustumPlanes[i].distance;
+            float distance = dot(frustum.planes[i].xyz, center) + frustum.planes[i].w;
             if (distance < -radius)
                 return false;
         }
@@ -105,7 +105,7 @@ public struct NaniteCulling
     public static bool CullCluster(
         ClusterData cluster,
         float4x4 worldMatrix,
-        FrustumUtils.Plane frustumPlanes[6])
+        FrustumUtils.Frustum frustum)
     {
         // Transform cluster bounding sphere to world space
         float3 worldCenter = mul(worldMatrix, float4(cluster.position, 1.0)).xyz;
@@ -118,14 +118,14 @@ public struct NaniteCulling
         float worldRadius = cluster.radius * maxScale;
 
         // Frustum culling
-        return SphereInFrustum(worldCenter, worldRadius, frustumPlanes);
+        return SphereInFrustum(worldCenter, worldRadius, frustum);
     }
 
     // Perform culling test on ClusterGroup
     public static bool CullClusterGroup(
         ClusterGroupData group,
         float4x4 worldMatrix,
-        FrustumUtils.Plane frustumPlanes[6])
+        FrustumUtils.Frustum frustum)
     {
         // Transform group bounding sphere to world space
         float3 worldCenter = mul(worldMatrix, float4(group.position, 1.0)).xyz;
@@ -138,7 +138,7 @@ public struct NaniteCulling
         float worldRadius = group.radius * maxScale;
 
         // Frustum culling
-        return SphereInFrustum(worldCenter, worldRadius, frustumPlanes);
+        return SphereInFrustum(worldCenter, worldRadius, frustum);
     }
 };
 
@@ -178,15 +178,13 @@ public struct NaniteTraversal
             if (NaniteCulling.CullClusterGroup(
                 clusterGroups[rootGroupIndex],
                 meshInstance.matWorld,
-                renderData.frustumPlanes))
+                renderData.frustum))
             {
                 stack[stackSize].groupIndex = rootGroupIndex;
                 stack[stackSize].depth = 0;
                 stackSize++;
             }
         }
-
-        return;
 
         // BFS traversal
         while (stackSize > 0)
@@ -218,7 +216,7 @@ public struct NaniteTraversal
                     if (NaniteCulling.CullClusterGroup(
                         clusterGroups[childGroupIndex],
                         meshInstance.matWorld,
-                        renderData.frustumPlanes))
+                        renderData.frustum))
                     {
                         // Push to stack
                         if (stackSize < NANITE_MAX_TRAVERSAL_DEPTH)
@@ -246,7 +244,7 @@ public struct NaniteTraversal
                     if (NaniteCulling.CullCluster(
                         cluster,
                         meshInstance.matWorld,
-                        renderData.frustumPlanes))
+                        renderData.frustum))
                     {
                         // Output candidate cluster
                         uint candidateIndex;

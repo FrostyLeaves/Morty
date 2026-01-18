@@ -258,15 +258,9 @@ public struct NormalUtils
 
 public struct FrustumUtils
 {
-    public struct Plane
-    {
-        public float3 normal;
-        public float distance;
-    }
-
     public struct Frustum
     {
-        Plane planes[6]; // left, right, bottom, top, near, far
+        public float4 planes[6]; // left, right, bottom, top, near, far (xyz: normal, w: distance)
     }
 
     // Check if point is inside frustum
@@ -274,7 +268,7 @@ public struct FrustumUtils
     {
         for (int i = 0; i < 6; ++i)
         {
-            if (dot(frustum.planes[i].normal, point) + frustum.planes[i].distance < 0.0)
+            if (dot(frustum.planes[i].xyz, point) + frustum.planes[i].w < 0.0)
                 return false;
         }
         return true;
@@ -285,7 +279,7 @@ public struct FrustumUtils
     {
         for (int i = 0; i < 6; ++i)
         {
-            if (dot(frustum.planes[i].normal, center) + frustum.planes[i].distance < -radius)
+            if (dot(frustum.planes[i].xyz, center) + frustum.planes[i].w < -radius)
                 return false;
         }
         return true;

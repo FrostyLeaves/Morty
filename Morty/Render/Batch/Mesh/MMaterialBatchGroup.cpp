@@ -12,25 +12,15 @@
 
 using namespace morty;
 
-void MMaterialBatchGroup::Initialize(
-        MIDevice*                                   device,
-        const std::shared_ptr<MShaderParameterSet>& parameterSet,
-        const MShaderPropertyBlock*                 propertyBlock
-)
+void MMaterialBatchGroup::Initialize(MIDevice* device, const std::shared_ptr<MShaderParameterSet>& parameterSet, const MShaderPropertyBlock* propertyBlock)
 {
     m_device       = device;
     m_parameterSet = parameterSet;
 
-    if (m_propertyStorage =
-                parameterSet->FindStorageParam(propertyBlock->GetInstancingName(MInstanceDataType::Property)))
-    {
-        m_propertyStructSize = m_propertyStorage->var.GetSize();
-    }
-    if (m_textureStorage =
-                parameterSet->FindStorageParam(propertyBlock->GetInstancingName(MInstanceDataType::TextureIndex)))
-    {
-        m_textureStructSize = m_textureStorage->var.GetSize();
-    }
+    m_propertyStorage = parameterSet->FindStorageParam(propertyBlock->GetInstancingName(MInstanceDataType::Property));
+    m_textureStorage  = parameterSet->FindStorageParam(propertyBlock->GetInstancingName(MInstanceDataType::TextureIndex));
+    if (m_propertyStorage) { m_propertyStructSize = m_propertyStorage->var.GetSize(); }
+    if (m_textureStorage) { m_textureStructSize = m_textureStorage->var.GetSize(); }
 
     m_propertyBuffer = MBuffer::CreateStorageBuffer("material batch property buffer");
     m_textureBuffer  = MBuffer::CreateStorageBuffer("material batch texture index buffer");
@@ -41,7 +31,7 @@ void MMaterialBatchGroup::Initialize(
         {
             auto& batcherData = m_textureBatcherData[texParam->strName] = TextureBatcherData();
             batcherData.batcher                                         = new MTexture2DArrayBatcher();
-            batcherData.indexName = MStringId(texParam->strName.ToString() + "Index");
+            batcherData.indexName                                       = MStringId(texParam->strName.ToString() + "Index");
             if (m_textureStorage)
             {
                 auto structData = m_textureStorage->var.GetValue<MVariantStruct>();
@@ -70,8 +60,7 @@ void MMaterialBatchGroup::Release()
     m_textureBuffer.DestroyBuffer(m_device);
 }
 
-MMaterialInstanceKey
-MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent* component, MMaterial* material)
+MMaterialInstanceKey MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent* component, MMaterial* material)
 {
     if (!m_propertyStorage) { return MGlobal::M_INVALID_INDEX; }
     if (!m_textureStorage) { return MGlobal::M_INVALID_INDEX; }
@@ -79,10 +68,7 @@ MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent*
     auto id                  = m_idPool.AllocateID();
     m_instanceTable[proxyId] = id;
 
-    if (m_propertyData.size() < (id + 1) * m_propertyStructSize)
-    {
-        m_propertyData.resize((id + 1) * m_propertyStructSize);
-    }
+    if (m_propertyData.size() < (id + 1) * m_propertyStructSize) { m_propertyData.resize((id + 1) * m_propertyStructSize); }
     if (m_textureData.size() < (id + 1) * m_textureStructSize) { m_textureData.resize((id + 1) * m_textureStructSize); }
 
     auto instancingData = component->GetInstancingData();

@@ -39,7 +39,7 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 BreakInheritanceList: BeforeComma
 BinPackArguments: false
 BinPackParameters: false
-ColumnLimit: 120
+ColumnLimit: 200
 CompactNamespaces: false
 ContinuationIndentWidth: 8
 IndentCaseLabels: true

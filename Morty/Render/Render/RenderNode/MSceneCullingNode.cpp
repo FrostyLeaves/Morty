@@ -47,13 +47,16 @@ static const MStringId BuildOutDrawGroupCountNameId = MStringId("buildDrawCallIn
 static const MStringId BuildDrawGroupCountUniformId = MStringId("drawGroupCount");// Inside buildDrawCallParams struct
 
 // Culling params constant buffer member names (for recursive struct member lookup)
-static const MStringId ViewProjMatrixNameId = MStringId("viewProjMatrix");
-static const MStringId ViewMatrixNameId     = MStringId("viewMatrix");
-static const MStringId CameraPositionNameId = MStringId("cameraPositionWS");
-static const MStringId ScreenSizeNameId     = MStringId("screenSize");
-static const MStringId NearClipNameId       = MStringId("nearClip");
-static const MStringId FarClipNameId        = MStringId("farClip");
-static const MStringId InstanceCountNameId  = MStringId("instanceCount");
+static const MStringId NaniteCullingParamsNameId = MStringId("naniteCullingParams");
+static const MStringId ViewProjMatrixNameId      = MStringId("viewProjMatrix");
+static const MStringId ViewMatrixNameId          = MStringId("viewMatrix");
+static const MStringId CameraPositionNameId      = MStringId("cameraPositionWS");
+static const MStringId ScreenSizeNameId          = MStringId("screenSize");
+static const MStringId NearClipNameId            = MStringId("nearClip");
+static const MStringId FarClipNameId             = MStringId("farClip");
+static const MStringId FrustumNameId             = MStringId("frustum");
+static const MStringId PlaneNameId               = MStringId("planes");
+static const MStringId InstanceCountNameId       = MStringId("instanceCount");
 
 void                   MSceneCullingNode::OnCreated()
 {
@@ -87,11 +90,7 @@ void                   MSceneCullingNode::OnCreated()
     m_drawIndirectBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_drawIndirectBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
-    m_drawCallGroupBuffer = MBuffer::CreateBuffer(
-            MBuffer::MMemoryType::EHostVisible,
-            MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect,
-            "MSceneCullingNode::DrawCallGroupCount"
-    );
+    m_drawCallGroupBuffer = MBuffer::CreateBuffer(MBuffer::MMemoryType::EHostVisible, MBuffer::MUsageType::EStorage | MBuffer::MUsageType::EIndirect, "MSceneCullingNode::DrawCallGroupCount");
 }
 
 void MSceneCullingNode::OnDelete()
@@ -120,39 +119,21 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
 
     {
         std::vector<const MBufferRHI*> barrierBuffers;
-        if (m_candidateClustersBuffer.m_bufferRHI)
-        {
-            barrierBuffers.push_back(m_candidateClustersBuffer.m_bufferRHI.get());
-        }
+        if (m_candidateClustersBuffer.m_bufferRHI) { barrierBuffers.push_back(m_candidateClustersBuffer.m_bufferRHI.get()); }
         if (m_candidateCountBuffer.m_bufferRHI) { barrierBuffers.push_back(m_candidateCountBuffer.m_bufferRHI.get()); }
-        if (!barrierBuffers.empty())
-        {
-            primaryCommand->AddBufferMemoryBarrier(
-                    barrierBuffers,
-                    MEBufferBarrierStage::EComputeShaderWrite,
-                    MEBufferBarrierStage::EComputeShaderRead
-            );
-        }
+        if (!barrierBuffers.empty()) { primaryCommand->AddBufferMemoryBarrier(barrierBuffers, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EComputeShaderRead); }
     }
 
-    //BuildDrawCall(info, primaryCommand);
+    BuildDrawCall(info, primaryCommand);
 
 
     if (m_drawIndirectBuffer.m_bufferRHI)
     {
-        primaryCommand->AddBufferMemoryBarrier(
-                {m_drawIndirectBuffer.m_bufferRHI.get()},
-                MEBufferBarrierStage::EComputeShaderWrite,
-                MEBufferBarrierStage::EDrawIndirectRead
-        );
+        primaryCommand->AddBufferMemoryBarrier({m_drawIndirectBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
     }
     if (m_drawCallGroupBuffer.m_bufferRHI)
     {
-        primaryCommand->AddBufferMemoryBarrier(
-                {m_drawCallGroupBuffer.m_bufferRHI.get()},
-                MEBufferBarrierStage::EComputeShaderWrite,
-                MEBufferBarrierStage::EDrawIndirectRead
-        );
+        primaryCommand->AddBufferMemoryBarrier({m_drawCallGroupBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
     }
 
     if (m_renderer)
@@ -164,21 +145,16 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
 
         const auto& batchGroups = instanceManager->GetBatchGroups();
         m_renderer->drawCalls.resize(batchGroups.size());
-        std::transform(
-                batchGroups.begin(),
-                batchGroups.end(),
-                m_renderer->drawCalls.begin(),
-                [](const MMaterialBatchGroup* group) {
-                    return MIndexedIndirectCountRenderer::DrawCall{
-                            .pass          = group->GetMaterialTemplate()->GetDefaultPass(),
-                            .parameterSet  = group->GetParameterSet().get(),
-                            .commandOffset = group->GetBatchId() * MaxDrawCallsPerGroup,
-                            .countOffset   = group->GetBatchId(),
-                            .maxCount      = MaxDrawCallsPerGroup
-                    };
-                }
-        );
-        //GetRenderOutput(0)->SetData(m_renderer.get());
+        std::transform(batchGroups.begin(), batchGroups.end(), m_renderer->drawCalls.begin(), [](const MMaterialBatchGroup* group) {
+            return MIndexedIndirectCountRenderer::DrawCall{
+                    .pass          = group->GetMaterialTemplate()->GetDefaultPass(),
+                    .parameterSet  = group->GetParameterSet().get(),
+                    .commandOffset = group->GetBatchId() * MaxDrawCallsPerGroup,
+                    .countOffset   = group->GetBatchId(),
+                    .maxCount      = MaxDrawCallsPerGroup
+            };
+        });
+        GetRenderOutput(0)->SetData(m_renderer.get());
     }
 }
 
@@ -208,13 +184,10 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
     cullingParams.renderData.viewProjMatrix = info.m4ProjectionMatrix * cullingParams.renderData.viewMatrix;
 
     // Camera position is the translation part of camera transform
-    cullingParams.renderData.cameraPositionWS =
-            Vector3(info.m4CameraTransform.m[3][0], info.m4CameraTransform.m[3][1], info.m4CameraTransform.m[3][2]);
+    cullingParams.renderData.cameraPositionWS = Vector3(info.m4CameraTransform.m[3][0], info.m4CameraTransform.m[3][1], info.m4CameraTransform.m[3][2]);
 
     // Screen size from viewport rect
-    cullingParams.renderData.screenSize =
-            Vector2(static_cast<float>(info.viewportRect.GetWidth()),
-                    static_cast<float>(info.viewportRect.GetHeight()));
+    cullingParams.renderData.screenSize = Vector2(static_cast<float>(info.viewportRect.GetWidth()), static_cast<float>(info.viewportRect.GetHeight()));
 
     // Near/far clip planes
     cullingParams.renderData.nearClip = info.f2CameraNearFar.x;
@@ -244,6 +217,14 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
     parameterSet->SetValue(NearClipNameId, cullingParams.renderData.nearClip);
     parameterSet->SetValue(FarClipNameId, cullingParams.renderData.farClip);
     parameterSet->SetValue(InstanceCountNameId, cullingParams.instanceCount);
+
+    auto planes = parameterSet->FindValue(PlaneNameId).GetValue<MVariantArray>();
+    for (size_t i = 0; i < 6; ++i)
+    {
+        Vector4 param = {cullingParams.renderData.frustumPlanes[i].normal, cullingParams.renderData.frustumPlanes[i].distance};
+        planes.SetVariant(i, param);
+    }
+
 
     // TODO: frustumPlanes array still needs to be handled
     // The recursive SetValue doesn't support arrays yet
@@ -295,11 +276,7 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
         m_drawCallGroupBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
     }
     std::vector<uint32_t> groupCounts(groupCount);
-    m_drawCallGroupBuffer.UploadBuffer(
-            renderSystem->GetDevice(),
-            reinterpret_cast<const MByte*>(groupCounts.data()),
-            groupBufferSize
-    );
+    m_drawCallGroupBuffer.UploadBuffer(renderSystem->GetDevice(), reinterpret_cast<const MByte*>(groupCounts.data()), groupBufferSize);
 
     auto setupParameters = [&](const std::shared_ptr<MShaderParameterSet>& parameterSet) {
         parameterSet->SetBuffer(BuildCandidateClustersNameId, &m_candidateClustersBuffer);
@@ -319,19 +296,11 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
 
     if (m_drawIndirectBuffer.m_bufferRHI)
     {
-        primaryCommand->AddBufferMemoryBarrier(
-                {m_drawIndirectBuffer.m_bufferRHI.get()},
-                MEBufferBarrierStage::EComputeShaderWrite,
-                MEBufferBarrierStage::EDrawIndirectRead
-        );
+        primaryCommand->AddBufferMemoryBarrier({m_drawIndirectBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
     }
     if (m_drawCallGroupBuffer.m_bufferRHI)
     {
-        primaryCommand->AddBufferMemoryBarrier(
-                {m_drawCallGroupBuffer.m_bufferRHI.get()},
-                MEBufferBarrierStage::EComputeShaderWrite,
-                MEBufferBarrierStage::EDrawIndirectRead
-        );
+        primaryCommand->AddBufferMemoryBarrier({m_drawCallGroupBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::EComputeShaderWrite, MEBufferBarrierStage::EDrawIndirectRead);
     }
 }
 

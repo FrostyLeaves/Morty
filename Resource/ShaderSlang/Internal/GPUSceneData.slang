@@ -1,37 +1,40 @@
 implementing InternalModule;
 
+[StructLayout("MClusterRenderData")]
 public struct ClusterData
 {
-    public uint indexOffset;
-    public uint indexCount;
-    public uint valid;
-
     public float3 position;
     public float radius;
     public float error;
+    public uint indexOffset;
+    public uint indexCount;
+    public uint valid;
 };
 
+[StructLayout("MClusterGroupRenderData")]
 public struct ClusterGroupData
 {
+    public float3 position;
+    public float radius;
+
+    public float error;
     public uint valid;
     public uint groupLinkOffset;
     public uint groupLinkCount;
 
     public uint clusterBeginIndex;
     public uint clusterCount;
-
-    public float3 position;
-    public float radius;
-    public float error;
 };
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
+[StructLayout("MMeshResourceRenderData")]
 public struct MeshResourceData
 {
     public int rootClusterGroupBeginIndex;  // Also used as clusterGroupOffset for local->global ID conversion
     public int rootClusterGroupCount;
 };
 
+[StructLayout("MMeshInstanceRenderProxy")]
 public struct MeshInstanceRenderProxy
 {
     public float4x4 matWorld;

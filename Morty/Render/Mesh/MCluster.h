@@ -58,45 +58,38 @@ struct MClusterGroup {
     void                      Deserialize(const void* pBufferPointer);
 };
 
-struct MClusterLodData {
-    uint32_t                  groupOffset;
-    uint32_t                  groupNum;
 
-    flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
-    void                      Deserialize(const void* pBufferPointer);
-};
-
-
-struct MClusterRenderData {
-    uint32_t indexOffset = 0;
-    uint32_t indexCount  = 0;
-    uint32_t valid       = 0;
-
+SHADER_STRUCT MClusterRenderData {
     Vector3  position;
     float    radius;
     float    error;
+    uint32_t indexOffset = 0;
+    uint32_t indexCount  = 0;
+    uint32_t valid       = 0;
 };
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
-struct MMeshResourceRenderData {
+SHADER_STRUCT MMeshResourceRenderData {
     int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INT;  // Also used as clusterGroupOffset for local->global ID conversion
     int32_t rootClusterGroupCount      = 0;
 };
 
-struct MMeshRenderData {
+SHADER_STRUCT MMeshRenderData {
     uint32_t rootClusterOffset = MGlobal::M_INVALID_UINDEX;
     uint32_t rootClusterCount  = 0;
 };
 
-struct MClusterGroupRenderData {
+SHADER_STRUCT MClusterGroupRenderData {
+    Vector3  position;
+    float    radius;
+
+    float    error;
     uint32_t valid = false;
     uint32_t groupLinkOffset;
     uint32_t groupLinkCount;
+    
     uint32_t clusterBeginIndex;
     uint32_t clusterCount;
-    Vector3  position;
-    float    radius;
-    float    error;
 };
 
 struct MClusterGroupData {

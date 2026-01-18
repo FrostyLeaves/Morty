@@ -1,10 +1,49 @@
 #include "MClusterBuilder.h"
+#include "Utility/MGlobal.h"
 
 #include "meshoptimizer.h"
+#include <set>
 #include <unordered_map>
 
 using namespace morty;
 
+void MClusterBuilder::SetQuality(MEClusterQuality quality)
+{
+    switch (quality)
+    {
+        case MEClusterQuality::Low:
+            m_maxTriangles           = 128;
+            m_partitionSize          = 32;
+            m_simplifyRatio          = 0.4f;
+            m_simplifyThreshold      = 0.9f;
+            m_simplifyFallbackSloppy = true;
+            break;
+
+        case MEClusterQuality::Medium:
+            m_maxTriangles           = 128;
+            m_partitionSize          = 24;
+            m_simplifyRatio          = 0.5f;
+            m_simplifyThreshold      = 0.85f;
+            m_simplifyFallbackSloppy = true;
+            break;
+
+        case MEClusterQuality::High:
+            m_maxTriangles           = 128;
+            m_partitionSize          = 16;
+            m_simplifyRatio          = 0.6f;
+            m_simplifyThreshold      = 0.8f;
+            m_simplifyFallbackSloppy = false;
+            break;
+
+        case MEClusterQuality::Ultra:
+            m_maxTriangles           = 64;
+            m_partitionSize          = 12;
+            m_simplifyRatio          = 0.7f;
+            m_simplifyThreshold      = 0.75f;
+            m_simplifyFallbackSloppy = false;
+            break;
+    }
+}
 
 void MClusterBuilder::Generate(MIMesh* mesh)
 {
@@ -21,9 +60,9 @@ void MClusterBuilder::Generate(MIMesh* mesh)
 
     mesh->GetClusters()          = std::move(m_allClusters);
     mesh->GetClusterGroup()      = std::move(m_allGroups);
-    mesh->GetClusterLodData()    = std::move(m_lods);
     mesh->GetClusterPages()      = std::move(m_clusterPages);
-    mesh->GetGroupLinks() = std::move(m_groupLinks);
+    mesh->GetGroupLinks()        = std::move(m_groupLinks);
+    mesh->GetRootGroups()        = std::move(m_rootGroups);
 }
 
 std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
@@ -62,16 +101,16 @@ std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
             input.vertexData,
             remap.size(),
             input.vertexStride,
-            PartitionSize
+            m_partitionSize
     );
 
     // preallocate partitions for worst case
     std::vector<std::vector<int>> partitions(partition_count);
-    for (size_t i = 0; i < partition_count; ++i) partitions[i].reserve(PartitionSize + PartitionSize / 3);
+    for (size_t i = 0; i < partition_count; ++i) partitions[i].reserve(m_partitionSize + m_partitionSize / 3);
 
     std::vector<unsigned int> partition_remap;
 
-    if (PartitionSort)
+    if (m_partitionSort)
     {
         // compute partition points for sorting; any representative point will do, we use last cluster center for simplicity
         std::vector<float> partition_point(partition_count * 3);
@@ -143,17 +182,19 @@ void MClusterBuilder::LockBoundary(
 void MClusterBuilder::ExtractClusterData(
         const InputData&                 input,
         const std::vector<MClusterData>& clusters,
+        const std::vector<int>&          clusterInGroup,
         std::vector<MByte>&              outVertexData,
         std::vector<uint32_t>&           outIndexData,
         std::vector<uint32_t>&           outClusterIndices
 )
 {
-    // Extract unique vertices used by this cluster and remap indices
+    // Extract unique vertices used by clusters in this group and remap indices
     std::vector<uint32_t>                  uniqueVertices;
     std::unordered_map<uint32_t, uint32_t> vertexRemap;
     size_t                                 indicesNum = 0;
-    for (const auto& cluster: clusters)
+    for (int clusterIdx: clusterInGroup)
     {
+        const auto& cluster = clusters[clusterIdx];
         for (uint32_t idx: cluster.indices)
         {
             if (vertexRemap.find(idx) == vertexRemap.end())
@@ -180,12 +221,12 @@ void MClusterBuilder::ExtractClusterData(
     // Remap and copy index data
     outIndexData.clear();
     outIndexData.reserve(indicesNum);
-    outClusterIndices.resize(clusters.size());
+    outClusterIndices.resize(clusterInGroup.size());
     uint32_t indexOffset = 0;
-    for (size_t idx = 0; idx < clusters.size(); ++idx)
+    for (size_t i = 0; i < clusterInGroup.size(); ++i)
     {
-        const auto& cluster    = clusters[idx];
-        outClusterIndices[idx] = indexOffset;
+        const auto& cluster    = clusters[clusterInGroup[i]];
+        outClusterIndices[i] = indexOffset;
 
         for (uint32_t index: cluster.indices)
         {
@@ -208,20 +249,31 @@ int32_t MClusterBuilder::OutputGroup(
     m_allGroups.push_back({});
     m_clusterPages.push_back({});
 
-    MClusterGroup& group = m_allGroups[groupId];
-    group.clusterOffset  = m_allClusters.size();
-    group.clusterNum     = clusterInGroup.size();
-    group.bounds         = simplified;
+    // DAG: collect child group IDs from clusters in this group
+    // Current group is parent (coarser LOD), cluster.group points to child (finer LOD)
+    std::set<int32_t> childGroupIds;
+    for (int clusterIdx: clusterInGroup)
+    {
+        int32_t childId = clusters[clusterIdx].group;
+        if (childId != -1) { childGroupIds.insert(childId); }
+    }
 
-    // Initialize DAG hierarchy fields (will be filled later by BuildChildRelationships)
-    group.groupLinkOffset = 0;
-    group.groupLinkCount  = 0;
+    MClusterGroup& group = m_allGroups[groupId];
+    group.clusterOffset   = m_allClusters.size();
+    group.clusterNum      = clusterInGroup.size();
+    group.bounds          = simplified;
+    group.groupLinkOffset = static_cast<uint32_t>(m_groupLinks.size());
+    group.groupLinkCount  = static_cast<uint32_t>(childGroupIds.size());
+
+    // Append children to global group links array
+    for (int32_t childId: childGroupIds) { m_groupLinks.push_back(childId); }
 
     std::vector<uint32_t> clusterIndices(clusterInGroup.size());
     // Extract cluster's independent vertex and index data
     ExtractClusterData(
             input,
             clusters,
+            clusterInGroup,
             m_clusterPages[groupId].vertexData,
             m_clusterPages[groupId].indexData,
             clusterIndices
@@ -236,7 +288,7 @@ int32_t MClusterBuilder::OutputGroup(
         output.refined = cluster.refined;
         output.group   = groupId;
         output.bounds =
-                (OptimizeBounds && cluster.refined != -1)
+                (m_optimizeBounds && cluster.refined != -1)
                         ? BoundsCompute(input, cluster.indices.data(), cluster.indices.size(), cluster.bounds.error)
                         : cluster.bounds;
 
@@ -251,7 +303,7 @@ int32_t MClusterBuilder::OutputGroup(
 
 std::vector<MClusterBuilder::MClusterData> MClusterBuilder::Clusterize(const InputData& input)
 {
-    size_t                       max_meshlets = meshopt_buildMeshletsBound(input.indexNum, MaxVertices, MaxTriangles);
+    size_t                       max_meshlets = meshopt_buildMeshletsBound(input.indexNum, m_maxVertices, m_maxTriangles);
     std::vector<meshopt_Meshlet> meshlets(max_meshlets);
     std::vector<unsigned int>    meshlet_vertices(input.indexNum);
     // note: in v0.25 or prior, use indices.size() + max_meshlets * 3
@@ -266,9 +318,9 @@ std::vector<MClusterBuilder::MClusterData> MClusterBuilder::Clusterize(const Inp
             input.vertexData,
             input.vertexNum,
             input.vertexStride,
-            MaxVertices,
-            MaxTriangles,
-            ConeWeight
+            m_maxVertices,
+            m_maxTriangles,
+            m_coneWeight
     );
 
     if (meshlet_count > 0)
@@ -407,7 +459,7 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
     std::vector<unsigned int> lod(indices.size());
 
     unsigned int              options = meshopt_SimplifySparse | meshopt_SimplifyErrorAbsolute |
-                           (SimplifyPermissive ? meshopt_SimplifyPermissive : 0);
+                           (m_simplifyPermissive ? meshopt_SimplifyPermissive : 0);
 
     lod.resize(meshopt_simplifyWithAttributes(
             &lod[0],
@@ -428,10 +480,10 @@ std::vector<unsigned int> MClusterBuilder::Simplify(
     ));
 
     // while it's possible to call simplifySloppy directly, it doesn't support sparsity or absolute error, so we need to do some extra work
-    if (lod.size() > target_count && SimplifyFallbackSloppy)
+    if (lod.size() > target_count && m_simplifyFallbackSloppy)
     {
         SimplifyFallback(input, lod, indices, locks, target_count, error);
-        *error *= SimplifyErrorFactorSloppy;// scale error up to account for appearance degradation
+        *error *= m_simplifyErrorFactorSloppy;// scale error up to account for appearance degradation
     }
 
     return lod;
@@ -450,7 +502,7 @@ void MClusterBuilder::BuildCluster(const InputData& input)
     meshopt_generatePositionRemap(&remap[0], input.vertexData, input.vertexNum, input.vertexStride);
 
     // set up protect bits on UV seams for permissive mode
-    if (AttributeProtectMask)
+    if (m_attributeProtectMask)
     {
         size_t max_attributes = input.vertexStride / sizeof(float);
 
@@ -483,11 +535,6 @@ void MClusterBuilder::BuildCluster(const InputData& input)
         std::vector<std::vector<int>> groups = PartitionCluster(input, clusters, pending, remap);
         pending.clear();
 
-        m_lods.push_back(
-                {.groupOffset = static_cast<uint32_t>(m_allGroups.size()),
-                 .groupNum    = static_cast<uint32_t>(groups.size())}
-        );
-
         // mark boundaries between groups with a lock bit to avoid gaps in simplified result
         LockBoundary(locks, groups, clusters, remap);
 
@@ -502,7 +549,7 @@ void MClusterBuilder::BuildCluster(const InputData& input)
                         clusters[groups[i][j]].indices.end()
                 );
 
-            size_t                    target_size = size_t((merged.size() / 3) * SimplifyRatio) * 3;
+            size_t                    target_size = size_t((merged.size() / 3) * m_simplifyRatio) * 3;
 
             // enforce bounds and error monotonicity
             // note: it is incorrect to use the precise bounds of the merged or simplified mesh, because this may violate monotonicity
@@ -511,42 +558,20 @@ void MClusterBuilder::BuildCluster(const InputData& input)
             float                     error      = 0.f;
             std::vector<unsigned int> simplified = Simplify(input, merged, locks, target_size, &error);
 
-            // DAG: collect ALL parent group IDs from clusters in this partition
-            std::vector<int32_t> parentGroupIds;
-            for (size_t j = 0; j < groups[i].size(); ++j)
-            {
-                int32_t parentId = clusters[groups[i][j]].group;
-                if (parentId != -1)
-                {
-                    // avoid duplicates
-                    bool found = false;
-                    for (int32_t existingId: parentGroupIds)
-                    {
-                        if (existingId == parentId)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) { parentGroupIds.push_back(parentId); }
-                }
-            }
-
-            if (simplified.size() > size_t(merged.size() * SimplifyThreshold))
+            if (simplified.size() > size_t(merged.size() * m_simplifyThreshold))
             {
                 groupBounds.error = FLT_MAX;// terminal group, won't simplify further
                 int32_t groupId   = OutputGroup(input, clusters, groups[i], groupBounds);
-                m_groupParents.push_back(parentGroupIds);
+                MORTY_UNUSED(groupId);
                 continue;// simplification is stuck; abandon the merge
             }
 
             // enforce error monotonicity (with an optional hierarchical factor to separate transitions more)
-            groupBounds.error = std::max(groupBounds.error * SimplifyErrorMergePrevious, error) +
-                                error * SimplifyErrorMergeAdditive;
+            groupBounds.error = std::max(groupBounds.error * m_simplifyErrorMergePrevious, error) +
+                                error * m_simplifyErrorMergeAdditive;
 
             // output the new group with all clusters; the resulting id will be recorded in new clusters as clodCluster::refined
             auto refined = OutputGroup(input, clusters, groups[i], groupBounds);
-            m_groupParents.push_back(parentGroupIds);
 
             // discard clusters from the group - they won't be used anymore
             for (size_t j = 0; j < groups[i].size(); ++j) clusters[groups[i][j]].indices = std::vector<unsigned int>();
@@ -575,53 +600,26 @@ void MClusterBuilder::BuildCluster(const InputData& input)
     {
         MORTY_ASSERT(pending.size() == 1);
 
-        m_lods.push_back({.groupOffset = static_cast<uint32_t>(m_allGroups.size()), .groupNum = 1});
-
         const auto& cluster = clusters[pending[0]];
 
         auto        bounds = cluster.bounds;
         bounds.error       = FLT_MAX;// terminal group, won't simplify further
 
         auto rootGroupId = OutputGroup(input, clusters, pending, bounds);
-
-        // DAG: collect parent group ID for the root group
-        std::vector<int32_t> parentGroupIds;
-        if (cluster.group != -1) { parentGroupIds.push_back(cluster.group); }
-        m_groupParents.push_back(parentGroupIds);
+        MORTY_UNUSED(rootGroupId);
     }
 
-    // DAG: build child relationships from parent information
-    BuildChildRelationships();
+    // Collect root groups (groups with error = FLT_MAX, which are DAG entry points)
+    CollectRootGroups();
 }
 
-void MClusterBuilder::BuildChildRelationships()
+void MClusterBuilder::CollectRootGroups()
 {
-    // For each group, based on its parent IDs, add itself to parent's children list
-
-    // First collect each group's children
-    std::vector<std::vector<int32_t>> childrenLists(m_allGroups.size());
-
-    for (size_t groupId = 0; groupId < m_allGroups.size(); ++groupId)
+    // Root groups are those with error = FLT_MAX (terminal groups in DAG)
+    // These are the entry points for GPU culling traversal
+    m_rootGroups.clear();
+    for (uint32_t i = 0; i < m_allGroups.size(); ++i)
     {
-        if (groupId < m_groupParents.size())
-        {
-            for (int32_t parentId: m_groupParents[groupId])
-            {
-                if (parentId >= 0 && parentId < static_cast<int32_t>(m_allGroups.size()))
-                {
-                    childrenLists[parentId].push_back(static_cast<int32_t>(groupId));
-                }
-            }
-        }
-    }
-
-    // Build global group links array
-    m_groupLinks.clear();
-    for (size_t groupId = 0; groupId < m_allGroups.size(); ++groupId)
-    {
-        m_allGroups[groupId].groupLinkOffset = static_cast<uint32_t>(m_groupLinks.size());
-        m_allGroups[groupId].groupLinkCount  = static_cast<uint32_t>(childrenLists[groupId].size());
-
-        for (int32_t childId: childrenLists[groupId]) { m_groupLinks.push_back(childId); }
+        if (m_allGroups[i].bounds.error == FLT_MAX) { m_rootGroups.push_back(i); }
     }
 }

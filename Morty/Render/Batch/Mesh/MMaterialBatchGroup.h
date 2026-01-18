@@ -25,7 +25,7 @@ class ITextureBatcher;
 class MIDevice;
 class MMaterial;
 class MShaderPropertyBlock;
-class MShaderStorageParam;
+struct MShaderStorageParam;
 struct MTextureBatcherConfig;
 
 // GPU upload data, corresponds to MeshInstanceData on shader side
@@ -42,8 +42,8 @@ struct MORTY_API MMeshInstanceRenderProxy {
 class MORTY_API MMaterialBatchGroup
 {
 public:
-         MMaterialBatchGroup() = default;
-    ~    MMaterialBatchGroup() = default;
+    MMaterialBatchGroup()  = default;
+    ~MMaterialBatchGroup() = default;
 
     void Initialize(
             MIDevice*                                   device,

@@ -41,3 +41,8 @@ struct PerInstanceAttribute
     InstanceType type;
 };
 
+[__AttributeUsage(_AttributeTargets.Struct)]
+struct StructLayoutAttribute
+{
+    string cppStructName;
+};

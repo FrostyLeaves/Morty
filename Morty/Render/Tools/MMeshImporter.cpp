@@ -65,6 +65,7 @@ std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkele
         if (m_enableNanite)
         {
             MClusterBuilder builder;
+            builder.SetQuality(MEClusterQuality::Low);
             builder.Generate(pStaticMesh);
         }
 

@@ -115,7 +115,9 @@ MVariant MShaderParameterSet::FindValue(const MStringId& strName, MShaderUniform
     return MVariant();
 }
 
-bool MShaderParameterSet::SetTexture(const MStringId& strName, const MTexturePtr& texture)
+MVariant MShaderParameterSet::FindValue(const MStringId& strName) { return FindValue(strName, nullptr); }
+
+bool     MShaderParameterSet::SetTexture(const MStringId& strName, const MTexturePtr& texture)
 {
     for (auto& pParam: m_textures)
     {
@@ -181,16 +183,13 @@ std::shared_ptr<MShaderParameterSet> MShaderParameterSet::Clone() const
     propertyBlock->m_samplers.resize(m_samplers.size());
     propertyBlock->m_storages.resize(m_storages.size());
 
-    for (uint32_t i = 0; i < m_uniforms.size(); ++i)
-        propertyBlock->m_uniforms[i] = std::make_unique<MShaderUniformParam>(*m_uniforms[i]);
+    for (uint32_t i = 0; i < m_uniforms.size(); ++i) propertyBlock->m_uniforms[i] = std::make_unique<MShaderUniformParam>(*m_uniforms[i]);
 
     for (uint32_t i = 0; i < m_textures.size(); ++i) propertyBlock->m_textures[i] = m_textures[i]->Clone();
 
-    for (uint32_t i = 0; i < m_samplers.size(); ++i)
-        propertyBlock->m_samplers[i] = std::make_unique<MShaderSamplerParam>(*m_samplers[i]);
+    for (uint32_t i = 0; i < m_samplers.size(); ++i) propertyBlock->m_samplers[i] = std::make_unique<MShaderSamplerParam>(*m_samplers[i]);
 
-    for (uint32_t i = 0; i < m_storages.size(); ++i)
-        propertyBlock->m_storages[i] = std::make_unique<MShaderStorageParam>(*m_storages[i]);
+    for (uint32_t i = 0; i < m_storages.size(); ++i) propertyBlock->m_storages[i] = std::make_unique<MShaderStorageParam>(*m_storages[i]);
 
     return propertyBlock;
 }

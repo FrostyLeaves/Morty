@@ -2,12 +2,6 @@ include "Utility/MRenderGlobal.fbs";
 
 namespace morty.fbs;
 
-table MSlice
-{
-    offset: uint;
-    num: uint;
-}
-
 table MClusterBounds
 {
     position: Vector3;

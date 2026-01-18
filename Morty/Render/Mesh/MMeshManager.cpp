@@ -324,14 +324,9 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
 
     // Fill MeshResourceData - store root cluster group info and offsets for shader lookup
     m_meshResourceDatas[id].rootClusterGroupBeginIndex = static_cast<int32_t>(meshData->clusterGroupInfo.begin);
-    // Root groups are at LOD level 0
-    const auto& lods = mesh->GetClusterLodData();
-    if (!lods.empty()) { m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(lods[0].groupNum); }
-    else
-    {
-        // No LOD data, treat all groups as root groups
-        m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(mesh->GetClusterGroup().size());
-    }
+    // Root groups are DAG entry points (groups with error = FLT_MAX)
+    const auto& rootGroups = mesh->GetRootGroups();
+    m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(rootGroups.size());
 
     if (m_clusterGroupDatas.size() < meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size)
     {

@@ -11,6 +11,14 @@ struct aiMesh;
 namespace morty
 {
 
+enum class MEClusterQuality
+{
+    Low,     // Aggressive simplification, fewer clusters
+    Medium,  // Balanced quality and performance
+    High,    // Conservative simplification, more clusters
+    Ultra    // Highest quality, maximum clusters
+};
+
 class MClusterBuilder
 {
 public:
@@ -26,6 +34,7 @@ public:
         std::vector<float> simplifyWeight;
     };
 
+    void SetQuality(MEClusterQuality quality);
 
     void Generate(MIMesh* mesh);
 
@@ -83,6 +92,7 @@ private:
     void ExtractClusterData(
             const InputData&                 input,
             const std::vector<MClusterData>& clusters,
+            const std::vector<int>&          clusterInGroup,
             std::vector<MByte>&              outVertexData,
             std::vector<uint32_t>&           outIndexData,
             std::vector<uint32_t>&           outClusterIndices
@@ -90,31 +100,30 @@ private:
 
     void                         BuildCluster(const InputData& input);
     std::vector<MClusterData>    Clusterize(const InputData& input);
+    void                         CollectRootGroups();
 
-    const size_t                 MaxVertices  = 64;
-    const size_t                 MaxTriangles = 128;// note: in v0.25 or prior, max_triangles needs to be divisible by 4
-    const float                  ConeWeight   = 0.0f;
-    const bool                   OptimizeBounds             = true;
-    const bool                   AttributeProtectMask       = true;
-    const bool                   PartitionSort              = true;
-    const size_t                 PartitionSize              = 24;
-    const bool                   SimplifyPermissive         = true;
-    const bool                   SimplifyFallbackSloppy     = true;
-    const float                  SimplifyRatio              = 0.5f;
-    const float                  SimplifyThreshold          = 0.85f;
-    const float                  SimplifyErrorFactorSloppy  = 2.0f;
-    const float                  SimplifyErrorMergePrevious = 1.0f;
-    const float                  SimplifyErrorMergeAdditive = 0.0f;
+    // Cluster building parameters (configurable via SetQuality)
+    size_t m_maxVertices            = 64;
+    size_t m_maxTriangles           = 128;  // note: in v0.25 or prior, max_triangles needs to be divisible by 4
+    float  m_coneWeight             = 0.0f;
+    bool   m_optimizeBounds         = true;
+    bool   m_attributeProtectMask   = true;
+    bool   m_partitionSort          = true;
+    size_t m_partitionSize          = 24;
+    bool   m_simplifyPermissive     = true;
+    bool   m_simplifyFallbackSloppy = true;
+    float  m_simplifyRatio          = 0.5f;
+    float  m_simplifyThreshold      = 0.85f;
+    float  m_simplifyErrorFactorSloppy  = 2.0f;
+    float  m_simplifyErrorMergePrevious = 1.0f;
+    float  m_simplifyErrorMergeAdditive = 0.0f;
 
-
-    void BuildChildRelationships();
-
-    std::vector<MCluster>              m_allClusters;
-    std::vector<MClusterGroup>         m_allGroups;
-    std::vector<MClusterLodData>       m_lods;
-    std::vector<MClusterPage>          m_clusterPages;
-    std::vector<int32_t>               m_groupLinks;
-    std::vector<std::vector<int32_t>>  m_groupParents;  // temporary storage for building child relationships
+    // Output data
+    std::vector<MCluster>      m_allClusters;
+    std::vector<MClusterGroup> m_allGroups;
+    std::vector<MClusterPage>  m_clusterPages;
+    std::vector<int32_t>       m_groupLinks;
+    std::vector<uint32_t>      m_rootGroups;
 };
 
 }// namespace morty

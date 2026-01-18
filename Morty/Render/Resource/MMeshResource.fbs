@@ -27,11 +27,13 @@ table MMeshResource
 
     cluster: [MCluster];
     group: [MClusterGroup];
-    lod: [MSlice];
     pages: [MClusterPage];
 
     // DAG group links array (child group IDs)
     group_links: [int];
+
+    // DAG root groups (entry points for GPU culling traversal)
+    root_groups: [uint];
 }
 
 root_type MMeshResource;

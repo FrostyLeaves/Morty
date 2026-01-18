@@ -17,7 +17,7 @@ if(key STREQUAL "windows-x64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-windows-x86_64.zip"
 		FILENAME "slang-${VERSION}-windows-x86_64.zip"
-		SHA512 038449a2488e5f3296233355745e71c0efb30d1969a3180ecb5a6f3f5fa5fae245f7ba8b0d8919c88e09ab36e9f6f1d97bc681c4b8854f1b37f05707cdbf32c2
+		SHA512 f51ecb2bdd6ab3fedf167d1c816719ae9e58aff9359945598efb3f8e46abb3cdbc35490df4047148a4367c71989cdf76dbe783ce806d60c373623f69e6f15b34
 	)
 endif()
 if(key STREQUAL "windows-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
@@ -25,7 +25,7 @@ if(key STREQUAL "windows-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-windows-aarch64.zip"
 		FILENAME "slang-${VERSION}-windows-aarch64.zip"
-		SHA512 45457e8d9214ca7ca430f48c0a0e473b7b99c64e0eb0abf1df6b5b4e355bee10c0d25af6be36892b40feee87dcb1a97849fe27c6089fd950b47f35aa65b7f101
+		SHA512 f96d5fd919f07abaa5d4c183afb0e83c68197208c14e35b7a69c6b2f118996b086754d680de2bffd86f9fa7f6d06271196ded297cf365ef19b3a0ed8875099fb
 	)
 endif()
 if(key STREQUAL "macosx-x64" OR VCPKG_SHADER_SLANG_UPDATE)
@@ -33,7 +33,7 @@ if(key STREQUAL "macosx-x64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-macos-x86_64.zip"
 		FILENAME "slang-${VERSION}-macos-x86_64.zip"
-		SHA512 8e82df60633d4f746ed215276df23f78f811d4eb173e143d514f0ac2bae0d0a2da5c3d8c91fd36ed7d8cb23931e8b166a28598c45eb7c68a76e4396196aa2958
+		SHA512 04c6f53a7015bb33329ac6c9802fa8bec5d7f92e01aa048d15b33ff68b97c958d5cd5d3000ca490f75b25653307610fcb17c511c645dbf5935900328d0c25695
 	)
 endif()
 if(key STREQUAL "macosx-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
@@ -41,7 +41,7 @@ if(key STREQUAL "macosx-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-macos-aarch64.zip"
 		FILENAME "slang-${VERSION}-macos-aarch64.zip"
-		SHA512 d0d38766153ba0cd9e054228e24974f8620f493190dfe6304e70196bc0fc3455e1e70852501d8e00e14d5ffd99f1f1467879186f9b5d7593042b3f80f591535e
+		SHA512 ffa347f2fecde251b1a5abfb5c46e1a04d14105d010980818ea2166f9593c6462dc0a1622429445c06acc866ec816a2f0b74fe70dae6b417e2f0ee3ebb2274d6
 	)
 endif()
 if(key STREQUAL "linux-x64" OR VCPKG_SHADER_SLANG_UPDATE)
@@ -49,7 +49,7 @@ if(key STREQUAL "linux-x64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-linux-x86_64.zip"
 		FILENAME "slang-${VERSION}-linux-x86_64.zip"
-		SHA512 8be4ddead8dbea3584e14e4b1faaaf3ba1a0bf69720134f39c88430dc4e8116f7678de116ec12a76c40133c1725b787103ed35075f6e42ca7a3a26be5c53f03e
+		SHA512 753113ec4dfa5cd76aff6e1738cb8631e05af93915ac1c62220992ea04f9f457cac828883d59095cca94b0ffadbfe78a90107096effa053e9e21e0845e9ed6c5
 	)
 endif()
 if(key STREQUAL "linux-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
@@ -57,7 +57,7 @@ if(key STREQUAL "linux-arm64" OR VCPKG_SHADER_SLANG_UPDATE)
 		ARCHIVE
 		URLS "https://github.com/shader-slang/slang/releases/download/v${VERSION}/slang-${VERSION}-linux-aarch64.zip"
 		FILENAME "slang-${VERSION}-linux-aarch64.zip"
-		SHA512 180ce479f8aee8735729d0df6a7569f54f82abad425dca07e310c0997e3b4fd95dd001bfa8fb181384abf779c7616317ad34339de679f9f48ba6ee9f1554cd75
+		SHA512 3d7d836b63749eb51c31b9a7904c027a57390f1d0123a598088e057b5d5fa918ffd0f56a1589578d7ccf5c47ddf6ce464395b6d434d070cac12f344f46586508
 	)
 endif()
 if(NOT ARCHIVE)
@@ -92,6 +92,7 @@ file(WRITE "${SLANG_INSTALL_CMAKE_PATH}/slangTargets.cmake" "${_contents}")
 file(READ "${SLANG_INSTALL_CMAKE_PATH}/slangTargets-release.cmake" _contents)
 STRING(REPLACE "\${_IMPORT_PREFIX}/bin/slangc" "\${_IMPORT_PREFIX}/tools/slang/slangc" _contents "${_contents}")
 STRING(REPLACE "\${_IMPORT_PREFIX}/bin/slangd" "\${_IMPORT_PREFIX}/tools/slang/slangd" _contents "${_contents}")
+STRING(REPLACE "\${_IMPORT_PREFIX}/bin/slangi" "\${_IMPORT_PREFIX}/tools/slang/slangi" _contents "${_contents}")
 file(WRITE "${SLANG_INSTALL_CMAKE_PATH}/slangTargets-release.cmake" "${_contents}")
 
 
@@ -128,7 +129,7 @@ if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
   set(VCPKG_FIXUP_MACHO_RPATH OFF)
 endif()
 
-vcpkg_copy_tools(TOOL_NAMES slangc slangd SEARCH_DIR "${BINDIST_PATH}/bin" DESTINATION "${CURRENT_PACKAGES_DIR}/tools/slang")
+vcpkg_copy_tools(TOOL_NAMES slangc slangd slangi SEARCH_DIR "${BINDIST_PATH}/bin" DESTINATION "${CURRENT_PACKAGES_DIR}/tools/slang")
 
 file(GLOB headers "${BINDIST_PATH}/include/*.h")
 file(INSTALL ${headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include")

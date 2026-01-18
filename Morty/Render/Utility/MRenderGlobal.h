@@ -21,6 +21,7 @@
 #define GPU_CULLING_ENABLE  (false)
 #define MORTY_VXGI_ENABLE   (false)
 #define VRS_OPTIMIZE_ENABLE (false)
+#define SHADER_STRUCT struct alignas(16) [[clang::annotate("ShaderStruct")]]
 
 namespace morty
 {
