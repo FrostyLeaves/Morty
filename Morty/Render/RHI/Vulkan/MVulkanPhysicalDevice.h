@@ -116,9 +116,11 @@ public:
     std::set<MEDeviceFeature>                              m_disableFeature;
     //optional extensions
     VkPhysicalDeviceVulkan11Features                       m_vkVulkan11Features{};
+    VkPhysicalDeviceVulkan12Features                       m_vkVulkan12Features{};
     VkPhysicalDeviceConservativeRasterizationPropertiesEXT m_vkConservativeRasterProps{};
     VkPhysicalDeviceFragmentShadingRateFeaturesKHR         m_vkShadingRateImageFeatures{};
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR       m_vkFragmentShadingRateProperties{};
+    VkPhysicalDeviceFaultFeaturesEXT                       m_vkDeviceFaultFeatures{};
 
 #if MORTY_DEBUG
     VkDebugUtilsMessengerEXT m_vkDebugUtilsMessenger;

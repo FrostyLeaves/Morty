@@ -5,7 +5,15 @@ __include Internal.CommonAttributes;
 __include Internal.CommonStruct;
 __include Internal.CommonUniforms;
 __include Internal.CommonInterface;
+__include Internal.GPUSceneData;
 
+public struct GlobalRenderData
+{
+    public FrameData frame;
+    public RenderSceneParameters scene;
 
+    public SamplerState LinearSampler;
+    public SamplerState NearestSampler;
+}
 
-public ParameterBlock<FrameData> GlobalFrameData;
+[[vk::binding(0, 1)]] public ParameterBlock<GlobalRenderData> GlobalData;

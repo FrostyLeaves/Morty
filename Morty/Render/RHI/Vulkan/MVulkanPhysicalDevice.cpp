@@ -41,6 +41,7 @@ const std::map<MString, MEDeviceFeature> OptionalDeviceExtensions = {
         {VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, MEDeviceFeature::EConservativeRasterization},
         {VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME, MEDeviceFeature::EHLSLFunctionality},
         {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, MEDeviceFeature::EVariableRateShading},
+        {VK_EXT_DEVICE_FAULT_EXTENSION_NAME, MEDeviceFeature::EDeviceFault},
 };
 
 const std::set<VkFormat> DepthOnlyTextureFormat = {
@@ -316,6 +317,10 @@ void MVulkanPhysicalDevice::InitDeviceFeature()
 {
     if constexpr (true)
     {
+        m_vkVulkan12Features.sType             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        m_vkVulkan12Features.drawIndirectCount = VK_TRUE;
+        RegisterExtensionFeatures(m_vkExtensionFeaturesList, m_vkVulkan12Features);
+
         m_vkVulkan11Features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
         m_vkVulkan11Features.multiview            = VK_TRUE;
         m_vkVulkan11Features.shaderDrawParameters = VK_TRUE;
@@ -367,6 +372,16 @@ void MVulkanPhysicalDevice::InitDeviceFeature()
                 m_vkShadingRateImageFeatures.attachmentFragmentShadingRate
         );
     }
+
+    if (GetDeviceFeatureSupport(MEDeviceFeature::EDeviceFault))
+    {
+        m_vkDeviceFaultFeatures.sType       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
+        m_vkDeviceFaultFeatures.deviceFault = VK_TRUE;
+        m_vkDeviceFaultFeatures.deviceFaultVendorBinary = VK_TRUE;
+        RegisterExtensionFeatures(m_vkExtensionFeaturesList, m_vkDeviceFaultFeatures);
+
+        GetEngine()->GetLogger()->Information("\nVulkan Device Fault extension enabled.");
+    }
 }
 
 bool MVulkanPhysicalDevice::GetDeviceFeatureSupport(MEDeviceFeature feature) const
@@ -387,7 +402,7 @@ VkBool32 VKAPI_PTR OutputDebugUtilsMessenger(
     {
         auto pVulkanInstance = static_cast<MVulkanPhysicalDevice*>(pUserData);
         pVulkanInstance->GetEngine()->GetLogger()->Error(pCallbackData->pMessage);
-        //MORTY_ASSERT(false);
+        MORTY_ASSERT(false);
     }
     return VK_FALSE;
 }

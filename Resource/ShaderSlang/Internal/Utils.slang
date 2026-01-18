@@ -71,9 +71,9 @@ public struct TextureUtils
         blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
 
         // Sample from three projection planes
-        float4 xProjection = tex.Sample(LinearSampler, positionWS.yz * scale);
-        float4 yProjection = tex.Sample(LinearSampler, positionWS.xz * scale);
-        float4 zProjection = tex.Sample(LinearSampler, positionWS.xy * scale);
+        float4 xProjection = tex.Sample(GlobalData.LinearSampler, positionWS.yz * scale);
+        float4 yProjection = tex.Sample(GlobalData.LinearSampler, positionWS.xz * scale);
+        float4 zProjection = tex.Sample(GlobalData.LinearSampler, positionWS.xy * scale);
 
         // Blend results
         return xProjection * blendWeights.x +
@@ -84,7 +84,7 @@ public struct TextureUtils
     // Texture sampling with derivatives (for anisotropic filtering)
     public static float4 SampleWithDerivatives(Texture2D tex, float2 uv, float2 ddx, float2 ddy)
     {
-        return tex.SampleGrad(LinearSampler, uv, ddx, ddy);
+        return tex.SampleGrad(GlobalData.LinearSampler, uv, ddx, ddy);
     }
 }
 
@@ -190,7 +190,7 @@ public struct ParallaxUtils
     // Simple parallax mapping
     public static float2 ParallaxMapping(float2 uv, float3 viewDir, Texture2D heightMap, float heightScale)
     {
-        float height = heightMap.Sample(LinearSampler, uv).r;
+        float height = heightMap.Sample(GlobalData.LinearSampler, uv).r;
         float2 p = viewDir.xy / viewDir.z * (height * heightScale);
         return uv - p;
     }
@@ -204,7 +204,7 @@ public struct ParallaxUtils
         float2 deltaTexCoords = P / float(numLayers);
 
         float2 currentTexCoords = uv;
-        float currentDepthMapValue = heightMap.Sample(LinearSampler, currentTexCoords).r;
+        float currentDepthMapValue = heightMap.Sample(GlobalData.LinearSampler, currentTexCoords).r;
 
         for (int i = 0; i < numLayers; ++i)
         {
@@ -212,7 +212,7 @@ public struct ParallaxUtils
                 break;
 
             currentTexCoords -= deltaTexCoords;
-            currentDepthMapValue = heightMap.Sample(LinearSampler, currentTexCoords).r;
+            currentDepthMapValue = heightMap.Sample(GlobalData.LinearSampler, currentTexCoords).r;
             currentLayerDepth += layerDepth;
         }
 
@@ -227,9 +227,9 @@ public struct NormalUtils
     // Calculate normal from height map
     public static float3 CalculateNormalFromHeight(Texture2D heightMap, float2 uv, float2 texelSize, float strength)
     {
-        float h0 = heightMap.Sample(LinearSampler, uv).r;
-        float hX = heightMap.Sample(LinearSampler, uv + float2(texelSize.x, 0.0)).r;
-        float hY = heightMap.Sample(LinearSampler, uv + float2(0.0, texelSize.y)).r;
+        float h0 = heightMap.Sample(GlobalData.LinearSampler, uv).r;
+        float hX = heightMap.Sample(GlobalData.LinearSampler, uv + float2(texelSize.x, 0.0)).r;
+        float hY = heightMap.Sample(GlobalData.LinearSampler, uv + float2(0.0, texelSize.y)).r;
 
         float3 normal;
         normal.x = (h0 - hX) * strength;

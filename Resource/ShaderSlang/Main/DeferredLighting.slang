@@ -1,5 +1,5 @@
 /*
-    延迟渲染光照计算阶段
+    Deferred Rendering Lighting Stage
 */
 
 import InternalModule;
@@ -18,7 +18,7 @@ public TextureCube prefilterMap;
 public Texture2D brdfLUT;
 
 
-// 用于从深度重建位置的矩阵
+// Matrix for reconstructing position from depth
 ParameterBlock<ReconstructionData> reconstructionData;
 
 struct ReconstructionData
@@ -69,7 +69,7 @@ PixelOut PS_MAIN(VertexOut input)
     gBufferLoader.depthTexture = depthTexture;
     gBufferLoader.invViewProjMatrix = reconstructionData.invViewProjMatrix;
 
-    FrameData frameData = GlobalFrameData;
+    FrameData frameData = GlobalData.frame;
 
     var surfaceData = gBufferLoader.LoadGBuffer(input.uv);
     surfaceData.cameraDir = normalize(frameData.mainCamera.positionWS - surfaceData.positionWS);
@@ -78,7 +78,7 @@ PixelOut PS_MAIN(VertexOut input)
     LightingOutput lightingOutput = lightingSystem.ComputeLighting(surfaceData);
 
 
-    // IBL环境光
+    // IBL ambient lighting
     IBLSystem iblSystem;
 
     IBLData iblData;
@@ -91,7 +91,7 @@ PixelOut PS_MAIN(VertexOut input)
     float3 ambient = iblSystem.CalculateIBL(surfaceData, iblData);
 
 
-    // 最终颜色合成
+    // Final color composition
     float3 finalColor = lightingOutput.color + ambient;
 
     output.target = float4(finalColor, 1.0f);

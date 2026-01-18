@@ -21,14 +21,13 @@ using MPath       = std::string;
 class MStringUtil
 {
 public:
-    template<typename TYPE> static MString ToString(const TYPE& value)
-    {
-        return std::to_string(value);
-    }
+    template<typename TYPE> static MString ToString(const TYPE& value) { return std::to_string(value); }
 
-    static void Replace(MString& str, const MString& source, const MString& target);
+    static void                            Replace(MString& str, const MString& source, const MString& target);
 
-    static std::vector<MString> Slip(MString str, const MString& delimiter);
+    static std::vector<MString>            Slip(MString str, const MString& delimiter);
+
+    static MString                         Fill(char ch, size_t num);
 
 #ifdef MORTY_WIN
     static std::string  ConvertFromWString(const std::wstring& wstr);

@@ -9,6 +9,12 @@ public enum PropertyType : int
     color
 };
 
+public enum InstanceType: int
+{
+    Property,
+    TextureIndex
+};
+
 public enum ResourceType : int
 {
     Texture2D,
@@ -30,7 +36,8 @@ struct ResourceAttribute
 };
 
 [__AttributeUsage(_AttributeTargets.Var)]
-struct MeshInstanceAttribute
+struct PerInstanceAttribute
 {
+    InstanceType type;
 };
 

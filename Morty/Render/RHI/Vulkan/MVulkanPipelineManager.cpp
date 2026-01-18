@@ -805,15 +805,11 @@ void MVulkanPipelineManager::BindTextureParam(MShaderTextureParam* param, VkWrit
     descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrite.dstBinding      = param->unBinding;
     descriptorWrite.dstArrayElement = 0;
-
     descriptorWrite.descriptorType  = param->m_vkDescriptorType;
     descriptorWrite.descriptorCount = 1;
-
     descriptorWrite.pBufferInfo      = nullptr;
     descriptorWrite.pImageInfo       = &imageInfo;
     descriptorWrite.pTexelBufferView = nullptr;
-
-    //A VkDescripotrSet can only be updated once on per render. .
 }
 
 void MVulkanPipelineManager::BindStorageParam(MShaderStorageParam* pParam, VkWriteDescriptorSet& descriptorWrite)

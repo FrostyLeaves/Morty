@@ -51,3 +51,14 @@ bool MMaterialPropertyModifier::SetTexture(const MStringId& strName, const MText
 
     return false;
 }
+
+MTexturePtr MMaterialPropertyModifier::GetTexture(const MStringId& strName) const
+{
+    auto it = m_modifiedResources.find(strName);
+    if (it != m_modifiedResources.end() && it->second.param)
+    {
+        return it->second.param->GetTexture();
+    }
+
+    return nullptr;
+}

@@ -115,10 +115,11 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
             [&fbb](const auto& item) { return item.Serialize(fbb).o; }
     );
 
-    const auto                fbClusters = fbb.CreateVector(fbClusterArray);
-    const auto                fbGroups   = fbb.CreateVector(fbGroupArray);
-    const auto                fbLods     = fbb.CreateVector(fbLodArray);
-    const auto                fbPages    = fbb.CreateVector(fbPageArray);
+    const auto                fbClusters     = fbb.CreateVector(fbClusterArray);
+    const auto                fbGroups       = fbb.CreateVector(fbGroupArray);
+    const auto                fbLods         = fbb.CreateVector(fbLodArray);
+    const auto                fbPages        = fbb.CreateVector(fbPageArray);
+    const auto                fbGroupLinks = fbb.CreateVector(mesh->GetGroupLinks());
 
     fbs::MMeshResourceBuilder builder(fbb);
 
@@ -131,6 +132,7 @@ flatbuffers::Offset<void> MMeshResourceData::Serialize(flatbuffers::FlatBufferBu
     builder.add_group(fbGroups.o);
     builder.add_lod(fbLods.o);
     builder.add_pages(fbPages.o);
+    builder.add_group_links(fbGroupLinks.o);
 
     return builder.Finish().Union();
 }
@@ -186,6 +188,14 @@ void MMeshResourceData::Deserialize(const void* pBufferPointer)
     mesh->GetClusterGroup()   = std::move(groups);
     mesh->GetClusterLodData() = std::move(lods);
     mesh->GetClusterPages()   = std::move(pages);
+
+    if (fbData->group_links())
+    {
+        mesh->GetGroupLinks().assign(
+                fbData->group_links()->begin(),
+                fbData->group_links()->end()
+        );
+    }
 }
 
 bool MMeshResource::Load(std::unique_ptr<MResourceData>&& pResourceData)

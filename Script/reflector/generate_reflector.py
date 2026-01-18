@@ -38,14 +38,13 @@ def walk(node, parent, class_name, deep):
 def clang_parse(compile_source, index, args):
     translationUnit = index.parse(parse_empty, args=args, unsaved_files= [(parse_empty, compile_source)])
 
-    if len(translationUnit.diagnostics) > 0:
-        for d in translationUnit.diagnostics:
-            print(d)
-        assert(len(translationUnit.diagnostics) == 0)
-    else:
-        rootNode = translationUnit.cursor
-        for child_node in rootNode.get_children():
-            walk(child_node, rootNode, "", 0)
+    # Only check for errors, ignore warnings
+    errors = [d for d in translationUnit.diagnostics if d.severity >= clang.cindex.Diagnostic.Error]
+    assert(len(errors) == 0)
+
+    rootNode = translationUnit.cursor
+    for child_node in rootNode.get_children():
+        walk(child_node, rootNode, "", 0)
 
 
 def main(argv):
@@ -83,6 +82,9 @@ def main(argv):
     file_args.pop(0)
     file_args.pop(len(file_args) - 1)
     file_args.pop(len(file_args) - 1)
+
+    # Disable MSVC STL version check for older Clang versions
+    file_args.append("-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH")
 
 
     compile_source = ""

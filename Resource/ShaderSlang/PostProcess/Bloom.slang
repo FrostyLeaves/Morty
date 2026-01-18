@@ -25,19 +25,19 @@ public struct Bloom
     // Gaussian blur weights
     public static float3 DownsampleBox13(Texture2D tex, float2 uv, float2 texelSize)
     {
-        float4 A = tex.Sample(LinearSampler, uv + texelSize * float2(-1.0, -1.0));
-        float4 B = tex.Sample(LinearSampler, uv + texelSize * float2(0.0, -1.0));
-        float4 C = tex.Sample(LinearSampler, uv + texelSize * float2(1.0, -1.0));
-        float4 D = tex.Sample(LinearSampler, uv + texelSize * float2(-0.5, -0.5));
-        float4 E = tex.Sample(LinearSampler, uv + texelSize * float2(0.5, -0.5));
-        float4 F = tex.Sample(LinearSampler, uv + texelSize * float2(-1.0, 0.0));
-        float4 G = tex.Sample(LinearSampler, uv);
-        float4 H = tex.Sample(LinearSampler, uv + texelSize * float2(1.0, 0.0));
-        float4 I = tex.Sample(LinearSampler, uv + texelSize * float2(-0.5, 0.5));
-        float4 J = tex.Sample(LinearSampler, uv + texelSize * float2(0.5, 0.5));
-        float4 K = tex.Sample(LinearSampler, uv + texelSize * float2(-1.0, 1.0));
-        float4 L = tex.Sample(LinearSampler, uv + texelSize * float2(0.0, 1.0));
-        float4 M = tex.Sample(LinearSampler, uv + texelSize * float2(1.0, 1.0));
+        float4 A = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(-1.0, -1.0));
+        float4 B = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(0.0, -1.0));
+        float4 C = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(1.0, -1.0));
+        float4 D = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(-0.5, -0.5));
+        float4 E = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(0.5, -0.5));
+        float4 F = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(-1.0, 0.0));
+        float4 G = tex.Sample(GlobalData.LinearSampler, uv);
+        float4 H = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(1.0, 0.0));
+        float4 I = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(-0.5, 0.5));
+        float4 J = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(0.5, 0.5));
+        float4 K = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(-1.0, 1.0));
+        float4 L = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(0.0, 1.0));
+        float4 M = tex.Sample(GlobalData.LinearSampler, uv + texelSize * float2(1.0, 1.0));
 
         float2 div = (1.0 / 4.0) * float2(0.5, 0.125);
 
@@ -55,17 +55,17 @@ public struct Bloom
     {
         float4 d = texelSize.xyxy * float4(1.0, 1.0, -1.0, 0.0) * sampleScale;
 
-        float3 s = tex.Sample(LinearSampler, uv - d.xy).rgb;
-        s += tex.Sample(LinearSampler, uv - d.wy).rgb * 2.0;
-        s += tex.Sample(LinearSampler, uv - d.zy).rgb;
+        float3 s = tex.Sample(GlobalData.LinearSampler, uv - d.xy).rgb;
+        s += tex.Sample(GlobalData.LinearSampler, uv - d.wy).rgb * 2.0;
+        s += tex.Sample(GlobalData.LinearSampler, uv - d.zy).rgb;
 
-        s += tex.Sample(LinearSampler, uv + d.zw).rgb * 2.0;
-        s += tex.Sample(LinearSampler, uv).rgb * 4.0;
-        s += tex.Sample(LinearSampler, uv + d.xw).rgb * 2.0;
+        s += tex.Sample(GlobalData.LinearSampler, uv + d.zw).rgb * 2.0;
+        s += tex.Sample(GlobalData.LinearSampler, uv).rgb * 4.0;
+        s += tex.Sample(GlobalData.LinearSampler, uv + d.xw).rgb * 2.0;
 
-        s += tex.Sample(LinearSampler, uv + d.zy).rgb;
-        s += tex.Sample(LinearSampler, uv + d.wy).rgb * 2.0;
-        s += tex.Sample(LinearSampler, uv + d.xy).rgb;
+        s += tex.Sample(GlobalData.LinearSampler, uv + d.zy).rgb;
+        s += tex.Sample(GlobalData.LinearSampler, uv + d.wy).rgb * 2.0;
+        s += tex.Sample(GlobalData.LinearSampler, uv + d.xy).rgb;
 
         return s * (1.0 / 16.0);
     }

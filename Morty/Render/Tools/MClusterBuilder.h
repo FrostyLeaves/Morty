@@ -107,10 +107,14 @@ private:
     const float                  SimplifyErrorMergeAdditive = 0.0f;
 
 
-    std::vector<MCluster>        m_allClusters;
-    std::vector<MClusterGroup>   m_allGroups;
-    std::vector<MClusterLodData> m_lods;
-    std::vector<MClusterPage>    m_clusterPages;
+    void BuildChildRelationships();
+
+    std::vector<MCluster>              m_allClusters;
+    std::vector<MClusterGroup>         m_allGroups;
+    std::vector<MClusterLodData>       m_lods;
+    std::vector<MClusterPage>          m_clusterPages;
+    std::vector<int32_t>               m_groupLinks;
+    std::vector<std::vector<int32_t>>  m_groupParents;  // temporary storage for building child relationships
 };
 
 }// namespace morty

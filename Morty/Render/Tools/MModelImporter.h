@@ -70,6 +70,7 @@ struct MORTY_API MModelConvertInfo {
 
     bool                                bImportCamera = false;
     bool                                bImportLights = true;
+    bool                                bEnableNanite = false;
 
     std::shared_ptr<MITextureDelegate>  pTextureDelegate  = nullptr;
     std::shared_ptr<MIMaterialDelegate> pMaterialDelegate = nullptr;

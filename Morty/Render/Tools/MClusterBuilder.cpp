@@ -19,10 +19,11 @@ void MClusterBuilder::Generate(MIMesh* mesh)
 
     BuildCluster(input);
 
-    mesh->GetClusters()       = m_allClusters;
-    mesh->GetClusterGroup()   = m_allGroups;
-    mesh->GetClusterLodData() = m_lods;
-    mesh->GetClusterPages()   = m_clusterPages;
+    mesh->GetClusters()          = std::move(m_allClusters);
+    mesh->GetClusterGroup()      = std::move(m_allGroups);
+    mesh->GetClusterLodData()    = std::move(m_lods);
+    mesh->GetClusterPages()      = std::move(m_clusterPages);
+    mesh->GetGroupLinks() = std::move(m_groupLinks);
 }
 
 std::vector<std::vector<int>> MClusterBuilder::PartitionCluster(
@@ -212,10 +213,9 @@ int32_t MClusterBuilder::OutputGroup(
     group.clusterNum     = clusterInGroup.size();
     group.bounds         = simplified;
 
-    // Initialize hierarchy fields
-    group.parentGroupId     = MGlobal::M_INVALID_INT;
-    group.firstChildGroupId = MGlobal::M_INVALID_INT;
-    group.childGroupCount   = 0;
+    // Initialize DAG hierarchy fields (will be filled later by BuildChildRelationships)
+    group.groupLinkOffset = 0;
+    group.groupLinkCount  = 0;
 
     std::vector<uint32_t> clusterIndices(clusterInGroup.size());
     // Extract cluster's independent vertex and index data
@@ -510,10 +510,33 @@ void MClusterBuilder::BuildCluster(const InputData& input)
 
             float                     error      = 0.f;
             std::vector<unsigned int> simplified = Simplify(input, merged, locks, target_size, &error);
+
+            // DAG: collect ALL parent group IDs from clusters in this partition
+            std::vector<int32_t> parentGroupIds;
+            for (size_t j = 0; j < groups[i].size(); ++j)
+            {
+                int32_t parentId = clusters[groups[i][j]].group;
+                if (parentId != -1)
+                {
+                    // avoid duplicates
+                    bool found = false;
+                    for (int32_t existingId: parentGroupIds)
+                    {
+                        if (existingId == parentId)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) { parentGroupIds.push_back(parentId); }
+                }
+            }
+
             if (simplified.size() > size_t(merged.size() * SimplifyThreshold))
             {
                 groupBounds.error = FLT_MAX;// terminal group, won't simplify further
-                OutputGroup(input, clusters, groups[i], groupBounds);
+                int32_t groupId   = OutputGroup(input, clusters, groups[i], groupBounds);
+                m_groupParents.push_back(parentGroupIds);
                 continue;// simplification is stuck; abandon the merge
             }
 
@@ -522,33 +545,8 @@ void MClusterBuilder::BuildCluster(const InputData& input)
                                 error * SimplifyErrorMergeAdditive;
 
             // output the new group with all clusters; the resulting id will be recorded in new clusters as clodCluster::refined
-            auto    refined = OutputGroup(input, clusters, groups[i], groupBounds);
-
-            // Get the parent group ID from the first cluster in the group
-            int32_t parentGroupId = MGlobal::M_INVALID_INT;
-            if (!groups[i].empty())
-            {
-                const auto& firstCluster = clusters[groups[i][0]];
-                if (firstCluster.group != -1) { parentGroupId = firstCluster.group; }
-            }
-
-            // Update parent-child relationships
-            if (parentGroupId != MGlobal::M_INVALID_INT)
-            {
-                MClusterGroup& parentGroup = m_allGroups[parentGroupId];
-
-                // Set the first child if not already set
-                if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_INT)
-                {
-                    parentGroup.firstChildGroupId = refined;
-                }
-
-                // Increment child count
-                parentGroup.childGroupCount++;
-
-                // Set parent reference in the refined group
-                m_allGroups[refined].parentGroupId = parentGroupId;
-            }
+            auto refined = OutputGroup(input, clusters, groups[i], groupBounds);
+            m_groupParents.push_back(parentGroupIds);
 
             // discard clusters from the group - they won't be used anymore
             for (size_t j = 0; j < groups[i].size(); ++j) clusters[groups[i][j]].indices = std::vector<unsigned int>();
@@ -584,23 +582,46 @@ void MClusterBuilder::BuildCluster(const InputData& input)
         auto        bounds = cluster.bounds;
         bounds.error       = FLT_MAX;// terminal group, won't simplify further
 
-        auto    rootGroupId = OutputGroup(input, clusters, pending, bounds);
+        auto rootGroupId = OutputGroup(input, clusters, pending, bounds);
 
-        // Update parent-child relationship for the root group
-        int32_t parentGroupId = MGlobal::M_INVALID_INT;
-        if (cluster.group != -1) { parentGroupId = cluster.group; }
+        // DAG: collect parent group ID for the root group
+        std::vector<int32_t> parentGroupIds;
+        if (cluster.group != -1) { parentGroupIds.push_back(cluster.group); }
+        m_groupParents.push_back(parentGroupIds);
+    }
 
-        if (parentGroupId != MGlobal::M_INVALID_INT)
+    // DAG: build child relationships from parent information
+    BuildChildRelationships();
+}
+
+void MClusterBuilder::BuildChildRelationships()
+{
+    // For each group, based on its parent IDs, add itself to parent's children list
+
+    // First collect each group's children
+    std::vector<std::vector<int32_t>> childrenLists(m_allGroups.size());
+
+    for (size_t groupId = 0; groupId < m_allGroups.size(); ++groupId)
+    {
+        if (groupId < m_groupParents.size())
         {
-            MClusterGroup& parentGroup = m_allGroups[parentGroupId];
-
-            if (parentGroup.firstChildGroupId == MGlobal::M_INVALID_INT)
+            for (int32_t parentId: m_groupParents[groupId])
             {
-                parentGroup.firstChildGroupId = rootGroupId;
+                if (parentId >= 0 && parentId < static_cast<int32_t>(m_allGroups.size()))
+                {
+                    childrenLists[parentId].push_back(static_cast<int32_t>(groupId));
+                }
             }
-
-            parentGroup.childGroupCount++;
-            m_allGroups[rootGroupId].parentGroupId = parentGroupId;
         }
+    }
+
+    // Build global group links array
+    m_groupLinks.clear();
+    for (size_t groupId = 0; groupId < m_allGroups.size(); ++groupId)
+    {
+        m_allGroups[groupId].groupLinkOffset = static_cast<uint32_t>(m_groupLinks.size());
+        m_allGroups[groupId].groupLinkCount  = static_cast<uint32_t>(childrenLists[groupId].size());
+
+        for (int32_t childId: childrenLists[groupId]) { m_groupLinks.push_back(childId); }
     }
 }

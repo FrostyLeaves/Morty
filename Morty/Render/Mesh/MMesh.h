@@ -57,6 +57,8 @@ public:
     std::vector<MClusterGroup>&                GetClusterGroup() { return m_groups; }
     std::vector<MClusterLodData>&              GetClusterLodData() { return m_lods; }
     std::vector<MClusterPage>&                 GetClusterPages() { return m_clusterPages; }
+    std::vector<int32_t>&                      GetGroupLinks() { return m_groupLinks; }
+    [[nodiscard]] const std::vector<int32_t>&  GetGroupLinks() const { return m_groupLinks; }
 
     [[nodiscard]] virtual size_t               GetAttributeProtectMask() const           = 0;
     [[nodiscard]] virtual std::vector<float>   GetSimplifyWeight() const                 = 0;
@@ -76,6 +78,7 @@ protected:
     std::vector<MClusterGroup>   m_groups;
     std::vector<MClusterLodData> m_lods;
     std::vector<MClusterPage>    m_clusterPages;
+    std::vector<int32_t>         m_groupLinks;
 };
 
 template<class VERTEX_TYPE> class MORTY_API MMesh : public MIMesh

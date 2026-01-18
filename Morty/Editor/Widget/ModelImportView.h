@@ -38,6 +38,7 @@ private:
     std::string                   m_strOutputDir;
     bool                          m_bImportCamera = false;
     bool                          m_bImportLights = true;
+    bool                          m_bEnableNanite = false;
 
     // Status feedback
     std::string                   m_strStatusMessage;

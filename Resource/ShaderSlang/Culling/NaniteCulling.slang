@@ -62,7 +62,7 @@ public struct NaniteLODSelector
         float errorThreshold)
     {
         // No subdivision needed if no child nodes
-        if (group.childGroupCount == 0)
+        if (group.groupLinkCount == 0)
             return false;
 
         // Calculate distance to camera
@@ -153,13 +153,14 @@ public struct NaniteTraversal
         uint depth;
     };
 
-    // BFS traverse ClusterGroup tree and select appropriate LOD
+    // BFS traverse ClusterGroup DAG and select appropriate LOD
     public static void TraverseLODTree(
         uint meshInstanceIndex,
-        MeshInstanceData meshInstance,
+        MeshInstanceRenderProxy meshInstance,
         MeshResourceData meshResource,  // Mesh resource data (contains ClusterGroup root node info)
         StructuredBuffer<ClusterGroupData> clusterGroups,
         StructuredBuffer<ClusterData> clusters,
+        StructuredBuffer<int> groupLinks,  // DAG child group indices
         NaniteRenderData renderData,
         RWStructuredBuffer<CandidateCluster> outCandidateClusters,
         RWStructuredBuffer<uint> outCandidateCount)
@@ -185,6 +186,8 @@ public struct NaniteTraversal
             }
         }
 
+        return;
+
         // BFS traversal
         while (stackSize > 0)
         {
@@ -204,10 +207,12 @@ public struct NaniteTraversal
 
             if (shouldSubdivide && currentNode.depth < NANITE_MAX_TRAVERSAL_DEPTH - 1)
             {
-                // Traverse child ClusterGroups
-                for (uint i = 0; i < currentGroup.childGroupCount; ++i)
+                // Traverse child ClusterGroups via DAG links
+                for (uint i = 0; i < currentGroup.groupLinkCount; ++i)
                 {
-                    uint childGroupIndex = currentGroup.firstGroupId + i;
+                    // groupLinks stores local child group IDs, convert to global by adding rootClusterGroupBeginIndex
+                    int localChildId = groupLinks[currentGroup.groupLinkOffset + i];
+                    uint childGroupIndex = meshResource.rootClusterGroupBeginIndex + localChildId;
 
                     // Frustum culling
                     if (NaniteCulling.CullClusterGroup(

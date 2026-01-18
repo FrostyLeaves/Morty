@@ -28,13 +28,21 @@ enum class MShaderParamResourceType
     TextureCubeMap,
 };
 
+enum class MInstanceDataType
+{
+    Property = 0,
+    TextureIndex,
+};
+
 struct MShaderParamAttribute {
-    MString          name;
+    MStringId        displayName;
+    MStringId        name;
     MShaderParamType type;
 };
 
 struct MShaderParamResource {
-    MString                  name;
+    MStringId                displayName;
+    MStringId                name;
     MShaderParamResourceType type;
 };
 
@@ -42,20 +50,27 @@ class MORTY_API MShaderPropertyBlock
 {
 
 public:
-    bool AddProperty(const MStringId& name, const MShaderParamAttribute& property);
-    bool AddResource(const MStringId& name, const MShaderParamResource& resource);
+    bool AddProperty(const MShaderParamAttribute& property);
+    bool AddResource(const MShaderParamResource& resource);
     [[nodiscard]] const std::unordered_map<MStringId, MShaderParamAttribute>& GetProperties() const;
     [[nodiscard]] const std::unordered_map<MStringId, MShaderParamResource>&  GetResources() const;
-    void                                                                      Merge(const MShaderPropertyBlock& other);
-    void                                                                      Clear();
 
-    void      SetInstancingName(const MStringId& name) { m_instancingName = name; }
-    MStringId GetInstancingName() const { return m_instancingName; }
+    MStringId GetPropertyDisplayName(const MStringId& name) const;
+    MStringId GetResourceDisplayName(const MStringId& name) const;
+
+    void      Merge(const MShaderPropertyBlock& other);
+    void      Clear();
+
+    void      SetInstancingName(const MStringId& name, MInstanceDataType type)
+    {
+        m_instancingName[static_cast<size_t>(type)] = name;
+    }
+    MStringId GetInstancingName(MInstanceDataType type) const { return m_instancingName[static_cast<size_t>(type)]; }
 
 private:
     std::unordered_map<MStringId, MShaderParamAttribute> m_properties;
     std::unordered_map<MStringId, MShaderParamResource>  m_resources;
-    MStringId                                            m_instancingName;
+    std::array<MStringId, 2>                             m_instancingName;
 };
 
 }// namespace morty

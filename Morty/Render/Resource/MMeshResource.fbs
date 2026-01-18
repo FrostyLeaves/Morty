@@ -29,6 +29,9 @@ table MMeshResource
     group: [MClusterGroup];
     lod: [MSlice];
     pages: [MClusterPage];
+
+    // DAG group links array (child group IDs)
+    group_links: [int];
 }
 
 root_type MMeshResource;

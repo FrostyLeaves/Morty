@@ -30,13 +30,11 @@ public struct ModelUtil
         return vertexPos;
     }
 
-    public static VertexOut ComputeVertex(VertexIn input, CameraData mainCameraData, uint INSTANCE_ID)
+    public static VertexOut ComputeVertex(VertexIn input, IBatchMeshData instanceProxy, CameraData mainCameraData, uint INSTANCE_ID)
     {
         VertexOut output;
 
-        StorageBatchMeshData model;
-
-        MeshInstanceData data = model.GetMeshData(INSTANCE_ID);
+        MeshInstanceRenderProxy data = instanceProxy.GetInstanceProxy(INSTANCE_ID);
 
         float4 positionCS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
         float4 positionWS = mul(positionCS, data.matWorld);

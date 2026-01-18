@@ -30,11 +30,11 @@ public struct UnlitPixelOut
 [shader("vertex")]
 UnlitVertexOut VS_MAIN(UnlitVertexIn input, uint INSTANCE_ID: SV_InstanceID)
 {
-    FrameData frameData = GlobalFrameData;
+    FrameData frameData = GlobalData.frame;
     StorageBatchMeshData model;
-    MeshInstanceData meshData = model.GetMeshData(INSTANCE_ID);
+    MeshInstanceRenderProxy instanceProxy = model.GetInstanceProxy(INSTANCE_ID);
     
-    float4 positionWS = mul(float4(input.pos, 1.0), meshData.matWorld);
+    float4 positionWS = mul(float4(input.pos, 1.0), instanceProxy.matWorld);
     
     UnlitVertexOut output;
     output.pos = mul(positionWS, frameData.mainCamera.viewMatrix);
@@ -46,7 +46,7 @@ UnlitVertexOut VS_MAIN(UnlitVertexIn input, uint INSTANCE_ID: SV_InstanceID)
 [shader("pixel")]
 UnlitPixelOut PS_MAIN(UnlitVertexOut input)
 {
-    float4 texColor = baseColorTexture.Sample(LinearSampler, input.uv);
+    float4 texColor = baseColorTexture.Sample(GlobalData.LinearSampler, input.uv);
     float4 finalColor = texColor * unlitMaterialData.baseColor;
     
     // Alpha clipping

@@ -53,7 +53,8 @@ void MRenderCommandVulkan::DrawMesh(const MDrawMeshCmd* cmd)
                 "DrawMesh called with missing descriptor sets. "
                 "Missing set(s): {}. "
                 "Call SetShaderParameterSet for all required descriptor sets before drawing.",
-                m_pipelineState.GetMissingSetsString());
+                m_pipelineState.GetMissingSetsString()
+        );
         return;
     }
 
@@ -96,7 +97,8 @@ void MRenderCommandVulkan::DrawIndexedIndirect(const MDrawIndexedIndirectCmd* cm
                 "DrawIndexedIndirect called with missing descriptor sets. "
                 "Missing set(s): {}. "
                 "Call SetShaderParameterSet for all required descriptor sets before drawing.",
-                m_pipelineState.GetMissingSetsString());
+                m_pipelineState.GetMissingSetsString()
+        );
         return;
     }
 
@@ -159,7 +161,8 @@ void MRenderCommandVulkan::DrawIndexedIndirectCount(const MDrawIndexedIndirectCo
                 "DrawIndexedIndirectCount called with missing descriptor sets. "
                 "Missing set(s): {}. "
                 "Call SetShaderParameterSet for all required descriptor sets before drawing.",
-                m_pipelineState.GetMissingSetsString());
+                m_pipelineState.GetMissingSetsString()
+        );
         return;
     }
 
@@ -456,7 +459,8 @@ bool MRenderCommandVulkan::DispatchComputeJob(
         return true;
     }
 
-    MORTY_ASSERT(pComputeDispatcher->GetComputeShader());
+    if (!pComputeDispatcher->GetComputeShader()) { return false; }
+
 
     std::shared_ptr<MPipeline> pPipeline = m_device->m_PipelineManager.FindOrCreateComputePipeline(pComputeDispatcher);
     MORTY_ASSERT(pPipeline);
@@ -742,45 +746,6 @@ bool MRenderCommandVulkan::DownloadTexture(
 
         m_device->m_BufferPool.FreeReadBackBuffer(unMemoryID);
     });
-
-    return true;
-}
-
-bool MRenderCommandVulkan::CopyImageBuffer(MTexture* pSource, MTexture* pTarget)
-{
-    if (!pSource || !pTarget) return false;
-
-    SetTextureLayout({pSource}, {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL});
-    SetTextureLayout({pTarget}, {VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL});
-
-    auto        sourceRHI = pSource->GetTextureRHI<MTextureRHIVulkan>();
-    auto        targetRHI = pTarget->GetTextureRHI<MTextureRHIVulkan>();
-
-    VkImageBlit blit{};
-    blit.srcOffsets[0] = {0, 0, 0};
-    blit.srcOffsets[1] = {static_cast<int32_t>(pSource->GetSize().x), static_cast<int32_t>(pSource->GetSize().y), 1};
-    blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    blit.srcSubresource.mipLevel       = 0;
-    blit.srcSubresource.baseArrayLayer = 0;
-    blit.srcSubresource.layerCount     = pSource->GetLayer();
-    blit.dstOffsets[0]                 = {0, 0, 0};
-    blit.dstOffsets[1] = {static_cast<int32_t>(pTarget->GetSize().x), static_cast<int32_t>(pTarget->GetSize().y), 1};
-    blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    blit.dstSubresource.mipLevel       = 0;
-    blit.dstSubresource.baseArrayLayer = 0;
-    blit.dstSubresource.layerCount     = pTarget->GetLayer();
-
-    vkCmdBlitImage(
-            m_vkCommandBuffer,
-            sourceRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            targetRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            1,
-            &blit,
-            VK_FILTER_LINEAR
-    );
-
 
     return true;
 }

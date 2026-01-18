@@ -41,6 +41,11 @@ public:
     ~MMeshImporter();
 
     /**
+     * @brief Enable Nanite cluster generation for static meshes
+     */
+    void SetEnableNanite(bool enable) { m_enableNanite = enable; }
+
+    /**
      * @brief Import a mesh from Assimp
      * @param pAiMesh Assimp mesh data
      * @param pSkeleton Skeleton (nullptr for static mesh)
@@ -75,6 +80,7 @@ private:
     MEngine*                                                    m_engine;
     MResourceSystem*                                            m_resourceSystem;
     std::unordered_map<aiMesh*, std::shared_ptr<MMeshResource>> m_cache;
+    bool                                                        m_enableNanite = false;
 };
 
 }// namespace morty

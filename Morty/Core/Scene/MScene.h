@@ -10,6 +10,7 @@
 
 #include "Utility/MGlobal.h"
 #include "Object/MObject.h"
+#include "Utility/MStringId.h"
 
 #include "Component/MComponent.h"
 #include "Component/MComponentGroup.h"
@@ -62,6 +63,9 @@ public:
 
     std::vector<MEntity*>                       GetAllEntity() const;
 
+    void                                        SetName(const MStringId& name) { m_name = name; }
+    [[nodiscard]] const MStringId&              GetName() const { return m_name; }
+
 public:
     template<class TYPE> TYPE* RegisterManager();
 
@@ -87,6 +91,7 @@ private:
     std::map<const MType*, MIComponentGroup*>      m_components;
     std::map<const MType*, IManager*>              m_manager;
     std::map<const MType*, std::vector<IManager*>> m_componentRegister;
+    MStringId                                      m_name;
 };
 
 template<typename TYPE> MEntity* MScene::FindFirstEntityByComponent()

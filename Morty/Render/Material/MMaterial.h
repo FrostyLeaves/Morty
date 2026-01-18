@@ -26,14 +26,16 @@ class MORTY_API MMaterial : public MResource
 public:
     MORTY_CLASS(MMaterial)
 
-    MMaterial() = default;
+                                 MMaterial() = default;
 
-    ~MMaterial() override = default;
+    ~                            MMaterial() override = default;
 
 
     template<typename TYPE> void SetValue(const MStringId& strName, const TYPE& value);
-
+    template<typename TYPE> bool GetValue(const MStringId& strName, TYPE& value) const;
     void                         SetTexture(const MStringId& strName, const std::shared_ptr<MResource>& pTexResource);
+    [[nodiscard]] MTexturePtr    GetTexture(const MStringId& strName) const;
+
 
     [[nodiscard]] MShaderMacro   GetShaderMacro() const;
 
@@ -76,6 +78,16 @@ template<typename TYPE> void MMaterial::SetValue(const MStringId& strName, const
                 typeid(TYPE).name()
         );
     }
+}
+
+template<typename TYPE> bool MMaterial::GetValue(const MStringId& strName, TYPE& value) const
+{
+    return m_propertyModifier.GetValue(strName, value);
+}
+
+inline MTexturePtr MMaterial::GetTexture(const MStringId& strName) const
+{
+    return m_propertyModifier.GetTexture(strName);
 }
 
 }// namespace morty

@@ -14,6 +14,7 @@
 #include "Model/MSkeleton.h"
 #include "Resource/MMeshResource.h"
 #include "System/MResourceSystem.h"
+#include "Tools/MClusterBuilder.h"
 #include "Utility/MLogger.h"
 
 #include "assimp/mesh.h"
@@ -59,6 +60,13 @@ std::shared_ptr<MMeshResource> MMeshImporter::ImportMesh(aiMesh* pAiMesh, MSkele
         auto* pStaticMesh = new MMesh<MVertex>();
         ProcessMeshVertices(pAiMesh, pStaticMesh);
         ProcessMeshIndices(pAiMesh, pStaticMesh);
+
+        // Generate clusters if Nanite is enabled (only for static meshes)
+        if (m_enableNanite)
+        {
+            MClusterBuilder builder;
+            builder.Generate(pStaticMesh);
+        }
 
         pMeshResourceData->mesh.reset(pStaticMesh);
         pMeshResourceData->eVertexType = MEMeshVertexType::Normal;

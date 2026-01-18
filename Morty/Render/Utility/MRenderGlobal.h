@@ -119,6 +119,7 @@ enum class MEDeviceFeature
     EConservativeRasterization,
     EHLSLFunctionality,
     EVariableRateShading,
+    EDeviceFault,
 };
 
 enum class MEBufferBarrierStage

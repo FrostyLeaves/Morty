@@ -88,7 +88,8 @@ bool MFileHelper::ReadString(const MString& strFilePath, MString& strData)
 bool MFileHelper::WriteData(const MString& strFilePath, const std::vector<MByte>& vData)
 {
     std::filesystem::path path{strFilePath};
-    std::filesystem::create_directories(path.parent_path());
+    auto                  parentPath = path.parent_path();
+    if (!parentPath.empty()) { std::filesystem::create_directories(parentPath); }
 
     std::ofstream file(strFilePath.c_str(), std::ios::binary);
 

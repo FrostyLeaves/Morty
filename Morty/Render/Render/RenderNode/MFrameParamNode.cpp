@@ -1,9 +1,10 @@
 #include "MFrameParamNode.h"
-#include "MFrameParameterSetAdapter.h"
-
+#include "Batch/Mesh/MMeshInstanceManager.h"
 #include "Engine/MEngine.h"
+#include "MFrameParameterSetAdapter.h"
 #include "Material/MMaterialTemplate.h"
 #include "Render/RenderGraph/MRenderGraph.h"
+#include "Scene/MScene.h"
 #include "Shader/MShaderParameterSet.h"
 #include "System/MResourceSystem.h"
 #include "Utility/MRenderGraphName.h"
@@ -15,16 +16,17 @@ MORTY_CLASS_IMPLEMENT(MFrameParamNode, MRenderTaskNode)
 // Shader parameter names for FrameData (set = 1)
 static const MStringId ViewMatrixNameId     = MStringId("viewMatrix");
 static const MStringId CameraPositionNameId = MStringId("positionWS");
+static const MStringId InstanceProxyNameId  = MStringId("GlobalData.scene.instanceProxy");
 
-void           MFrameParamNode::OnCreated()
+void                   MFrameParamNode::OnCreated()
 {
     Super::OnCreated();
 
-    auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
+    auto                 resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     // Create MaterialTemplate and load shader that contains GlobalFrameData
     static const MString FrameParamTemplateName = "FrameParamTemplate";
-    m_materialTemplate                          = resourceSystem->FindResource<MMaterialTemplate>(FrameParamTemplateName);
+    m_materialTemplate = resourceSystem->FindResource<MMaterialTemplate>(FrameParamTemplateName);
 
     if (!m_materialTemplate)
     {
@@ -36,10 +38,10 @@ void           MFrameParamNode::OnCreated()
 
         // Set default pass entry points
         m_materialTemplate->SetPass(
-            MRenderGlobal::DEFAULT_PASS_NAME,
-            MRenderGlobal::DEFAULT_VERTEX_ENTRY,
-            MRenderGlobal::DEFAULT_PIXEL_ENTRY
-    );
+                MRenderGlobal::DEFAULT_PASS_NAME,
+                MRenderGlobal::DEFAULT_VERTEX_ENTRY,
+                MRenderGlobal::DEFAULT_PIXEL_ENTRY
+        );
     }
 
     // Create ParameterSet for set = 1 (FrameData)
@@ -73,6 +75,7 @@ void MFrameParamNode::Execute(const MRenderInfo& info, IRenderCommand* primaryCo
 void MFrameParamNode::UpdateFrameParameters(const MRenderInfo& info)
 {
     if (!m_frameParameterSet) { return; }
+    auto    instanceManager = info.scene->GetManager<MMeshInstanceManager>();
 
     // Camera transform is world-to-view matrix
     Matrix4 viewMatrix = info.m4CameraTransform.Inverse();
@@ -85,6 +88,9 @@ void MFrameParamNode::UpdateFrameParameters(const MRenderInfo& info)
 
     // Update camera world position (CameraData.positionWS)
     m_frameParameterSet->SetValue(CameraPositionNameId, cameraPosition);
+
+    auto instanceBuffer = instanceManager->GetInstanceBuffer();
+    m_frameParameterSet->SetBuffer(InstanceProxyNameId, instanceBuffer);
 }
 
 std::vector<MRenderTaskOutputDesc> MFrameParamNode::InitOutputDesc()

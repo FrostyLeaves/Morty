@@ -2,27 +2,27 @@
 
 using namespace morty;
 
-bool MShaderPropertyBlock::AddProperty(const MStringId& name, const MShaderParamAttribute& property)
+bool MShaderPropertyBlock::AddProperty(const MShaderParamAttribute& property)
 {
-    if (m_properties.find(name) != m_properties.end())
+    if (m_properties.find(property.name) != m_properties.end())
     {
-        if (m_properties[name].type != property.type) { return false; }
+        if (m_properties[property.name].type != property.type) { return false; }
         return true;
     }
 
-    m_properties[name] = property;
+    m_properties[property.name] = property;
     return true;
 }
 
-bool MShaderPropertyBlock::AddResource(const MStringId& name, const MShaderParamResource& resource)
+bool MShaderPropertyBlock::AddResource(const MShaderParamResource& resource)
 {
-    if (m_resources.find(name) != m_resources.end())
+    if (m_resources.find(resource.name) != m_resources.end())
     {
-        if (m_resources[name].type != resource.type) { return false; }
+        if (m_resources[resource.name].type != resource.type) { return false; }
         return true;
     }
 
-    m_resources[name] = resource;
+    m_resources[resource.name] = resource;
     return true;
 }
 
@@ -36,10 +36,28 @@ const std::unordered_map<MStringId, MShaderParamResource>& MShaderPropertyBlock:
     return m_resources;
 }
 
+MStringId MShaderPropertyBlock::GetPropertyDisplayName(const MStringId& name) const
+{
+    auto result = m_properties.find(name);
+    if (result == m_properties.end()) { return name; }
+
+    return result->second.displayName;
+}
+
+MStringId MShaderPropertyBlock::GetResourceDisplayName(const MStringId& name) const
+{
+    auto result = m_resources.find(name);
+    if (result == m_resources.end()) { return name; }
+
+    return result->second.displayName;
+}
+
 void MShaderPropertyBlock::Merge(const MShaderPropertyBlock& other)
 {
-    for (const auto& [name, property]: other.m_properties) { AddProperty(name, property); }
-    for (const auto& [name, resource]: other.m_resources) { AddResource(name, resource); }
+    for (const auto& [name, property]: other.m_properties) { AddProperty(property); }
+    for (const auto& [name, resource]: other.m_resources) { AddResource(resource); }
+
+    m_instancingName = other.m_instancingName;
 }
 
 void MShaderPropertyBlock::Clear()

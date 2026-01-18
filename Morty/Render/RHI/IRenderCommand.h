@@ -60,8 +60,6 @@ public:
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) = 0;
 
-    virtual bool         CopyImageBuffer(MTexture* pSource, MTexture* pDest) = 0;
-
     virtual bool         IsFinished() { return false; }
 
     virtual void         OnCommandFinished() {}

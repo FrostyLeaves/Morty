@@ -2,8 +2,8 @@ import InternalModule;
 import Model.ModelModule;
 import Culling.CullingModule;
 
-// ==================== 可见性压缩工具 ====================
-// 这个着色器用于进一步优化，将多个小的 cluster 合并成更大的 draw call
+// ==================== Visibility Compaction Utilities ====================
+// This shader is used for further optimization, merging multiple small clusters into larger draw calls
 
 public struct CompactedDrawCommand
 {
@@ -13,68 +13,74 @@ public struct CompactedDrawCommand
 };
 
 // ==================== Compute Shader: Visibility Buffer Compaction ====================
-// 可选优化阶段：对候选 Cluster 进行排序和压缩
+// Optional optimization stage: sort and compact candidate clusters
+
+public struct NaniteVisibilityCompactionParams
+{ 
+    StructuredBuffer<CandidateCluster> candidateClusters;
+    StructuredBuffer<uint> candidateCount;
+
+    RWStructuredBuffer<CandidateCluster> outSortedCandidates;
+};
+
 
 [shader("compute")]
 [numthreads(64, 1, 1)]
 public void NaniteVisibilityCompactionCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
     uint3 groupThreadID : SV_GroupThreadID,
-
-    // 输入
-    StructuredBuffer<CandidateCluster> candidateClusters,
-    StructuredBuffer<uint> candidateCount,
-
-    // 输出（排序后的候选列表）
-    RWStructuredBuffer<CandidateCluster> outSortedCandidates
+    ParameterBlock<NaniteVisibilityCompactionParams> input
+   
 )
 {
     uint candidateIndex = dispatchThreadID.x;
-    uint totalCandidates = candidateCount[0];
+    uint totalCandidates = input.candidateCount[0];
 
     if (candidateIndex >= totalCandidates)
         return;
 
-    // 简单的拷贝（实际应用中这里可以实现基于距离的排序）
-    // 排序可以提高缓存一致性，减少状态切换
-    outSortedCandidates[candidateIndex] = candidateClusters[candidateIndex];
+    // Simple copy (in practice, distance-based sorting can be implemented here)
+    // Sorting can improve cache coherence and reduce state switches
+    input.outSortedCandidates[candidateIndex] = input.candidateClusters[candidateIndex];
 }
 
 // ==================== Compute Shader: Batch Draw Commands ====================
-// 高级优化：尝试批量绘制同一 MeshInstance 的连续 Cluster
+// Advanced optimization: try to batch draw consecutive clusters of the same MeshInstance
+
+public struct NaniteBatchDrawCommandsParams
+{
+    StructuredBuffer<CandidateCluster> sortedCandidates;
+    StructuredBuffer<uint> candidateCount;
+    StructuredBuffer<ClusterData> clusters;
+
+    RWStructuredBuffer<CompactedDrawCommand> outCompactedCommands;
+    RWStructuredBuffer<uint> outCompactedCount;
+};
 
 [shader("compute")]
 [numthreads(64, 1, 1)]
 public void NaniteBatchDrawCommandsCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
-
-    // 输入
-    StructuredBuffer<CandidateCluster> sortedCandidates,
-    StructuredBuffer<uint> candidateCount,
-    StructuredBuffer<ClusterData> clusters,
-
-    // 输出
-    RWStructuredBuffer<CompactedDrawCommand> outCompactedCommands,
-    RWStructuredBuffer<uint> outCompactedCount
+    ParameterBlock<NaniteBatchDrawCommandsParams> input
 )
 {
     uint candidateIndex = dispatchThreadID.x;
-    uint totalCandidates = candidateCount[0];
+    uint totalCandidates = input.candidateCount[0];
 
     if (candidateIndex >= totalCandidates)
         return;
 
-    CandidateCluster currentCandidate = sortedCandidates[candidateIndex];
+    CandidateCluster currentCandidate = input.sortedCandidates[candidateIndex];
 
-    // 检查是否可以与前一个候选合并
+    // Check if can be merged with the previous candidate
     bool canBatch = false;
     if (candidateIndex > 0)
     {
-        CandidateCluster prevCandidate = sortedCandidates[candidateIndex - 1];
+        CandidateCluster prevCandidate = input.sortedCandidates[candidateIndex - 1];
 
-        // 只有相同的 MeshInstance 且索引连续才能合并
-        ClusterData currentCluster = clusters[currentCandidate.clusterIndex];
-        ClusterData prevCluster = clusters[prevCandidate.clusterIndex];
+        // Can only merge if same MeshInstance and indices are consecutive
+        ClusterData currentCluster = input.clusters[currentCandidate.clusterIndex];
+        ClusterData prevCluster = input.clusters[prevCandidate.clusterIndex];
 
         canBatch = (currentCandidate.meshInstanceIndex == prevCandidate.meshInstanceIndex) &&
                    (currentCluster.indexOffset == prevCluster.indexOffset + prevCluster.indexCount);
@@ -82,45 +88,48 @@ public void NaniteBatchDrawCommandsCS(
 
     if (!canBatch)
     {
-        // 创建新的压缩命令
+        // Create new compacted command
         uint compactedIndex;
-        InterlockedAdd(outCompactedCount[0], 1, compactedIndex);
+        InterlockedAdd(input.outCompactedCount[0], 1, compactedIndex);
 
         CompactedDrawCommand cmd;
         cmd.batchStartIndex = candidateIndex;
         cmd.batchClusterCount = 1;
         cmd.meshInstanceIndex = currentCandidate.meshInstanceIndex;
 
-        outCompactedCommands[compactedIndex] = cmd;
+        input.outCompactedCommands[compactedIndex] = cmd;
     }
-    // 如果可以合并，则由后续的扫描阶段处理
+    // If can be merged, handled by subsequent scan stage
 }
 
 // ==================== Compute Shader: Occlusion Culling (Future) ====================
-// 预留接口：未来可以添加遮挡剔除
+// Reserved interface: occlusion culling can be added in the future
+
+public struct NaniteOcclusionCullingParams
+{
+    NaniteCullingParams naniteCullingParams;
+    Texture2D<float> hierarchicalZBuffer;
+    StructuredBuffer<CandidateCluster> candidateClusters;
+    StructuredBuffer<ClusterData> clusters;
+    StructuredBuffer<MeshInstanceRenderProxy> meshInstances;
+
+    RWStructuredBuffer<uint> outVisibilityMask;
+};
 
 [shader("compute")]
 [numthreads(8, 8, 1)]
 public void NaniteOcclusionCullingCS(
     uint3 dispatchThreadID : SV_DispatchThreadID,
-
-    // 输入
-    Texture2D<float> hierarchicalZBuffer,
-    StructuredBuffer<CandidateCluster> candidateClusters,
-    StructuredBuffer<ClusterData> clusters,
-    StructuredBuffer<MeshInstanceData> meshInstances,
-
-    // 输出
-    RWStructuredBuffer<uint> outVisibilityMask  // 位掩码，标记可见的候选
+    ParameterBlock<NaniteOcclusionCullingParams> input
 )
 {
     uint candidateIndex = dispatchThreadID.x;
 
     // Use naniteCullingParams.renderData from CullingModule
-    NaniteRenderData renderData = naniteCullingParams.renderData;
+    NaniteRenderData renderData = input.naniteCullingParams.renderData;
 
-    // TODO: 实现 Hi-Z 遮挡剔除
-    // 1. 将 cluster 的包围球投影到屏幕空间
-    // 2. 查询 Hierarchical Z-Buffer
-    // 3. 如果被遮挡，清除对应的可见性位
+    // TODO: Implement Hi-Z occlusion culling
+    // 1. Project cluster bounding sphere to screen space
+    // 2. Query Hierarchical Z-Buffer
+    // 3. If occluded, clear the corresponding visibility bit
 }

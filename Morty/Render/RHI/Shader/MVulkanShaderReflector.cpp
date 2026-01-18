@@ -4,12 +4,14 @@
 #if RENDER_GRAPHICS == MORTY_VULKAN
 
 #include <locale>
+#include <map>
 #include <regex>
 #include <string>
 
 #include "Engine/MEngine.h"
 #include "RHI/Vulkan/MVulkanDevice.h"
 #include "Resource/MResource.h"
+#include "Shader/MShaderBuffer.h"
 #include "Shader/MShaderParameterSet.h"
 #include "Utility/MLogger.h"
 
@@ -163,7 +165,11 @@ void MVulkanShaderReflector::GetVertexInputState(
     pShaderBuffer->m_bindingDescs   = {bindingDescription};
 }
 
-void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer)
+bool MVulkanShaderReflector::GetShaderParam(
+        const spirv_cross::Compiler& compiler,
+        const MShaderPropertyBlock*  propertyBlock,
+        MShaderBuffer*               pShaderBuffer
+)
 {
     spirv_cross::ShaderResources shaderResources = compiler.get_shader_resources();
 
@@ -176,6 +182,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
 
         const std::string& uav_name = compiler.get_name(res.id);
         param->strName              = MStringId(uav_name.c_str());
+        param->strName = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         spirv_cross::Bitset buffer_flags = compiler.get_buffer_block_flags(res.id);
         param->bWritable                 = !buffer_flags.get(spv::DecorationNonWritable);
@@ -195,13 +202,14 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         param->unSet                = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding            = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
-        std::string uav_name = compiler.get_name(res.id);
-        if (uav_name.empty())// compatible glslang.
+        auto name = compiler.get_name(res.id);
+        if (name.empty())// compatible glslang.
         {
-            uav_name = res.name;
+            name = res.name;
         }
 
-        param->strName = MStringId(uav_name.c_str());
+        param->strName = MStringId(name.c_str());
+        param->strName = propertyBlock ? propertyBlock->GetPropertyDisplayName(param->strName) : param->strName;
 
         param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 
@@ -221,6 +229,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         param->unSet     = nSet;
         param->unBinding = nBinding;
         param->strName   = MStringId(res.name.c_str());
+        param->strName   = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         auto sub_type = compiler.get_type(type.image.type);
 
@@ -250,6 +259,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         param->unSet     = nSet;
         param->unBinding = nBinding;
         param->strName   = MStringId(res.name.c_str());
+        param->strName   = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         if (type.image.dim == spv::Dim::Dim3D) { param->eType = METextureType::ETexture3D; }
         else if (type.image.dim == spv::Dim::DimCube) { param->eType = METextureType::ETextureCube; }
@@ -268,6 +278,7 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());
+        param->strName   = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         if (!param->strName.ToString().empty())
         {
@@ -287,11 +298,15 @@ void MVulkanShaderReflector::GetShaderParam(const spirv_cross::Compiler& compile
         param->unSet     = compiler.get_decoration(res.id, spv::DecorationDescriptorSet);
         param->unBinding = compiler.get_decoration(res.id, spv::Decoration::DecorationBinding);
         param->strName   = MStringId(res.name.c_str());
+        param->strName   = propertyBlock ? propertyBlock->GetResourceDisplayName(param->strName) : param->strName;
 
         param->m_vkDescriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 
         pShaderBuffer->m_shaderSets[param->unSet]->AppendTextureParam(std::move(param));
     }
+
+    // Check for binding conflicts within each descriptor set
+    return ValidateBindingConflicts(pShaderBuffer);
 }
 
 void MVulkanShaderReflector::BuildVariant(
@@ -407,6 +422,61 @@ spirv_cross::SPIRType MVulkanShaderReflector::GetStorageBufferType(
     }
 
     return type;
+}
+
+bool MVulkanShaderReflector::ValidateBindingConflicts(MShaderBuffer* pShaderBuffer) const
+{
+    bool hasConflict = false;
+
+    for (uint32_t setIndex = 0; setIndex < MRenderGlobal::SHADER_PARAM_SET_NUM; ++setIndex)
+    {
+        const auto& paramSet = pShaderBuffer->m_shaderSets[setIndex];
+        if (!paramSet) continue;
+
+        // Map: binding -> (param name, descriptor type name)
+        std::map<uint32_t, std::pair<MStringId, const char*>> bindingMap;
+
+        auto checkAndAddBinding = [&](uint32_t binding, const MStringId& name, const char* typeName) {
+            auto it = bindingMap.find(binding);
+            if (it != bindingMap.end())
+            {
+                m_device->GetEngine()->GetLogger()->Error(
+                        "Shader binding conflict detected in set {}: binding {} is used by both '{}' ({}) and '{}' "
+                        "({})",
+                        setIndex,
+                        binding,
+                        it->second.first.ToString().c_str(),
+                        it->second.second,
+                        name.ToString().c_str(),
+                        typeName
+                );
+                hasConflict = true;
+            }
+            else { bindingMap[binding] = {name, typeName}; }
+        };
+
+        for (const auto& param: paramSet->GetConstantParams())
+        {
+            checkAndAddBinding(param->unBinding, param->strName, "UniformBuffer");
+        }
+
+        for (const auto& param: paramSet->GetStorageParams())
+        {
+            checkAndAddBinding(param->unBinding, param->strName, "StorageBuffer");
+        }
+
+        for (const auto& param: paramSet->GetTextureParams())
+        {
+            checkAndAddBinding(param->unBinding, param->strName, "Texture/Image");
+        }
+
+        for (const auto& param: paramSet->GetSampleParams())
+        {
+            checkAndAddBinding(param->unBinding, param->strName, "Sampler");
+        }
+    }
+
+    return !hasConflict;
 }
 
 #endif

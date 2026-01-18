@@ -51,11 +51,11 @@ float4 PS_MAIN(VertexOut input) : SV_Target
 
     if (u_nImageType == 0)
     {
-        sampleResult = image.Sample(LinearSampler, input.uv);
+        sampleResult = image.Sample(GlobalData.LinearSampler, input.uv);
     }
     else if (u_nImageType == 1)
     {
-        sampleResult = arrayImage.Sample(LinearSampler, float3(input.uv, u_nImageIndex));
+        sampleResult = arrayImage.Sample(GlobalData.LinearSampler, float3(input.uv, u_nImageIndex));
     }
     else if (u_nImageType == 2)
     {

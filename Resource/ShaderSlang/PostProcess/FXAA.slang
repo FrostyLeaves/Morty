@@ -17,14 +17,14 @@ public struct FXAA
     
     public static float3 Apply(Texture2D tex, float2 uv, FXAAData data)
     {
-        float3 colorCenter = tex.Sample(LinearSampler, uv).rgb;
-        
+        float3 colorCenter = tex.Sample(GlobalData.LinearSampler, uv).rgb;
+
         // Sample neighbor pixels
         float lumaCenter = rgb2luma(colorCenter);
-        float lumaDown = rgb2luma(tex.Sample(LinearSampler, uv, int2(0, -1)).rgb);
-        float lumaUp = rgb2luma(tex.Sample(LinearSampler, uv, int2(0, 1)).rgb);
-        float lumaLeft = rgb2luma(tex.Sample(LinearSampler, uv, int2(-1, 0)).rgb);
-        float lumaRight = rgb2luma(tex.Sample(LinearSampler, uv, int2(1, 0)).rgb);
+        float lumaDown = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(0, -1)).rgb);
+        float lumaUp = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(0, 1)).rgb);
+        float lumaLeft = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(-1, 0)).rgb);
+        float lumaRight = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(1, 0)).rgb);
         
         // Find min and max luma
         float lumaMin = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
@@ -40,10 +40,10 @@ public struct FXAA
         }
         
         // Sample corner pixels
-        float lumaDownLeft = rgb2luma(tex.Sample(LinearSampler, uv, int2(-1, -1)).rgb);
-        float lumaUpRight = rgb2luma(tex.Sample(LinearSampler, uv, int2(1, 1)).rgb);
-        float lumaUpLeft = rgb2luma(tex.Sample(LinearSampler, uv, int2(-1, 1)).rgb);
-        float lumaDownRight = rgb2luma(tex.Sample(LinearSampler, uv, int2(1, -1)).rgb);
+        float lumaDownLeft = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(-1, -1)).rgb);
+        float lumaUpRight = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(1, 1)).rgb);
+        float lumaUpLeft = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(-1, 1)).rgb);
+        float lumaDownRight = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv, int2(1, -1)).rgb);
         
         // Combine
         float lumaDownUp = lumaDown + lumaUp;
@@ -105,8 +105,8 @@ public struct FXAA
         float2 uv1 = currentUv - offset;
         float2 uv2 = currentUv + offset;
         
-        float lumaEnd1 = rgb2luma(tex.Sample(LinearSampler, uv1).rgb);
-        float lumaEnd2 = rgb2luma(tex.Sample(LinearSampler, uv2).rgb);
+        float lumaEnd1 = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv1).rgb);
+        float lumaEnd2 = rgb2luma(tex.Sample(GlobalData.LinearSampler, uv2).rgb);
         lumaEnd1 -= lumaLocalAverage;
         lumaEnd2 -= lumaLocalAverage;
         
@@ -158,6 +158,6 @@ public struct FXAA
             finalUv.x += finalOffset * stepLength;
         }
         
-        return tex.Sample(LinearSampler, finalUv).rgb;
+        return tex.Sample(GlobalData.LinearSampler, finalUv).rgb;
     }
 }

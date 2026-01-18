@@ -38,6 +38,9 @@ public:
     template<typename TYPE> bool                  SetValue(const MStringId& strName, const TYPE& value);
     bool                                          SetTexture(const MStringId& strName, const MTexturePtr& resource);
 
+    template<typename TYPE> bool                  GetValue(const MStringId& strName, TYPE& value) const;
+    [[nodiscard]] MTexturePtr                     GetTexture(const MStringId& strName) const;
+
     std::unordered_map<MStringId, ModifiedParam>& GetModifiedParams() { return m_modifiedParams; }
     [[nodiscard]] const std::unordered_map<MStringId, ModifiedParam>& GetModifiedParams() const
     {
@@ -73,6 +76,18 @@ inline bool MMaterialPropertyModifier::SetValue<MVariant>(const morty::MStringId
     {
         m_modifiedParams[strName].value.SetValue(value);
         m_modifiedParams[strName].param->SetDirty();
+        return true;
+    }
+
+    return false;
+}
+
+template<typename TYPE> inline bool MMaterialPropertyModifier::GetValue(const MStringId& strName, TYPE& value) const
+{
+    auto it = m_modifiedParams.find(strName);
+    if (it != m_modifiedParams.end() && it->second.value.IsType<TYPE>())
+    {
+        value = it->second.value.GetValue<TYPE>();
         return true;
     }
 

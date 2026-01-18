@@ -1,11 +1,13 @@
 /*
-    延迟渲染GBuffer阶段
+    Deferred Rendering GBuffer Stage
 */
 
 
 import InternalModule;
 import Model.ModelModule;
 import Deferred.DeferredModule;
+
+[[vk::binding(0, 0)]] ParameterBlock<MaterialBatchData> materialDataBatch;
 
 public struct PixelOut
 {
@@ -18,9 +20,11 @@ public struct PixelOut
 [shader("vertex")]
 VertexOut VS_MAIN(VertexIn input, uint INSTANCE_ID: SV_InstanceID)
 {
-    FrameData frameData = GlobalFrameData;
+    StorageBatchMeshData instanceProxy;
 
-    VertexOut output = ModelUtil.ComputeVertex(input, frameData.mainCamera, INSTANCE_ID);
+    FrameData frameData = GlobalData.frame;
+
+    VertexOut output = ModelUtil.ComputeVertex(input, instanceProxy, frameData.mainCamera, INSTANCE_ID);
 
     return output;
 }
@@ -29,6 +33,7 @@ VertexOut VS_MAIN(VertexIn input, uint INSTANCE_ID: SV_InstanceID)
 PixelOut PS_MAIN(VertexOut input)
 {
     ModelMaterial material;
+    material.materialDataBatch = materialDataBatch;
 
     var pixelData = ModelUtil.ComputePixelData(input);
     var surfaceData = material.GetSurfaceData(pixelData);

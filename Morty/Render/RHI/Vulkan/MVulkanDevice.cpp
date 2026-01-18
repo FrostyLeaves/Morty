@@ -67,7 +67,7 @@ const std::set<VkFormat> DepthStencilTextureFormat = {
 
 const VkImageLayout UndefinedImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-MVulkanDevice::MVulkanDevice()
+MVulkanDevice::     MVulkanDevice()
     : MIDevice()
     , m_ShaderReflector(this)
     , m_PipelineManager(this)
@@ -799,6 +799,8 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 
     if (spirv.empty()) return false;
 
+    const auto&              propertyBlock = pShader->GetPropertyBlock();
+
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = spirv.size() * sizeof(uint32_t);
@@ -861,7 +863,12 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
     {
         pShaderBuffer->m_vkShaderModule    = shaderModule;
         pShaderBuffer->m_vkShaderStageInfo = shaderStageInfo;
-        m_ShaderReflector.GetShaderParam(compiler, pShaderBuffer);
+        if (!m_ShaderReflector.GetShaderParam(compiler, &propertyBlock, pShaderBuffer))
+        {
+            vkDestroyShaderModule(m_vkDevice, shaderModule, nullptr);
+            delete pShaderBuffer;
+            return false;
+        }
     }
 
     pShader->SetBuffer(pShaderBuffer);
@@ -1523,7 +1530,13 @@ bool MVulkanDevice::IsFinishedCommand(IRenderCommand* pCommand)
 {
     if (MVulkanPrimaryRenderCommand* pVulkanCommand = static_cast<MVulkanPrimaryRenderCommand*>(pCommand))
     {
-        return VK_SUCCESS == vkGetFenceStatus(m_vkDevice, pVulkanCommand->m_vkRenderFinishedFence);
+        VkResult result = vkGetFenceStatus(m_vkDevice, pVulkanCommand->m_vkRenderFinishedFence);
+        if (result == VK_ERROR_DEVICE_LOST)
+        {
+            GetEngine()->GetLogger()->Error("VK_ERROR_DEVICE_LOST detected while checking fence status!");
+            LogDeviceFaultInfo();
+        }
+        return VK_SUCCESS == result;
     }
 
     return false;
@@ -1558,8 +1571,14 @@ void MVulkanDevice::SubmitCommand(IRenderCommand* pCommand)
         VkFence vkInFightFence = pRenderCommand->m_vkRenderFinishedFence;
         //m_vkInFlightFences = unsigned
         vkResetFences(m_vkDevice, 1, &vkInFightFence);
-        if (vkQueueSubmit(m_vkPresetQueue, 1, &submitInfo, vkInFightFence) != VK_SUCCESS)
+        VkResult submitResult = vkQueueSubmit(m_vkPresetQueue, 1, &submitInfo, vkInFightFence);
+        if (submitResult != VK_SUCCESS)
         {
+            if (submitResult == VK_ERROR_DEVICE_LOST)
+            {
+                GetEngine()->GetLogger()->Error("VK_ERROR_DEVICE_LOST detected during queue submit!");
+                LogDeviceFaultInfo();
+            }
             throw std::runtime_error("failed to submit draw command buffer!");
         }
 
@@ -1604,80 +1623,78 @@ void MVulkanDevice::CopyBuffer(
     else { vkCmdCopyBuffer(vkCommandBuffer, srcBuffer, dstBuffer, 1, &region); }
 }
 
-void MVulkanDevice::CopyImageBuffer(
-        VkBuffer        srcBuffer,
-        VkImage         image,
-        const uint32_t& width,
-        const uint32_t& height,
-        const uint32_t& unCount
+void MVulkanDevice::CopyImage(
+        MTexture*       source,
+        MTexture*       target,
+        uint32_t        srcMip,
+        uint32_t        srcSlice,
+        uint32_t        dstMip,
+        uint32_t        dstSlice,
+        uint32_t        width,
+        uint32_t        height,
+        IRenderCommand* command /* = nullptr */
 )
 {
-    VkCommandBuffer   commandBuffer = BeginCommands();
+    MORTY_ASSERT(source != nullptr);
+    MORTY_ASSERT(target != nullptr);
 
+    auto            sourceRHI = source->GetTextureRHI<MTextureRHIVulkan>();
+    auto            targetRHI = target->GetTextureRHI<MTextureRHIVulkan>();
 
-    VkBufferImageCopy region{};
-    region.bufferOffset                    = 0;
-    region.bufferRowLength                 = 0;
-    region.bufferImageHeight               = 0;
-    region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.mipLevel       = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount     = unCount;
-    region.imageOffset                     = {0, 0, 0};
-    region.imageExtent                     = {width, height, 1};
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    if (command)
+    {
+        auto* vulkanCommand = static_cast<MRenderCommandVulkan*>(command);
+        commandBuffer       = vulkanCommand->m_vkCommandBuffer;
+    }
+    else { commandBuffer = BeginCommands(); }
 
-    vkCmdCopyBufferToImage(commandBuffer, srcBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-
-    EndCommands(commandBuffer);
-}
-
-void MVulkanDevice::CopyImageBuffer(
-        MTexture*       pSource,
-        MTexture*       pTarget,
-        VkCommandBuffer buffer /* = VK_NULL_HANDLE*/
-)
-{
-    auto            sourceRHI = pSource->GetTextureRHI<MTextureRHIVulkan>();
-    auto            targetRHI = pTarget->GetTextureRHI<MTextureRHIVulkan>();
-
-    VkCommandBuffer commandBuffer = buffer;
-    if (VK_NULL_HANDLE == commandBuffer) { commandBuffer = BeginCommands(); }
-
-    VkImageSubresourceRange range = {};
-    range.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
-    range.baseArrayLayer          = 0;
-    range.layerCount              = 1;
-    range.levelCount              = 1;
-    range.baseMipLevel            = 0;
+    // Transition source image to transfer src layout
+    VkImageSubresourceRange srcRange = {};
+    srcRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    srcRange.baseArrayLayer          = srcSlice;
+    srcRange.layerCount              = 1;
+    srcRange.baseMipLevel            = srcMip;
+    srcRange.levelCount              = 1;
 
     TransitionImageLayout(
             commandBuffer,
             sourceRHI->vkTextureImage,
             sourceRHI->vkImageLayout,
             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            range
+            srcRange
     );
+
+    // Transition target to transfer dst layout
+    VkImageSubresourceRange dstRange = {};
+    dstRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    dstRange.baseArrayLayer          = dstSlice;
+    dstRange.layerCount              = 1;
+    dstRange.baseMipLevel            = dstMip;
+    dstRange.levelCount              = 1;
+
     TransitionImageLayout(
             commandBuffer,
             targetRHI->vkTextureImage,
             targetRHI->vkImageLayout,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            range
+            dstRange
     );
 
+    // Use vkCmdBlitImage for copy
     VkImageBlit blit{};
-    blit.srcOffsets[0] = {0, 0, 0};
-    blit.srcOffsets[1] = {static_cast<int32_t>(pSource->GetSize().x), static_cast<int32_t>(pSource->GetSize().y), 1};
+    blit.srcOffsets[0]                 = {0, 0, 0};
+    blit.srcOffsets[1]                 = {static_cast<int32_t>(width), static_cast<int32_t>(height), 1};
     blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    blit.srcSubresource.mipLevel       = 0;
-    blit.srcSubresource.baseArrayLayer = 0;
+    blit.srcSubresource.mipLevel       = srcMip;
+    blit.srcSubresource.baseArrayLayer = srcSlice;
     blit.srcSubresource.layerCount     = 1;
+
     blit.dstOffsets[0]                 = {0, 0, 0};
-    blit.dstOffsets[1] = {static_cast<int32_t>(pTarget->GetSize().x), static_cast<int32_t>(pTarget->GetSize().y), 1};
+    blit.dstOffsets[1]                 = {static_cast<int32_t>(width), static_cast<int32_t>(height), 1};
     blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    blit.dstSubresource.mipLevel       = 0;
-    blit.dstSubresource.baseArrayLayer = 0;
+    blit.dstSubresource.mipLevel       = dstMip;
+    blit.dstSubresource.baseArrayLayer = dstSlice;
     blit.dstSubresource.layerCount     = 1;
 
     vkCmdBlitImage(
@@ -1691,24 +1708,166 @@ void MVulkanDevice::CopyImageBuffer(
             VK_FILTER_LINEAR
     );
 
-
+    // Transition images back to their original layouts
     TransitionImageLayout(
             commandBuffer,
             sourceRHI->vkTextureImage,
             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             sourceRHI->vkImageLayout,
-            range
+            srcRange
     );
     TransitionImageLayout(
             commandBuffer,
             targetRHI->vkTextureImage,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             targetRHI->vkImageLayout,
-            range
+            dstRange
     );
 
+    if (!command) { EndCommands(commandBuffer); }
+}
 
-    if (VK_NULL_HANDLE == buffer) { EndCommands(commandBuffer); }
+void MVulkanDevice::ResizeTextureArray(MTexture* texture, uint32_t newLayerCount, IRenderCommand* command)
+{
+    MORTY_ASSERT(texture != nullptr);
+    MORTY_ASSERT(texture->GetTextureType() == METextureType::ETexture2DArray);
+    MORTY_ASSERT(newLayerCount >= texture->GetLayer());
+
+    const uint32_t oldLayerCount = texture->GetLayer();
+    if (newLayerCount == oldLayerCount) { return; }
+
+    auto oldTextureRHI = texture->GetTextureRHI<MTextureRHIVulkan>();
+    MORTY_ASSERT(oldTextureRHI != nullptr);
+    MORTY_ASSERT(oldTextureRHI->vkTextureImage != VK_NULL_HANDLE);
+
+    // Store old RHI data
+    VkImage                     oldImage       = oldTextureRHI->vkTextureImage;
+    VkDeviceMemory              oldImageMemory = oldTextureRHI->vkTextureImageMemory;
+    VkImageView                 oldImageView   = oldTextureRHI->vkImageView;
+    VkImageLayout               oldLayout      = oldTextureRHI->vkImageLayout;
+
+    // Create new image with new layer count
+    const uint32_t              width       = std::max(static_cast<int>(texture->GetSize().x), 1);
+    const uint32_t              height      = std::max(static_cast<int>(texture->GetSize().y), 1);
+    const uint32_t              depth       = std::max(static_cast<int>(texture->GetSize().z), 1);
+    const VkFormat              format      = GetFormat(texture->GetFormat());
+    const VkImageUsageFlags     usageFlags  = GetUsageFlags(texture);
+    const VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    const VkImageCreateFlags    createFlags = GetImageCreateFlags(texture);
+    const VkImageType           imageType   = GetImageType(texture);
+    const uint32_t              mipmapCount = GetMipmapCount(texture);
+
+    VkImage                     newImage       = VK_NULL_HANDLE;
+    VkDeviceMemory              newImageMemory = VK_NULL_HANDLE;
+
+    CreateImage(
+            width,
+            height,
+            depth,
+            mipmapCount,
+            newLayerCount,
+            format,
+            VK_IMAGE_TILING_OPTIMAL,
+            usageFlags,
+            memoryFlags,
+            UndefinedImageLayout,
+            newImage,
+            newImageMemory,
+            createFlags,
+            imageType
+    );
+
+    // Get or create command buffer
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    if (command)
+    {
+        auto* vulkanCommand = static_cast<MRenderCommandVulkan*>(command);
+        commandBuffer       = vulkanCommand->m_vkCommandBuffer;
+    }
+    else { commandBuffer = BeginCommands(); }
+
+    // Transition new image to transfer dst layout (all layers)
+    VkImageSubresourceRange newRange = {};
+    newRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    newRange.baseArrayLayer          = 0;
+    newRange.layerCount              = newLayerCount;
+    newRange.baseMipLevel            = 0;
+    newRange.levelCount              = mipmapCount;
+
+    TransitionImageLayout(
+            commandBuffer,
+            newImage,
+            UndefinedImageLayout,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            newRange
+    );
+
+    // Transition old image to transfer src layout
+    VkImageSubresourceRange oldRange = {};
+    oldRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    oldRange.baseArrayLayer          = 0;
+    oldRange.layerCount              = oldLayerCount;
+    oldRange.baseMipLevel            = 0;
+    oldRange.levelCount              = mipmapCount;
+
+    TransitionImageLayout(commandBuffer, oldImage, oldLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, oldRange);
+
+    // Copy all existing layers from old to new
+    for (uint32_t layer = 0; layer < oldLayerCount; ++layer)
+    {
+        for (uint32_t mip = 0; mip < mipmapCount; ++mip)
+        {
+            const uint32_t mipWidth  = std::max(width >> mip, 1u);
+            const uint32_t mipHeight = std::max(height >> mip, 1u);
+
+            VkImageBlit    blit{};
+            blit.srcOffsets[0]                 = {0, 0, 0};
+            blit.srcOffsets[1]                 = {static_cast<int32_t>(mipWidth), static_cast<int32_t>(mipHeight), 1};
+            blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel       = mip;
+            blit.srcSubresource.baseArrayLayer = layer;
+            blit.srcSubresource.layerCount     = 1;
+
+            blit.dstOffsets[0]                 = {0, 0, 0};
+            blit.dstOffsets[1]                 = {static_cast<int32_t>(mipWidth), static_cast<int32_t>(mipHeight), 1};
+            blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel       = mip;
+            blit.dstSubresource.baseArrayLayer = layer;
+            blit.dstSubresource.layerCount     = 1;
+
+            vkCmdBlitImage(
+                    commandBuffer,
+                    oldImage,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    newImage,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1,
+                    &blit,
+                    VK_FILTER_NEAREST
+            );
+        }
+    }
+
+    // Transition new image to the target layout
+    TransitionImageLayout(commandBuffer, newImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, oldLayout, newRange);
+
+    if (!command) { EndCommands(commandBuffer); }
+
+    // Update texture's layer count
+    texture->SetLayer(newLayerCount);
+
+    // Update RHI with new resources
+    oldTextureRHI->vkTextureImage       = newImage;
+    oldTextureRHI->vkTextureImageMemory = newImageMemory;
+    oldTextureRHI->vkImageLayout        = oldLayout;
+
+    // Destroy old image view if exists
+    if (oldImageView != VK_NULL_HANDLE) { oldTextureRHI->vkImageView = VK_NULL_HANDLE; }
+
+    // Schedule destruction of old resources
+    GetRecycleBin()->DestroyImageLater(oldImage);
+    GetRecycleBin()->DestroyDeviceMemoryLater(oldImageMemory);
+    if (oldImageView != VK_NULL_HANDLE) { GetRecycleBin()->DestroyImageViewLater(oldImageView); }
 }
 
 void MVulkanDevice::GenerateBuffer(
@@ -2352,6 +2511,14 @@ bool MVulkanDevice::InitLogicalDevice()
     vkGetDeviceQueue(m_vkDevice, m_physicalDevice->m_graphicsFamilyIndex, 0, &m_vkPresetQueue);
     vkGetDeviceQueue(m_vkDevice, m_physicalDevice->m_graphicsFamilyIndex, 1, &m_vkTemporaryQueue);
 
+    // Initialize device fault extension if supported
+    if (m_physicalDevice->GetDeviceFeatureSupport(MEDeviceFeature::EDeviceFault))
+    {
+        m_vkGetDeviceFaultInfoEXT = reinterpret_cast<PFN_vkGetDeviceFaultInfoEXT>(
+                vkGetDeviceProcAddr(m_vkDevice, "vkGetDeviceFaultInfoEXT")
+        );
+    }
+
     return true;
 }
 
@@ -2384,6 +2551,115 @@ Vector2i MVulkanDevice::GetShadingRateTextureTexelSize() const
     const auto vkSize =
             GetPhysicalDevice()->m_vkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
     return Vector2i(vkSize.width, vkSize.height);
+}
+
+void MVulkanDevice::LogDeviceFaultInfo()
+{
+    if (!m_vkGetDeviceFaultInfoEXT)
+    {
+        GetEngine()->GetLogger()->Error("VK_EXT_device_fault not available, cannot get fault info.");
+        return;
+    }
+
+    // First call to get counts
+    VkDeviceFaultCountsEXT faultCounts = {};
+    faultCounts.sType                  = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT;
+
+    VkResult result = m_vkGetDeviceFaultInfoEXT(m_vkDevice, &faultCounts, nullptr);
+    if (result != VK_SUCCESS)
+    {
+        GetEngine()->GetLogger()->Error("Failed to get device fault counts, error: {}", static_cast<int>(result));
+        return;
+    }
+
+    GetEngine()->GetLogger()->Error("=== GPU Device Fault Information ===");
+    GetEngine()->GetLogger()->Error("Address info count: {}", faultCounts.addressInfoCount);
+    GetEngine()->GetLogger()->Error("Vendor info count: {}", faultCounts.vendorInfoCount);
+    GetEngine()->GetLogger()->Error("Vendor binary size: {}", faultCounts.vendorBinarySize);
+
+    if (faultCounts.addressInfoCount == 0 && faultCounts.vendorInfoCount == 0)
+    {
+        GetEngine()->GetLogger()->Error("No detailed fault information available.");
+        return;
+    }
+
+    // Allocate and get detailed info
+    std::vector<VkDeviceFaultAddressInfoEXT> addressInfos(faultCounts.addressInfoCount);
+    std::vector<VkDeviceFaultVendorInfoEXT>  vendorInfos(faultCounts.vendorInfoCount);
+    std::vector<uint8_t>                     vendorBinary(faultCounts.vendorBinarySize);
+
+    VkDeviceFaultInfoEXT faultInfo = {};
+    faultInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
+    faultInfo.pAddressInfos        = addressInfos.empty() ? nullptr : addressInfos.data();
+    faultInfo.pVendorInfos         = vendorInfos.empty() ? nullptr : vendorInfos.data();
+    faultInfo.pVendorBinaryData    = vendorBinary.empty() ? nullptr : vendorBinary.data();
+
+    result = m_vkGetDeviceFaultInfoEXT(m_vkDevice, &faultCounts, &faultInfo);
+    if (result != VK_SUCCESS)
+    {
+        GetEngine()->GetLogger()->Error("Failed to get device fault info, error: {}", static_cast<int>(result));
+        return;
+    }
+
+    // Log description
+    GetEngine()->GetLogger()->Error("Fault description: {}", faultInfo.description);
+
+    // Log address info
+    for (uint32_t i = 0; i < faultCounts.addressInfoCount; ++i)
+    {
+        const auto& info        = addressInfos[i];
+        const char* addressType = "Unknown";
+        switch (info.addressType)
+        {
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_NONE_EXT: addressType = "None"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_READ_INVALID_EXT: addressType = "Read Invalid"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_WRITE_INVALID_EXT: addressType = "Write Invalid"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_EXECUTE_INVALID_EXT: addressType = "Execute Invalid"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_UNKNOWN_EXT:
+                addressType = "Instruction Pointer Unknown";
+                break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_INVALID_EXT:
+                addressType = "Instruction Pointer Invalid";
+                break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_FAULT_EXT:
+                addressType = "Instruction Pointer Fault";
+                break;
+            default: break;
+        }
+
+        GetEngine()->GetLogger()->Error(
+                "Address[{}]: type={}, address=0x{:016X}, precision={} bits",
+                i,
+                addressType,
+                info.reportedAddress,
+                info.addressPrecision
+        );
+    }
+
+    // Log vendor info
+    for (uint32_t i = 0; i < faultCounts.vendorInfoCount; ++i)
+    {
+        const auto& info = vendorInfos[i];
+        GetEngine()->GetLogger()->Error(
+                "Vendor[{}]: description={}, code=0x{:016X}, data=0x{:016X}",
+                i,
+                info.description,
+                info.vendorFaultCode,
+                info.vendorFaultData
+        );
+    }
+
+    // Optionally save vendor binary for external tools
+    if (!vendorBinary.empty())
+    {
+        const MString dumpPath = "gpu_crash_dump.bin";
+        if (MFileHelper::WriteData(dumpPath, vendorBinary))
+        {
+            GetEngine()->GetLogger()->Error("Vendor binary crash dump saved to: {}", dumpPath.c_str());
+        }
+    }
+
+    GetEngine()->GetLogger()->Error("=== End GPU Device Fault Information ===");
 }
 
 #endif

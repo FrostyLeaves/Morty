@@ -18,7 +18,7 @@ MTexture::MTexture()
 
 MTexture::~MTexture() { m_textureRHI = nullptr; }
 
-Vector2 MTexture::GetMipmapSize(const uint32_t& nMipmapLevel)
+Vector2    MTexture::GetMipmapSize(const uint32_t& nMipmapLevel)
 {
     uint32_t w = static_cast<uint32_t>(GetSize().x);
     uint32_t h = static_cast<uint32_t>(GetSize().y);
@@ -230,6 +230,12 @@ void MTexture::Resize(MIDevice* pDevice, const Vector3i& n3Size)
     DestroyBuffer(pDevice);
     m_desc.n3Size = n3Size;
     GenerateBuffer(pDevice);
+}
+
+void MTexture::ResizeLayer(MIDevice* pDevice, uint32_t newLayerCount)
+{
+    SetLayer(newLayerCount);
+    pDevice->ResizeTextureArray(this, newLayerCount);
 }
 
 void MTexture::SetTextureRHI(std::unique_ptr<MTextureRHI>&& pTextureRHI) { m_textureRHI = std::move(pTextureRHI); }

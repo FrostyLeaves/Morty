@@ -87,6 +87,8 @@ void MRenderPassCmd::SetShaderParameterSet(const std::shared_ptr<MShaderParamete
 
 void MRenderPassCmd::SetShaderParameterSet(MShaderParameterSet* propertyBlock)
 {
+    if (!propertyBlock) return;
+
     m_commandQueue.emplace_back(new MSetShaderParameterSetCmd{
             .pipeline           = m_usingPipeline,
             .property           = propertyBlock,

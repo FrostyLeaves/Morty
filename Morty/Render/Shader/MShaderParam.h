@@ -36,9 +36,9 @@ enum class MESamplerFormat
 class MBuffer;
 struct MORTY_API MShaderParam {
 public:
-    MShaderParam() = default;
+              MShaderParam() = default;
 
-    virtual ~MShaderParam() = default;
+    virtual ~ MShaderParam() = default;
 
     MStringId strName;
     uint32_t  eShaderType = 0;
@@ -102,7 +102,11 @@ public:
     void*          pImageIdent = nullptr;
     MVariant       var;
 
-    void           SetBuffer(const MBuffer* buf) { buffer = buf; }
+    void           SetBuffer(const MBuffer* buf)
+    {
+        buffer = buf;
+        SetDirty();
+    }
 
 #if RENDER_GRAPHICS == MORTY_VULKAN
     VkDescriptorBufferInfo m_vkBufferInfo = {VK_NULL_HANDLE, 0, 0};
@@ -114,7 +118,7 @@ struct MShaderSubpassInputParam : public MShaderTextureParam {
 };
 
 struct MShaderSamplerParam : public MShaderParam {
-    MShaderSamplerParam();
+                  MShaderSamplerParam();
 
     MESamplerType eSamplerType = MESamplerType::ELinear;
 

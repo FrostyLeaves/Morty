@@ -60,6 +60,20 @@ public:
 
     void DestroyTexture(MTexture* texture) override;
 
+    void CopyImage(
+            MTexture*       source,
+            MTexture*       target,
+            uint32_t        srcMip,
+            uint32_t        srcSlice,
+            uint32_t        dstMip,
+            uint32_t        dstSlice,
+            uint32_t        width,
+            uint32_t        height,
+            IRenderCommand* command = nullptr
+    ) override;
+
+    void ResizeTextureArray(MTexture* texture, uint32_t newLayerCount, IRenderCommand* command = nullptr) override;
+
     bool CompileShader(MShader* pShader) override;
 
     void CleanShader(MShader* pShader) override;
@@ -192,16 +206,6 @@ protected:
             VkCommandBuffer vkCommandBuffer = VK_NULL_HANDLE
     );
 
-    void CopyImageBuffer(
-            VkBuffer        srcBuffer,
-            VkImage         image,
-            const uint32_t& width,
-            const uint32_t& height,
-            const uint32_t& unCount
-    );
-
-    void CopyImageBuffer(MTexture* pSource, MTexture* pDestination, VkCommandBuffer buffer = VK_NULL_HANDLE);
-
     void TransitionImageLayout(
             VkImage                 image,
             VkImageLayout           oldLayout,
@@ -303,6 +307,11 @@ public:
 
 
     std::unique_ptr<MVulkanPhysicalDevice> m_physicalDevice = nullptr;
+
+    // Device fault extension
+    PFN_vkGetDeviceFaultInfoEXT            m_vkGetDeviceFaultInfoEXT = nullptr;
+
+    void                                   LogDeviceFaultInfo();
 };
 }// namespace morty
 

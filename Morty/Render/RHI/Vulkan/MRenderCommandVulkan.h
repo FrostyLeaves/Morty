@@ -58,8 +58,6 @@ public:
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) override;
 
-    bool CopyImageBuffer(MTexture* pSource, MTexture* pDest) override;
-
     void addFinishedCallback(std::function<void()> func) override;
 
     void UpdateShaderParam(MShaderUniformParam* param);

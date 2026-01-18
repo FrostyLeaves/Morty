@@ -28,12 +28,12 @@ public struct IBLSystem
         float3 kD = (1.0 - kS) * (1.0 - surfaceData.metalness);
         
         // Diffuse IBL
-        float3 irradiance = iblData.irradianceMap.Sample(LinearSampler, N).rgb;
+        float3 irradiance = iblData.irradianceMap.Sample(GlobalData.LinearSampler, N).rgb;
         float3 diffuse = irradiance * surfaceData.albedo;
-        
+
         // Specular IBL
-        float3 prefilteredColor = iblData.prefilterMap.SampleLevel(LinearSampler, R, surfaceData.roughness * iblData.maxReflectionLod).rgb;
-        float2 envBRDF = iblData.brdfLUT.Sample(LinearSampler, float2(max(dot(N, V), 0.0), surfaceData.roughness)).rg;
+        float3 prefilteredColor = iblData.prefilterMap.SampleLevel(GlobalData.LinearSampler, R, surfaceData.roughness * iblData.maxReflectionLod).rgb;
+        float2 envBRDF = iblData.brdfLUT.Sample(GlobalData.LinearSampler, float2(max(dot(N, V), 0.0), surfaceData.roughness)).rg;
         float3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
         
         float3 ambient = (kD * diffuse + specular) * surfaceData.ao * iblData.intensity;

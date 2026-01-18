@@ -11,7 +11,7 @@ public struct PixelOut
 [shader("vertex")]
 VertexOut VS_MAIN(VertexIn input, uint INSTANCE_ID: SV_InstanceID)
 {
-    FrameData frameData = GlobalFrameData;
+    FrameData frameData = GlobalData.frame;
     VertexOut output = ModelUtil.ComputeVertex(input, frameData.mainCamera, INSTANCE_ID);
     return output;
 }
@@ -19,7 +19,7 @@ VertexOut VS_MAIN(VertexIn input, uint INSTANCE_ID: SV_InstanceID)
 [shader("pixel")]
 PixelOut PS_MAIN(VertexOut input)
 {
-    FrameData frameData = GlobalFrameData;
+    FrameData frameData = GlobalData.frame;
     
     ModelMaterial material;
     var pixelData = ModelUtil.ComputePixelData(input);

@@ -35,9 +35,10 @@ table MClusterGroup
     cluster_offset: uint;
     cluster_num: uint;
     bounds: MClusterBounds;
-    parent_group_id: int = -1;
-    first_child_group_id: int = -1;
-    child_group_count: uint = 0;
+
+    // DAG structure: offset and count into global group links array
+    group_link_offset: uint = 0;
+    group_link_count: uint = 0;
 }
 
 file_identifier "MFBS";

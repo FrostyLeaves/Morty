@@ -109,6 +109,9 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
 {
     m_convertInfo = convertInfo;
 
+    // Pass Nanite setting to mesh importer
+    if (m_meshImporter) { m_meshImporter->SetEnableNanite(convertInfo.bEnableNanite); }
+
     auto objectSystem   = GetEngine()->GetSystem<MObjectSystem>();
     auto resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
     m_scene             = objectSystem->CreateObject<MScene>();

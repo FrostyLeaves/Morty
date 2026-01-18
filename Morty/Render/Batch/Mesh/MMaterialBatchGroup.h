@@ -13,12 +13,20 @@
 #include "Math/Matrix.h"
 #include "Utility/MIDPool.h"
 
+#include <memory>
+
 namespace morty
 {
 
 class MMaterialTemplate;
 class MShaderParameterSet;
 class MRenderMeshComponent;
+class ITextureBatcher;
+class MIDevice;
+class MMaterial;
+class MShaderPropertyBlock;
+class MShaderStorageParam;
+struct MTextureBatcherConfig;
 
 // GPU upload data, corresponds to MeshInstanceData on shader side
 struct MORTY_API MMeshInstanceRenderProxy {
@@ -34,15 +42,20 @@ struct MORTY_API MMeshInstanceRenderProxy {
 class MORTY_API MMaterialBatchGroup
 {
 public:
-     MMaterialBatchGroup(const std::shared_ptr<MShaderParameterSet>& parameterSet, const MStringId& name);
-    ~MMaterialBatchGroup() = default;
+         MMaterialBatchGroup() = default;
+    ~    MMaterialBatchGroup() = default;
 
-    MMaterialInstanceKey               AddInstance(MMeshInstanceKey proxyId);
+    void Initialize(
+            MIDevice*                                   device,
+            const std::shared_ptr<MShaderParameterSet>& parameterSet,
+            const MShaderPropertyBlock*                 propertyBlock
+    );
 
-    void                               RemoveInstance(MMeshInstanceKey proxyId);
+    void                 Release();
 
+    MMaterialInstanceKey AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent* component, MMaterial* material);
+    void                 RemoveInstance(MMeshInstanceKey proxyId);
     [[nodiscard]] MMaterialInstanceKey GetInstanceKey(MMeshInstanceKey proxyId) const;
-
     void                               SetBatchId(size_t batchId) { m_batchId = batchId; }
     [[nodiscard]] size_t               GetBatchId() const { return m_batchId; }
     [[nodiscard]] size_t               GetInstanceCount() const { return m_instanceTable.size(); }
@@ -55,17 +68,36 @@ public:
 
     [[nodiscard]] const std::shared_ptr<MShaderParameterSet>& GetParameterSet() const { return m_parameterSet; }
 
+    void                                                      RenderThreadUpdate(MIDevice* device);
+
 private:
-    size_t                                                     m_batchId          = 0;
-    std::shared_ptr<MMaterialTemplate>                         m_materialTemplate = nullptr;
+    size_t                                                     m_batchId            = 0;
+    std::shared_ptr<MMaterialTemplate>                         m_materialTemplate   = nullptr;
+    MShaderStorageParam*                                       m_propertyStorage    = nullptr;
+    size_t                                                     m_propertyStructSize = 0;
+    MShaderStorageParam*                                       m_textureStorage     = nullptr;
+    size_t                                                     m_textureStructSize  = 0;
     std::unordered_map<MMeshInstanceKey, MMaterialInstanceKey> m_instanceTable;
 
     MReusableIDPool<MMaterialInstanceKey>                      m_idPool;
 
     std::shared_ptr<MShaderParameterSet>                       m_parameterSet;
-    size_t                                                     m_instanceDataSize;
+    std::vector<MByte>                                         m_propertyData;
+    std::vector<MByte>                                         m_textureData;
 
-    MBuffer                                                    m_materialData;
+    MBuffer                                                    m_propertyBuffer;
+    MBuffer                                                    m_textureBuffer;
+
+    bool                                                       m_needSync = false;
+    MIDevice*                                                  m_device   = nullptr;
+
+    struct TextureBatcherData {
+        ITextureBatcher* batcher = nullptr;
+        MStringId        indexName;
+        size_t           indexOffset = 0;
+        bool             valid       = false;
+    };
+    std::unordered_map<MStringId, TextureBatcherData> m_textureBatcherData;
 };
 
 }// namespace morty

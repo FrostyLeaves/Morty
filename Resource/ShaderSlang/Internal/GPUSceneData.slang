@@ -1,0 +1,51 @@
+implementing InternalModule;
+
+public struct ClusterData
+{
+    public uint indexOffset;
+    public uint indexCount;
+    public uint valid;
+
+    public float3 position;
+    public float radius;
+    public float error;
+};
+
+public struct ClusterGroupData
+{
+    public uint valid;
+    public uint groupLinkOffset;
+    public uint groupLinkCount;
+
+    public uint clusterBeginIndex;
+    public uint clusterCount;
+
+    public float3 position;
+    public float radius;
+    public float error;
+};
+
+// Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
+public struct MeshResourceData
+{
+    public int rootClusterGroupBeginIndex;  // Also used as clusterGroupOffset for local->global ID conversion
+    public int rootClusterGroupCount;
+};
+
+public struct MeshInstanceRenderProxy
+{
+    public float4x4 matWorld;
+    public int meshResourceId;    // index into MeshResourceData buffer
+    public int batchGroupId;      // index into MaterialBatchGroup buffer
+    public int materialInstanceId;
+    public int proxyId;           // reserved
+    public int visible;           // reserved
+};
+
+public struct RenderSceneParameters
+{
+    public StructuredBuffer<ClusterData> clusters;
+    public StructuredBuffer<ClusterGroupData> clusterGroups;
+    public StructuredBuffer<MeshResourceData> meshResources;
+    public StructuredBuffer<MeshInstanceRenderProxy> instanceProxy;
+};

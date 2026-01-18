@@ -1,0 +1,12 @@
+# User-defined console commands.
+commands:
+  - name: test_import
+    description: "Import a test model"
+    commands:
+      - "convert ../../../../Resource/Model/banana/ripe-banana.obj ../../Resource/nanite --nanite"
+  - name: test_load
+    description: "Create a test scene and open editor"
+    commands:
+      - "scene create test"
+      - "load ../../Resource/nanite/ripe-banana/ripe-banana.entity test"
+      - "editor test"

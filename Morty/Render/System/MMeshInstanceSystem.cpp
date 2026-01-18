@@ -20,7 +20,7 @@ MVariant MMeshInstanceSystem::CreateMaterialInstanceData(const MMaterial* mat)
     if (temp->GetDefaultPass() == nullptr) return {};
     auto shaderProgram = temp->GetDefaultPass()->GetShaderProgram();
     if (shaderProgram == nullptr) return {};
-    auto instancingName = shaderProgram->GetPropertyBlock().GetInstancingName();
+    auto instancingName = shaderProgram->GetPropertyBlock().GetInstancingName(MInstanceDataType::Property);
     auto parameterSet   = mat->GetMaterialParameterSet();
     if (parameterSet == nullptr) return {};
     auto storageParam = parameterSet->FindStorageParam(instancingName);

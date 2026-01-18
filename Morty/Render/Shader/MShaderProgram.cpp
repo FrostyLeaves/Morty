@@ -38,7 +38,7 @@ MShaderProgram::MShaderProgram(
 
 MShaderProgram::~MShaderProgram() { UnloadShader(); }
 
-bool MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
+bool             MShaderProgram::LoadShader(const std::shared_ptr<MResource>& pResource)
 {
     if (std::shared_ptr<MShaderResource> pShaderResource = MTypeClass::DynamicCast<MShaderResource>(pResource))
     {
@@ -148,8 +148,7 @@ void MShaderProgram::CompileShaderIfNeed()
     auto* pShaderResource = m_shaderResource.GetResource()->template DynamicCast<MShaderResource>();
     if (nullptr == pShaderResource) { return; }
 
-    bool compileAction = false;
-
+    bool compile = false;
     for (size_t idx = 0; idx < m_compiledShaders.size(); ++idx)
     {
         const auto shaderType = static_cast<MEShaderType>(idx);
@@ -161,28 +160,21 @@ void MShaderProgram::CompileShaderIfNeed()
         desc.nShaderIdx    = pShaderResource->FindShaderByMacroParam(m_entryNames[idx], shaderType, m_shaderMacro);
         desc.pShader       = pShaderResource->GetShaderByIndex(desc.nShaderIdx);
         auto* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
-        if (desc.pShader && !desc.pShader->IsCompiled())
+        if (!desc.pShader) { continue; }
+        if (!desc.pShader->IsCompiled() && !desc.pShader->CompileShader(renderSystem->GetDevice()))
         {
-            if (!desc.pShader->CompileShader(renderSystem->GetDevice()))
-            {
-                desc.pShader = nullptr;
-                desc.state   = ShaderState::Failed;
-            }
-            else
-            {
-                desc.state    = ShaderState::Compiled;
-                compileAction = true;
-            }
+            desc.pShader = nullptr;
+            desc.state   = ShaderState::Failed;
+            continue;
         }
 
-        if (desc.pShader)
-        {
-            UnbindShaderBuffer(shaderType, renderSystem->GetDevice());
-            BindShaderBuffer(desc.pShader->GetBuffer(), shaderType);
-        }
+        desc.state = ShaderState::Compiled;
+        UnbindShaderBuffer(shaderType, renderSystem->GetDevice());
+        BindShaderBuffer(desc.pShader->GetBuffer(), shaderType);
+        compile = true;
     }
 
-    if (compileAction)
+    if (compile)
     {
         m_propertyBlock.Clear();
         for (const auto& desc: m_compiledShaders)

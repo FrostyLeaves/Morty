@@ -49,7 +49,7 @@ static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MS
         int    paramType   = 0;
         auto   displayName = attribute->getArgumentValueString(0, &nameSize);
         attribute->getArgumentValueInt(1, &paramType);
-        output.AddProperty(name, {displayName, static_cast<MShaderParamType>(paramType)});
+        output.AddProperty({MStringId(displayName), name, static_cast<MShaderParamType>(paramType)});
     }
     else if (MString(attrName) == "Resource")
     {
@@ -57,18 +57,31 @@ static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MS
         int    paramType   = 0;
         auto   displayName = attribute->getArgumentValueString(0, &nameSize);
         attribute->getArgumentValueInt(1, &paramType);
-        output.AddResource(name, {displayName, static_cast<MShaderParamResourceType>(paramType)});
+        output.AddResource({MStringId(displayName), name, static_cast<MShaderParamResourceType>(paramType)});
     }
-    else if (MString(attrName) == "MeshInstance") { output.SetInstancingName(name); }
+    else if (MString(attrName) == "PerInstance")
+    {
+
+        int paramType = 0;
+        attribute->getArgumentValueInt(0, &paramType);
+        output.SetInstancingName(name, static_cast<MInstanceDataType>(paramType));
+    }
 }
 
 static void ReflectionDefaultFromSlang(
+        const MString&            propertyBlockName,
         VariableLayoutReflection* parameter,
         MShaderPropertyBlock&     output,
         uint32_t                  reflectionDepth = 0
 )
 {
     auto name = parameter->getName();
+    /*MLogger::GetInstance()->Information(
+            "{} Reflecting TypeLayoutReflection name: {}",
+            MStringUtil::Fill(' ', reflectionDepth * 4),
+            name
+    );
+    */
 
     // Output user-defined attributes
     auto variable = parameter->getVariable();
@@ -81,45 +94,70 @@ static void ReflectionDefaultFromSlang(
             for (unsigned int attrIdx = 0; attrIdx < attributeCount; ++attrIdx)
             {
                 auto attribute = variable->getUserAttributeByIndex(attrIdx);
-                ReflectionAttributes(MStringId(name), attribute, output);
+                ReflectionAttributes(MStringId(propertyBlockName + "." + name), attribute, output);
             }
         }
     }
 
-    if (parameter->getType()->getKind() == slang::TypeReflection::Kind::ParameterBlock ||
-        parameter->getType()->getKind() == slang::TypeReflection::Kind::ConstantBuffer)
+    auto typeKind = parameter->getType()->getKind();
+
+    if (typeKind == slang::TypeReflection::Kind::ParameterBlock ||
+        typeKind == slang::TypeReflection::Kind::ConstantBuffer || typeKind == slang::TypeReflection::Kind::Resource)
     {
         auto elementTypeLayout = parameter->getTypeLayout()->getElementTypeLayout();
         auto fieldCount        = elementTypeLayout->getFieldCount();
         for (auto idx = 0u; idx < fieldCount; ++idx)
         {
-            ReflectionDefaultFromSlang(elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1);
+            ReflectionDefaultFromSlang(
+                    propertyBlockName,
+                    elementTypeLayout->getFieldByIndex(idx),
+                    output,
+                    reflectionDepth + 1
+            );
         }
     }
 }
 
-static void
-ReflectionDefaultFromSlang(TypeLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
+static void ReflectionParameterBlockTypeFromSlang(
+        const MString&        parameterBlockName,
+        TypeLayoutReflection* parameter,
+        MShaderPropertyBlock& output,
+        uint32_t              reflectionDepth = 0
+)
 {
     if (parameter == nullptr) return;
 
+    auto typeName = parameter->getName();
+    MORTY_ASSERT(typeName);
+    /*
+    MLogger::GetInstance()->Information(
+            "{} Reflecting TypeLayoutReflection type name: {}",
+            MStringUtil::Fill(' ', reflectionDepth * 4),
+            typeName
+    );
+    */
     if (auto type = parameter->getType())
     {
         //MLogger::GetInstance()->Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
         for (auto attrIdx = 0u; attrIdx < type->getUserAttributeCount(); ++attrIdx)
         {
             auto attribute = type->getUserAttributeByIndex(attrIdx);
-            ReflectionAttributes(MStringId(type->getName()), attribute, output);
+            ReflectionAttributes(MStringId(parameterBlockName + "." + type->getName()), attribute, output);
         }
     }
 
     auto fieldCount = parameter->getFieldCount();
     for (auto idx = 0u; idx < fieldCount; ++idx)
     {
-        ReflectionDefaultFromSlang(parameter->getFieldByIndex(idx), output, reflectionDepth + 1);
+        ReflectionDefaultFromSlang(parameterBlockName, parameter->getFieldByIndex(idx), output, reflectionDepth + 1);
     }
 
-    ReflectionDefaultFromSlang(parameter->getElementTypeLayout(), output, reflectionDepth + 1);
+    ReflectionParameterBlockTypeFromSlang(
+            parameterBlockName,
+            parameter->getElementTypeLayout(),
+            output,
+            reflectionDepth + 1
+    );
 }
 
 static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
@@ -145,79 +183,13 @@ static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, M
             break;
             case slang::BindingType::ParameterBlock:
             case slang::BindingType::ConstantBuffer: {
+                auto variable            = typeLayout->getBindingRangeLeafVariable(bindingRangeIdx);
+                auto variableName        = variable->getName();
                 auto parameterTypeLayout = typeLayout->getBindingRangeLeafTypeLayout(bindingRangeIdx);
-                ReflectionDefaultFromSlang(parameterTypeLayout, output);
+                ReflectionParameterBlockTypeFromSlang(variableName, parameterTypeLayout, output);
             }
             break;
             default: break;
-        }
-    }
-
-    auto setCount = typeLayout->getDescriptorSetCount();
-    for (int relativeSetIndex = 0; relativeSetIndex < setCount; ++relativeSetIndex)
-    {
-        int descriptorRangeCount = typeLayout->getDescriptorSetDescriptorRangeCount(relativeSetIndex);
-        for (int rangeIdx = 0; rangeIdx < descriptorRangeCount; ++rangeIdx)
-        {
-            slang::BindingType bindingType =
-                    typeLayout->getDescriptorSetDescriptorRangeType(relativeSetIndex, rangeIdx);
-
-            switch (bindingType)
-            {
-                case slang::BindingType::PushConstant: {
-                    // Push constants are not supported - report error early
-                    MLogger::GetInstance()->Error(
-                            "Push constant detected in descriptor set {} range {}. "
-                            "Push constants are not supported. "
-                            "Use ParameterBlock<T> with [[vk::binding(N, M)]] instead of 'uniform' parameters.",
-                            relativeSetIndex,
-                            rangeIdx
-                    );
-                }
-                break;
-                case slang::BindingType::RawBuffer: {
-                    // RawBuffer is for StructuredBuffer and RWStructuredBuffer
-                    ReflectionDefaultFromSlang(typeLayout, output);
-                }
-                break;
-                case slang::BindingType::Texture:
-                case slang::BindingType::Sampler: {
-                    // For standalone textures/samplers, we need to get the corresponding variable
-                    // Get the variable layout for this binding range
-                    auto fieldCount = typeLayout->getFieldCount();
-                    for (unsigned int fieldIdx = 0; fieldIdx < fieldCount; ++fieldIdx)
-                    {
-                        auto fieldLayout            = typeLayout->getFieldByIndex(fieldIdx);
-                        auto fieldBindingRangeCount = fieldLayout->getCategoryCount();
-
-                        // Check if this field corresponds to our binding range
-                        for (unsigned int catIdx = 0; catIdx < fieldBindingRangeCount; ++catIdx)
-                        {
-                            auto category = fieldLayout->getCategoryByIndex(catIdx);
-                            if (static_cast<SlangParameterCategory>(category) ==
-                                SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT)
-                            {
-                                auto bindingIndex =
-                                        fieldLayout->getOffset(SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT);
-
-                                // Find matching binding
-                                auto rangeBindingIndex = typeLayout->getDescriptorSetDescriptorRangeIndexOffset(
-                                        relativeSetIndex,
-                                        rangeIdx
-                                );
-
-                                if (static_cast<SlangInt>(bindingIndex) == rangeBindingIndex)
-                                {
-                                    ReflectionDefaultFromSlang(fieldLayout, output, 0);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-                default: break;
-            }
         }
     }
 }
@@ -252,7 +224,27 @@ bool                                   MSlangCompiler::Compile()
     sessionDesc.searchPaths     = searchPathConst.data();
     sessionDesc.searchPathCount = searchPathConst.size();
 
-    std::vector<TargetDesc> targets = {{.format = SLANG_SPIRV, .profile = globalSession->findProfile("sm_6_0")}};
+    std::vector<CompilerOptionEntry> compilerOptions;
+
+#if MORTY_DEBUG
+    // Enable debug information for shader debugging (works with RenderDoc, NSight, etc.)
+    compilerOptions.push_back({
+            .name  = CompilerOptionName::DebugInformation,
+            .value = {.intValue0 = SLANG_DEBUG_INFO_LEVEL_MAXIMAL}
+    });
+    // Disable optimization for better debugging experience
+    compilerOptions.push_back({
+            .name  = CompilerOptionName::Optimization,
+            .value = {.intValue0 = SLANG_OPTIMIZATION_LEVEL_NONE}
+    });
+#endif
+
+    std::vector<TargetDesc> targets = {{
+            .format                   = SLANG_SPIRV,
+            .profile                  = globalSession->findProfile("sm_6_0"),
+            .compilerOptionEntries    = compilerOptions.empty() ? nullptr : compilerOptions.data(),
+            .compilerOptionEntryCount = static_cast<uint32_t>(compilerOptions.size()),
+    }};
 
     sessionDesc.targets     = targets.data();
     sessionDesc.targetCount = targets.size();
@@ -319,9 +311,18 @@ bool                                   MSlangCompiler::Compile()
 
         int                  targetIndex = 0;// only one target
         Slang::ComPtr<IBlob> kernelBlob;
-        MORTY_ASSERT(SLANG_SUCCEEDED(
-                linkedProgram->getEntryPointCode(entryIdx, targetIndex, kernelBlob.writeRef(), diagnostics.writeRef())
-        ));
+        if (!SLANG_SUCCEEDED(
+                    linkedProgram
+                            ->getEntryPointCode(entryIdx, targetIndex, kernelBlob.writeRef(), diagnostics.writeRef())
+            ))
+        {
+            MLogger::GetInstance()->Error(
+                    "Failed to get entry point code for {}, diagnostics: {}",
+                    entryName,
+                    diagnostics ? (const char*) diagnostics->getBufferPointer() : "none"
+            );
+            return false;
+        }
 
         std::vector<uint32_t> buffer;
         buffer.resize((kernelBlob->getBufferSize() + sizeof(uint32_t) - 1) / sizeof(uint32_t));

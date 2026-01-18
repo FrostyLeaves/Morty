@@ -56,6 +56,10 @@ void ModelImportView::Render()
     ImGui::Checkbox("##ImportLights", &m_bImportLights);
     prop.ShowValueEnd();
 
+    prop.ShowValueBegin("Enable Nanite");
+    ImGui::Checkbox("##EnableNanite", &m_bEnableNanite);
+    prop.ShowValueEnd();
+
     ImGui::Columns(1);
     ImGui::Separator();
     ImGui::PopStyleVar();
@@ -74,6 +78,7 @@ void ModelImportView::Render()
                 info.strOutputDir    = m_strOutputDir;
                 info.bImportCamera   = m_bImportCamera;
                 info.bImportLights   = m_bImportLights;
+                info.bEnableNanite   = m_bEnableNanite;
 
                 m_convertQueue.push(info);
                 m_bIsConverting    = true;

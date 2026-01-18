@@ -6,6 +6,3 @@ public struct NaniteCullingParams
     public NaniteRenderData renderData;
     public uint instanceCount;
 };
-
-[[vk::binding(0, 0)]]
-public ParameterBlock<NaniteCullingParams> naniteCullingParams;

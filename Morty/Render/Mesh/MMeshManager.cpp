@@ -76,6 +76,7 @@ void MMeshManager::Initialize()
     m_clusterGroupBuffer = MBuffer::CreateStorageBuffer("MeshManager ClusterGroupBuffer");
     m_clusterBuffer      = MBuffer::CreateStorageBuffer("MeshManager ClusterBuffer");
     m_meshResourceBuffer = MBuffer::CreateStorageBuffer("MeshManager MeshResourceBuffer");
+    m_groupLinksBuffer   = MBuffer::CreateStorageBuffer("MeshManager GroupLinksBuffer");
 
     InitializeScreenRect();
 
@@ -251,6 +252,12 @@ void MMeshManager::UploadClusterData()
         m_meshResourceBuffer.ApplyData(pDevice, m_meshResourceDatas);
     }
 
+    // Upload GroupLinks
+    if (!m_groupLinks.empty())
+    {
+        m_groupLinksBuffer.ApplyData(pDevice, m_groupLinks);
+    }
+
     m_clustersDirty = false;
 }
 
@@ -315,7 +322,7 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
     // Allocate cluster group IDs
     m_clusterGroupDataIDPool.AllocMemory(mesh->GetClusterGroup().size(), meshData->clusterGroupInfo);
 
-    // Fill MeshResourceData - store root cluster group info
+    // Fill MeshResourceData - store root cluster group info and offsets for shader lookup
     m_meshResourceDatas[id].rootClusterGroupBeginIndex = static_cast<int32_t>(meshData->clusterGroupInfo.begin);
     // Root groups are at LOD level 0
     const auto& lods = mesh->GetClusterLodData();
@@ -331,18 +338,26 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
         m_clusterGroupDatas.resize(meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size);
     }
 
+    // Collect group links
+    const auto& meshGroupLinks  = mesh->GetGroupLinks();
+    size_t      groupLinksBegin = m_groupLinks.size();
+    meshData->groupLinksInfo    = {groupLinksBegin, meshGroupLinks.size()};
+
+    // Append mesh's group links to global array (keep local IDs, shader will add offset)
+    m_groupLinks.insert(m_groupLinks.end(), meshGroupLinks.begin(), meshGroupLinks.end());
+
     //fill cluster group render data
     for (size_t i = 0; i < mesh->GetClusterGroup().size(); ++i)
     {
         MClusterGroupData& data   = m_clusterGroupDatas[meshData->clusterGroupInfo.begin + i];
         auto&              source = mesh->GetClusterGroup()[i];
 
-        data.renderData.childGroupCount   = source.childGroupCount;
+        // groupLinkOffset is global offset into groupLinks buffer
+        data.renderData.groupLinkOffset   = static_cast<uint32_t>(groupLinksBegin + source.groupLinkOffset);
+        data.renderData.groupLinkCount    = source.groupLinkCount;
         data.renderData.clusterBeginIndex = meshData->clusterInfo.begin + source.clusterOffset;
         data.renderData.clusterCount      = source.clusterNum;
         data.renderData.error             = source.bounds.error;
-        data.renderData.firstGroupId      = meshData->clusterGroupInfo.begin + source.firstChildGroupId;
-        data.renderData.parentGroupId     = meshData->clusterGroupInfo.begin + source.parentGroupId;
         data.renderData.position          = source.bounds.position;
         data.renderData.radius            = source.bounds.radius;
         data.renderData.valid             = 0;

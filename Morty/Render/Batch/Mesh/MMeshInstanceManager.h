@@ -74,11 +74,12 @@ private:
     // Main thread data - for receiving notifications and updates
     struct MainThreadData {
         // Mapping from component ID to material template for fast group lookup
-        std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>>     componentToMaterialTemplate;
+        std::unordered_map<MMeshInstanceKey, std::shared_ptr<MMaterialTemplate>> componentToMaterialTemplate;
         // Cache of batch groups created on main thread
-        std::unordered_map<std::shared_ptr<MMaterialTemplate>, MMaterialBatchGroup*> materialTemplateToBatchGroup;
+        std::unordered_map<std::shared_ptr<MMaterialTemplate>, std::unique_ptr<MMaterialBatchGroup>>
+                                        materialTemplateToBatchGroup;
 
-        MItemPool<MMaterialBatchGroup*>                                              batchGroups;
+        MItemPool<MMaterialBatchGroup*> batchGroups;
     };
 
     // Render thread data - for rendering

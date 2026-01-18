@@ -37,7 +37,7 @@ MRenderView::MRenderView()
 
 MRenderView::~MRenderView() {}
 
-void MRenderView::Resize(const Vector2& v2Size)
+void          MRenderView::Resize(const Vector2& v2Size)
 {
     //vkDeviceWaitIdle(m_device->m_vkDevice);
 
@@ -98,6 +98,11 @@ void MRenderView::PresetWork(MViewRenderTarget* pRenderTarget)
         vkQueuePresentKHR(m_device->m_vkPresetQueue, &presentInfo);
 
         const VkResult result = vkQueueWaitIdle(m_device->m_vkPresetQueue);
+        if (result == VK_ERROR_DEVICE_LOST)
+        {
+            m_device->GetEngine()->GetLogger()->Error("VK_ERROR_DEVICE_LOST in vkQueueWaitIdle!");
+            m_device->LogDeviceFaultInfo();
+        }
         MORTY_ASSERT(result == VK_SUCCESS);
     }
 
@@ -159,10 +164,8 @@ bool MRenderView::InitializeSwapchain()
     VkResult                 result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_vkSurface, &caps);
     if (result != VK_SUCCESS || caps.maxImageCount < 1)
     {
-        GetEngine()->GetLogger()->Error(
-                "Create VulkanRenderTarget Error : "
-                "GetPhysicalDeviceSurfaceCapabilitiesKHR error"
-        );
+        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
+                                        "GetPhysicalDeviceSurfaceCapabilitiesKHR error");
         return false;
     }
 
@@ -211,10 +214,8 @@ bool MRenderView::InitializeSwapchain()
 
     if (result != VK_SUCCESS)
     {
-        GetEngine()->GetLogger()->Error(
-                "Create VulkanRenderTarget Error : "
-                "vkGetPhysicalDeviceSurfacePresentModesKHR error"
-        );
+        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
+                                        "vkGetPhysicalDeviceSurfacePresentModesKHR error");
         vkDestroySurfaceKHR(m_device->GetVkInstance(), m_vkSurface, nullptr);
         return false;
     }
@@ -240,10 +241,8 @@ bool MRenderView::InitializeSwapchain()
     result                 = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_vkSurface, &unFormatCount, NULL);
     if (result != VK_SUCCESS || unFormatCount < 1)
     {
-        GetEngine()->GetLogger()->Error(
-                "Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR "
-                "unFormatCount < 1"
-        );
+        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : GetPhysicalDeviceSurfaceFormatsKHR "
+                                        "unFormatCount < 1");
         return false;
     }
 
@@ -251,10 +250,8 @@ bool MRenderView::InitializeSwapchain()
     result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_vkSurface, &unFormatCount, surfaceFormats.data());
     if (result != VK_SUCCESS)
     {
-        GetEngine()->GetLogger()->Error(
-                "Create VulkanRenderTarget Error : "
-                "GetPhysicalDeviceSurfaceFormatsKHR error"
-        );
+        GetEngine()->GetLogger()->Error("Create VulkanRenderTarget Error : "
+                                        "GetPhysicalDeviceSurfaceFormatsKHR error");
         return false;
     }
 

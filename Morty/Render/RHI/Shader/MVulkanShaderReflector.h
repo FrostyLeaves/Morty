@@ -45,7 +45,11 @@ public:
 
     void GetVertexInputState(const spirv_cross::Compiler& compiler, MVertexShaderBuffer* pShaderBuffer) const;
 
-    void GetShaderParam(const spirv_cross::Compiler& compiler, MShaderBuffer* pShaderBuffer);
+    bool GetShaderParam(
+            const spirv_cross::Compiler& compiler,
+            const MShaderPropertyBlock*  propertyBlock,
+            MShaderBuffer*               pShaderBuffer
+    );
 
 private:
     void BuildVariant(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, MVariant& variant);
@@ -54,6 +58,8 @@ private:
 
     spirv_cross::SPIRType
     GetStorageBufferType(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type) const;
+
+    bool ValidateBindingConflicts(MShaderBuffer* pShaderBuffer) const;
 
 private:
     MVulkanDevice* m_device;

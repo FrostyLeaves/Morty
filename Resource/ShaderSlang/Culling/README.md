@@ -28,8 +28,8 @@
 ### CPU 端准备
 
 ```cpp
-// 1. 准备 MeshInstanceData
-struct MeshInstanceData {
+// 1. 准备 MeshInstanceRenderProxy
+struct MeshInstanceRenderProxy {
     float4x4 matWorld;
     float3x3 matNormal;
     int rootClusterGroupBeginIndex;  // 指向 root ClusterGroup 的起始索引
@@ -169,7 +169,7 @@ public static const uint NANITE_MAX_TRAVERSAL_DEPTH = 16;
 ### 所需的 GPU 缓冲区
 
 1. **输入缓冲区：**
-   - `meshInstances`: StructuredBuffer<MeshInstanceData>
+   - `meshInstances`: StructuredBuffer<MeshInstanceRenderProxy>
    - `clusterGroups`: StructuredBuffer<ClusterGroupData>
    - `clusters`: StructuredBuffer<ClusterData>
    - `vertexBuffer`: Vertex buffer（与现有渲染管线兼容）
@@ -205,7 +205,7 @@ VertexOut MainVS(
 {
     // 从 instanceIndices 查找真实的 MeshInstance 索引
     uint meshInstanceIndex = instanceIndices[instanceId];
-    MeshInstanceData meshInstance = meshInstances[meshInstanceIndex];
+    MeshInstanceRenderProxy meshInstance = meshInstances[meshInstanceIndex];
 
     // 应用世界变换
     float4 worldPos = mul(meshInstance.matWorld, float4(input.pos, 1.0));

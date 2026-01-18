@@ -50,9 +50,9 @@ struct MClusterGroup {
     uint32_t                  clusterNum;
     MClusterBounds            bounds;
 
-    int32_t                   parentGroupId     = MGlobal::M_INVALID_INT;
-    int32_t                   firstChildGroupId = MGlobal::M_INVALID_INT;
-    uint32_t                  childGroupCount   = 0;
+    // DAG structure: offset and count into global group links array
+    uint32_t                  groupLinkOffset = 0;
+    uint32_t                  groupLinkCount  = 0;
 
     flatbuffers::Offset<void> Serialize(flatbuffers::FlatBufferBuilder& fbb) const;
     void                      Deserialize(const void* pBufferPointer);
@@ -79,7 +79,7 @@ struct MClusterRenderData {
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
 struct MMeshResourceRenderData {
-    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INT;
+    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INT;  // Also used as clusterGroupOffset for local->global ID conversion
     int32_t rootClusterGroupCount      = 0;
 };
 
@@ -90,9 +90,8 @@ struct MMeshRenderData {
 
 struct MClusterGroupRenderData {
     uint32_t valid = false;
-    uint32_t parentGroupId;
-    uint32_t firstGroupId;
-    uint32_t childGroupCount;
+    uint32_t groupLinkOffset;
+    uint32_t groupLinkCount;
     uint32_t clusterBeginIndex;
     uint32_t clusterCount;
     Vector3  position;

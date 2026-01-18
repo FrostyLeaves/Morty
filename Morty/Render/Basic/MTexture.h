@@ -77,6 +77,8 @@ public:
 
     [[nodiscard]] uint32_t            GetLayer() const { return m_desc.nLayer; }
 
+    void                              SetLayer(uint32_t nLayer) { m_desc.nLayer = nLayer; }
+
     [[nodiscard]] METextureFormat     GetFormat() const { return m_desc.eFormat; }
 
     [[nodiscard]] uint32_t            GetWriteUsage() const { return m_desc.nWriteUsage; }
@@ -106,6 +108,8 @@ public:
     void                              Resize(MIDevice* pDevice, const Vector2i& size);
 
     void                              Resize(MIDevice* pDevice, const Vector3i& n3Size);
+
+    void                              ResizeLayer(MIDevice* pDevice, uint32_t newLayerCount);
 
     static MTexturePtr                CreateTexture(const MTextureDesc& desc);
 

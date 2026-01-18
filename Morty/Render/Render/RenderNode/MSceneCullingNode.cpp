@@ -23,21 +23,28 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MSceneCullingNode, MRenderTaskNode)
 
-// Shader parameter names
-static const MStringId InstanceDataNameId       = MStringId("meshInstances");
-static const MStringId MeshResourcesNameId      = MStringId("meshResources");
-static const MStringId ClusterGroupsNameId      = MStringId("clusterGroups");
-static const MStringId ClustersNameId           = MStringId("clusters");
-static const MStringId CandidateClustersNameId  = MStringId("outCandidateClusters");
-static const MStringId CandidateCountNameId     = MStringId("outCandidateCount");
 static const MStringId CullingEntryNameId       = MStringId("NaniteInstanceCullingCS");
 static const MStringId BuildDrawCallEntryNameId = MStringId("BuildDrawCallFillCS");
 
-static const MStringId CandidateClustersInNameId   = MStringId("candidateClusters");
-static const MStringId CandidateCountInNameId      = MStringId("candidateCount");
-static const MStringId DrawIndirectNameId          = MStringId("outDrawIndirect");
-static const MStringId DrawGroupCountBufferNameId  = MStringId("outDrawGroupCount");
-static const MStringId DrawGroupCountUniformNameId = MStringId("drawGroupCount");
+// Shader parameter names for NaniteCulling (MeshInstanceCullingModule.slang)
+// Uses global ParameterBlock: instanceCullingInput
+static const MStringId CullingMeshInstancesNameId    = MStringId("instanceCullingInput.meshInstances");
+static const MStringId CullingMeshResourcesNameId    = MStringId("instanceCullingInput.meshResources");
+static const MStringId CullingClusterGroupsNameId    = MStringId("instanceCullingInput.clusterGroups");
+static const MStringId CullingClustersNameId         = MStringId("instanceCullingInput.clusters");
+static const MStringId CullingGroupLinksNameId       = MStringId("instanceCullingInput.groupLinks");
+static const MStringId CullingOutCandidateClustersId = MStringId("instanceCullingInput.outCandidateClusters");
+static const MStringId CullingOutCandidateCountId    = MStringId("instanceCullingInput.outCandidateCount");
+
+// Shader parameter names for BuildDrawCall (BuildDrawCallModule.slang)
+// Uses global ParameterBlock: buildDrawCallInput
+static const MStringId BuildCandidateClustersNameId = MStringId("buildDrawCallInput.candidateClusters");
+static const MStringId BuildCandidateCountNameId    = MStringId("buildDrawCallInput.candidateCount");
+static const MStringId BuildMeshInstancesNameId     = MStringId("buildDrawCallInput.meshInstances");
+static const MStringId BuildClustersNameId          = MStringId("buildDrawCallInput.clusters");
+static const MStringId BuildOutDrawIndirectNameId   = MStringId("buildDrawCallInput.outDrawIndirect");
+static const MStringId BuildOutDrawGroupCountNameId = MStringId("buildDrawCallInput.outDrawGroupCount");
+static const MStringId BuildDrawGroupCountUniformId = MStringId("drawGroupCount");// Inside buildDrawCallParams struct
 
 // Culling params constant buffer member names (for recursive struct member lookup)
 static const MStringId ViewProjMatrixNameId = MStringId("viewProjMatrix");
@@ -128,7 +135,7 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
         }
     }
 
-    BuildDrawCall(info, primaryCommand);
+    //BuildDrawCall(info, primaryCommand);
 
 
     if (m_drawIndirectBuffer.m_bufferRHI)
@@ -171,7 +178,7 @@ void MSceneCullingNode::Execute(const MRenderInfo& info, IRenderCommand* primary
                     };
                 }
         );
-        GetRenderOutput(0)->SetData(m_renderer.get());
+        //GetRenderOutput(0)->SetData(m_renderer.get());
     }
 }
 
@@ -242,14 +249,15 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
     // The recursive SetValue doesn't support arrays yet
 
     // Set input buffers
-    parameterSet->SetBuffer(InstanceDataNameId, instanceManager->GetInstanceBuffer());
-    parameterSet->SetBuffer(MeshResourcesNameId, meshManager->GetMeshResourceBuffer());
-    parameterSet->SetBuffer(ClusterGroupsNameId, meshManager->GetClusterGroupBuffer());
-    parameterSet->SetBuffer(ClustersNameId, meshManager->GetClusterBuffer());
+    parameterSet->SetBuffer(CullingMeshInstancesNameId, instanceManager->GetInstanceBuffer());
+    parameterSet->SetBuffer(CullingMeshResourcesNameId, meshManager->GetMeshResourceBuffer());
+    parameterSet->SetBuffer(CullingClusterGroupsNameId, meshManager->GetClusterGroupBuffer());
+    parameterSet->SetBuffer(CullingClustersNameId, meshManager->GetClusterBuffer());
+    parameterSet->SetBuffer(CullingGroupLinksNameId, meshManager->GetGroupLinksBuffer());
 
     // Set output buffers
-    parameterSet->SetBuffer(CandidateClustersNameId, &m_candidateClustersBuffer);
-    parameterSet->SetBuffer(CandidateCountNameId, &m_candidateCountBuffer);
+    parameterSet->SetBuffer(CullingOutCandidateClustersId, &m_candidateClustersBuffer);
+    parameterSet->SetBuffer(CullingOutCandidateCountId, &m_candidateCountBuffer);
 
     // Calculate thread group count (64 threads per group as defined in shader)
     constexpr uint32_t ThreadsPerGroup = 64;
@@ -294,13 +302,13 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
     );
 
     auto setupParameters = [&](const std::shared_ptr<MShaderParameterSet>& parameterSet) {
-        parameterSet->SetBuffer(CandidateClustersInNameId, &m_candidateClustersBuffer);
-        parameterSet->SetBuffer(CandidateCountInNameId, &m_candidateCountBuffer);
-        parameterSet->SetBuffer(InstanceDataNameId, instanceManager->GetInstanceBuffer());
-        parameterSet->SetBuffer(ClustersNameId, meshManager->GetClusterBuffer());
-        parameterSet->SetBuffer(DrawIndirectNameId, &m_drawIndirectBuffer);
-        parameterSet->SetBuffer(DrawGroupCountBufferNameId, &m_drawCallGroupBuffer);
-        parameterSet->SetValue(DrawGroupCountUniformNameId, static_cast<uint32_t>(groupCount));
+        parameterSet->SetBuffer(BuildCandidateClustersNameId, &m_candidateClustersBuffer);
+        parameterSet->SetBuffer(BuildCandidateCountNameId, &m_candidateCountBuffer);
+        parameterSet->SetBuffer(BuildMeshInstancesNameId, instanceManager->GetInstanceBuffer());
+        parameterSet->SetBuffer(BuildClustersNameId, meshManager->GetClusterBuffer());
+        parameterSet->SetBuffer(BuildOutDrawIndirectNameId, &m_drawIndirectBuffer);
+        parameterSet->SetBuffer(BuildOutDrawGroupCountNameId, &m_drawCallGroupBuffer);
+        parameterSet->SetValue(BuildDrawGroupCountUniformId, static_cast<uint32_t>(groupCount));
     };
 
     setupParameters(m_buildDrawCallDispatcher->GetShaderParameterSet(0));

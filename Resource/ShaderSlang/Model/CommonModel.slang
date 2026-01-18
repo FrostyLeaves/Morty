@@ -2,49 +2,6 @@ implementing ModelModule;
 
 #include "Internal/PreDefine.slang"
 
-public struct ClusterData
-{
-    public uint indexOffset;
-    public uint indexCount;
-    public uint valid;
-
-    public float3 position;
-    public float radius;
-    public float error;
-};
-
-public struct ClusterGroupData
-{
-    public uint valid;
-    public uint parentGroupId;
-    public uint firstGroupId;
-    public uint childGroupCount;
-
-    public uint clusterBeginIndex;
-    public uint clusterCount;
-
-    public float3 position;
-    public float radius;
-    public float error;
-};
-
-// Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
-public struct MeshResourceData
-{
-    public int rootClusterGroupBeginIndex;
-    public int rootClusterGroupCount;
-};
-
-public struct MeshInstanceData
-{
-    public float4x4 matWorld;
-    public int meshResourceId;    // index into MeshResourceData buffer
-    public int batchGroupId;      // index into MaterialBatchGroup buffer
-    public int materialInstanceId;
-    public int proxyId;           // reserved
-    public int visible;           // reserved
-};
-
 public struct VertexIn
 {
     float3 pos : POSITION;
@@ -75,8 +32,9 @@ public struct VertexOut
 
 public interface IBatchMeshData
 {
-    public MeshInstanceData GetMeshData(uint instanceId);
+    public MeshInstanceRenderProxy GetInstanceProxy(uint instanceId);
 }
 
 StructuredBuffer<float4x4> u_vBonesMatrix;
 StructuredBuffer<int> u_vBonesOffset;
+

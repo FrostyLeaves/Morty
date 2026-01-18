@@ -1,50 +1,64 @@
 implementing ModelModule;
 
-internal struct MaterialData
+public struct MaterialData
 {
     [Property("albedo", PropertyType.color)]
     float3 albedo;
-
     [Property("metalness", PropertyType.float)]
     float metalness;
-
     [Property("roughness", PropertyType.float)]
     float roughness;
 }
 
-//[[vk::binding(0, 0)]] ParameterBlock<MaterialData> materialData;
+public struct TextureBatchData
+{
+    int texAlbedoIndex;
+    int texNormalIndex;
+    int texMetallicIndex;
+    int texRoughnessIndex;
+    int texAOIndex;
+    int texHeightIndex;
+}
 
-[[vk::binding(0, 0)]] [MeshInstance] StructuredBuffer<MaterialData> materialDataBatch;
+public struct MaterialBatchData
+{
 
-[Resource("texAlbedo", ResourceType.Texture2D)]
-[[vk::binding(1, 0)]] Texture2D albedoTexture;
-[Resource("texNormal", ResourceType.Texture2D)]
-[[vk::binding(2, 0)]] Texture2D normalTexture;
-[[Resource("texMetallic", ResourceType.Texture2D)]]
-[[vk::binding(3, 0)]] Texture2D metallicTexture;
-[Resource("texRoughness", ResourceType.Texture2D)]
-[[vk::binding(4, 0)]] Texture2D roughnessTexture;
-[Resource("texAO", ResourceType.Texture2D)]
-[[vk::binding(5, 0)]] Texture2D aoTexture;
-[Resource("texHeight", ResourceType.Texture2D)]
-[[vk::binding(6, 0)]] Texture2D heightTexture;
+    [PerInstance(InstanceType.Property)] StructuredBuffer<MaterialData> propertyBatch;
+    [PerInstance(InstanceType.TextureIndex)] StructuredBuffer<TextureBatchData> textureIndexBatch;
+
+    [Resource("texAlbedo", ResourceType.Texture2D)]
+    Texture2DArray albedoTexture;
+    [Resource("texNormal", ResourceType.Texture2D)]
+    Texture2DArray normalTexture;
+    [Resource("texMetallic", ResourceType.Texture2D)]
+    Texture2DArray metallicTexture;
+    [Resource("texRoughness", ResourceType.Texture2D)]
+    Texture2DArray roughnessTexture;
+    [Resource("texAO", ResourceType.Texture2D)]
+    Texture2DArray aoTexture;
+    [Resource("texHeight", ResourceType.Texture2D)]
+    Texture2DArray heightTexture;
+}
 
 public struct ModelMaterial : IMaterial
 {
+    public MaterialBatchData materialDataBatch;
+
     public SurfaceData GetSurfaceData(PixelData pixelData)
     {
         SurfaceData data;
-        MaterialData materialData = materialDataBatch[pixelData.instanceId];
+        MaterialData materialData = materialDataBatch.propertyBatch[pixelData.instanceId];
+        TextureBatchData textureIndexBatch = materialDataBatch.textureIndexBatch[pixelData.instanceId];
 
-        float3 normal = normalTexture.Sample(LinearSampler, pixelData.uv).xyz;
+        float3 normal = materialDataBatch.normalTexture.Sample(GlobalData.LinearSampler, float3(pixelData.uv, textureIndexBatch.texNormalIndex)).xyz;
         normal = (normal * 2.0f) - 1.0f;
         normal = mul(normal, pixelData.TBN);
         normal = normalize(normal);
 
-        float3 texAlbedo = albedoTexture.Sample(LinearSampler, pixelData.uv).rgb;
-        float texMetalness = metallicTexture.Sample(LinearSampler, pixelData.uv).r;
-        float texRoughness = roughnessTexture.Sample(LinearSampler, pixelData.uv).r;
-        float texAmbientOcc = aoTexture.Sample(LinearSampler, pixelData.uv).r;
+        float3 texAlbedo = materialDataBatch.albedoTexture.Sample(GlobalData.LinearSampler, float3(pixelData.uv, textureIndexBatch.texAlbedoIndex)).rgb;
+        float texMetalness = materialDataBatch.metallicTexture.Sample(GlobalData.LinearSampler, float3(pixelData.uv, textureIndexBatch.texMetallicIndex)).r;
+        float texRoughness = materialDataBatch.roughnessTexture.Sample(GlobalData.LinearSampler, float3(pixelData.uv, textureIndexBatch.texRoughnessIndex)).r;
+        float texAmbientOcc = materialDataBatch.aoTexture.Sample(GlobalData.LinearSampler, float3(pixelData.uv, textureIndexBatch.texAOIndex)).r;
 
         data.albedo = texAlbedo * materialData.albedo;
         data.metalness = texMetalness * materialData.metalness;

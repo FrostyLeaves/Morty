@@ -29,6 +29,7 @@ class MMeshManager : public IManager
     struct MMeshData {
         MemoryInfo clusterInfo;
         MemoryInfo clusterGroupInfo;
+        MemoryInfo groupLinksInfo;
         size_t     referenceNum = 0;
     };
 
@@ -48,6 +49,7 @@ public:
     [[nodiscard]] const MBuffer*                      GetClusterGroupBuffer() const { return &m_clusterGroupBuffer; }
     [[nodiscard]] const MBuffer*                      GetClusterBuffer() const { return &m_clusterBuffer; }
     [[nodiscard]] const MBuffer*                      GetMeshResourceBuffer() const { return &m_meshResourceBuffer; }
+    [[nodiscard]] const MBuffer*                      GetGroupLinksBuffer() const { return &m_groupLinksBuffer; }
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
@@ -90,6 +92,8 @@ private:
     // GPU buffers for cluster culling
     MBuffer                                      m_clusterGroupBuffer;
     MBuffer                                      m_clusterBuffer;
+    MBuffer                                      m_groupLinksBuffer;
+    std::vector<int32_t>                         m_groupLinks;
 
     // Dirty flag for cluster data upload
     bool                                         m_clustersDirty = false;

@@ -22,7 +22,7 @@ public struct Skybox
             direction.x * sinTheta + direction.z * cosTheta
         );
         
-        float3 color = skyboxTexture.Sample(LinearSampler, rotatedDir).rgb;
+        float3 color = skyboxTexture.Sample(GlobalData.LinearSampler, rotatedDir).rgb;
         return color * data.intensity * data.tint;
     }
 }
