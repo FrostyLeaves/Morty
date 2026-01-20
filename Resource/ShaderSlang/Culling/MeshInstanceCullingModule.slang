@@ -20,6 +20,13 @@ public struct NaniteInstanceCullingParams
 };
 [[vk::binding(0, 0)]] ParameterBlock<NaniteInstanceCullingParams> instanceCullingInput;
 
+public void TestFunctionB(RWStructuredBuffer<uint> outCandidateCount)
+{
+    int a = 12588;
+    InterlockedMax(outCandidateCount[0], a);
+}
+
+
 [shader("compute")]
 [numthreads(64, 1, 1)]
 public void NaniteInstanceCullingCS(
@@ -38,7 +45,7 @@ public void NaniteInstanceCullingCS(
     MeshResourceData meshResource = input.meshResources[meshInstance.meshResourceId];
 
     // Traverse LOD DAG and select appropriate clusters
-    NaniteTraversal.TraverseLODTree(
+    TraverseLODTree(
         instanceIndex,
         meshInstance,
         meshResource,  // Pass MeshResourceData
@@ -49,4 +56,7 @@ public void NaniteInstanceCullingCS(
         input.outCandidateClusters,
         input.outCandidateCount
     );
+
+    TestFunction(input.outCandidateCount);
+    TestFunctionB(input.outCandidateCount);
 }

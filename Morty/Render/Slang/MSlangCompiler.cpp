@@ -68,12 +68,7 @@ static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MS
     }
 }
 
-static void ReflectionDefaultFromSlang(
-        const MString&            propertyBlockName,
-        VariableLayoutReflection* parameter,
-        MShaderPropertyBlock&     output,
-        uint32_t                  reflectionDepth = 0
-)
+static void ReflectionDefaultFromSlang(const MString& propertyBlockName, VariableLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
 {
     auto name = parameter->getName();
     /*MLogger::GetInstance()->Information(
@@ -101,29 +96,15 @@ static void ReflectionDefaultFromSlang(
 
     auto typeKind = parameter->getType()->getKind();
 
-    if (typeKind == slang::TypeReflection::Kind::ParameterBlock ||
-        typeKind == slang::TypeReflection::Kind::ConstantBuffer || typeKind == slang::TypeReflection::Kind::Resource)
+    if (typeKind == slang::TypeReflection::Kind::ParameterBlock || typeKind == slang::TypeReflection::Kind::ConstantBuffer || typeKind == slang::TypeReflection::Kind::Resource)
     {
         auto elementTypeLayout = parameter->getTypeLayout()->getElementTypeLayout();
         auto fieldCount        = elementTypeLayout->getFieldCount();
-        for (auto idx = 0u; idx < fieldCount; ++idx)
-        {
-            ReflectionDefaultFromSlang(
-                    propertyBlockName,
-                    elementTypeLayout->getFieldByIndex(idx),
-                    output,
-                    reflectionDepth + 1
-            );
-        }
+        for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionDefaultFromSlang(propertyBlockName, elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1); }
     }
 }
 
-static void ReflectionParameterBlockTypeFromSlang(
-        const MString&        parameterBlockName,
-        TypeLayoutReflection* parameter,
-        MShaderPropertyBlock& output,
-        uint32_t              reflectionDepth = 0
-)
+static void ReflectionParameterBlockTypeFromSlang(const MString& parameterBlockName, TypeLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
 {
     if (parameter == nullptr) return;
 
@@ -147,17 +128,9 @@ static void ReflectionParameterBlockTypeFromSlang(
     }
 
     auto fieldCount = parameter->getFieldCount();
-    for (auto idx = 0u; idx < fieldCount; ++idx)
-    {
-        ReflectionDefaultFromSlang(parameterBlockName, parameter->getFieldByIndex(idx), output, reflectionDepth + 1);
-    }
+    for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionDefaultFromSlang(parameterBlockName, parameter->getFieldByIndex(idx), output, reflectionDepth + 1); }
 
-    ReflectionParameterBlockTypeFromSlang(
-            parameterBlockName,
-            parameter->getElementTypeLayout(),
-            output,
-            reflectionDepth + 1
-    );
+    ReflectionParameterBlockTypeFromSlang(parameterBlockName, parameter->getElementTypeLayout(), output, reflectionDepth + 1);
 }
 
 static void ReflectionDescriptorSetFromSlang(TypeLayoutReflection* typeLayout, MShaderPropertyBlock& output)
@@ -224,19 +197,20 @@ bool                                   MSlangCompiler::Compile()
     sessionDesc.searchPaths     = searchPathConst.data();
     sessionDesc.searchPathCount = searchPathConst.size();
 
+
     std::vector<CompilerOptionEntry> compilerOptions;
 
 #if MORTY_DEBUG
-    // Enable debug information for shader debugging (works with RenderDoc, NSight, etc.)
-    compilerOptions.push_back({
-            .name  = CompilerOptionName::DebugInformation,
-            .value = {.intValue0 = SLANG_DEBUG_INFO_LEVEL_MAXIMAL}
-    });
+    // Emit full debug info so RenderDoc can step with proper source mapping
+    compilerOptions.push_back({.name = CompilerOptionName::DebugInformation, .value = {.intValue0 = SLANG_DEBUG_INFO_LEVEL_MAXIMAL}});
+    compilerOptions.push_back({.name = CompilerOptionName::DebugInformationFormat, .value = {.intValue0 = SLANG_DEBUG_INFO_FORMAT_DWARF}});
     // Disable optimization for better debugging experience
-    compilerOptions.push_back({
-            .name  = CompilerOptionName::Optimization,
-            .value = {.intValue0 = SLANG_OPTIMIZATION_LEVEL_NONE}
-    });
+    compilerOptions.push_back({.name = CompilerOptionName::Optimization, .value = {.intValue0 = SLANG_OPTIMIZATION_LEVEL_NONE}});
+    // Emit SPIRV directly from Slang IR (required for proper cross-file debug info)
+    compilerOptions.push_back({.name = CompilerOptionName::EmitSpirvDirectly, .value = {.intValue0 = 1}});
+    // Preserve parameters and keep OpLine for step-into
+    //compilerOptions.push_back({.name = CompilerOptionName::PreserveParameters, .value = {.intValue0 = 1}});
+    compilerOptions.push_back({.name = CompilerOptionName::LineDirectiveMode, .value = {.intValue0 = SLANG_LINE_DIRECTIVE_MODE_STANDARD}});
 #endif
 
     std::vector<TargetDesc> targets = {{
@@ -287,15 +261,13 @@ bool                                   MSlangCompiler::Compile()
     for (const auto& entryName: allEntryNameArray)
     {
         Slang::ComPtr<IEntryPoint> entryPoint;
-        auto findEntryResult = module->findEntryPointByName(entryName.c_str(), entryPoint.writeRef());
+        auto                       findEntryResult = module->findEntryPointByName(entryName.c_str(), entryPoint.writeRef());
         MORTY_ASSERT(SLANG_SUCCEEDED(findEntryResult));
         components.push_back(entryPoint);
     }
 
     Slang::ComPtr<IComponentType> program;
-    MORTY_ASSERT(SLANG_SUCCEEDED(
-            session->createCompositeComponentType(components.data(), components.size(), program.writeRef())
-    ));
+    MORTY_ASSERT(SLANG_SUCCEEDED(session->createCompositeComponentType(components.data(), components.size(), program.writeRef())));
 
     Slang::ComPtr<IComponentType> linkedProgram;
     Slang::ComPtr<ISlangBlob>     diagnosticBlob;
@@ -311,16 +283,9 @@ bool                                   MSlangCompiler::Compile()
 
         int                  targetIndex = 0;// only one target
         Slang::ComPtr<IBlob> kernelBlob;
-        if (!SLANG_SUCCEEDED(
-                    linkedProgram
-                            ->getEntryPointCode(entryIdx, targetIndex, kernelBlob.writeRef(), diagnostics.writeRef())
-            ))
+        if (!SLANG_SUCCEEDED(linkedProgram->getEntryPointCode(entryIdx, targetIndex, kernelBlob.writeRef(), diagnostics.writeRef())))
         {
-            MLogger::GetInstance()->Error(
-                    "Failed to get entry point code for {}, diagnostics: {}",
-                    entryName,
-                    diagnostics ? (const char*) diagnostics->getBufferPointer() : "none"
-            );
+            MLogger::GetInstance()->Error("Failed to get entry point code for {}, diagnostics: {}", entryName, diagnostics ? (const char*) diagnostics->getBufferPointer() : "none");
             return false;
         }
 
@@ -331,6 +296,7 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].name   = MStringId(entryName);
         m_output[entryIdx].type   = ConvertShaderType(stage);
         m_output[entryIdx].buffer = std::move(buffer);
+
     }
 
     //MLogger::GetInstance()->Log("==== Slang Reflection Result ====");

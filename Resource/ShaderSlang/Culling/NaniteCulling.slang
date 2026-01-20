@@ -144,6 +144,36 @@ public struct NaniteCulling
 
 // ==================== Nanite Traversal Utilities ====================
 
+public void TestFunction(RWStructuredBuffer<uint> outCandidateCount)
+{
+    int a = 12306;
+    InterlockedMax(outCandidateCount[0], a);
+}
+
+public void TraverseLODTree(
+        uint meshInstanceIndex,
+        MeshInstanceRenderProxy meshInstance,
+        MeshResourceData meshResource,  // Mesh resource data (contains ClusterGroup root node info)
+        StructuredBuffer<ClusterGroupData> clusterGroups,
+        StructuredBuffer<ClusterData> clusters,
+        StructuredBuffer<int> groupLinks,  // DAG child group indices
+        NaniteRenderData renderData,
+        RWStructuredBuffer<CandidateCluster> outCandidateClusters,
+        RWStructuredBuffer<uint> outCandidateCount)
+{
+    NaniteTraversal.TraverseLODTree(
+        meshInstanceIndex,
+        meshInstance,
+        meshResource,
+        clusterGroups,
+        clusters,
+        groupLinks,
+        renderData,
+        outCandidateClusters,
+        outCandidateCount
+    );
+}
+
 public struct NaniteTraversal
 {
     // Traversal stack node
