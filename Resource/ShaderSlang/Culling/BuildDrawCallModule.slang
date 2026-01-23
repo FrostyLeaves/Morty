@@ -13,6 +13,7 @@ public struct BuildDrawCallFillParams
     StructuredBuffer<uint> candidateCount;
     StructuredBuffer<MeshInstanceRenderProxy> meshInstances;
     StructuredBuffer<ClusterData> clusters;
+    StructuredBuffer<ClusterGroupData> clusterGroups;
 
     RWStructuredBuffer<IndexedIndirectCommand> outDrawIndirect;
     RWStructuredBuffer<uint> outDrawGroupCount;
@@ -47,12 +48,13 @@ public void BuildDrawCallFillCS(
     uint writeIndex = groupId * MAX_DRAW_CALLS_PER_GROUP + localIndex;
 
     ClusterData cluster = input.clusters[candidate.clusterIndex];
+    ClusterGroupData group = input.clusterGroups[candidate.groupIndex];
 
     IndexedIndirectCommand cmd;
     cmd.indexCount = cluster.indexCount;
     cmd.instanceCount = 1;
-    cmd.firstIndex = cluster.indexOffset;
-    cmd.vertexOffset = 0;
+    cmd.firstIndex = group.indexBeginIndex + cluster.indexOffset;
+    cmd.vertexOffset = group.vertexBeginIndex;
     cmd.firstInstance = candidate.meshInstanceIndex;
 
     input.outDrawIndirect[writeIndex] = cmd;

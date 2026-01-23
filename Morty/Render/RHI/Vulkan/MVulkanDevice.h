@@ -43,97 +43,82 @@ class MORTY_API MVulkanDevice : public MIDevice
 public:
     explicit MVulkanDevice();
 
-    bool Initialize() override;
+    bool     Initialize() override;
 
-    void Release() override;
+    void     Release() override;
 
-    void GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize) override;
+    void     GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize) override;
 
-    void DestroyBuffer(MBuffer* buffer) override;
+    void     DestroyBuffer(MBuffer* buffer) override;
+
+    void     UploadBuffer(MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
+
+    void     ResizeBuffer(MBuffer* buffer, size_t size) override;
+
+    void     DownloadBuffer(MBuffer* buffer, MByte* outputData, const size_t& nSize) override;
+
+    void     GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer) override;
+
+    void     DestroyTexture(MTexture* texture) override;
 
     void
-    UploadBuffer(MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) override;
+    CopyImage(MTexture* source, MTexture* target, uint32_t srcMip, uint32_t srcSlice, uint32_t dstMip, uint32_t dstSlice, uint32_t width, uint32_t height, IRenderCommand* command = nullptr) override;
 
-    void DownloadBuffer(MBuffer* buffer, MByte* outputData, const size_t& nSize) override;
+    void                               ResizeTextureArray(MTexture* texture, uint32_t newLayerCount, IRenderCommand* command = nullptr) override;
 
-    void GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer) override;
+    bool                               CompileShader(MShader* pShader) override;
 
-    void DestroyTexture(MTexture* texture) override;
+    void                               CleanShader(MShader* pShader) override;
 
-    void CopyImage(
-            MTexture*       source,
-            MTexture*       target,
-            uint32_t        srcMip,
-            uint32_t        srcSlice,
-            uint32_t        dstMip,
-            uint32_t        dstSlice,
-            uint32_t        width,
-            uint32_t        height,
-            IRenderCommand* command = nullptr
-    ) override;
+    bool                               SyncParameterSet(MShaderParameterSet* propertyBlock) override;
 
-    void ResizeTextureArray(MTexture* texture, uint32_t newLayerCount, IRenderCommand* command = nullptr) override;
+    bool                               GenerateShaderParameterSet(MShaderParameterSet* pParameterSet) override;
 
-    bool CompileShader(MShader* pShader) override;
+    void                               DestroyShaderParameterSet(MShaderParameterSet* pParameterSet) override;
 
-    void CleanShader(MShader* pShader) override;
+    bool                               GenerateShaderParamBuffer(MShaderUniformParam* pParam) override;
 
-    bool SyncParameterSet(MShaderParameterSet* propertyBlock) override;
+    void                               DestroyShaderParamBuffer(MShaderUniformParam* pParam) override;
 
-    bool GenerateShaderParameterSet(MShaderParameterSet* pParameterSet) override;
+    bool                               GenerateRenderPass(MRenderPass* pRenderPass) override;
 
-    void DestroyShaderParameterSet(MShaderParameterSet* pParameterSet) override;
+    void                               DestroyRenderPass(MRenderPass* pRenderPass) override;
 
-    bool GenerateShaderParamBuffer(MShaderUniformParam* pParam) override;
+    bool                               GenerateFrameBuffer(MRenderPass* pRenderPass) override;
 
-    void DestroyShaderParamBuffer(MShaderUniformParam* pParam) override;
+    void                               DestroyFrameBuffer(MRenderPass* pRenderPass) override;
 
-    bool GenerateRenderPass(MRenderPass* pRenderPass) override;
+    std::shared_ptr<MGraphicsPipeline> FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass) override;
 
-    void DestroyRenderPass(MRenderPass* pRenderPass) override;
+    IRenderCommand*                    CreateRenderCommand(const MString& strCommandName) override;
 
-    bool GenerateFrameBuffer(MRenderPass* pRenderPass) override;
+    void                               RecoveryRenderCommand(IRenderCommand* pCommand) override;
 
-    void DestroyFrameBuffer(MRenderPass* pRenderPass) override;
+    bool                               IsFinishedCommand(IRenderCommand* pCommand) override;
 
-    std::shared_ptr<MGraphicsPipeline>
-    FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass) override;
+    void                               SubmitCommand(IRenderCommand* pCommand) override;
 
-    IRenderCommand*              CreateRenderCommand(const MString& strCommandName) override;
-
-    void                         RecoveryRenderCommand(IRenderCommand* pCommand) override;
-
-    bool                         IsFinishedCommand(IRenderCommand* pCommand) override;
-
-    void                         SubmitCommand(IRenderCommand* pCommand) override;
-
-    void                         Update() override;
+    void                               Update() override;
 
 
     //physical interface.
-    VkInstance                   GetVkInstance() const;
+    VkInstance                         GetVkInstance() const;
 
-    const MVulkanPhysicalDevice* GetPhysicalDevice() const;
+    const MVulkanPhysicalDevice*       GetPhysicalDevice() const;
 
-    bool                         GetDeviceFeatureSupport(MEDeviceFeature feature) const override;
+    bool                               GetDeviceFeatureSupport(MEDeviceFeature feature) const override;
 
-    bool                         MultiDrawIndirectSupport() const;
+    bool                               MultiDrawIndirectSupport() const;
 
-    int                          FindQueuePresentFamilies(VkSurfaceKHR surface) const;
+    int                                FindQueuePresentFamilies(VkSurfaceKHR surface) const;
 
-    VkPhysicalDeviceProperties   GetPhysicalDeviceProperties() const;
+    VkPhysicalDeviceProperties         GetPhysicalDeviceProperties() const;
 
-    Vector2i                     GetShadingRateTextureTexelSize() const override;
+    Vector2i                           GetShadingRateTextureTexelSize() const override;
 
-    void                         SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName) const;
+    void                               SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName) const;
 
-    void                         TransitionLayoutBarrier(
-                                    VkImageMemoryBarrier&   imageMemoryBarrier,
-                                    VkImage                 image,
-                                    VkImageLayout           oldLayout,
-                                    VkImageLayout           newLayout,
-                                    VkImageSubresourceRange subresourceRange
-                            ) const;
+    void TransitionLayoutBarrier(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange) const;
 
     MVulkanObjectRecycleBin*           GetRecycleBin() const;
 
@@ -165,61 +150,33 @@ public:
 
     VkFragmentShadingRateCombinerOpKHR GetShadingRateCombinerOp(MEShadingRateCombinerOp op) const;
 
-    void GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const MByte* initialData, const size_t& unDataSize);
+    void                               GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const MByte* initialData, const size_t& unDataSize);
 
-    void UploadBuffer(
-            VkCommandBuffer vkCommand,
-            MBuffer*        buffer,
-            const size_t&   unBeginOffset,
-            const MByte*    data,
-            const size_t&   unDataSize
-    );
+    void                               UploadBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize);
 
-    void GenerateMipmaps(MTexture* texture, const uint32_t& unMipLevels, VkCommandBuffer buffer = VK_NULL_HANDLE);
+    void                               GenerateMipmaps(MTexture* texture, const uint32_t& unMipLevels, VkCommandBuffer buffer = VK_NULL_HANDLE);
 
-    bool GenerateBuffer(
-            VkDeviceSize          size,
-            VkBufferUsageFlags    usage,
-            VkMemoryPropertyFlags properties,
-            VkBuffer&             buffer,
-            VkDeviceMemory&       bufferMemory
-    );
+    bool                               GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-    void                              DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void                               DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-    MVulkanSecondaryRenderCommand*    CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
+    MVulkanSecondaryRenderCommand*     CreateChildCommand(MVulkanPrimaryRenderCommand* pParentCommand);
 
 
-    std::tuple<VkImageView, Vector2i> CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget);
+    std::tuple<VkImageView, Vector2i>  CreateFrameBufferViewFromRenderTarget(MRenderTarget& renderTarget);
 
-    bool                              CompileShaderHlsl(MShader* pShader, std::vector<uint32_t>& spirv);
+    bool                               CompileShaderHlsl(MShader* pShader, std::vector<uint32_t>& spirv);
 
-    bool                              CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& spirv);
+    bool                               CompileShaderSlang(MShader* pShader, std::vector<uint32_t>& spirv);
 
-    void                              UpdateShaderParam(MShaderUniformParam* param);
+    void                               UpdateShaderParam(MShaderUniformParam* param);
 
 protected:
-    void CopyBuffer(
-            VkBuffer        srcBuffer,
-            VkBuffer        dstBuffer,
-            VkBufferCopy    region,
-            VkCommandBuffer vkCommandBuffer = VK_NULL_HANDLE
-    );
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region, VkCommandBuffer vkCommandBuffer = VK_NULL_HANDLE);
 
-    void TransitionImageLayout(
-            VkImage                 image,
-            VkImageLayout           oldLayout,
-            VkImageLayout           newLayout,
-            VkImageSubresourceRange subresourceRange
-    );
+    void TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 
-    void TransitionImageLayout(
-            VkCommandBuffer         commandBuffer,
-            VkImage                 image,
-            VkImageLayout           oldLayout,
-            VkImageLayout           newLayout,
-            VkImageSubresourceRange subresourceRange
-    );
+    void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange);
 
     void CreateImage(
             uint32_t              nWidth,
@@ -238,14 +195,7 @@ protected:
             VkImageType           imageType
     );
 
-    VkImageView CreateImageView(
-            VkImage                image,
-            VkFormat               format,
-            VkImageAspectFlags     aspectFlags,
-            const uint32_t&        unMipmap,
-            const uint32_t&        unLayerCount,
-            const VkImageViewType& eViewType
-    );
+    VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType);
 
     VkImageView CreateImageView(
             VkImage                image,

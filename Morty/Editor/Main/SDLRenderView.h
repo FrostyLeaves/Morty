@@ -42,6 +42,8 @@ public:
 
     void Release() override;
 
+    void SetWindowTitle(const MString& title) { m_windowTitle = title; }
+
     void BindSDLWindow();
 
     void UnbindSDLWindow();
@@ -81,6 +83,8 @@ private:
     ImGuiRenderer*                  m_imGuiRender     = nullptr;
 
     std::vector<RenderViewContent*> m_content;
+
+    MString                         m_windowTitle = "Morty";
 
     IniConfig                       m_IniConfig;
 

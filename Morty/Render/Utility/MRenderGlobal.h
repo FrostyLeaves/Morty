@@ -132,6 +132,7 @@ enum class MEBufferBarrierStage
     EPixelShaderRead,
     EDrawIndirectRead,
     EShadingRateRead,
+    ETransferWrite,
 };
 
 enum class MEShadingRateCombinerOp

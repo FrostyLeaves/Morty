@@ -70,19 +70,21 @@ public:
 
 
 public:
-    void   ReallocMemory(const size_t& unNewSize);
+    void                      ReallocMemory(const size_t& unNewSize);
 
-    size_t GetSize() const { return m_unDataSize; }
+    size_t                    GetSize() const { return m_unDataSize; }
 
-    void   GenerateBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
+    void                      GenerateBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
 
-    void   UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
+    void                      UploadBuffer(MIDevice* pDevice, const MByte* data, const size_t& size);
 
-    void   UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size);
+    void                      UploadBuffer(MIDevice* pDevice, size_t nBeginOffset, const MByte* data, const size_t& size);
 
-    void   DestroyBuffer(MIDevice* pDevice);
+    void                      DestroyBuffer(MIDevice* pDevice);
 
-    void   DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
+    void                      ResizeBuffer(MIDevice* pDevice, size_t size);
+
+    void                      DownloadBuffer(MIDevice* pDevice, MByte* data, const size_t& size);
 
     template<typename T> void ApplyData(MIDevice* device, const std::vector<T>& data)
     {
@@ -93,6 +95,17 @@ public:
             GenerateBuffer(device, reinterpret_cast<const MByte*>(data.data()), data.size() * sizeof(T));
         }
         else { UploadBuffer(device, reinterpret_cast<const MByte*>(data.data()), data.size() * sizeof(T)); }
+    }
+
+    void ApplyData(MIDevice* device, size_t offset, const MByte* data, size_t size)
+    {
+        if (m_unDataSize < offset + size)
+        {
+            ReallocMemory(offset + size);
+            ResizeBuffer(device, offset + size);
+        }
+
+        UploadBuffer(device, offset, data, size);
     }
 
 

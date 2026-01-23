@@ -36,19 +36,19 @@ public struct ModelUtil
 
         MeshInstanceRenderProxy data = instanceProxy.GetInstanceProxy(INSTANCE_ID);
 
-        float4 positionCS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
-        float4 positionWS = mul(positionCS, data.matWorld);
+        float4 positionOS = ModelUtil.GetVertexPosition(input, INSTANCE_ID);
+        float4 positionWS = mul(data.matWorld, positionOS);
 
-        output.pos = mul(positionWS, mainCameraData.viewMatrix);
+        output.pos = mul(mainCameraData.viewProjMatrix, positionWS);
         output.uv = input.uv;
         output.positionWS = positionWS.xyz;
         output.depth = output.pos.z;
 
         // matNormal computed dynamically: transpose(inverse(matWorld))
         float3x3 matNormal = transpose(MathUtils.Inverse3x3((float3x3)data.matWorld));
-        output.normal = normalize(mul(input.normal, matNormal));
-        output.tangent = normalize(mul(input.tangent, matNormal));
-        output.bitangent = normalize(cross(output.tangent, output.normal));
+        output.normal = normalize(mul(matNormal, input.normal));
+        output.tangent = normalize(mul(matNormal, input.tangent));
+        output.bitangent = normalize(cross(output.normal, output.tangent));
 
         output.instanceId = INSTANCE_ID;
 

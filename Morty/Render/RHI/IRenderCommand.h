@@ -54,11 +54,13 @@ public:
             MEBufferBarrierStage                  dstStage
     ) = 0;
 
-    virtual bool DownloadTexture(
+    virtual bool ReadbackTexture(
             MTexture*                                                         texture,
             const uint32_t&                                                   unMipIdx,
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) = 0;
+
+    virtual void FillBuffer(MBuffer* buffer, uint32_t value = 0) = 0;
 
     virtual bool         IsFinished() { return false; }
 

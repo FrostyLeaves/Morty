@@ -34,10 +34,10 @@ UnlitVertexOut VS_MAIN(UnlitVertexIn input, uint INSTANCE_ID: SV_InstanceID)
     StorageBatchMeshData model;
     MeshInstanceRenderProxy instanceProxy = model.GetInstanceProxy(INSTANCE_ID);
     
-    float4 positionWS = mul(float4(input.pos, 1.0), instanceProxy.matWorld);
-    
+    float4 positionWS = mul(instanceProxy.matWorld, float4(input.pos, 1.0));
+
     UnlitVertexOut output;
-    output.pos = mul(positionWS, frameData.mainCamera.viewMatrix);
+    output.pos = mul(frameData.mainCamera.viewProjMatrix, positionWS);
     output.uv = input.uv;
     
     return output;

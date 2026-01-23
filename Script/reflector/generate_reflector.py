@@ -8,6 +8,7 @@ from clang.cindex import * # type: ignore
 import render_graph_node_collector
 import render_graph_property_collector
 import component_property_collector
+import component_accessor_collector
 import enum_collector
 
 registed_attr_name_list = [
@@ -70,6 +71,11 @@ def main(argv):
     component_prop_col = component_property_collector.Collector()
     component_prop_col.set_enum_collector(enum_col)
     collector_list.append(component_prop_col)
+
+    # Create component accessor collector for get/set commands
+    accessor_col = component_accessor_collector.Collector()
+    accessor_col.set_enum_collector(enum_col)
+    collector_list.append(accessor_col)
 
 
     compdb = clang.cindex.CompilationDatabase.fromDirectory(build_dir)

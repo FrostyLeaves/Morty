@@ -11,6 +11,7 @@ namespace morty
 struct MORTY_API MBufferRHIVulkan : public MBufferRHI {
     VkBuffer       vkBuffer       = VK_NULL_HANDLE;
     VkDeviceMemory vkDeviceMemory = VK_NULL_HANDLE;
+    size_t         meomrySize     = 0;
 };
 
 }// namespace morty

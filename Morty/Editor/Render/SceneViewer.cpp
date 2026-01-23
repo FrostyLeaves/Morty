@@ -41,8 +41,9 @@ void    SceneViewer::Initialize(const MString& viewName, MScene* scene, const MS
     defaultCamera->SetName("Camera");
     if (auto* sceneComponent = defaultCamera->RegisterComponent<MSceneComponent>())
     {
-        sceneComponent->SetPosition(Vector3(0, 20, 0));
-        sceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
+        //sceneComponent->SetPosition(Vector3(0, 20, 0));
+        //sceneComponent->SetRotation(Quaternion(Vector3(1, 0, 0), 45.0f));
+        sceneComponent->SetPosition(Vector3(0, 0, 0));
     }
     defaultCamera->RegisterComponent<MCameraComponent>();
     defaultCamera->RegisterComponent<MMoveControllerComponent>();

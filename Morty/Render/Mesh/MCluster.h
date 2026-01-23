@@ -59,7 +59,8 @@ struct MClusterGroup {
 };
 
 
-SHADER_STRUCT MClusterRenderData {
+SHADER_STRUCT MClusterRenderData
+{
     Vector3  position;
     float    radius;
     float    error;
@@ -69,17 +70,22 @@ SHADER_STRUCT MClusterRenderData {
 };
 
 // Mesh resource level data, used for finding ClusterGroup root nodes during GPU culling
-SHADER_STRUCT MMeshResourceRenderData {
-    int32_t rootClusterGroupBeginIndex = MGlobal::M_INVALID_INT;  // Also used as clusterGroupOffset for local->global ID conversion
-    int32_t rootClusterGroupCount      = 0;
+SHADER_STRUCT MMeshResourceRenderData
+{
+    int32_t clusterBeginIndex      = 0;
+    int32_t clusterGroupBeginIndex = 0;
+    int32_t rootClusterGroupIndex  = 0;
+    int32_t rootClusterGroupCount  = 0;
 };
 
-SHADER_STRUCT MMeshRenderData {
+SHADER_STRUCT MMeshRenderData
+{
     uint32_t rootClusterOffset = MGlobal::M_INVALID_UINDEX;
     uint32_t rootClusterCount  = 0;
 };
 
-SHADER_STRUCT MClusterGroupRenderData {
+SHADER_STRUCT MClusterGroupRenderData
+{
     Vector3  position;
     float    radius;
 
@@ -87,16 +93,17 @@ SHADER_STRUCT MClusterGroupRenderData {
     uint32_t valid = false;
     uint32_t groupLinkOffset;
     uint32_t groupLinkCount;
-    
+
     uint32_t clusterBeginIndex;
     uint32_t clusterCount;
+    uint32_t vertexBeginIndex;
+    uint32_t indexBeginIndex;
 };
 
-struct MClusterGroupData {
-    MemoryInfo              vertexMemoryInfo;
-    MemoryInfo              indexMemoryInfo;
-    MClusterGroupRenderData renderData;
-    bool                    valid = false;// whether valid (vertex/index data loaded)
+struct MClusterPageMemoryData {
+    MemoryInfo vertexMemoryInfo;
+    MemoryInfo indexMemoryInfo;
+    bool       loaded = false;
 };
 
 

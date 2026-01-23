@@ -42,6 +42,7 @@ static const MStringId BuildCandidateClustersNameId = MStringId("buildDrawCallIn
 static const MStringId BuildCandidateCountNameId    = MStringId("buildDrawCallInput.candidateCount");
 static const MStringId BuildMeshInstancesNameId     = MStringId("buildDrawCallInput.meshInstances");
 static const MStringId BuildClustersNameId          = MStringId("buildDrawCallInput.clusters");
+static const MStringId BuildClusterGroupsNameId     = MStringId("buildDrawCallInput.clusterGroups");
 static const MStringId BuildOutDrawIndirectNameId   = MStringId("buildDrawCallInput.outDrawIndirect");
 static const MStringId BuildOutDrawGroupCountNameId = MStringId("buildDrawCallInput.outDrawGroupCount");
 static const MStringId BuildDrawGroupCountUniformId = MStringId("drawGroupCount");// Inside buildDrawCallParams struct
@@ -225,10 +226,6 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
         planes.SetVariant(i, param);
     }
 
-
-    // TODO: frustumPlanes array still needs to be handled
-    // The recursive SetValue doesn't support arrays yet
-
     // Set input buffers
     parameterSet->SetBuffer(CullingMeshInstancesNameId, instanceManager->GetInstanceBuffer());
     parameterSet->SetBuffer(CullingMeshResourcesNameId, meshManager->GetMeshResourceBuffer());
@@ -243,6 +240,10 @@ void MSceneCullingNode::NaniteCulling(const MRenderInfo& info, IRenderCommand* p
     // Calculate thread group count (64 threads per group as defined in shader)
     constexpr uint32_t ThreadsPerGroup = 64;
     uint32_t           groupCountX     = (instanceCount + ThreadsPerGroup - 1) / ThreadsPerGroup;
+
+
+    primaryCommand->FillBuffer(&m_candidateCountBuffer, 0);
+    primaryCommand->AddBufferMemoryBarrier({m_candidateCountBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::ETransferWrite, MEBufferBarrierStage::EComputeShaderWrite);
 
     // Dispatch compute shader
     primaryCommand->DispatchComputeJob(m_cullingDispatcher, CullingEntryNameId, groupCountX, 1, 1);
@@ -283,6 +284,7 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
         parameterSet->SetBuffer(BuildCandidateCountNameId, &m_candidateCountBuffer);
         parameterSet->SetBuffer(BuildMeshInstancesNameId, instanceManager->GetInstanceBuffer());
         parameterSet->SetBuffer(BuildClustersNameId, meshManager->GetClusterBuffer());
+        parameterSet->SetBuffer(BuildClusterGroupsNameId, meshManager->GetClusterGroupBuffer());
         parameterSet->SetBuffer(BuildOutDrawIndirectNameId, &m_drawIndirectBuffer);
         parameterSet->SetBuffer(BuildOutDrawGroupCountNameId, &m_drawCallGroupBuffer);
         parameterSet->SetValue(BuildDrawGroupCountUniformId, static_cast<uint32_t>(groupCount));
@@ -292,6 +294,12 @@ void MSceneCullingNode::BuildDrawCall(const MRenderInfo& info, IRenderCommand* p
 
     constexpr uint32_t ThreadsPerGroup = 64;
     uint32_t           groupCountX     = (MaxCandidateClusters + ThreadsPerGroup - 1) / ThreadsPerGroup;
+
+
+    primaryCommand->FillBuffer(&m_drawCallGroupBuffer, 0);
+    primaryCommand->AddBufferMemoryBarrier({m_drawCallGroupBuffer.m_bufferRHI.get()}, MEBufferBarrierStage::ETransferWrite, MEBufferBarrierStage::EComputeShaderWrite);
+
+
     primaryCommand->DispatchComputeJob(m_buildDrawCallDispatcher, BuildDrawCallEntryNameId, groupCountX, 1, 1);
 
     if (m_drawIndirectBuffer.m_bufferRHI)

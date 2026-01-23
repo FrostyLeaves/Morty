@@ -9,4 +9,4 @@ commands:
     commands:
       - "scene create test"
       - "load ../../../Resource/nanite/ripe-banana/ripe-banana.entity test"
-      - "editor test"
+      - "set test ripe-banana.obj/ripe-banana/ripe-banana:MSceneComponent:Position 0,0,50"

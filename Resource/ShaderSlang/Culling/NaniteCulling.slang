@@ -24,6 +24,7 @@ public struct NaniteRenderData
 public struct CandidateCluster
 {
     public uint clusterIndex;
+    public uint groupIndex;
     public uint meshInstanceIndex;
     public float distanceToCamera;
 };
@@ -95,7 +96,7 @@ public struct NaniteCulling
         for (int i = 0; i < 6; ++i)
         {
             float distance = dot(frustum.planes[i].xyz, center) + frustum.planes[i].w;
-            if (distance < -radius)
+            if (distance > radius)
                 return false;
         }
         return true;
@@ -144,36 +145,6 @@ public struct NaniteCulling
 
 // ==================== Nanite Traversal Utilities ====================
 
-public void TestFunction(RWStructuredBuffer<uint> outCandidateCount)
-{
-    int a = 12306;
-    InterlockedMax(outCandidateCount[0], a);
-}
-
-public void TraverseLODTree(
-        uint meshInstanceIndex,
-        MeshInstanceRenderProxy meshInstance,
-        MeshResourceData meshResource,  // Mesh resource data (contains ClusterGroup root node info)
-        StructuredBuffer<ClusterGroupData> clusterGroups,
-        StructuredBuffer<ClusterData> clusters,
-        StructuredBuffer<int> groupLinks,  // DAG child group indices
-        NaniteRenderData renderData,
-        RWStructuredBuffer<CandidateCluster> outCandidateClusters,
-        RWStructuredBuffer<uint> outCandidateCount)
-{
-    NaniteTraversal.TraverseLODTree(
-        meshInstanceIndex,
-        meshInstance,
-        meshResource,
-        clusterGroups,
-        clusters,
-        groupLinks,
-        renderData,
-        outCandidateClusters,
-        outCandidateCount
-    );
-}
-
 public struct NaniteTraversal
 {
     // Traversal stack node
@@ -199,10 +170,13 @@ public struct NaniteTraversal
         StackNode stack[NANITE_MAX_TRAVERSAL_DEPTH];
         uint stackSize = 0;
 
-        // Push all root ClusterGroups to stack (indirect lookup via MeshResourceData)
-        for (int i = 0; i < meshResource.rootClusterGroupCount; ++i)
+        for (int linkIdx = 0; linkIdx < meshResource.rootClusterGroupCount; ++linkIdx)
         {
-            uint rootGroupIndex = meshResource.rootClusterGroupBeginIndex + i;
+            int globalLinkIdx = meshResource.rootClusterGroupIndex + linkIdx;
+            // groupLinks stores local child group IDs, convert to global by adding clusterGroupBeginIndex
+            int localChildId = groupLinks[globalLinkIdx];
+
+            uint rootGroupIndex = meshResource.rootClusterGroupIndex + localChildId;
 
             // First check if root group is visible
             if (NaniteCulling.CullClusterGroup(
@@ -238,9 +212,10 @@ public struct NaniteTraversal
                 // Traverse child ClusterGroups via DAG links
                 for (uint i = 0; i < currentGroup.groupLinkCount; ++i)
                 {
-                    // groupLinks stores local child group IDs, convert to global by adding rootClusterGroupBeginIndex
-                    int localChildId = groupLinks[currentGroup.groupLinkOffset + i];
-                    uint childGroupIndex = meshResource.rootClusterGroupBeginIndex + localChildId;
+                    int globallinkIdx = currentGroup.groupLinkOffset + i;
+                    // groupLinks stores local child group IDs, convert to global by adding clusterGroupBeginIndex
+                    int localChildId = groupLinks[globallinkIdx];
+                    uint childGroupIndex = meshResource.clusterGroupBeginIndex + localChildId;
 
                     // Frustum culling
                     if (NaniteCulling.CullClusterGroup(
@@ -266,10 +241,6 @@ public struct NaniteTraversal
                     uint clusterIndex = currentGroup.clusterBeginIndex + i;
                     ClusterData cluster = clusters[clusterIndex];
 
-                    // Skip invalid clusters
-                    if (cluster.valid == 0)
-                        continue;
-
                     // Frustum culling
                     if (NaniteCulling.CullCluster(
                         cluster,
@@ -283,6 +254,7 @@ public struct NaniteTraversal
                         CandidateCluster candidate;
                         candidate.clusterIndex = clusterIndex;
                         candidate.meshInstanceIndex = meshInstanceIndex;
+                        candidate.groupIndex = currentNode.groupIndex;
 
                         // Calculate distance to camera (for later sorting)
                         float3 worldPos = mul(meshInstance.matWorld, float4(cluster.position, 1.0)).xyz;

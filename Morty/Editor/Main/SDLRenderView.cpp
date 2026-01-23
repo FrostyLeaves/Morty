@@ -264,7 +264,7 @@ void SDLRenderView::BindSDLWindow()
     // Setup window
     SDL_WindowFlags window_flags = SDL_WindowFlags(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     m_sDLWindow                  = SDL_CreateWindow(
-            "Morty Editor",
+            m_windowTitle.c_str(),
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             GetWidth(),

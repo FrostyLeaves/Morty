@@ -34,6 +34,8 @@
 #define PROPERTY_VARIANT        [[clang::annotate("ComponentPropertyVariant")]]
 #define PROPERTY_ENUM           [[clang::annotate("ComponentPropertyEnum")]]
 #define PROPERTY_RESOURCE(type) [[clang::annotate("ComponentPropertyResource(" #type ")")]]
+#define PROPERTY_ACCESSOR(type, name) \
+    [[clang::annotate("PropertyAccessor(" #type "," #name ")")]] static constexpr int _accessor_##name = 0
 
 //#pragma warning( disable: 4251 )
 //#pragma warning( disable: 4275 )

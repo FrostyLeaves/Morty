@@ -15,6 +15,7 @@ MORTY_CLASS_IMPLEMENT(MFrameParamNode, MRenderTaskNode)
 
 // Shader parameter names for FrameData (set = 1)
 static const MStringId ViewMatrixNameId     = MStringId("viewMatrix");
+static const MStringId ViewProjMatrixNameId = MStringId("viewProjMatrix");
 static const MStringId CameraPositionNameId = MStringId("positionWS");
 static const MStringId InstanceProxyNameId  = MStringId("GlobalData.scene.instanceProxy");
 
@@ -78,10 +79,12 @@ void MFrameParamNode::UpdateFrameParameters(const MRenderInfo& info)
     auto    instanceManager = info.scene->GetManager<MMeshInstanceManager>();
 
     // Camera transform is world-to-view matrix
-    Matrix4 viewMatrix = info.m4CameraTransform.Inverse();
+    Matrix4 viewMatrix     = info.m4CameraTransform.Inverse();
+    Matrix4 viewProjMatrix = info.m4ProjectionMatrix * viewMatrix;
 
     // Update camera view matrix (CameraData.viewMatrix)
     m_frameParameterSet->SetValue(ViewMatrixNameId, viewMatrix);
+    m_frameParameterSet->SetValue(ViewProjMatrixNameId, viewProjMatrix);
 
     // Extract camera world position from transform matrix
     Vector3 cameraPosition = info.m4CameraTransform.GetTranslation();

@@ -45,6 +45,7 @@ public struct IndexedIndirectCommand
 public struct CameraData
 {
     public float4x4 viewMatrix;
+    public float4x4 viewProjMatrix;
     public float3 positionWS;
 }
 

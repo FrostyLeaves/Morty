@@ -179,35 +179,21 @@ VkFormat MVulkanDevice::GetFormat(const METextureFormat& layout) const
 VkImageUsageFlags MVulkanDevice::GetUsageFlags(MTexture* texture) const
 {
     VkImageUsageFlags usageFlags = 0;
-    if (texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
-    {
-        usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    }
+    if (texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler) { usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT; }
     if (texture->GetReadUsage() & METextureReadUsageBit::EStorageRead) { usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT; }
-    if (texture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask)
-    {
-        usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-    }
-    if (texture->GetReadUsage() & METextureReadUsageBit::ECpuReadable)
-    {
-        usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    }
+    if (texture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask) { usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR; }
+    if (texture->GetReadUsage() & METextureReadUsageBit::ECpuReadable) { usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT; }
 
     if (texture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite) { usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT; }
     if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
     {
-        usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                      VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
     if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
     {
-        usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                      VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
-    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
-    {
-        usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    }
+    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth) { usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
     if (texture->GetWriteUsage() & METextureWriteUsageBit::EUnknow)
     {
         //nothing.
@@ -225,10 +211,7 @@ VkImageAspectFlags MVulkanDevice::GetAspectFlags(METextureWriteUsage eUsage)
 
 VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkFormat format)
 {
-    if (DepthStencilTextureFormat.find(format) != DepthStencilTextureFormat.end())
-    {
-        return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-    }
+    if (DepthStencilTextureFormat.find(format) != DepthStencilTextureFormat.end()) { return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT; }
 
     if (DepthOnlyTextureFormat.find(format) != DepthOnlyTextureFormat.end()) { return VK_IMAGE_ASPECT_DEPTH_BIT; }
 
@@ -248,8 +231,7 @@ VkImageAspectFlags MVulkanDevice::GetAspectFlags(VkImageLayout layout) const
             {VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT},
             {VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT},
             {VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT},
-            {VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR,
-             VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR}
+            {VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR}
 
     };
 
@@ -268,19 +250,10 @@ VkImageLayout MVulkanDevice::GetImageLayout(MTexture* texture) const
     if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent) { return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
     if (texture->GetWriteUsage() & METextureWriteUsageBit::EStorageWrite) { return VK_IMAGE_LAYOUT_GENERAL; }
 
-    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
-    {
-        return m_physicalDevice->m_vkDepthImageLayout;
-    }
-    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
-    {
-        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    }
+    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth) { return m_physicalDevice->m_vkDepthImageLayout; }
+    if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack) { return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; }
 
-    if (texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
-    {
-        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    }
+    if (texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler) { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
 
     MORTY_ASSERT(false);
     return VK_IMAGE_LAYOUT_UNDEFINED;
@@ -342,8 +315,7 @@ uint32_t MVulkanDevice::GetMipmapCount(MTexture* texture) const
 {
     if (MEMipmapDataType::Disable == texture->GetMipmapDataType()) { return 1; }
 
-    const uint32_t unMipmap =
-            static_cast<uint32_t>(std::floor(std::log2(std::max(texture->GetSize().x, texture->GetSize().y)))) + 1;
+    const uint32_t unMipmap = static_cast<uint32_t>(std::floor(std::log2(std::max(texture->GetSize().x, texture->GetSize().y)))) + 1;
     return unMipmap;
 }
 
@@ -356,6 +328,8 @@ uint32_t MVulkanDevice::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) 
         case MEBufferBarrierStage::EPixelShaderWrite: return m_physicalDevice->m_graphicsFamilyIndex;
         case MEBufferBarrierStage::EPixelShaderRead: return m_physicalDevice->m_graphicsFamilyIndex;
         case MEBufferBarrierStage::EDrawIndirectRead: return m_physicalDevice->m_graphicsFamilyIndex;
+        case MEBufferBarrierStage::EShadingRateRead: return m_physicalDevice->m_graphicsFamilyIndex;
+        case MEBufferBarrierStage::ETransferWrite: return m_physicalDevice->m_graphicsFamilyIndex;
         case MEBufferBarrierStage::EUnknow: MORTY_ASSERT(stage != MEBufferBarrierStage::EUnknow); break;
         default: MORTY_ASSERT(false); break;
     }
@@ -364,7 +338,7 @@ uint32_t MVulkanDevice::GetBufferBarrierQueueFamily(MEBufferBarrierStage stage) 
 
 MVulkanObjectRecycleBin* MVulkanDevice::GetRecycleBin() const { return m_recycleBin; }
 
-void MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName) const
+void                     MVulkanDevice::SetDebugName(uint64_t object, const VkObjectType& type, const char* svDebugName) const
 {
 #if MORTY_DEBUG
     VkDebugUtilsObjectNameInfoEXT vkObjectName;
@@ -400,18 +374,12 @@ bool MVulkanDevice::InitSampler()
     samplerInfo.minLod                  = 0.0f;
     samplerInfo.maxLod                  = VK_LOD_CLAMP_NONE;
 
-    if (vkCreateSampler(m_vkDevice, &samplerInfo, nullptr, &m_vkLinearSampler) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
+    if (vkCreateSampler(m_vkDevice, &samplerInfo, nullptr, &m_vkLinearSampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
 
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
     samplerInfo.magFilter  = VK_FILTER_NEAREST;
     samplerInfo.minFilter  = VK_FILTER_NEAREST;
-    if (vkCreateSampler(m_vkDevice, &samplerInfo, nullptr, &m_vkNearestSampler) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
+    if (vkCreateSampler(m_vkDevice, &samplerInfo, nullptr, &m_vkNearestSampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
 
     return true;
 }
@@ -475,10 +443,7 @@ bool MVulkanDevice::InitDescriptorPool()
     return true;
 }
 
-void MVulkanDevice::GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize)
-{
-    GenerateBuffer(VK_NULL_HANDLE, buffer, initialData, unDataSize);
-}
+void MVulkanDevice::GenerateBuffer(MBuffer* buffer, const MByte* initialData, const size_t& unDataSize) { GenerateBuffer(VK_NULL_HANDLE, buffer, initialData, unDataSize); }
 
 void MVulkanDevice::DownloadBuffer(MBuffer* buffer, MByte* outputData, const size_t& nSize)
 {
@@ -506,14 +471,44 @@ void MVulkanDevice::DestroyBuffer(MBuffer* buffer)
     buffer->m_bufferRHI = nullptr;
 }
 
-void MVulkanDevice::UploadBuffer(
-        MBuffer*      buffer,
-        const size_t& unBeginOffset,
-        const MByte*  data,
-        const size_t& unDataSize
-)
+void MVulkanDevice::UploadBuffer(MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize) { UploadBuffer(VK_NULL_HANDLE, buffer, unBeginOffset, data, unDataSize); }
+
+void MVulkanDevice::ResizeBuffer(MBuffer* buffer, size_t size)
 {
-    UploadBuffer(VK_NULL_HANDLE, buffer, unBeginOffset, data, unDataSize);
+    if (!buffer) { return; }
+    if (!buffer->m_bufferRHI)
+    {
+        GenerateBuffer(buffer, nullptr, size);
+        return;
+    }
+    auto*        bufferRHI = static_cast<MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
+
+    const size_t oldSize = bufferRHI->meomrySize;
+    if (size <= oldSize) { return; }
+
+    VkBuffer              oldBuffer       = bufferRHI->vkBuffer;
+    VkDeviceMemory        oldDeviceMemory = bufferRHI->vkDeviceMemory;
+
+    VkBuffer              newBuffer          = VK_NULL_HANDLE;
+    VkDeviceMemory        newDeviceMemory    = VK_NULL_HANDLE;
+    VkBufferUsageFlags    vkBufferUsageFlags = GetBufferUsageFlags(buffer);
+    VkMemoryPropertyFlags vkMemoryFlags      = GetMemoryFlags(buffer);
+
+    if (!GenerateBuffer(size, vkBufferUsageFlags, vkMemoryFlags, newBuffer, newDeviceMemory)) { return; }
+
+    VkBufferCopy region = {0, 0, oldSize};
+    CopyBuffer(oldBuffer, newBuffer, region);
+
+    GetRecycleBin()->DestroyBufferLater(oldBuffer);
+    GetRecycleBin()->DestroyDeviceMemoryLater(oldDeviceMemory);
+
+    bufferRHI->vkBuffer       = newBuffer;
+    bufferRHI->vkDeviceMemory = newDeviceMemory;
+    bufferRHI->meomrySize     = size;
+
+#ifdef MORTY_DEBUG
+    SetDebugName(reinterpret_cast<uint64_t>(newBuffer), VkObjectType::VK_OBJECT_TYPE_BUFFER, buffer->GetDebugName());
+#endif
 }
 
 void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::vector<MByte>>& buffer)
@@ -547,33 +542,13 @@ void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::ve
         vkSubresourceRange.baseMipLevel            = 0;
         vkSubresourceRange.levelCount              = nMipmapCount;
         vkSubresourceRange.layerCount              = nLayerCount;
-        TransitionImageLayout(
-                textureRHI->vkTextureImage,
-                UndefinedImageLayout,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                vkSubresourceRange
-        );
+        TransitionImageLayout(textureRHI->vkTextureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, vkSubresourceRange);
     }
     else
     {
         if (textureRHI->vkTextureImage) { MORTY_ASSERT(false); }
 
-        CreateImage(
-                width,
-                height,
-                depth,
-                nMipmapCount,
-                nLayerCount,
-                format,
-                VK_IMAGE_TILING_OPTIMAL,
-                usageFlags,
-                memoryFlags,
-                defaultLayout,
-                textureImage,
-                textureImageMemory,
-                createFlags,
-                imageType
-        );
+        CreateImage(width, height, depth, nMipmapCount, nLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, defaultLayout, textureImage, textureImageMemory, createFlags, imageType);
 
         if (!buffer.empty())
         {
@@ -608,13 +583,7 @@ void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::ve
             vkSubresourceRange.layerCount              = nLayerCount;
 
             VkCommandBuffer commandBuffer = BeginCommands();
-            TransitionImageLayout(
-                    commandBuffer,
-                    textureImage,
-                    UndefinedImageLayout,
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    vkSubresourceRange
-            );
+            TransitionImageLayout(commandBuffer, textureImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
             uint32_t nMipmapWidth = width, nMipmapHeight = height;
             for (size_t nMipmapIdx = 0; nMipmapIdx < buffer.size(); ++nMipmapIdx)
@@ -633,23 +602,13 @@ void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::ve
                 nMipmapWidth  = std::max(nMipmapWidth / 2, 1u);
                 nMipmapHeight = std::max(nMipmapHeight / 2, 1u);
 
-                vkCmdCopyBufferToImage(
-                        commandBuffer,
-                        stagingBuffer[nMipmapIdx],
-                        textureImage,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        1,
-                        &region
-                );
+                vkCmdCopyBufferToImage(commandBuffer, stagingBuffer[nMipmapIdx], textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
             }
 
             EndCommands(commandBuffer);
 
             defaultLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx)
-            {
-                DestroyBuffer(stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]);
-            }
+            for (uint32_t nBufferIdx = 0; nBufferIdx < nBufferCount; ++nBufferIdx) { DestroyBuffer(stagingBuffer[nBufferIdx], stagingBufferMemory[nBufferIdx]); }
         }
 
         VkImageSubresourceRange vkSubresourceRange = {};
@@ -667,22 +626,13 @@ void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::ve
     }
 
 
-    textureRHI->vkImageView = CreateImageView(
-            textureRHI->vkTextureImage,
-            textureRHI->vkTextureFormat,
-            aspectFlgas,
-            nMipmapCount,
-            nLayerCount,
-            GetImageViewType(texture)
-    );
+    textureRHI->vkImageView = CreateImageView(textureRHI->vkTextureImage, textureRHI->vkTextureFormat, aspectFlgas, nMipmapCount, nLayerCount, GetImageViewType(texture));
 
     if (texture->GetMipmapDataType() == MEMipmapDataType::Generate) { GenerateMipmaps(texture, nMipmapCount); }
 
     if (texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
     {
-        VkFilter            vkShadowMapFilter = m_physicalDevice->FormatIsFilterable(format, VK_IMAGE_TILING_OPTIMAL)
-                                                        ? VK_FILTER_LINEAR
-                                                        : VK_FILTER_NEAREST;
+        VkFilter            vkShadowMapFilter = m_physicalDevice->FormatIsFilterable(format, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 
         VkSampler           depthSampler;
         VkSamplerCreateInfo sampler = {};
@@ -707,24 +657,9 @@ void MVulkanDevice::GenerateTexture(MTexture* texture, const std::vector<std::ve
     MORTY_ASSERT(!texture->GetName().empty());
     if (!texture->GetName().empty())
     {
-        SetDebugName(
-                (uint64_t) textureRHI->vkTextureImage,
-                VkObjectType::VK_OBJECT_TYPE_IMAGE,
-                texture->GetName().c_str()
-        );
-        SetDebugName(
-                (uint64_t) textureRHI->vkImageView,
-                VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW,
-                texture->GetName().c_str()
-        );
-        if (textureRHI->vkTextureImageMemory)
-        {
-            SetDebugName(
-                    (uint64_t) textureRHI->vkTextureImageMemory,
-                    VkObjectType::VK_OBJECT_TYPE_DEVICE_MEMORY,
-                    texture->GetName().c_str()
-            );
-        }
+        SetDebugName((uint64_t) textureRHI->vkTextureImage, VkObjectType::VK_OBJECT_TYPE_IMAGE, texture->GetName().c_str());
+        SetDebugName((uint64_t) textureRHI->vkImageView, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, texture->GetName().c_str());
+        if (textureRHI->vkTextureImageMemory) { SetDebugName((uint64_t) textureRHI->vkTextureImageMemory, VkObjectType::VK_OBJECT_TYPE_DEVICE_MEMORY, texture->GetName().c_str()); }
     }
 }
 
@@ -760,13 +695,7 @@ void MVulkanDevice::DestroyTexture(MTexture* texture)
 
 bool MVulkanDevice::CompileShaderHlsl(MShader* pShader, std::vector<uint32_t>& spirv)
 {
-    m_ShaderCompiler->CompileShader(
-            pShader->GetShaderPath(),
-            pShader->GetEntryName(),
-            pShader->GetShaderType(),
-            pShader->GetMacro(),
-            spirv
-    );
+    m_ShaderCompiler->CompileShader(pShader->GetShaderPath(), pShader->GetEntryName(), pShader->GetShaderType(), pShader->GetMacro(), spirv);
 
     return true;
 }
@@ -817,14 +746,8 @@ bool MVulkanDevice::CompileShader(MShader* pShader)
 
     if (pShader->GetShaderType() == MEShaderType::EVertex) { shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT; }
     else if (pShader->GetShaderType() == MEShaderType::EPixel) { shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT; }
-    else if (pShader->GetShaderType() == MEShaderType::ECompute)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    }
-    else if (pShader->GetShaderType() == MEShaderType::EGeometry)
-    {
-        shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-    }
+    else if (pShader->GetShaderType() == MEShaderType::ECompute) { shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT; }
+    else if (pShader->GetShaderType() == MEShaderType::EGeometry) { shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT; }
     else { MORTY_ASSERT(false); }
 
 
@@ -934,8 +857,7 @@ bool MVulkanDevice::SyncParameterSet(MShaderParameterSet* propertyBlock)
 
     for (const auto& pParam: propertyBlock->GetTextureParams())
     {
-        const auto pImageIdent =
-                pParam->GetTexture() ? pParam->GetTexture()->GetTextureRHI<MTextureRHIVulkan>()->vkImageView : nullptr;
+        const auto pImageIdent = pParam->GetTexture() ? pParam->GetTexture()->GetTextureRHI<MTextureRHIVulkan>()->vkImageView : nullptr;
         if (pParam->bDirty || pParam->pImageIdent != pImageIdent)
         {
             bNeedAllocDescriptorSet = true;
@@ -1010,26 +932,14 @@ VkAttachmentDescription2 CreateAttachmentDescriptionFromTexture(const MRenderTar
     colorAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-    if (renderTarget.texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent)
-    {
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    }
-    else if (renderTarget.texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack)
-    {
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    }
+    if (renderTarget.texture->GetWriteUsage() & METextureWriteUsageBit::ERenderPresent) { colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+    else if (renderTarget.texture->GetWriteUsage() & METextureWriteUsageBit::ERenderBack) { colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; }
     else if (renderTarget.texture->GetWriteUsage() & METextureWriteUsageBit::ERenderDepth)
     {
-        if (renderTarget.texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler)
-        {
-            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        }
+        if (renderTarget.texture->GetReadUsage() & METextureReadUsageBit::EPixelSampler) { colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; }
         else { colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; }
     }
-    else if (renderTarget.texture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask)
-    {
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
-    }
+    else if (renderTarget.texture->GetReadUsage() & METextureReadUsageBit::EShadingRateMask) { colorAttachment.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR; }
     else { MORTY_ASSERT(false); }
 
     if (renderTarget.desc.bClearWhenRender) { colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; }
@@ -1045,7 +955,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
     if (VK_NULL_HANDLE != pRenderPass->m_vkRenderPass) { DestroyRenderPass(pRenderPass); }
 
-    uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
+    uint32_t                              unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
 
     std::vector<VkAttachmentDescription2> vAttachmentDesc;
 
@@ -1091,11 +1001,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
         for (uint32_t i = 0; i < unBackNum; ++i)
         {
             vOutAttachmentRef[0].push_back(
-                    {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
-                     nullptr,
-                     uint32_t(vOutAttachmentRef[0].size()),
-                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                     VK_IMAGE_ASPECT_COLOR_BIT}
+                    {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT}
             );
         }
 
@@ -1104,11 +1010,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
         if (pRenderPass->GetDepthTexture())
         {
             vOutDepthAttachmentRef[0] = {
-                    {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
-                     nullptr,
-                     uint32_t(vOutAttachmentRef[0].size()),
-                     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                     VK_IMAGE_ASPECT_DEPTH_BIT}
+                    {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, uint32_t(vOutAttachmentRef[0].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT}
             };
             vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[0].data();
         }
@@ -1140,13 +1042,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
             {
                 uint32_t nBackIdx = subpass.m_outputIndex[i];
 
-                vOutAttachmentRef[nSubpassIdx].push_back(
-                        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
-                         nullptr,
-                         nBackIdx,
-                         VK_IMAGE_LAYOUT_GENERAL,
-                         VK_IMAGE_ASPECT_COLOR_BIT}
-                );
+                vOutAttachmentRef[nSubpassIdx].push_back({VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, nBackIdx, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_ASPECT_COLOR_BIT});
 
                 vUsedAttachIndex.insert(nBackIdx);
             }
@@ -1154,11 +1050,8 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
             if (pRenderPass->GetDepthTexture())
             {
                 vOutDepthAttachmentRef[nSubpassIdx] = {
-                        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
-                         nullptr,
-                         uint32_t(vOutAttachmentRef[nSubpassIdx].size()),
-                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                         VK_IMAGE_ASPECT_DEPTH_BIT}
+                        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, uint32_t(vOutAttachmentRef[nSubpassIdx].size()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT
+                        }
                 };
                 vkSubpass.pDepthStencilAttachment = vOutDepthAttachmentRef[nSubpassIdx].data();
             }
@@ -1170,13 +1063,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
             {
                 uint32_t nBackIdx = subpass.m_inputIndex[i];
 
-                vInAttachmentRef[nSubpassIdx].push_back(
-                        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
-                         nullptr,
-                         nBackIdx,
-                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                         VK_IMAGE_ASPECT_COLOR_BIT}
-                );
+                vInAttachmentRef[nSubpassIdx].push_back({VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, nBackIdx, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT});
 
                 vUsedAttachIndex.insert(nBackIdx);
             }
@@ -1186,10 +1073,7 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
 
             for (uint32_t i = 0; i < unBackNum; ++i)
             {
-                if (vUsedAttachIndex.find(i) == vUsedAttachIndex.end())
-                {
-                    vUnusedAttachmentRef[nSubpassIdx].push_back(i);
-                }
+                if (vUsedAttachIndex.find(i) == vUsedAttachIndex.end()) { vUnusedAttachmentRef[nSubpassIdx].push_back(i); }
             }
 
             vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(vUnusedAttachmentRef[nSubpassIdx].size());
@@ -1208,14 +1092,12 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
             depend.srcSubpass            = static_cast<uint32_t>(nDependantIdx);
             depend.dstSubpass            = static_cast<uint32_t>(nSubpassIdx);
             //          depend.dstSubpass = (subpass<subpassCount) ? subpass : VK_SUBPASS_EXTERNAL;
-            depend.srcStageMask  = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
-            depend.dstStageMask  = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
-            depend.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                   VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-                                   VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-            depend.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                   VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-                                   VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            depend.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            depend.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            depend.srcAccessMask =
+                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            depend.dstAccessMask =
+                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
             depend.dependencyFlags = 0;
         }
     }
@@ -1236,15 +1118,11 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
             vkFragShadingRateReference.attachment = vAttachmentDesc.size() - 1;
             vkFragShadingRateReference.layout     = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 
-            vkShadingRateAttachmentInfo.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+            vkShadingRateAttachmentInfo.sType                          = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
             vkShadingRateAttachmentInfo.pFragmentShadingRateAttachment = &vkFragShadingRateReference;
-            vkShadingRateAttachmentInfo.shadingRateAttachmentTexelSize =
-                    GetPhysicalDevice()->m_vkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
+            vkShadingRateAttachmentInfo.shadingRateAttachmentTexelSize = GetPhysicalDevice()->m_vkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
 
-            for (size_t nSubPassIdx = 0; nSubPassIdx < vSubpass.size(); ++nSubPassIdx)
-            {
-                vSubpass[nSubPassIdx].pNext = &vkShadingRateAttachmentInfo;
-            }
+            for (size_t nSubPassIdx = 0; nSubPassIdx < vSubpass.size(); ++nSubPassIdx) { vSubpass[nSubPassIdx].pNext = &vkShadingRateAttachmentInfo; }
         }
     }
 
@@ -1259,17 +1137,10 @@ bool MVulkanDevice::GenerateRenderPass(MRenderPass* pRenderPass)
     renderPassInfo.correlatedViewMaskCount = vCorrelationMask.size();
     renderPassInfo.pCorrelatedViewMasks    = vCorrelationMask.data();
 
-    if (vkCreateRenderPass2(m_vkDevice, &renderPassInfo, nullptr, &pRenderPass->m_vkRenderPass) != VK_SUCCESS)
-    {
-        return false;
-    }
+    if (vkCreateRenderPass2(m_vkDevice, &renderPassInfo, nullptr, &pRenderPass->m_vkRenderPass) != VK_SUCCESS) { return false; }
 
 #ifdef MORTY_DEBUG
-    SetDebugName(
-            reinterpret_cast<uint64_t>(pRenderPass->m_vkRenderPass),
-            VkObjectType::VK_OBJECT_TYPE_RENDER_PASS,
-            pRenderPass->m_strDebugName.c_str()
-    );
+    SetDebugName(reinterpret_cast<uint64_t>(pRenderPass->m_vkRenderPass), VkObjectType::VK_OBJECT_TYPE_RENDER_PASS, pRenderPass->m_strDebugName.c_str());
 #endif
 
     return true;
@@ -1327,7 +1198,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
 {
     std::vector<std::tuple<VkImageView, Vector2i>> vAttachmentViewAndSize;
 
-    const uint32_t unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
+    const uint32_t                                 unBackNum = static_cast<uint32_t>(pRenderPass->m_renderTarget.backTargets.size());
     for (uint32_t backIdx = 0; backIdx < unBackNum; ++backIdx)
     {
         MRenderTarget& backTexture = pRenderPass->m_renderTarget.backTargets[backIdx];
@@ -1340,14 +1211,9 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
         vAttachmentViewAndSize.push_back(CreateFrameBufferViewFromRenderTarget(backTexture));
     }
 
-    if (pRenderPass->GetDepthTexture())
-    {
-        vAttachmentViewAndSize.push_back(CreateFrameBufferViewFromRenderTarget(pRenderPass->m_renderTarget.depthTarget)
-        );
-    }
+    if (pRenderPass->GetDepthTexture()) { vAttachmentViewAndSize.push_back(CreateFrameBufferViewFromRenderTarget(pRenderPass->m_renderTarget.depthTarget)); }
 
-    const Vector2i nFrameBufferSize =
-            vAttachmentViewAndSize.empty() ? Vector2i(0, 0) : std::get<1>(vAttachmentViewAndSize[0]);
+    const Vector2i nFrameBufferSize = vAttachmentViewAndSize.empty() ? Vector2i(0, 0) : std::get<1>(vAttachmentViewAndSize[0]);
 
     for (size_t nIdx = 1; nIdx < vAttachmentViewAndSize.size(); ++nIdx)
     {
@@ -1359,12 +1225,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
     }
 
     std::vector<VkImageView> vAttachmentViews(vAttachmentViewAndSize.size());
-    std::transform(
-            vAttachmentViewAndSize.begin(),
-            vAttachmentViewAndSize.end(),
-            vAttachmentViews.begin(),
-            [](const auto& tuple) { return std::get<0>(tuple); }
-    );
+    std::transform(vAttachmentViewAndSize.begin(), vAttachmentViewAndSize.end(), vAttachmentViews.begin(), [](const auto& tuple) { return std::get<0>(tuple); });
 
     if (pRenderPass->GetShadingRateTexture())
     {
@@ -1409,13 +1270,7 @@ bool MVulkanDevice::GenerateFrameBuffer(MRenderPass* pRenderPass)
     pRenderPass->m_vkExtent2D.height = framebufferInfo.height;
 
     VkResult result = vkCreateFramebuffer(m_vkDevice, &framebufferInfo, nullptr, &pRenderPass->m_vkFrameBuffer);
-    if (VK_SUCCESS != result)
-    {
-        GetEngine()->GetLogger()->Error(
-                "MVulkanDevice::GenerateFrameBuffer error: vulkan result: {}",
-                std::to_string(result).c_str()
-        );
-    }
+    if (VK_SUCCESS != result) { GetEngine()->GetLogger()->Error("MVulkanDevice::GenerateFrameBuffer error: vulkan result: {}", std::to_string(result).c_str()); }
 
     return true;
 }
@@ -1440,8 +1295,7 @@ void MVulkanDevice::DestroyFrameBuffer(MRenderPass* pRenderPass)
     }
 }
 
-std::shared_ptr<MGraphicsPipeline>
-MVulkanDevice::FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass)
+std::shared_ptr<MGraphicsPipeline> MVulkanDevice::FindOrCreateGraphicsPipeline(const MMaterialPass* materialPass, const MRenderPass* pRenderPass)
 {
     return m_PipelineManager.FindOrCreateGraphicsPipeline(materialPass, pRenderPass);
 }
@@ -1459,11 +1313,7 @@ IRenderCommand* MVulkanDevice::CreateRenderCommand(const MString& strCommandName
     allocInfo.commandBufferCount = 1;
     vkAllocateCommandBuffers(m_vkDevice, &allocInfo, &pCommand->m_vkCommandBuffer);
 
-    SetDebugName(
-            (uint64_t) pCommand->m_vkCommandBuffer,
-            VkObjectType::VK_OBJECT_TYPE_COMMAND_BUFFER,
-            strCommandName.c_str()
-    );
+    SetDebugName((uint64_t) pCommand->m_vkCommandBuffer, VkObjectType::VK_OBJECT_TYPE_COMMAND_BUFFER, strCommandName.c_str());
 
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -1605,12 +1455,7 @@ void MVulkanDevice::Update()
     m_recycleBin->Initialize();
 }
 
-void MVulkanDevice::CopyBuffer(
-        VkBuffer        srcBuffer,
-        VkBuffer        dstBuffer,
-        VkBufferCopy    region,
-        VkCommandBuffer vkCommandBuffer
-)
+void MVulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopy region, VkCommandBuffer vkCommandBuffer)
 {
     if (vkCommandBuffer == VK_NULL_HANDLE)
     {
@@ -1657,13 +1502,7 @@ void MVulkanDevice::CopyImage(
     srcRange.baseMipLevel            = srcMip;
     srcRange.levelCount              = 1;
 
-    TransitionImageLayout(
-            commandBuffer,
-            sourceRHI->vkTextureImage,
-            sourceRHI->vkImageLayout,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            srcRange
-    );
+    TransitionImageLayout(commandBuffer, sourceRHI->vkTextureImage, sourceRHI->vkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcRange);
 
     // Transition target to transfer dst layout
     VkImageSubresourceRange dstRange = {};
@@ -1673,13 +1512,7 @@ void MVulkanDevice::CopyImage(
     dstRange.baseMipLevel            = dstMip;
     dstRange.levelCount              = 1;
 
-    TransitionImageLayout(
-            commandBuffer,
-            targetRHI->vkTextureImage,
-            targetRHI->vkImageLayout,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            dstRange
-    );
+    TransitionImageLayout(commandBuffer, targetRHI->vkTextureImage, targetRHI->vkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstRange);
 
     // Use vkCmdBlitImage for copy
     VkImageBlit blit{};
@@ -1697,32 +1530,11 @@ void MVulkanDevice::CopyImage(
     blit.dstSubresource.baseArrayLayer = dstSlice;
     blit.dstSubresource.layerCount     = 1;
 
-    vkCmdBlitImage(
-            commandBuffer,
-            sourceRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            targetRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            1,
-            &blit,
-            VK_FILTER_LINEAR
-    );
+    vkCmdBlitImage(commandBuffer, sourceRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, targetRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
     // Transition images back to their original layouts
-    TransitionImageLayout(
-            commandBuffer,
-            sourceRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            sourceRHI->vkImageLayout,
-            srcRange
-    );
-    TransitionImageLayout(
-            commandBuffer,
-            targetRHI->vkTextureImage,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            targetRHI->vkImageLayout,
-            dstRange
-    );
+    TransitionImageLayout(commandBuffer, sourceRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, sourceRHI->vkImageLayout, srcRange);
+    TransitionImageLayout(commandBuffer, targetRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, targetRHI->vkImageLayout, dstRange);
 
     if (!command) { EndCommands(commandBuffer); }
 }
@@ -1760,22 +1572,7 @@ void MVulkanDevice::ResizeTextureArray(MTexture* texture, uint32_t newLayerCount
     VkImage                     newImage       = VK_NULL_HANDLE;
     VkDeviceMemory              newImageMemory = VK_NULL_HANDLE;
 
-    CreateImage(
-            width,
-            height,
-            depth,
-            mipmapCount,
-            newLayerCount,
-            format,
-            VK_IMAGE_TILING_OPTIMAL,
-            usageFlags,
-            memoryFlags,
-            UndefinedImageLayout,
-            newImage,
-            newImageMemory,
-            createFlags,
-            imageType
-    );
+    CreateImage(width, height, depth, mipmapCount, newLayerCount, format, VK_IMAGE_TILING_OPTIMAL, usageFlags, memoryFlags, UndefinedImageLayout, newImage, newImageMemory, createFlags, imageType);
 
     // Get or create command buffer
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
@@ -1794,13 +1591,7 @@ void MVulkanDevice::ResizeTextureArray(MTexture* texture, uint32_t newLayerCount
     newRange.baseMipLevel            = 0;
     newRange.levelCount              = mipmapCount;
 
-    TransitionImageLayout(
-            commandBuffer,
-            newImage,
-            UndefinedImageLayout,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            newRange
-    );
+    TransitionImageLayout(commandBuffer, newImage, UndefinedImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, newRange);
 
     // Transition old image to transfer src layout
     VkImageSubresourceRange oldRange = {};
@@ -1835,16 +1626,7 @@ void MVulkanDevice::ResizeTextureArray(MTexture* texture, uint32_t newLayerCount
             blit.dstSubresource.baseArrayLayer = layer;
             blit.dstSubresource.layerCount     = 1;
 
-            vkCmdBlitImage(
-                    commandBuffer,
-                    oldImage,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    newImage,
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    1,
-                    &blit,
-                    VK_FILTER_NEAREST
-            );
+            vkCmdBlitImage(commandBuffer, oldImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, newImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
         }
     }
 
@@ -1870,12 +1652,7 @@ void MVulkanDevice::ResizeTextureArray(MTexture* texture, uint32_t newLayerCount
     if (oldImageView != VK_NULL_HANDLE) { GetRecycleBin()->DestroyImageViewLater(oldImageView); }
 }
 
-void MVulkanDevice::GenerateBuffer(
-        VkCommandBuffer vkCommand,
-        MBuffer*        buffer,
-        const MByte*    initialData,
-        const size_t&   unDataSize
-)
+void MVulkanDevice::GenerateBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const MByte* initialData, const size_t& unDataSize)
 {
     VkDeviceSize          unBufferSize = static_cast<uint64_t>(buffer->GetSize());
 
@@ -1905,13 +1682,7 @@ void MVulkanDevice::GenerateBuffer(
         {
             VkBuffer       stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
-            GenerateBuffer(
-                    unBufferSize,
-                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    stagingBuffer,
-                    stagingBufferMemory
-            );
+            GenerateBuffer(unBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
             vkMapMemory(m_vkDevice, stagingBufferMemory, 0, unBufferSize, 0, &pMapMemory);
             memcpy(pMapMemory, initialData, (size_t) unBufferSize);
@@ -1935,17 +1706,12 @@ void MVulkanDevice::GenerateBuffer(
     auto bufferRHI            = std::make_unique<MBufferRHIVulkan>();
     bufferRHI->vkBuffer       = vkBuffer;
     bufferRHI->vkDeviceMemory = vkDeviceMemory;
+    bufferRHI->meomrySize     = unDataSize;
     buffer->m_bufferRHI       = std::move(bufferRHI);
     buffer->m_stageType       = MBuffer::MStageType::ESynced;
 }
 
-void MVulkanDevice::UploadBuffer(
-        VkCommandBuffer vkCommand,
-        MBuffer*        buffer,
-        const size_t&   unBeginOffset,
-        const MByte*    data,
-        const size_t&   unDataSize
-)
+void MVulkanDevice::UploadBuffer(VkCommandBuffer vkCommand, MBuffer* buffer, const size_t& unBeginOffset, const MByte* data, const size_t& unDataSize)
 {
     if (!buffer || !buffer->m_bufferRHI) { return; }
     auto* bufferRHI = static_cast<MBufferRHIVulkan*>(buffer->m_bufferRHI.get());
@@ -1967,13 +1733,7 @@ void MVulkanDevice::UploadBuffer(
         VkBuffer       stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         void*          dataMapping = nullptr;
-        GenerateBuffer(
-                unDataSize,
-                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                stagingBuffer,
-                stagingBufferMemory
-        );
+        GenerateBuffer(unDataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         vkMapMemory(m_vkDevice, stagingBufferMemory, 0, unDataSize, 0, &dataMapping);
         memcpy(dataMapping, data, (size_t) unDataSize);
@@ -1998,18 +1758,14 @@ void MVulkanDevice::GenerateMipmaps(
 
     const VkFormatProperties formatProperties = m_physicalDevice->GetFormatProperties(textureRHI->vkTextureFormat);
 
-    if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-    {
-        throw std::runtime_error("texture image format does not support linear blitting!");
-    }
+    if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) { throw std::runtime_error("texture image format does not support linear blitting!"); }
 
     VkCommandBuffer commandBuffer = buffer;
     if (VK_NULL_HANDLE == commandBuffer) { commandBuffer = BeginCommands(); }
 
-    int32_t  mipWidth  = texture->GetSize().x;
-    int32_t  mipHeight = texture->GetSize().y;
-    uint32_t mipLevels =
-            static_cast<uint32_t>(std::floor(std::log2(std::max(texture->GetSize().x, texture->GetSize().y)))) + 1;
+    int32_t                 mipWidth     = texture->GetSize().x;
+    int32_t                 mipHeight    = texture->GetSize().y;
+    uint32_t                mipLevels    = static_cast<uint32_t>(std::floor(std::log2(std::max(texture->GetSize().x, texture->GetSize().y)))) + 1;
     uint32_t                unLayerCount = texture->GetLayer();
 
     VkImageSubresourceRange vkSubresourceRange = {};
@@ -2017,13 +1773,7 @@ void MVulkanDevice::GenerateMipmaps(
     vkSubresourceRange.baseMipLevel            = 0;
     vkSubresourceRange.levelCount              = unMipLevels;
     vkSubresourceRange.layerCount              = unLayerCount;
-    TransitionImageLayout(
-            commandBuffer,
-            textureRHI->vkTextureImage,
-            textureRHI->vkImageLayout,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            vkSubresourceRange
-    );
+    TransitionImageLayout(commandBuffer, textureRHI->vkTextureImage, textureRHI->vkImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkSubresourceRange);
 
     VkImageMemoryBarrier barrier{};
     barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -2043,18 +1793,7 @@ void MVulkanDevice::GenerateMipmaps(
         barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask                 = VK_ACCESS_TRANSFER_READ_BIT;
 
-        vkCmdPipelineBarrier(
-                commandBuffer,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                0,
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-        );
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         VkImageBlit blit{};
         blit.srcOffsets[0]                 = {0, 0, 0};
@@ -2070,34 +1809,14 @@ void MVulkanDevice::GenerateMipmaps(
         blit.dstSubresource.baseArrayLayer = 0;
         blit.dstSubresource.layerCount     = unLayerCount;
 
-        vkCmdBlitImage(
-                commandBuffer,
-                textureRHI->vkTextureImage,
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                textureRHI->vkTextureImage,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                1,
-                &blit,
-                VK_FILTER_LINEAR
-        );
+        vkCmdBlitImage(commandBuffer, textureRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, textureRHI->vkTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
         barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-        vkCmdPipelineBarrier(
-                commandBuffer,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                0,
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
-        );
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         if (mipWidth > 1) mipWidth /= 2;
         if (mipHeight > 1) mipHeight /= 2;
@@ -2109,28 +1828,12 @@ void MVulkanDevice::GenerateMipmaps(
     barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.dstAccessMask                 = VK_ACCESS_SHADER_READ_BIT;
 
-    vkCmdPipelineBarrier(
-            commandBuffer,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            0,
-            0,
-            nullptr,
-            0,
-            nullptr,
-            1,
-            &barrier
-    );
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     if (VK_NULL_HANDLE == buffer) { EndCommands(commandBuffer); }
 }
 
-void MVulkanDevice::TransitionImageLayout(
-        VkImage                 image,
-        VkImageLayout           oldLayout,
-        VkImageLayout           newLayout,
-        VkImageSubresourceRange subresourceRange
-)
+void MVulkanDevice::TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange)
 {
     VkCommandBuffer commandBuffer = BeginCommands();
 
@@ -2139,13 +1842,7 @@ void MVulkanDevice::TransitionImageLayout(
     EndCommands(commandBuffer);
 }
 
-void MVulkanDevice::TransitionImageLayout(
-        VkCommandBuffer         commandBuffer,
-        VkImage                 image,
-        VkImageLayout           oldLayout,
-        VkImageLayout           newLayout,
-        VkImageSubresourceRange subresourceRange
-)
+void MVulkanDevice::TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange)
 {
     VkImageMemoryBarrier imageMemoryBarrier;
     TransitionLayoutBarrier(imageMemoryBarrier, image, oldLayout, newLayout, subresourceRange);
@@ -2153,27 +1850,10 @@ void MVulkanDevice::TransitionImageLayout(
     const VkPipelineStageFlags srcStageFlags  = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
     const VkPipelineStageFlags destStageFlags = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-    vkCmdPipelineBarrier(
-            commandBuffer,
-            srcStageFlags,
-            destStageFlags,
-            0,
-            0,
-            VK_NULL_HANDLE,
-            0,
-            VK_NULL_HANDLE,
-            1,
-            &imageMemoryBarrier
-    );
+    vkCmdPipelineBarrier(commandBuffer, srcStageFlags, destStageFlags, 0, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1, &imageMemoryBarrier);
 }
 
-void MVulkanDevice::TransitionLayoutBarrier(
-        VkImageMemoryBarrier&   imageMemoryBarrier,
-        VkImage                 image,
-        VkImageLayout           oldLayout,
-        VkImageLayout           newLayout,
-        VkImageSubresourceRange subresourceRange
-) const
+void MVulkanDevice::TransitionLayoutBarrier(VkImageMemoryBarrier& imageMemoryBarrier, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subresourceRange) const
 {
     imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     imageMemoryBarrier.pNext = NULL;
@@ -2188,14 +1868,7 @@ void MVulkanDevice::TransitionLayoutBarrier(
     imageMemoryBarrier.dstAccessMask       = GetAspectFlags(newLayout);
 }
 
-VkImageView MVulkanDevice::CreateImageView(
-        VkImage                image,
-        VkFormat               format,
-        VkImageAspectFlags     aspectFlags,
-        const uint32_t&        unMipmap,
-        const uint32_t&        unLayerCount,
-        const VkImageViewType& eViewType
-)
+VkImageView MVulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, const uint32_t& unMipmap, const uint32_t& unLayerCount, const VkImageViewType& eViewType)
 {
     return CreateImageView(image, format, aspectFlags, 0, unMipmap, unLayerCount, eViewType);
 }
@@ -2260,10 +1933,7 @@ void MVulkanDevice::CreateImage(
     imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(m_vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create image!");
-    }
+    if (vkCreateImage(m_vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) { throw std::runtime_error("failed to create image!"); }
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(m_vkDevice, image, &memRequirements);
@@ -2275,10 +1945,7 @@ void MVulkanDevice::CreateImage(
 
     if (MGlobal::M_INVALID_UINDEX == allocInfo.memoryTypeIndex) { MORTY_ASSERT(false); }
 
-    if (vkAllocateMemory(m_vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate image memory!");
-    }
+    if (vkAllocateMemory(m_vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) { throw std::runtime_error("failed to allocate image memory!"); }
 
     vkBindImageMemory(m_vkDevice, image, imageMemory, 0);
 }
@@ -2291,18 +1958,9 @@ VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* buffer) const
 
     if (MBuffer::MUsageType::EVertex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
     if (MBuffer::MUsageType::EIndex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }
-    if (MBuffer::MUsageType::EStorage & buffer->m_usageType)
-    {
-        vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    }
-    if (MBuffer::MUsageType::EUniform & buffer->m_usageType)
-    {
-        vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    }
-    if (MBuffer::MUsageType::EIndirect & buffer->m_usageType)
-    {
-        vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-    }
+    if (MBuffer::MUsageType::EStorage & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
+    if (MBuffer::MUsageType::EUniform & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; }
+    if (MBuffer::MUsageType::EIndirect & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT; }
 
 
     return vkBufferUsageFlags;
@@ -2310,10 +1968,7 @@ VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* buffer) const
 
 VkMemoryPropertyFlags MVulkanDevice::GetMemoryFlags(MBuffer* buffer) const
 {
-    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType)
-    {
-        return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    }
+    if (MBuffer::MMemoryType::EHostVisible == buffer->m_memoryType) { return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; }
     else if (MBuffer::MMemoryType::EDeviceLocal == buffer->m_memoryType) { return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; }
     else { MORTY_ASSERT(false); }
 
@@ -2322,37 +1977,16 @@ VkMemoryPropertyFlags MVulkanDevice::GetMemoryFlags(MBuffer* buffer) const
 
 VkFragmentShadingRateCombinerOpKHR MVulkanDevice::GetShadingRateCombinerOp(MEShadingRateCombinerOp op) const
 {
-    MORTY_ASSERT(
-            static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Keep) ==
-            VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR
-    );
-    MORTY_ASSERT(
-            static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Replace) ==
-            VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR
-    );
-    MORTY_ASSERT(
-            static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Min) ==
-            VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR
-    );
-    MORTY_ASSERT(
-            static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Max) ==
-            VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR
-    );
-    MORTY_ASSERT(
-            static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Mul) ==
-            VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR
-    );
+    MORTY_ASSERT(static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Keep) == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR);
+    MORTY_ASSERT(static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Replace) == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR);
+    MORTY_ASSERT(static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Min) == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR);
+    MORTY_ASSERT(static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Max) == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR);
+    MORTY_ASSERT(static_cast<VkFragmentShadingRateCombinerOpKHR>(MEShadingRateCombinerOp::Mul) == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR);
 
     return static_cast<VkFragmentShadingRateCombinerOpKHR>(op);
 }
 
-bool MVulkanDevice::GenerateBuffer(
-        VkDeviceSize          size,
-        VkBufferUsageFlags    usage,
-        VkMemoryPropertyFlags properties,
-        VkBuffer&             buffer,
-        VkDeviceMemory&       bufferMemory
-)
+bool MVulkanDevice::GenerateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -2399,14 +2033,11 @@ void MVulkanDevice::DestroyBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory
     vkFreeMemory(m_vkDevice, bufferMemory, nullptr);
 }
 
-bool MVulkanDevice::GetDeviceFeatureSupport(MEDeviceFeature feature) const
-{
-    return m_physicalDevice->GetDeviceFeatureSupport(feature);
-}
+bool                           MVulkanDevice::GetDeviceFeatureSupport(MEDeviceFeature feature) const { return m_physicalDevice->GetDeviceFeatureSupport(feature); }
 
-bool       MVulkanDevice::MultiDrawIndirectSupport() const { return m_physicalDevice->MultiDrawIndirectSupport(); }
+bool                           MVulkanDevice::MultiDrawIndirectSupport() const { return m_physicalDevice->MultiDrawIndirectSupport(); }
 
-VkInstance MVulkanDevice::GetVkInstance() const { return m_physicalDevice->m_vkInstance; }
+VkInstance                     MVulkanDevice::GetVkInstance() const { return m_physicalDevice->m_vkInstance; }
 
 const MVulkanPhysicalDevice*   MVulkanDevice::GetPhysicalDevice() const { return m_physicalDevice.get(); }
 
@@ -2514,9 +2145,7 @@ bool MVulkanDevice::InitLogicalDevice()
     // Initialize device fault extension if supported
     if (m_physicalDevice->GetDeviceFeatureSupport(MEDeviceFeature::EDeviceFault))
     {
-        m_vkGetDeviceFaultInfoEXT = reinterpret_cast<PFN_vkGetDeviceFaultInfoEXT>(
-                vkGetDeviceProcAddr(m_vkDevice, "vkGetDeviceFaultInfoEXT")
-        );
+        m_vkGetDeviceFaultInfoEXT = reinterpret_cast<PFN_vkGetDeviceFaultInfoEXT>(vkGetDeviceProcAddr(m_vkDevice, "vkGetDeviceFaultInfoEXT"));
     }
 
     return true;
@@ -2536,20 +2165,13 @@ bool MVulkanDevice::InitCommandPool()
     return true;
 }
 
-int MVulkanDevice::FindQueuePresentFamilies(VkSurfaceKHR surface) const
-{
-    return m_physicalDevice->FindQueuePresentFamilies(surface);
-}
+int                        MVulkanDevice::FindQueuePresentFamilies(VkSurfaceKHR surface) const { return m_physicalDevice->FindQueuePresentFamilies(surface); }
 
-VkPhysicalDeviceProperties MVulkanDevice::GetPhysicalDeviceProperties() const
-{
-    return m_physicalDevice->m_vkPhysicalDeviceProperties;
-}
+VkPhysicalDeviceProperties MVulkanDevice::GetPhysicalDeviceProperties() const { return m_physicalDevice->m_vkPhysicalDeviceProperties; }
 
-Vector2i MVulkanDevice::GetShadingRateTextureTexelSize() const
+Vector2i                   MVulkanDevice::GetShadingRateTextureTexelSize() const
 {
-    const auto vkSize =
-            GetPhysicalDevice()->m_vkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
+    const auto vkSize = GetPhysicalDevice()->m_vkFragmentShadingRateProperties.maxFragmentShadingRateAttachmentTexelSize;
     return Vector2i(vkSize.width, vkSize.height);
 }
 
@@ -2588,11 +2210,11 @@ void MVulkanDevice::LogDeviceFaultInfo()
     std::vector<VkDeviceFaultVendorInfoEXT>  vendorInfos(faultCounts.vendorInfoCount);
     std::vector<uint8_t>                     vendorBinary(faultCounts.vendorBinarySize);
 
-    VkDeviceFaultInfoEXT faultInfo = {};
-    faultInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
-    faultInfo.pAddressInfos        = addressInfos.empty() ? nullptr : addressInfos.data();
-    faultInfo.pVendorInfos         = vendorInfos.empty() ? nullptr : vendorInfos.data();
-    faultInfo.pVendorBinaryData    = vendorBinary.empty() ? nullptr : vendorBinary.data();
+    VkDeviceFaultInfoEXT                     faultInfo = {};
+    faultInfo.sType                                    = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
+    faultInfo.pAddressInfos                            = addressInfos.empty() ? nullptr : addressInfos.data();
+    faultInfo.pVendorInfos                             = vendorInfos.empty() ? nullptr : vendorInfos.data();
+    faultInfo.pVendorBinaryData                        = vendorBinary.empty() ? nullptr : vendorBinary.data();
 
     result = m_vkGetDeviceFaultInfoEXT(m_vkDevice, &faultCounts, &faultInfo);
     if (result != VK_SUCCESS)
@@ -2615,48 +2237,27 @@ void MVulkanDevice::LogDeviceFaultInfo()
             case VK_DEVICE_FAULT_ADDRESS_TYPE_READ_INVALID_EXT: addressType = "Read Invalid"; break;
             case VK_DEVICE_FAULT_ADDRESS_TYPE_WRITE_INVALID_EXT: addressType = "Write Invalid"; break;
             case VK_DEVICE_FAULT_ADDRESS_TYPE_EXECUTE_INVALID_EXT: addressType = "Execute Invalid"; break;
-            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_UNKNOWN_EXT:
-                addressType = "Instruction Pointer Unknown";
-                break;
-            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_INVALID_EXT:
-                addressType = "Instruction Pointer Invalid";
-                break;
-            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_FAULT_EXT:
-                addressType = "Instruction Pointer Fault";
-                break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_UNKNOWN_EXT: addressType = "Instruction Pointer Unknown"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_INVALID_EXT: addressType = "Instruction Pointer Invalid"; break;
+            case VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_FAULT_EXT: addressType = "Instruction Pointer Fault"; break;
             default: break;
         }
 
-        GetEngine()->GetLogger()->Error(
-                "Address[{}]: type={}, address=0x{:016X}, precision={} bits",
-                i,
-                addressType,
-                info.reportedAddress,
-                info.addressPrecision
-        );
+        GetEngine()->GetLogger()->Error("Address[{}]: type={}, address=0x{:016X}, precision={} bits", i, addressType, info.reportedAddress, info.addressPrecision);
     }
 
     // Log vendor info
     for (uint32_t i = 0; i < faultCounts.vendorInfoCount; ++i)
     {
         const auto& info = vendorInfos[i];
-        GetEngine()->GetLogger()->Error(
-                "Vendor[{}]: description={}, code=0x{:016X}, data=0x{:016X}",
-                i,
-                info.description,
-                info.vendorFaultCode,
-                info.vendorFaultData
-        );
+        GetEngine()->GetLogger()->Error("Vendor[{}]: description={}, code=0x{:016X}, data=0x{:016X}", i, info.description, info.vendorFaultCode, info.vendorFaultData);
     }
 
     // Optionally save vendor binary for external tools
     if (!vendorBinary.empty())
     {
         const MString dumpPath = "gpu_crash_dump.bin";
-        if (MFileHelper::WriteData(dumpPath, vendorBinary))
-        {
-            GetEngine()->GetLogger()->Error("Vendor binary crash dump saved to: {}", dumpPath.c_str());
-        }
+        if (MFileHelper::WriteData(dumpPath, vendorBinary)) { GetEngine()->GetLogger()->Error("Vendor binary crash dump saved to: {}", dumpPath.c_str()); }
     }
 
     GetEngine()->GetLogger()->Error("=== End GPU Device Fault Information ===");

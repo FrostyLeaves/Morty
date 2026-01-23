@@ -2,13 +2,14 @@
 
 #include "Utility/MGlobal.h"
 #include "Basic/MBuffer.h"
+#include "Container/MItemPool.h"
 #include "Mesh/MCluster.h"
 #include "Mesh/MMesh.h"
 #include "Object/MObject.h"
 #include "Scene/MManager.h"
 #include "Utility/MBounds.h"
 #include "Utility/MMemoryPool.h"
-#include "Container/MItemPool.h"
+#include "Utility/MPoolAllocator.h"
 
 namespace morty
 {
@@ -25,16 +26,18 @@ class MMeshManager : public IManager
 {
     MORTY_CLASS(MMeshManager)
 
-
     struct MMeshData {
-        MemoryInfo clusterInfo;
-        MemoryInfo clusterGroupInfo;
-        MemoryInfo groupLinksInfo;
-        size_t     referenceNum = 0;
+        MemoryInfo                          clusterInfo;
+        MemoryInfo                          clusterGroupInfo;
+        MemoryInfo                          groupLinksInfo;
+        MemoryInfo                          rootGroupLinksInfo;
+        std::vector<MClusterPageMemoryData> pageMemoryInfo;
+        size_t                              meshResourceId = 0;
+        size_t                              referenceNum   = 0;
     };
 
 public:
-    explicit MMeshManager();
+    explicit                                          MMeshManager();
     void                                              Initialize() override;
     void                                              Release() override;
 
@@ -53,57 +56,70 @@ public:
     [[nodiscard]] std::shared_ptr<MMeshBufferAdapter> GetMeshBuffer() const;
 
 private:
-    void                                         LoadClusterPage(size_t groupIdx, const MClusterPage& page);
-    void                                         UnloadClusterPage(const size_t& groupIdx);
+    struct PageDataUploadRequest {
+        size_t                 globalGroupIdx = 0;
+        MClusterPage           pageData;
+        MClusterPageMemoryData memoryData;
+    };
 
-    void                                         InitializeScreenRect();
-    void                                         ReleaseScreenRect();
+    struct ClusterDataUploadRequest {
+        MMeshData                            meshData;
 
-    size_t                                       RoundIndexSize(size_t nIndexSize);
+        std::vector<MClusterRenderData>      clusters;
+        std::vector<MClusterGroupRenderData> clusterGroups;
+        std::vector<int32_t>                 groupLinks;
+        std::vector<uint32_t>                rootGroups;
 
-    void                                         UploadPageData(size_t groupIdx, const MClusterPage& page);
-    void                                         UploadClusterData();
+        MMeshResourceRenderData              renderData;
+    };
 
-    void                                         RenderUpdate(MTaskNode* node);
 
-    const size_t                                 MeshVertexStructSize;
+    void                                  LoadClusterPage(MMeshData* meshData, size_t groupIdx, const MClusterPage& page);
+    void                                  UnloadClusterPage(MMeshData* meshData, size_t groupIdx);
 
-    MBuffer                                      m_vertexBuffer;
-    MMemoryPool                                  m_vertexMemoryPool;
+    void                                  InitializeScreenRect();
+    void                                  ReleaseScreenRect();
 
-    MBuffer                                      m_indexBuffer;
-    MMemoryPool                                  m_indexMemoryPool;
+    size_t                                RoundIndexSize(size_t nIndexSize);
 
-    std::unordered_map<MIMesh*, size_t>          m_meshTable;
-    MItemPool<MMeshData>                         m_meshDataPool;
+    void                                  UploadPageData(const PageDataUploadRequest& request);
+    void                                  UploadClusterData(const ClusterDataUploadRequest& request);
 
-    std::unique_ptr<MIMesh>                      m_screenRect = nullptr;
+    void                                  RenderUpdate(MTaskNode* node);
 
-    std::vector<MClusterGroupData>               m_clusterGroupDatas;
-    MMemoryPool                                  m_clusterGroupDataIDPool;
+    const size_t                          MeshVertexStructSize;
 
-    std::vector<MCluster>                        m_clusters;
-    MMemoryPool                                  m_clusterPool;
+    std::unique_ptr<MIMesh>               m_screenRect = nullptr;
 
-    // Mesh resource data buffer
-    std::vector<MMeshResourceRenderData>         m_meshResourceDatas;
-    MBuffer                                      m_meshResourceBuffer;
+    std::unordered_map<MIMesh*, size_t>   m_meshTable;
+    MItemPool<MMeshData>                  m_meshDataPool;
 
-    // GPU buffers for cluster culling
-    MBuffer                                      m_clusterGroupBuffer;
-    MBuffer                                      m_clusterBuffer;
-    MBuffer                                      m_groupLinksBuffer;
-    std::vector<int32_t>                         m_groupLinks;
+    MBuffer                               m_vertexBuffer;
+    MMemoryPool                           m_vertexMemoryPool;
 
-    // Dirty flag for cluster data upload
-    bool                                         m_clustersDirty = false;
+    MBuffer                               m_indexBuffer;
+    MMemoryPool                           m_indexMemoryPool;
+
+    MBuffer                               m_meshResourceBuffer;
+    MMemoryPool                           m_meshResourcePool;
+
+    MBuffer                               m_clusterBuffer;
+    MMemoryPool                           m_clusterPool;
+
+    MBuffer                               m_clusterGroupBuffer;
+    MMemoryPool                           m_clusterGroupPool;
+
+    MBuffer                               m_groupLinksBuffer;
+    MMemoryPool                           m_groupLinkPool;
 
     // render thread.
-    std::mutex                                   m_uploadMutex;
-    std::vector<std::pair<size_t, MClusterPage>> m_uploadPageQueue;
-    std::shared_ptr<MMeshBufferAdapter>          m_meshBufferAdapter = nullptr;
 
-    MTaskNode*                                   m_uploadBufferTask  = nullptr;
+    std::mutex                            m_uploadMutex;
+    std::vector<PageDataUploadRequest>    m_uploadPageQueue;
+    std::vector<ClusterDataUploadRequest> m_uploadClusterQueue;
+    std::shared_ptr<MMeshBufferAdapter>   m_meshBufferAdapter = nullptr;
+
+    MTaskNode*                            m_uploadBufferTask = nullptr;
 };
 
 }// namespace morty

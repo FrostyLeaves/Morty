@@ -52,11 +52,13 @@ public:
             MEBufferBarrierStage                  dstStage
     ) override;
 
-    bool DownloadTexture(
+    bool ReadbackTexture(
             MTexture*                                                         texture,
             const uint32_t&                                                   unMipIdx,
             const std::function<void(void* pImageData, const Vector2& size)>& callback
     ) override;
+
+    void FillBuffer(MBuffer* buffer, uint32_t value = 0) override;
 
     void addFinishedCallback(std::function<void()> func) override;
 

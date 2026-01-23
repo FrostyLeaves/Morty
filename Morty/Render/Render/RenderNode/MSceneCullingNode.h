@@ -47,9 +47,9 @@ struct MNaniteCullingParams {
 // CandidateCluster output structure (matches CandidateCluster in shader)
 struct MCandidateCluster {
     uint32_t clusterIndex;
+    uint32_t groupIndex;
     uint32_t meshInstanceIndex;
     float    distanceToCamera;
-    uint32_t padding;
 };
 
 class MIndexedIndirectCountRenderer;
@@ -68,14 +68,14 @@ public:
     const MBuffer* GetDrawCallGroupBuffer() const { return &m_drawCallGroupBuffer; }
 
 protected:
-    std::vector<MRenderTaskOutputDesc> InitOutputDesc() override;
+    std::vector<MRenderTaskOutputDesc>             InitOutputDesc() override;
 
-    void                               NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand);
-    void                               BuildDrawCall(const MRenderInfo& info, IRenderCommand* primaryCommand);
+    void                                           NaniteCulling(const MRenderInfo& info, IRenderCommand* primaryCommand);
+    void                                           BuildDrawCall(const MRenderInfo& info, IRenderCommand* primaryCommand);
 
-    MComputeDispatcher*                m_cullingDispatcher       = nullptr;
-    MComputeDispatcher*                m_buildDrawCallDispatcher = nullptr;
-    std::unique_ptr<MIndexedIndirectCountRenderer> m_renderer    = nullptr;
+    MComputeDispatcher*                            m_cullingDispatcher       = nullptr;
+    MComputeDispatcher*                            m_buildDrawCallDispatcher = nullptr;
+    std::unique_ptr<MIndexedIndirectCountRenderer> m_renderer                = nullptr;
 
     // Output buffers for culling results
     MBuffer                                        m_candidateClustersBuffer;

@@ -19,6 +19,12 @@ class MORTY_API MSceneComponent : public MComponent
 {
 public:
     MORTY_CLASS(MSceneComponent)
+
+    // Property accessors for command-line get/set
+    PROPERTY_ACCESSOR(Vector3, Position);
+    PROPERTY_ACCESSOR(Quaternion, Rotation);
+    PROPERTY_ACCESSOR(Vector3, Scale);
+
 public:
     MSceneComponent();
 

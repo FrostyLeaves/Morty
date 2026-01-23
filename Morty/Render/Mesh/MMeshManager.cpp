@@ -24,11 +24,12 @@ using namespace morty;
 
 MORTY_CLASS_IMPLEMENT(MMeshManager, IManager)
 
-constexpr size_t VertexMemoryMaxSize = 1024 * 1024 * 20;
-constexpr size_t IndexMemoryMaxSize  = 1024 * 1024 * 80;
-constexpr size_t ClusterGroupMaxSize = 1024 * 256;
-constexpr size_t ClusterMaxSize      = 1024 * 1024 * 4;
-constexpr size_t ClusterSize         = 64u * 3u;
+constexpr size_t VertexMemoryMaxSize     = 1024 * 1024 * 20;
+constexpr size_t IndexMemoryMaxSize      = 1024 * 1024 * 80;
+constexpr size_t ClusterGroupMaxSize     = 1024 * 256;
+constexpr size_t ClusterMaxSize          = 1024 * 1024 * 4;
+constexpr size_t ClusterSize             = 64u * 3u;
+constexpr size_t MeshResourceDefaultSize = 1024;
 
 class MeshManagerBuffer : public MMeshBufferAdapter
 {
@@ -51,8 +52,10 @@ MMeshManager::MMeshManager()
     : MeshVertexStructSize(sizeof(MVertex))
     , m_vertexMemoryPool(VertexMemoryMaxSize * MeshVertexStructSize)
     , m_indexMemoryPool(IndexMemoryMaxSize * sizeof(uint32_t))
-    , m_clusterGroupDataIDPool(ClusterGroupMaxSize)
     , m_clusterPool(ClusterMaxSize)
+    , m_clusterGroupPool(ClusterGroupMaxSize)
+    , m_meshResourcePool(MeshResourceDefaultSize)
+    , m_groupLinkPool(ClusterGroupMaxSize * 32)
 {
     m_meshBufferAdapter = std::make_shared<MeshManagerBuffer>(this);
 }
@@ -73,8 +76,8 @@ void MMeshManager::Initialize()
     m_indexBuffer.DestroyBuffer(renderSystem->GetDevice());
     m_indexBuffer.GenerateBuffer(renderSystem->GetDevice(), nullptr, 0);
 
-    m_clusterGroupBuffer = MBuffer::CreateStorageBuffer("MeshManager ClusterGroupBuffer");
     m_clusterBuffer      = MBuffer::CreateStorageBuffer("MeshManager ClusterBuffer");
+    m_clusterGroupBuffer = MBuffer::CreateStorageBuffer("MeshManager ClusterGroupBuffer");
     m_meshResourceBuffer = MBuffer::CreateStorageBuffer("MeshManager MeshResourceBuffer");
     m_groupLinksBuffer   = MBuffer::CreateStorageBuffer("MeshManager GroupLinksBuffer");
 
@@ -107,41 +110,41 @@ void MMeshManager::Release()
     Super::Release();
 }
 
-void MMeshManager::LoadClusterPage(size_t groupIdx, const MClusterPage& page)
+void MMeshManager::LoadClusterPage(MMeshData* meshData, size_t groupIdx, const MClusterPage& page)
 {
-    auto& clusterGroupData = m_clusterGroupDatas[groupIdx];
-    m_vertexMemoryPool.AllocMemory(page.vertexData.size(), clusterGroupData.vertexMemoryInfo);
-    m_indexMemoryPool.AllocMemory(page.indexData.size() * sizeof(MIndicesType), clusterGroupData.indexMemoryInfo);
-    clusterGroupData.renderData.valid = 1;
+    m_vertexMemoryPool.AllocMemory(page.vertexData.size(), meshData->pageMemoryInfo[groupIdx].vertexMemoryInfo);
+    m_indexMemoryPool.AllocMemory(page.indexData.size() * sizeof(MIndicesType), meshData->pageMemoryInfo[groupIdx].indexMemoryInfo);
+    meshData->pageMemoryInfo[groupIdx].loaded = true;
+
+    PageDataUploadRequest request;
+    request.globalGroupIdx = meshData->clusterGroupInfo.begin + groupIdx;
+    request.pageData       = page;
+    request.memoryData     = meshData->pageMemoryInfo[groupIdx];
 
     {
         std::lock_guard lock(m_uploadMutex);
-        m_uploadPageQueue.push_back(std::make_pair(groupIdx, page));
+        m_uploadPageQueue.emplace_back(request);
     }
 }
 
-void MMeshManager::UnloadClusterPage(const size_t& groupIdx)
+void MMeshManager::UnloadClusterPage(MMeshData* meshData, size_t groupIdx)
 {
+    size_t globalGroupIdx = meshData->clusterGroupInfo.begin + groupIdx;
+
     {
         std::lock_guard lock(m_uploadMutex);
         m_uploadPageQueue.erase(
-                std::remove_if(
-                        m_uploadPageQueue.begin(),
-                        m_uploadPageQueue.end(),
-                        [groupIdx](const auto& pair) { return pair.first == groupIdx; }
-                ),
+                std::remove_if(m_uploadPageQueue.begin(), m_uploadPageQueue.end(), [globalGroupIdx](const auto& pair) { return pair.globalGroupIdx == globalGroupIdx; }),
                 m_uploadPageQueue.end()
         );
     }
 
-    const auto& clusterGroupData = m_clusterGroupDatas[groupIdx];
-    if (clusterGroupData.renderData.valid)
-    {
-        m_vertexMemoryPool.FreeMemory(clusterGroupData.vertexMemoryInfo);
-        m_indexMemoryPool.FreeMemory(clusterGroupData.indexMemoryInfo);
+    const auto& memoryData = meshData->pageMemoryInfo[groupIdx];
+    if (!memoryData.loaded) { return; }
 
-        m_clusterGroupDatas[groupIdx].renderData.valid = false;
-    }
+    m_vertexMemoryPool.FreeMemory(memoryData.vertexMemoryInfo);
+    m_indexMemoryPool.FreeMemory(memoryData.indexMemoryInfo);
+    meshData->pageMemoryInfo[groupIdx].loaded = false;
 }
 
 void MMeshManager::InitializeScreenRect()
@@ -185,101 +188,88 @@ size_t MMeshManager::RoundIndexSize(size_t unIndexNum)
     ;
 }
 
-void MMeshManager::UploadPageData(size_t groupIdx, const MClusterPage& page)
+void MMeshManager::UploadPageData(const PageDataUploadRequest& request)
 {
     const MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     MIDevice*            pDevice      = renderSystem->GetDevice();
-    const auto&          groupData    = m_clusterGroupDatas[groupIdx];
 
-    pDevice->UploadBuffer(
-            &m_vertexBuffer,
-            groupData.vertexMemoryInfo.begin,
-            page.vertexData.data(),
-            page.vertexData.size()
-    );
-
+    pDevice->UploadBuffer(&m_vertexBuffer, request.memoryData.vertexMemoryInfo.begin, request.pageData.vertexData.data(), request.pageData.vertexData.size());
     pDevice->UploadBuffer(
             &m_indexBuffer,
-            groupData.indexMemoryInfo.begin,
-            reinterpret_cast<const MByte*>(page.indexData.data()),
-            page.indexData.size() * sizeof(MIndicesType)
+            request.memoryData.indexMemoryInfo.begin,
+            reinterpret_cast<const MByte*>(request.pageData.indexData.data()),
+            request.pageData.indexData.size() * sizeof(MIndicesType)
     );
 }
 
-void MMeshManager::UploadClusterData()
+void MMeshManager::UploadClusterData(const ClusterDataUploadRequest& request)
 {
     const MRenderSystem* renderSystem = GetEngine()->GetSystem<MRenderSystem>();
     MIDevice*            pDevice      = renderSystem->GetDevice();
 
-    // Upload ClusterGroupData - directly use MClusterGroupRenderData (matches Shader layout)
-    if (!m_clusterGroupDatas.empty())
+
+    if (!request.clusters.empty())
     {
-        std::vector<MClusterGroupRenderData> clusterGroupShaderData;
-        clusterGroupShaderData.reserve(m_clusterGroupDatas.size());
-
-        for (const auto& groupData: m_clusterGroupDatas) { clusterGroupShaderData.push_back(groupData.renderData); }
-
-        if (!clusterGroupShaderData.empty())
-        {
-            m_clusterGroupBuffer.ApplyData(pDevice, clusterGroupShaderData);
-        }
+        m_clusterBuffer.ApplyData(
+                pDevice,
+                request.meshData.clusterInfo.begin * sizeof(MClusterRenderData),
+                reinterpret_cast<const MByte*>(request.clusters.data()),
+                request.clusters.size() * sizeof(MClusterRenderData)
+        );
     }
 
-    // Upload ClusterData - directly use MClusterRenderData (matches Shader layout)
-    if (!m_clusters.empty())
+    // Upload ClusterGroupData - directly use MClusterGroupRenderData (matches Shader layout)
+    if (!request.clusterGroups.empty())
     {
-        std::vector<MClusterRenderData> clusterShaderData;
-        clusterShaderData.reserve(m_clusters.size());
-
-        for (const auto& cluster: m_clusters)
-        {
-            MClusterRenderData shaderData{};
-            shaderData.indexOffset = cluster.indicesOffset;
-            shaderData.indexCount  = cluster.indicesNum;
-            shaderData.valid       = 1;
-            shaderData.position    = cluster.bounds.position;
-            shaderData.radius      = cluster.bounds.radius;
-            shaderData.error       = cluster.bounds.error;
-            clusterShaderData.push_back(shaderData);
-        }
-
-        m_clusterBuffer.ApplyData(pDevice, clusterShaderData);
+        m_clusterGroupBuffer.ApplyData(
+                pDevice,
+                request.meshData.clusterGroupInfo.begin * sizeof(MClusterGroupRenderData),
+                reinterpret_cast<const MByte*>(request.clusterGroups.data()),
+                request.clusterGroups.size() * sizeof(MClusterGroupRenderData)
+        );
     }
 
     // Upload MeshResourceData
-    if (!m_meshResourceDatas.empty())
-    {
-        m_meshResourceBuffer.ApplyData(pDevice, m_meshResourceDatas);
-    }
+    m_meshResourceBuffer.ApplyData(pDevice, request.meshData.meshResourceId * sizeof(MMeshResourceRenderData), reinterpret_cast<const MByte*>(&request.renderData), sizeof(MMeshResourceRenderData));
 
-    // Upload GroupLinks
-    if (!m_groupLinks.empty())
-    {
-        m_groupLinksBuffer.ApplyData(pDevice, m_groupLinks);
-    }
+    // Upload Root Grups index.
+    m_groupLinksBuffer
+            .ApplyData(pDevice, request.meshData.rootGroupLinksInfo.begin * sizeof(uint32_t), reinterpret_cast<const MByte*>(request.rootGroups.data()), request.rootGroups.size() * sizeof(uint32_t));
 
-    m_clustersDirty = false;
+    // Upload groups link.
+    m_groupLinksBuffer
+            .ApplyData(pDevice, request.meshData.groupLinksInfo.begin * sizeof(uint32_t), reinterpret_cast<const MByte*>(request.groupLinks.data()), request.groupLinks.size() * sizeof(uint32_t));
 }
 
 void MMeshManager::RenderUpdate(MTaskNode* node)
 {
     MORTY_UNUSED(node);
 
+
+    if (!m_uploadClusterQueue.empty())
+    {
+        std::vector<ClusterDataUploadRequest> uploadQueue;
+
+        {
+            std::lock_guard lock(m_uploadMutex);
+            uploadQueue.swap(m_uploadClusterQueue);
+        }
+
+        for (const auto& request: uploadQueue) { UploadClusterData(request); }
+    }
+
     // Upload page data
     if (!m_uploadPageQueue.empty())
     {
-        std::vector<std::pair<size_t, MClusterPage>> uploadQueue;
+        std::vector<PageDataUploadRequest> uploadQueue;
 
         {
             std::lock_guard lock(m_uploadMutex);
             uploadQueue.swap(m_uploadPageQueue);
         }
 
-        for (const auto& [groupIdx, page]: uploadQueue) { UploadPageData(groupIdx, page); }
+        for (const auto& request: uploadQueue) { UploadPageData(request); }
     }
-
-    // Upload cluster data to GPU
-    UploadClusterData();
 }
 
 bool MMeshManager::RegisterMesh(MIMesh* mesh)
@@ -296,72 +286,88 @@ bool MMeshManager::RegisterMesh(MIMesh* mesh)
         return true;
     }
 
-    auto id = m_meshDataPool.Emplace();
+    auto id           = m_meshDataPool.Emplace();
     m_meshTable[mesh] = id;
 
-    // Populate MeshResourceData for this mesh
-    if (m_meshResourceDatas.size() <= id) { m_meshResourceDatas.resize(id + 1); }
-
-    const auto& clusters = mesh->GetClusters();
-
-    auto*       meshData = m_meshDataPool.Get(id);
+    auto* meshData = m_meshDataPool.Get(id);
     MORTY_ASSERT(meshData);
     if (!meshData) { return false; }
-    *meshData = MMeshData();
+    *meshData                = MMeshData();
+    meshData->referenceNum   = 1;
+    meshData->meshResourceId = id;
 
-    m_clusterPool.AllocMemory(clusters.size(), meshData->clusterInfo);
-    meshData->referenceNum = 1;
+    ClusterDataUploadRequest request;
 
-    //fill cluster data
-    if (m_clusters.size() < meshData->clusterInfo.begin + clusters.size())
     {
-        m_clusters.resize(meshData->clusterInfo.begin + clusters.size());
-    }
-    std::copy(clusters.begin(), clusters.end(), m_clusters.begin() + meshData->clusterInfo.begin);
+        //fill cluster data
+        request.clusters.resize(mesh->GetClusters().size());
+        m_clusterPool.AllocMemory(request.clusters.size(), meshData->clusterInfo);
 
-    // Allocate cluster group IDs
-    m_clusterGroupDataIDPool.AllocMemory(mesh->GetClusterGroup().size(), meshData->clusterGroupInfo);
+        for (size_t idx = 0; idx < request.clusters.size(); ++idx)
+        {
+            const auto& cluster = mesh->GetClusters()[idx];
+            auto&       target  = request.clusters[idx];
 
-    // Fill MeshResourceData - store root cluster group info and offsets for shader lookup
-    m_meshResourceDatas[id].rootClusterGroupBeginIndex = static_cast<int32_t>(meshData->clusterGroupInfo.begin);
-    // Root groups are DAG entry points (groups with error = FLT_MAX)
-    const auto& rootGroups = mesh->GetRootGroups();
-    m_meshResourceDatas[id].rootClusterGroupCount = static_cast<int32_t>(rootGroups.size());
-
-    if (m_clusterGroupDatas.size() < meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size)
-    {
-        m_clusterGroupDatas.resize(meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size);
+            target.position    = cluster.bounds.position;
+            target.radius      = cluster.bounds.radius;
+            target.error       = cluster.bounds.error;
+            target.indexOffset = cluster.indicesOffset;
+            target.indexCount  = cluster.indicesNum;
+        }
     }
 
-    // Collect group links
-    const auto& meshGroupLinks  = mesh->GetGroupLinks();
-    size_t      groupLinksBegin = m_groupLinks.size();
-    meshData->groupLinksInfo    = {groupLinksBegin, meshGroupLinks.size()};
-
-    // Append mesh's group links to global array (keep local IDs, shader will add offset)
-    m_groupLinks.insert(m_groupLinks.end(), meshGroupLinks.begin(), meshGroupLinks.end());
-
-    //fill cluster group render data
-    for (size_t i = 0; i < mesh->GetClusterGroup().size(); ++i)
     {
-        MClusterGroupData& data   = m_clusterGroupDatas[meshData->clusterGroupInfo.begin + i];
-        auto&              source = mesh->GetClusterGroup()[i];
+        request.rootGroups = mesh->GetRootGroups();
+        m_groupLinkPool.AllocMemory(request.rootGroups.size(), meshData->rootGroupLinksInfo);
 
-        // groupLinkOffset is global offset into groupLinks buffer
-        data.renderData.groupLinkOffset   = static_cast<uint32_t>(groupLinksBegin + source.groupLinkOffset);
-        data.renderData.groupLinkCount    = source.groupLinkCount;
-        data.renderData.clusterBeginIndex = meshData->clusterInfo.begin + source.clusterOffset;
-        data.renderData.clusterCount      = source.clusterNum;
-        data.renderData.error             = source.bounds.error;
-        data.renderData.position          = source.bounds.position;
-        data.renderData.radius            = source.bounds.radius;
-        data.renderData.valid             = 0;
+        request.renderData.clusterBeginIndex      = static_cast<int32_t>(meshData->clusterInfo.begin);
+        request.renderData.clusterGroupBeginIndex = static_cast<int32_t>(meshData->clusterGroupInfo.begin);
+        request.renderData.rootClusterGroupIndex  = static_cast<int32_t>(meshData->rootGroupLinksInfo.begin);
+        request.renderData.rootClusterGroupCount  = static_cast<int32_t>(meshData->rootGroupLinksInfo.size);
+
+        // Collect group links
+        request.groupLinks = mesh->GetGroupLinks();
+        m_groupLinkPool.AllocMemory(request.groupLinks.size(), meshData->groupLinksInfo);
     }
 
-    //load vertex and index data
-    const auto& pages = mesh->GetClusterPages();
-    for (size_t i = 0; i < pages.size(); ++i) { LoadClusterPage(meshData->clusterGroupInfo.begin + i, pages[i]); }
+    {
+        //load vertex and index data
+        const auto& pages = mesh->GetClusterPages();
+        meshData->pageMemoryInfo.resize(pages.size());
 
+        for (size_t i = 0; i < pages.size(); ++i) { LoadClusterPage(meshData, i, pages[i]); }
+    }
+
+    {
+        // Allocate cluster group IDs
+        request.clusterGroups.resize(mesh->GetClusterGroup().size());
+        //fill cluster group render data
+        for (size_t i = 0; i < request.clusterGroups.size(); ++i)
+        {
+            MClusterGroupRenderData& data   = request.clusterGroups[i];
+            auto&                    source = mesh->GetClusterGroup()[i];
+
+            // groupLinkOffset is global offset into groupLinks buffer
+            data.groupLinkOffset   = meshData->groupLinksInfo.begin + source.groupLinkOffset;
+            data.groupLinkCount    = source.groupLinkCount;
+            data.clusterBeginIndex = meshData->clusterInfo.begin + source.clusterOffset;
+            data.clusterCount      = source.clusterNum;
+            data.vertexBeginIndex  = meshData->pageMemoryInfo[i].vertexMemoryInfo.begin / mesh->GetVertexStructSize();
+            data.indexBeginIndex   = meshData->pageMemoryInfo[i].indexMemoryInfo.begin / mesh->GetIndexStructSize();
+            data.error             = source.bounds.error;
+            data.position          = source.bounds.position;
+            data.radius            = source.bounds.radius;
+            data.valid             = 0;
+        }
+
+        m_clusterGroupPool.AllocMemory(request.clusterGroups.size(), meshData->clusterGroupInfo);
+    }
+
+    request.meshData = *meshData;
+    {
+        std::lock_guard lock(m_uploadMutex);
+        m_uploadClusterQueue.emplace_back(request);
+    }
     return true;
 }
 
@@ -387,24 +393,27 @@ void MMeshManager::UnregisterMesh(MIMesh* mesh)
 
     if (meshData->referenceNum != 0) { return; }
 
-    for (auto groupIdx = meshData->clusterGroupInfo.begin;
-         groupIdx < meshData->clusterGroupInfo.begin + meshData->clusterGroupInfo.size;
-         ++groupIdx)
-    {
-        MORTY_ASSERT(groupIdx < m_clusterGroupDatas.size());
-        m_clusterGroupDatas[groupIdx].renderData.valid = 0;
-        UnloadClusterPage(groupIdx);
-    }
+    // Unload all cluster pages (releases vertex and index memory)
+    for (size_t pageIdx = 0; pageIdx < meshData->pageMemoryInfo.size(); ++pageIdx) { UnloadClusterPage(meshData, pageIdx); }
+
+    // Release cluster pool memory
+    m_clusterPool.FreeMemory(meshData->clusterInfo);
+
+    // Release cluster group pool memory
+    m_clusterGroupPool.FreeMemory(meshData->clusterGroupInfo);
+
+    // Release group links pool memory
+    m_groupLinkPool.FreeMemory(meshData->groupLinksInfo);
+    m_groupLinkPool.FreeMemory(meshData->rootGroupLinksInfo);
 
     const auto meshId = findResult->second;
-    m_meshResourceDatas[meshId] = MMeshResourceRenderData();
     m_meshTable.erase(findResult);
     m_meshDataPool.Release(meshId);
 }
 
-bool    MMeshManager::HasMesh(MIMesh* mesh) const { return m_meshTable.find(mesh) != m_meshTable.end(); }
+bool                                MMeshManager::HasMesh(MIMesh* mesh) const { return m_meshTable.find(mesh) != m_meshTable.end(); }
 
-MIMesh* MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
+MIMesh*                             MMeshManager::GetScreenRect() const { return m_screenRect.get(); }
 
 std::shared_ptr<MMeshBufferAdapter> MMeshManager::GetMeshBuffer() const { return m_meshBufferAdapter; }
 
