@@ -31,6 +31,7 @@ void MMaterialBatchGroup::Initialize(MIDevice* device, const std::shared_ptr<MSh
         {
             auto& batcherData = m_textureBatcherData[texParam->strName] = TextureBatcherData();
             batcherData.batcher                                         = new MTexture2DArrayBatcher();
+            batcherData.paramName                                       = texParam->strName;
             batcherData.indexName                                       = MStringId(texParam->strName.ToString() + "Index");
             if (m_textureStorage)
             {
@@ -71,7 +72,7 @@ MMaterialInstanceKey MMaterialBatchGroup::AddInstance(MMeshInstanceKey proxyId, 
     if (m_propertyData.size() < (id + 1) * m_propertyStructSize) { m_propertyData.resize((id + 1) * m_propertyStructSize); }
     if (m_textureData.size() < (id + 1) * m_textureStructSize) { m_textureData.resize((id + 1) * m_textureStructSize); }
 
-    auto instancingData = component->GetInstancingData();
+    auto instancingData = material->GetInstancingData();
     memcpy(&m_propertyData[id * m_propertyStructSize], instancingData.GetData(), instancingData.GetSize());
 
     for (const auto& [name, batcherData]: m_textureBatcherData)
@@ -124,7 +125,14 @@ void MMaterialBatchGroup::RenderThreadUpdate(MIDevice* device)
     m_propertyStorage->SetBuffer(&m_propertyBuffer);
     m_textureStorage->SetBuffer(&m_textureBuffer);
 
-    for (const auto& [name, batcherData]: m_textureBatcherData) { batcherData.batcher->RenderThreadUpdate(device); }
+    for (const auto& [name, batcherData]: m_textureBatcherData)
+    {
+        if (batcherData.batcher->NeedSync())
+        {
+            batcherData.batcher->RenderThreadUpdate(device);
+            m_parameterSet->SetTexture(batcherData.paramName, batcherData.batcher->GetTextureArray());
+        }
+    }
 
 
     m_needSync = false;

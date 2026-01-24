@@ -31,25 +31,18 @@ void MRenderMeshComponent::SetMaterial(const std::shared_ptr<MMaterialResource>&
     if (m_material.GetResource() == material) return;
 
     m_material.SetResource(material);
-    m_instancingData = MMeshInstanceSystem::CreateMaterialInstanceData(material.get());
 
     SendComponentNotify(MRenderNotify::NOTIFY_MATERIAL_CHANGED);
 }
 
-std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterial() const
-{
-    return m_material.GetResource<MMaterialResource>();
-}
+std::shared_ptr<MMaterialResource> MRenderMeshComponent::GetMaterial() const { return m_material.GetResource<MMaterialResource>(); }
 
-void MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
+void                               MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
 {
     if (!mesh) return;
 
     auto preLoadFunction = [this]() {
-        if (auto meshResource = m_mesh.GetResource()->DynamicCast<MMeshResource>())
-        {
-            GetScene()->GetManager<MMeshManager>()->UnregisterMesh(meshResource->GetMesh());
-        }
+        if (auto meshResource = m_mesh.GetResource()->DynamicCast<MMeshResource>()) { GetScene()->GetManager<MMeshManager>()->UnregisterMesh(meshResource->GetMesh()); }
     };
 
     auto postLoadFunction = [this]() {
@@ -72,10 +65,7 @@ void MRenderMeshComponent::SetMesh(const std::shared_ptr<MMeshResource>& mesh)
 
 std::shared_ptr<MMeshResource> MRenderMeshComponent::GetMesh() const { return m_mesh.GetResource<MMeshResource>(); }
 
-void     MRenderMeshComponent::SetInstancingData(const MVariant& value) { m_instancingData = value; }
-MVariant MRenderMeshComponent::GetInstancingData() const { return m_instancingData; }
-
-MIMesh*  MRenderMeshComponent::GetDrawMesh()
+MIMesh*                        MRenderMeshComponent::GetDrawMesh()
 {
     std::shared_ptr<MMeshResource> pMeshResource = m_mesh.GetResource<MMeshResource>();
     if (!pMeshResource) return nullptr;

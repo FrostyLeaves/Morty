@@ -42,25 +42,21 @@ struct MORTY_API MMeshInstanceRenderProxy {
 class MORTY_API MMaterialBatchGroup
 {
 public:
-    MMaterialBatchGroup()  = default;
-    ~MMaterialBatchGroup() = default;
+                                                              MMaterialBatchGroup() = default;
+    ~                                                         MMaterialBatchGroup() = default;
 
-    void Initialize(
-            MIDevice*                                   device,
-            const std::shared_ptr<MShaderParameterSet>& parameterSet,
-            const MShaderPropertyBlock*                 propertyBlock
-    );
+    void                                                      Initialize(MIDevice* device, const std::shared_ptr<MShaderParameterSet>& parameterSet, const MShaderPropertyBlock* propertyBlock);
 
-    void                 Release();
+    void                                                      Release();
 
-    MMaterialInstanceKey AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent* component, MMaterial* material);
-    void                 RemoveInstance(MMeshInstanceKey proxyId);
-    [[nodiscard]] MMaterialInstanceKey GetInstanceKey(MMeshInstanceKey proxyId) const;
-    void                               SetBatchId(size_t batchId) { m_batchId = batchId; }
-    [[nodiscard]] size_t               GetBatchId() const { return m_batchId; }
-    [[nodiscard]] size_t               GetInstanceCount() const { return m_instanceTable.size(); }
+    MMaterialInstanceKey                                      AddInstance(MMeshInstanceKey proxyId, MRenderMeshComponent* component, MMaterial* material);
+    void                                                      RemoveInstance(MMeshInstanceKey proxyId);
+    [[nodiscard]] MMaterialInstanceKey                        GetInstanceKey(MMeshInstanceKey proxyId) const;
+    void                                                      SetBatchId(size_t batchId) { m_batchId = batchId; }
+    [[nodiscard]] size_t                                      GetBatchId() const { return m_batchId; }
+    [[nodiscard]] size_t                                      GetInstanceCount() const { return m_instanceTable.size(); }
 
-    void SetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& temp) { m_materialTemplate = temp; }
+    void                                                      SetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& temp) { m_materialTemplate = temp; }
 
     [[nodiscard]] std::shared_ptr<MMaterialTemplate>          GetMaterialTemplate() const { return m_materialTemplate; }
 
@@ -93,6 +89,7 @@ private:
 
     struct TextureBatcherData {
         ITextureBatcher* batcher = nullptr;
+        MStringId        paramName;
         MStringId        indexName;
         size_t           indexOffset = 0;
         bool             valid       = false;

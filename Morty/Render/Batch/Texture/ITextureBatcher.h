@@ -41,7 +41,7 @@ public:
     virtual ~                         ITextureBatcher() = default;
 
 
-    virtual bool                     IsInitialized() const = 0;
+    virtual bool                      IsInitialized() const = 0;
 
     // Initialize the batcher with configuration
     // @param device The render device
@@ -62,6 +62,7 @@ public:
     // @param texture The texture to register (must have CPU-accessible data)
     virtual void                      UnregisterTexture(const MTexturePtr& texture) = 0;
 
+    virtual bool                      NeedSync() = 0;
     // Sync pending texture uploads to GPU
     // Must be called from render thread before using the texture array
     // @param device The render device

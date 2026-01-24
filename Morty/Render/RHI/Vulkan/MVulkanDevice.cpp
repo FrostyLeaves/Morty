@@ -1954,7 +1954,7 @@ VkBufferUsageFlags MVulkanDevice::GetBufferUsageFlags(MBuffer* buffer) const
 {
     if (buffer->m_usageType == 0) { MORTY_ASSERT(false); }
 
-    VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    VkBufferUsageFlags vkBufferUsageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
     if (MBuffer::MUsageType::EVertex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
     if (MBuffer::MUsageType::EIndex & buffer->m_usageType) { vkBufferUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; }

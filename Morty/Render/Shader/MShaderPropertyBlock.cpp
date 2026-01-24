@@ -26,17 +26,13 @@ bool MShaderPropertyBlock::AddResource(const MShaderParamResource& resource)
     return true;
 }
 
-const std::unordered_map<MStringId, MShaderParamAttribute>& MShaderPropertyBlock::GetProperties() const
-{
-    return m_properties;
-}
+const std::unordered_map<MStringId, MShaderParamAttribute>& MShaderPropertyBlock::GetProperties() const { return m_properties; }
 
-const std::unordered_map<MStringId, MShaderParamResource>& MShaderPropertyBlock::GetResources() const
-{
-    return m_resources;
-}
+const std::unordered_map<MStringId, MShaderParamResource>&  MShaderPropertyBlock::GetResources() const { return m_resources; }
 
-MStringId MShaderPropertyBlock::GetPropertyDisplayName(const MStringId& name) const
+const std::array<MShaderInstancingAttribute, 2>&            MShaderPropertyBlock::GetInstancingProperties() const { return m_instancingProperties; }
+
+MStringId                                                   MShaderPropertyBlock::GetPropertyDisplayName(const MStringId& name) const
 {
     auto result = m_properties.find(name);
     if (result == m_properties.end()) { return name; }
@@ -52,12 +48,32 @@ MStringId MShaderPropertyBlock::GetResourceDisplayName(const MStringId& name) co
     return result->second.displayName;
 }
 
+MStringId MShaderPropertyBlock::GetInstancingName(MInstanceDataType type) const
+{
+    auto index = static_cast<size_t>(type);
+    if (index < m_instancingProperties.size()) { return m_instancingProperties[index].name; }
+
+    return MStringId::Empty;
+}
+
+bool MShaderPropertyBlock::SetInstancingProperty(MInstanceDataType type, const MShaderInstancingAttribute& property)
+{
+    auto index = static_cast<size_t>(type);
+    if (index < m_instancingProperties.size())
+    {
+        m_instancingProperties[index] = property;
+        return true;
+    }
+
+    return false;
+}
+
 void MShaderPropertyBlock::Merge(const MShaderPropertyBlock& other)
 {
     for (const auto& [name, property]: other.m_properties) { AddProperty(property); }
     for (const auto& [name, resource]: other.m_resources) { AddResource(resource); }
 
-    m_instancingName = other.m_instancingName;
+    m_instancingProperties = other.m_instancingProperties;
 }
 
 void MShaderPropertyBlock::Clear()

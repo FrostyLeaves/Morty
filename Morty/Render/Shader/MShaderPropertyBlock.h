@@ -31,7 +31,7 @@ enum class MShaderParamResourceType
 enum class MInstanceDataType
 {
     Property = 0,
-    TextureIndex,
+    TextureIndex
 };
 
 struct MShaderParamAttribute {
@@ -46,31 +46,35 @@ struct MShaderParamResource {
     MShaderParamResourceType type;
 };
 
+struct MShaderInstancingAttribute {
+    MStringId                          name;
+    std::vector<MShaderParamAttribute> properties;
+};
+
 class MORTY_API MShaderPropertyBlock
 {
 
 public:
-    bool AddProperty(const MShaderParamAttribute& property);
-    bool AddResource(const MShaderParamResource& resource);
+    bool                                                                      AddProperty(const MShaderParamAttribute& property);
+    bool                                                                      AddResource(const MShaderParamResource& resource);
+
+    bool                                                                      SetInstancingProperty(MInstanceDataType type, const MShaderInstancingAttribute& property);
+
     [[nodiscard]] const std::unordered_map<MStringId, MShaderParamAttribute>& GetProperties() const;
     [[nodiscard]] const std::unordered_map<MStringId, MShaderParamResource>&  GetResources() const;
+    [[nodiscard]] const std::array<MShaderInstancingAttribute, 2>&            GetInstancingProperties() const;
 
-    MStringId GetPropertyDisplayName(const MStringId& name) const;
-    MStringId GetResourceDisplayName(const MStringId& name) const;
+    [[nodiscard]] MStringId                                                   GetPropertyDisplayName(const MStringId& name) const;
+    [[nodiscard]] MStringId                                                   GetResourceDisplayName(const MStringId& name) const;
+    [[nodiscard]] MStringId                                                   GetInstancingName(MInstanceDataType type) const;
 
-    void      Merge(const MShaderPropertyBlock& other);
-    void      Clear();
-
-    void      SetInstancingName(const MStringId& name, MInstanceDataType type)
-    {
-        m_instancingName[static_cast<size_t>(type)] = name;
-    }
-    MStringId GetInstancingName(MInstanceDataType type) const { return m_instancingName[static_cast<size_t>(type)]; }
+    void                                                                      Merge(const MShaderPropertyBlock& other);
+    void                                                                      Clear();
 
 private:
     std::unordered_map<MStringId, MShaderParamAttribute> m_properties;
     std::unordered_map<MStringId, MShaderParamResource>  m_resources;
-    std::array<MStringId, 2>                             m_instancingName;
+    std::array<MShaderInstancingAttribute, 2>            m_instancingProperties;
 };
 
 }// namespace morty

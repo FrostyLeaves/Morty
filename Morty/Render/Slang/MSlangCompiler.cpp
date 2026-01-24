@@ -39,7 +39,14 @@ MEShaderType ConvertShaderType(SlangStage stage)
     return MEShaderType::EVertex;
 }
 
-static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MShaderPropertyBlock& output)
+static bool IsPerInstanceStorageBuffer(slang::Attribute* attribute)
+{
+    auto attrName = attribute->getName();
+
+    return MString(attrName) == "PerInstance";
+}
+
+static void ReflectionPropertyAttributes(MStringId name, slang::Attribute* attribute, MShaderPropertyBlock& output)
 {
     auto attrName = attribute->getName();
 
@@ -59,24 +66,11 @@ static void ReflectionAttributes(MStringId name, slang::Attribute* attribute, MS
         attribute->getArgumentValueInt(1, &paramType);
         output.AddResource({MStringId(displayName), name, static_cast<MShaderParamResourceType>(paramType)});
     }
-    else if (MString(attrName) == "PerInstance")
-    {
-
-        int paramType = 0;
-        attribute->getArgumentValueInt(0, &paramType);
-        output.SetInstancingName(name, static_cast<MInstanceDataType>(paramType));
-    }
 }
 
-static void ReflectionDefaultFromSlang(const MString& propertyBlockName, VariableLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
+static void ReflectionPerInstanceProperty(VariableLayoutReflection* parameter, MShaderInstancingAttribute& output)
 {
     auto name = parameter->getName();
-    /*MLogger::GetInstance()->Information(
-            "{} Reflecting TypeLayoutReflection name: {}",
-            MStringUtil::Fill(' ', reflectionDepth * 4),
-            name
-    );
-    */
 
     // Output user-defined attributes
     auto variable = parameter->getVariable();
@@ -89,18 +83,68 @@ static void ReflectionDefaultFromSlang(const MString& propertyBlockName, Variabl
             for (unsigned int attrIdx = 0; attrIdx < attributeCount; ++attrIdx)
             {
                 auto attribute = variable->getUserAttributeByIndex(attrIdx);
-                ReflectionAttributes(MStringId(propertyBlockName + "." + name), attribute, output);
+                auto attrName  = attribute->getName();
+
+                if (MString(attrName) == "Property")
+                {
+                    size_t nameSize    = 0;
+                    int    paramType   = 0;
+                    auto   displayName = attribute->getArgumentValueString(0, &nameSize);
+                    attribute->getArgumentValueInt(1, &paramType);
+                    output.properties.emplace_back(MStringId(displayName), MStringId(name), static_cast<MShaderParamType>(paramType));
+                }
+            }
+        }
+    }
+}
+
+static void ReflectionDefaultFromSlang(const MString& propertyBlockName, VariableLayoutReflection* parameter, MShaderPropertyBlock& output, uint32_t reflectionDepth = 0)
+{
+    auto name          = parameter->getName();
+    auto nameWithScope = MStringId(propertyBlockName + "." + name);
+    auto typeKind      = parameter->getType()->getKind();
+
+    // Output user-defined attributes
+    auto variable = parameter->getVariable();
+    if (variable)
+    {
+        auto attributeCount = variable->getUserAttributeCount();
+        if (attributeCount > 0)
+        {
+            for (unsigned int attrIdx = 0; attrIdx < attributeCount; ++attrIdx)
+            {
+                auto attribute = variable->getUserAttributeByIndex(attrIdx);
+                if (IsPerInstanceStorageBuffer(attribute) && typeKind == slang::TypeReflection::Kind::Resource)
+                {
+                    //register as a instancing data.
+                    int paramType = 0;
+                    attribute->getArgumentValueInt(0, &paramType);
+
+                    MShaderInstancingAttribute instancingAttribute;
+                    instancingAttribute.name = nameWithScope;
+
+                    // collect per instance property
+                    {
+                        auto elementTypeLayout = parameter->getTypeLayout()->getElementTypeLayout();
+                        auto fieldCount        = elementTypeLayout->getFieldCount();
+                        for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionPerInstanceProperty(elementTypeLayout->getFieldByIndex(idx), instancingAttribute); }
+                    }
+
+                    output.SetInstancingProperty(static_cast<MInstanceDataType>(paramType), instancingAttribute);
+                }
+                else//reflection properties
+                {
+                    ReflectionPropertyAttributes(nameWithScope, attribute, output);
+                }
             }
         }
     }
 
-    auto typeKind = parameter->getType()->getKind();
-
-    if (typeKind == slang::TypeReflection::Kind::ParameterBlock || typeKind == slang::TypeReflection::Kind::ConstantBuffer || typeKind == slang::TypeReflection::Kind::Resource)
+    if (typeKind == slang::TypeReflection::Kind::ParameterBlock)
     {
         auto elementTypeLayout = parameter->getTypeLayout()->getElementTypeLayout();
         auto fieldCount        = elementTypeLayout->getFieldCount();
-        for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionDefaultFromSlang(propertyBlockName, elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1); }
+        for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionDefaultFromSlang(nameWithScope.ToString(), elementTypeLayout->getFieldByIndex(idx), output, reflectionDepth + 1); }
     }
 }
 
@@ -111,12 +155,6 @@ static void ReflectionParameterBlockTypeFromSlang(const MString& parameterBlockN
     auto typeName = parameter->getName();
     MORTY_ASSERT(typeName);
     /*
-    MLogger::GetInstance()->Information(
-            "{} Reflecting TypeLayoutReflection type name: {}",
-            MStringUtil::Fill(' ', reflectionDepth * 4),
-            typeName
-    );
-    */
     if (auto type = parameter->getType())
     {
         //MLogger::GetInstance()->Information("Reflecting TypeLayoutReflection type layout: {}", type->getName());
@@ -126,6 +164,7 @@ static void ReflectionParameterBlockTypeFromSlang(const MString& parameterBlockN
             ReflectionAttributes(MStringId(parameterBlockName + "." + type->getName()), attribute, output);
         }
     }
+    */
 
     auto fieldCount = parameter->getFieldCount();
     for (auto idx = 0u; idx < fieldCount; ++idx) { ReflectionDefaultFromSlang(parameterBlockName, parameter->getFieldByIndex(idx), output, reflectionDepth + 1); }
@@ -296,7 +335,6 @@ bool                                   MSlangCompiler::Compile()
         m_output[entryIdx].name   = MStringId(entryName);
         m_output[entryIdx].type   = ConvertShaderType(stage);
         m_output[entryIdx].buffer = std::move(buffer);
-
     }
 
     //MLogger::GetInstance()->Log("==== Slang Reflection Result ====");

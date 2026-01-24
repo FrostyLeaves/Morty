@@ -39,7 +39,7 @@ public:
     MORTY_CLASS(MRenderMeshComponent)
 
 public:
-    MRenderMeshComponent();
+     MRenderMeshComponent();
     ~MRenderMeshComponent() override = default;
 
 public:
@@ -51,10 +51,6 @@ public:
 
     void                                             SetMesh(const std::shared_ptr<MMeshResource>& mesh);
     [[nodiscard]] std::shared_ptr<MMeshResource>     GetMesh() const;
-
-    void                                             SetInstancingData(const MVariant& value);
-    MVariant                                         GetInstancingData() const;
-
 
 public:
     MIMesh*      GetDrawMesh();
@@ -83,11 +79,10 @@ public:
     virtual void                      Deserialize(const void* pBufferPointer) override;
 
 protected:
-    PROPERTY_RESOURCE(MMeshResource) MResourceRef m_mesh         = {};
-    PROPERTY_RESOURCE(MMaterialResource) MResourceRef m_material = {};
+                               PROPERTY_RESOURCE(MMeshResource) MResourceRef m_mesh         = {};
+                               PROPERTY_RESOURCE(MMaterialResource) MResourceRef m_material = {};
 
     PROPERTY_ENUM MEShadowType m_shadowType = MEShadowType::ENone;
-    PROPERTY_STRUCT MVariant   m_instancingData;
 
     MComponentID               m_modelComponent;
 

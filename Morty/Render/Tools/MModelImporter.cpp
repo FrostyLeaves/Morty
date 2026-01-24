@@ -80,9 +80,9 @@ static void CopyMatrix4Transposed(Matrix4* matdest, aiMatrix4x4* matsour)
     }
 }
 
-static MColor  GetColor(const aiColor3D& color) { return MColor(color.r, color.g, color.b); }
+static MColor   GetColor(const aiColor3D& color) { return MColor(color.r, color.g, color.b); }
 
-static Vector3 GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y, val.z); }
+static Vector3  GetVector3(const aiVector3D& val) { return Vector3(val.x, val.y, val.z); }
 
 MModelImporter::MModelImporter(MEngine* engine)
     : m_engine(engine)
@@ -117,11 +117,7 @@ bool MModelImporter::Import(const MModelConvertInfo& convertInfo)
     m_scene             = objectSystem->CreateObject<MScene>();
     m_defaultMaterial   = resourceSystem->CreateResource<MMaterialTemplateResource>();
     m_defaultMaterial->LoadShader("ShaderSlang/Main/DeferredGBuffer.slang");
-    m_defaultMaterial->SetPass(
-            MRenderGlobal::DEFAULT_PASS_NAME,
-            MRenderGlobal::DEFAULT_VERTEX_ENTRY,
-            MRenderGlobal::DEFAULT_PIXEL_ENTRY
-    );
+    m_defaultMaterial->SetPass(MRenderGlobal::DEFAULT_PASS_NAME, MRenderGlobal::DEFAULT_VERTEX_ENTRY, MRenderGlobal::DEFAULT_PIXEL_ENTRY);
 
     auto time = MTimer::GetCurTime();
     if (!Load(convertInfo.strResourcePath)) { return false; }
@@ -149,8 +145,7 @@ bool MModelImporter::Load(const MString& strResourcePath)
 
         scene = importer.ReadFile(
                 strFullpath,
-                aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs |
-                        aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded
+                aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals | aiProcess_ConvertToLeftHanded
         );
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -206,8 +201,7 @@ void MModelImporter::ProcessNode(aiNode* node, const aiScene* scene)
 
         // Use MMeshImporter to import mesh
         MString                        strMeshName;
-        std::shared_ptr<MMeshResource> pChildMeshResource =
-                m_meshImporter->ImportMesh(pChildMesh, pSkeleton, strMeshName);
+        std::shared_ptr<MMeshResource> pChildMeshResource = m_meshImporter->ImportMesh(pChildMesh, pSkeleton, strMeshName);
 
         if (!pChildMeshResource) { continue; }
 
@@ -307,7 +301,7 @@ void MModelImporter::ProcessLights(const aiScene* scene)
         switch (pLight->mType)
         {
             case aiLightSourceType::aiLightSource_POINT: {
-                MSceneComponent*      sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MSceneComponent*      sceneComponent  = m_scene->AddComponent<MSceneComponent>(pLightEntity);
                 MPointLightComponent* pLightComponent = m_scene->AddComponent<MPointLightComponent>(pLightEntity);
 
                 sceneComponent->SetPosition(GetVector3(pLight->mPosition));
@@ -316,9 +310,8 @@ void MModelImporter::ProcessLights(const aiScene* scene)
             }
 
             case aiLightSourceType::aiLightSource_DIRECTIONAL: {
-                MSceneComponent*            sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
-                MDirectionalLightComponent* pLightComponent =
-                        m_scene->AddComponent<MDirectionalLightComponent>(pLightEntity);
+                MSceneComponent*            sceneComponent  = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MDirectionalLightComponent* pLightComponent = m_scene->AddComponent<MDirectionalLightComponent>(pLightEntity);
 
                 sceneComponent->SetPosition(GetVector3(pLight->mPosition));
                 sceneComponent->LookAt(GetVector3(pLight->mDirection), GetVector3((pLight->mUp)));
@@ -327,7 +320,7 @@ void MModelImporter::ProcessLights(const aiScene* scene)
             }
 
             case aiLightSourceType::aiLightSource_SPOT: {
-                MSceneComponent*     sceneComponent = m_scene->AddComponent<MSceneComponent>(pLightEntity);
+                MSceneComponent*     sceneComponent  = m_scene->AddComponent<MSceneComponent>(pLightEntity);
                 MSpotLightComponent* pLightComponent = m_scene->AddComponent<MSpotLightComponent>(pLightEntity);
 
                 sceneComponent->SetPosition(GetVector3(pLight->mPosition));
@@ -355,7 +348,7 @@ void MModelImporter::ProcessCameras(const aiScene* scene)
 
         MEntity*  pCameraEntity = m_scene->CreateEntity();
         pCameraEntity->SetName(strName);
-        MSceneComponent*  sceneComponent  = m_scene->AddComponent<MSceneComponent>(pCameraEntity);
+        MSceneComponent*  sceneComponent   = m_scene->AddComponent<MSceneComponent>(pCameraEntity);
         MCameraComponent* pCameraComponent = m_scene->AddComponent<MCameraComponent>(pCameraEntity);
 
         pCameraComponent->SetCameraType(MECameraType::EPerspective);
@@ -409,10 +402,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
                     for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumPositionKeys; ++keyIndex)
                     {
                         const aiVectorKey& skey = pNodeAnim->mPositionKeys[keyIndex];
-                        mAnimNode.m_positionTrack.push_back(
-                                {static_cast<float>(skey.mTime),
-                                 fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z)}
-                        );
+                        mAnimNode.m_positionTrack.push_back({static_cast<float>(skey.mTime), fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z)});
                     }
                 }
 
@@ -421,10 +411,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
                     for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumRotationKeys; ++keyIndex)
                     {
                         const aiQuatKey& skey = pNodeAnim->mRotationKeys[keyIndex];
-                        mAnimNode.m_rotationTrack.push_back(
-                                {static_cast<float>(skey.mTime),
-                                 fbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y, skey.mValue.z)}
-                        );
+                        mAnimNode.m_rotationTrack.push_back({static_cast<float>(skey.mTime), fbs::Quaternion(skey.mValue.w, skey.mValue.x, skey.mValue.y, skey.mValue.z)});
                     }
                 }
 
@@ -433,23 +420,16 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
                     for (unsigned keyIndex = 0; keyIndex < pNodeAnim->mNumScalingKeys; ++keyIndex)
                     {
                         const aiVectorKey& skey = pNodeAnim->mScalingKeys[keyIndex];
-                        mAnimNode.m_scaleTrack.push_back(
-                                {static_cast<float>(skey.mTime),
-                                 fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z)}
-                        );
+                        mAnimNode.m_scaleTrack.push_back({static_cast<float>(skey.mTime), fbs::Vector3(skey.mValue.x, skey.mValue.y, skey.mValue.z)});
                     }
                 }
             }
         }
 
-        std::shared_ptr<MSkeletalAnimationResource> animationResource =
-                resourceSystem->CreateResource<MSkeletalAnimationResource>();
+        std::shared_ptr<MSkeletalAnimationResource> animationResource = resourceSystem->CreateResource<MSkeletalAnimationResource>();
 
-        std::unique_ptr<MResourceData> resourceData = std::make_unique<MSkeletalAnimationResourceData>();
-        if (auto* pAnimationResourceData = static_cast<MSkeletalAnimationResourceData*>(resourceData.get()))
-        {
-            pAnimationResourceData->skeletonAnimation = animationData;
-        }
+        std::unique_ptr<MResourceData>              resourceData = std::make_unique<MSkeletalAnimationResourceData>();
+        if (auto* pAnimationResourceData = static_cast<MSkeletalAnimationResourceData*>(resourceData.get())) { pAnimationResourceData->skeletonAnimation = animationData; }
         animationResource->Load(std::move(resourceData));
         animationResource->SetSkeletonResource(m_skeletonResource);
 
@@ -459,7 +439,7 @@ void MModelImporter::ProcessAnimation(const aiScene* scene)
 
 void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMaterialIdx)
 {
-    MResourceSystem*                   resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
+    auto                               resourceSystem = GetEngine()->GetSystem<MResourceSystem>();
 
     std::shared_ptr<MMaterialResource> material = nullptr;
 
@@ -468,30 +448,12 @@ void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMate
     material->SetValue(MShaderPropertyName::MATERIAL_METALLIC, 1.0f);
     material->SetValue(MShaderPropertyName::MATERIAL_ROUGHNESS, 1.0f);
     material->SetValue(MShaderPropertyName::MATERIAL_ALBEDO, Vector3(1.0f, 1.0f, 1.0f));
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO,
-            resourceSystem->LoadResource(MRenderModule::DefaultWhite)
-    );
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_NORMAL,
-            resourceSystem->LoadResource(MRenderModule::DefaultNormal)
-    );
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_METALLIC,
-            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
-    );
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS,
-            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
-    );
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC,
-            resourceSystem->LoadResource(MRenderModule::Default_R8_One)
-    );
-    material->SetTexture(
-            MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT,
-            resourceSystem->LoadResource(MRenderModule::Default_R8_Zero)
-    );
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ALBEDO, resourceSystem->LoadResource(MRenderModule::DefaultWhite));
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_NORMAL, resourceSystem->LoadResource(MRenderModule::DefaultNormal));
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_METALLIC, resourceSystem->LoadResource(MRenderModule::Default_R8_One));
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_ROUGHNESS, resourceSystem->LoadResource(MRenderModule::Default_R8_One));
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_AMBIENTOCC, resourceSystem->LoadResource(MRenderModule::Default_R8_One));
+    material->SetTexture(MShaderPropertyName::MATERIAL_TEXTURE_HEIGHT, resourceSystem->LoadResource(MRenderModule::Default_R8_Zero));
 
 
     if (nMaterialIdx >= scene->mNumMaterials) { return; }
@@ -528,13 +490,10 @@ void MModelImporter::ProcessMaterial(const aiScene* scene, const uint32_t& nMate
         }
         else
         {
-            MString strFullPath = MFileHelper::GetFileFolder(m_convertInfo.strResourcePath) + "/" + strTextureFileName;
-            std::shared_ptr<MResource> texture = nullptr;
+            MString                    strFullPath = MFileHelper::GetFileFolder(m_convertInfo.strResourcePath) + "/" + strTextureFileName;
+            std::shared_ptr<MResource> texture     = nullptr;
 
-            if (m_convertInfo.pTextureDelegate)
-            {
-                texture = m_convertInfo.pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first));
-            }
+            if (m_convertInfo.pTextureDelegate) { texture = m_convertInfo.pTextureDelegate->GetTexture(strFullPath, TextureUsageMapping.at(pr.first)); }
             else
             {
                 auto pTextureData = resourceSystem->LoadResourceData(strFullPath);
@@ -565,10 +524,9 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
             // Embedded texture
             if (aiTexture->mHeight == 0)
             {
-                pTextureResource->Load(MTextureResourceUtil::ImportTextureFromMemory(
-                        MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth},
-                        MTextureImportInfo(MTexturePixelType::Byte8)
-                ));
+                pTextureResource->Load(
+                        MTextureResourceUtil::ImportTextureFromMemory(MSpan<MByte>{reinterpret_cast<MByte*>(aiTexture->pcData), aiTexture->mWidth}, MTextureImportInfo(MTexturePixelType::Byte8))
+                );
             }
             else
             {
@@ -589,14 +547,7 @@ void MModelImporter::ProcessTexture(const aiScene* scene)
                     buffer[i + 3] = temp;
                 }
 
-                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory(
-                        "RawTexture",
-                        buffer,
-                        static_cast<uint32_t>(nWidth),
-                        static_cast<uint32_t>(nHeight),
-                        4,
-                        MTexturePixelType::Byte8
-                ));
+                pTextureResource->Load(MTextureResourceUtil::LoadFromMemory("RawTexture", buffer, static_cast<uint32_t>(nWidth), static_cast<uint32_t>(nHeight), 4, MTexturePixelType::Byte8));
             }
 
             m_rawTextures[aiTexture->mFilename.C_Str()] = pTextureResource;
@@ -613,7 +564,7 @@ MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* node)
     Matrix4 matTransform;
     CopyMatrix4(&matTransform, &node->mTransformation);
 
-    MEntity*         pEntity         = m_scene->CreateEntity();
+    MEntity*         pEntity        = m_scene->CreateEntity();
     MSceneComponent* sceneComponent = m_scene->AddComponent<MSceneComponent>(pEntity);
 
     pEntity->SetName(node->mName.C_Str());
@@ -621,10 +572,7 @@ MEntity* MModelImporter::GetEntityFromNode(const aiScene* scene, aiNode* node)
 
     if (node->mParent)
     {
-        if (MEntity* pParentEntity = GetEntityFromNode(scene, node->mParent))
-        {
-            pEntitySystem->AddChild(pParentEntity, pEntity);
-        }
+        if (MEntity* pParentEntity = GetEntityFromNode(scene, node->mParent)) { pEntitySystem->AddChild(pParentEntity, pEntity); }
     }
 
     m_nodeMaps[node] = pEntity;

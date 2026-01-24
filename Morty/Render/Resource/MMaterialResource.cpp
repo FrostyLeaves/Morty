@@ -27,6 +27,14 @@ bool MMaterialResource::SaveTo(std::unique_ptr<MResourceData>& pResourceData)
             pMaterialData->vProperty.push_back(prop);
         }
 
+        for (const auto& [name, modifiedInstanceParam]: modifier->GetModifiedInstanceParams())
+        {
+            MMaterialResourceData::Property prop;
+            prop.name  = name.ToString();
+            prop.value = MVariant::Clone(modifiedInstanceParam.value);
+            pMaterialData->vProperty.push_back(prop);
+        }
+
         for (const auto& [name, modifiedResource]: modifier->GetModifiedResources())
         {
             if (auto textureResourceParam = dynamic_cast<MTextureResourceParam*>(modifiedResource.param))
@@ -70,7 +78,7 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     for (size_t nIdx = 0; nIdx < nTextureNum; ++nIdx)
     {
         const auto fbTexture        = pMaterialData->vTextures[nIdx];
-        const auto pTextureResource = resourceSystem->LoadResource(fbTexture.value, true);
+        const auto pTextureResource = resourceSystem->LoadResource(fbTexture.value, false);
         SetTexture(MStringId(fbTexture.name.c_str()), pTextureResource);
     }
 
@@ -78,10 +86,9 @@ bool MMaterialResource::Load(std::unique_ptr<MResourceData>&& pResourceData)
     return true;
 }
 
-std::shared_ptr<MMaterial> MMaterialResource::GetMaterial() const { return DynamicCast<MMaterial>(GetShared()); }
+std::shared_ptr<MMaterial>         MMaterialResource::GetMaterial() const { return DynamicCast<MMaterial>(GetShared()); }
 
-std::shared_ptr<MMaterialResource> MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate
-)
+std::shared_ptr<MMaterialResource> MMaterialResource::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
 {
     if (const auto pTemplate = MTypeClass::DynamicCast<MMaterialTemplate>(pMaterialTemplate))
     {

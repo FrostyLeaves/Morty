@@ -28,6 +28,8 @@ public:
     void                      Initialize(MIDevice* device, const MTextureBatcherConfig& config) override;
     void                      Release(MIDevice* device) override;
 
+
+    bool                      NeedSync() override { return m_dirty; }
     MTextureBatchResult       RegisterTexture(const MTexturePtr& texture) override;
     void                      UnregisterTexture(const MTexturePtr& texture) override;
     void                      RenderThreadUpdate(MIDevice* device) override;

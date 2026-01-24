@@ -207,6 +207,8 @@ public struct NaniteTraversal
                 NANITE_ERROR_THRESHOLD
             );
 
+            shouldSubdivide = currentNode.depth < 2;
+
             if (shouldSubdivide && currentNode.depth < NANITE_MAX_TRAVERSAL_DEPTH - 1)
             {
                 // Traverse child ClusterGroups via DAG links

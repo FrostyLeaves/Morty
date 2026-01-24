@@ -14,10 +14,7 @@ MORTY_CLASS_IMPLEMENT(MMaterial, MResource)
 
 void MMaterial::SetTexture(const MStringId& name, const std::shared_ptr<MResource>& pResource)
 {
-    if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource))
-    {
-        m_propertyModifier.SetTexture(name, textureResource->GetTextureTemplate());
-    }
+    if (auto textureResource = MTypeClass::DynamicCast<MTextureResource>(pResource)) { m_propertyModifier.SetTexture(name, textureResource); }
 }
 
 MShaderMacro MMaterial::GetShaderMacro() const
@@ -33,10 +30,7 @@ std::shared_ptr<MMaterialTemplate> MMaterial::GetTemplate() const
     return temp;
 }
 
-void MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate)
-{
-    BindTemplate(newMaterialTemplate);
-}
+void                       MMaterial::ResetMaterialTemplate(const std::shared_ptr<MMaterialTemplate>& newMaterialTemplate) { BindTemplate(newMaterialTemplate); }
 
 std::shared_ptr<MMaterial> MMaterial::CreateMaterial(const std::shared_ptr<MResource>& pMaterialTemplate)
 {
@@ -68,10 +62,7 @@ void        MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pT
 
         if (temp && temp->GetDefaultPass() && temp->GetDefaultPass()->GetShaderProgram())
         {
-            m_propertyModifier.BindPropertyBlock(
-                    m_materialParameterSet.get(),
-                    temp->GetDefaultPass()->GetShaderProgram()->GetPropertyBlock()
-            );
+            m_propertyModifier.BindPropertyBlock(m_materialParameterSet.get(), temp->GetDefaultPass()->GetShaderProgram()->GetPropertyBlock());
         }
         else { m_propertyModifier.BindPropertyBlock(nullptr, MShaderPropertyBlock{}); }
 
@@ -86,3 +77,5 @@ void        MMaterial::BindTemplate(const std::shared_ptr<MMaterialTemplate>& pT
 
 
 MShaderParameterSet* MMaterial::GetMaterialParameterSet() const { return m_materialParameterSet.get(); }
+
+MVariant             MMaterial::GetInstancingData() const { return m_propertyModifier.GetModifiedInstancingValue(); }

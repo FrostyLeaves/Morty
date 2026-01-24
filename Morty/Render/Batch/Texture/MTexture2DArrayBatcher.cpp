@@ -70,18 +70,14 @@ MTextureBatchResult MTexture2DArrayBatcher::RegisterTexture(const MTexturePtr& t
     }
 
     // Find appropriate mip level
-    auto [mipLevel, actualSize] = FindMipLevelForTargetSize(
-            static_cast<uint32_t>(texture->GetSize().x),
-            static_cast<uint32_t>(texture->GetSize().y)
-    );
+    auto [mipLevel, actualSize] = FindMipLevelForTargetSize(static_cast<uint32_t>(texture->GetSize().x), static_cast<uint32_t>(texture->GetSize().y));
 
     // Validate mip level exists
     if (mipLevel >= texture->GetMipmapLevel())
     {
         // Use the smallest available mip
-        mipLevel = texture->GetMipmapLevel() > 0 ? texture->GetMipmapLevel() - 1 : 0;
-        actualSize =
-                Vector2i(std::max(1, texture->GetSize().x >> mipLevel), std::max(1, texture->GetSize().y >> mipLevel));
+        mipLevel   = texture->GetMipmapLevel() > 0 ? texture->GetMipmapLevel() - 1 : 0;
+        actualSize = Vector2i(std::max(1, texture->GetSize().x >> mipLevel), std::max(1, texture->GetSize().y >> mipLevel));
     }
 
     // Allocate a layer index
@@ -127,25 +123,25 @@ void MTexture2DArrayBatcher::RenderThreadUpdate(MIDevice* device)
         m_currentCapacity = m_currentMaxCount * 2;
         if (m_textureArray == nullptr) { CreateTextureArray(device); }
         else { m_textureArray->ResizeLayer(device, m_currentCapacity); }
+    }
 
-        // Copy GPU textures to array layers
-        for (auto& [texture, gpuInfo]: m_gpuLayerData)
+    // Copy GPU textures to array layers
+    for (auto& [texture, gpuInfo]: m_gpuLayerData)
+    {
+        if (texture && gpuInfo.waitUpload)
         {
-            if (texture && gpuInfo.waitUpload)
-            {
-                device->CopyImage(
-                        texture.get(),
-                        m_textureArray.get(),
-                        gpuInfo.mipLevel,                         // srcMip
-                        0,                                        // srcSlice (source is 2D texture)
-                        0,                                        // dstMip
-                        static_cast<uint32_t>(gpuInfo.layerIndex),// dstSlice (array layer)
-                        static_cast<uint32_t>(gpuInfo.actualSize.x),
-                        static_cast<uint32_t>(gpuInfo.actualSize.y)
-                );
+            device->CopyImage(
+                    texture.get(),
+                    m_textureArray.get(),
+                    gpuInfo.mipLevel,                         // srcMip
+                    0,                                        // srcSlice (source is 2D texture)
+                    0,                                        // dstMip
+                    static_cast<uint32_t>(gpuInfo.layerIndex),// dstSlice (array layer)
+                    static_cast<uint32_t>(gpuInfo.actualSize.x),
+                    static_cast<uint32_t>(gpuInfo.actualSize.y)
+            );
 
-                gpuInfo.waitUpload = false;
-            }
+            gpuInfo.waitUpload = false;
         }
     }
 
